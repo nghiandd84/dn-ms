@@ -1,0 +1,12 @@
+[package]
+name = "shared-shared-macro-rule"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_macro_rule"
+path = "src/lib.rs"
+
+[dependencies]

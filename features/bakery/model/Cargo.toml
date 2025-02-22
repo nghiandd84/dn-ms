@@ -1,0 +1,25 @@
+[package]
+name = "features-bakery-model"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "features_bakery_model"
+path = "src/lib.rs"
+
+[dependencies]
+serde_json = { workspace = true }
+validator = { version = "0.20.0", features = ["derive"] }
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+serde = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+rust_decimal = { workspace = true }
+chrono = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-macro = { workspace = true }
+
+features-bakery-entities = { workspace = true }

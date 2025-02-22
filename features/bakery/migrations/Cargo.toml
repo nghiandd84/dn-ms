@@ -1,0 +1,19 @@
+[package]
+name = "features-bakery-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_bakery_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_bakery"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { version = "1", features = ["attributes"] }
+sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
+
+features-bakery-entities = { workspace = true }

@@ -1,0 +1,79 @@
+
+### healthchecker
+GET http://localhost:5001/healthchecker
+
+### Swagger UI
+GET http://localhost:5001/swagger-ui/
+
+### Login
+POST http://localhost:5001/login
+Content-Type: application/json
+
+{
+    "username": "demo3",
+    "pwd": "welcome_"
+}
+
+
+### Register
+POST http://localhost:5001/register
+Content-Type: application/json
+
+{
+    "username": "nghia123456"
+}
+
+### Change Profile
+POST http://localhost:5001/profile/af6fea24-65e0-4940-a7d9-4f5b1d1d5ab9
+Content-Type: application/json
+
+{
+    "first_name": "NGHIA",
+    "last_name": "NGUYEN",
+    "last_name1": "NGUYEN LongTextLongText"
+}
+
+
+### Register 
+POST http://localhost:5001/register
+Content-Type: application/json
+
+{
+    "email": "test_n2",
+    "password": "Pass@wor1",
+    "first_name": "Abc002",
+    "last_name": "Xyz002"
+}
+
+### Delete User
+DELETE http://localhost:5001/users/53af92fc-ba07-45dc-949e-60ae55316e71
+Content-Type: application/json
+
+### Get User
+GET http://localhost:5001/users/533e9294-76cf-41eb-9e2a-19064f7875e2
+Content-Type: application/json
+
+### Finds User
+GET http://localhost:5001/users?page_size=1&page=4&first_name=li|nghia_like&last_name=eq|nghia_equal&age=lte|12&email=eq|nghia@test.com&id=eq|4df3f7dd-e618-4254-9330-f1d9aa65f129
+Content-Type: application/json
+
+### Finds User
+GET http://localhost:5001/users?page_size=10&page=1&&order_name=first_name&order_direction=-1
+Content-Type: application/json
+
+### Finds User in id array
+GET http://localhost:5001/users?page_size=10&page=1&id=in|c8b35d43-a7aa-4aa7-bf7d-011ab2c76461,4df3f7dd-e618-4254-9330-f1d9aa65f129
+Content-Type: application/json
+
+### Get Test Users 
+GET http://localhost:5001/test_users
+Content-Type: application/json
+
+### Get All Roles
+GET http://localhost:5001/roles
+Content-Type: application/json
+
+
+### Logout
+POST http://localhost:5001/logout
+Content-Type: application/json

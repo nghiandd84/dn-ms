@@ -1,0 +1,39 @@
+[package]
+name = "api-auth"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+rand = { workspace = true }
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
+
+argon2 = { workspace = true }
+async-trait = { workspace = true }
+chrono = { version = "0.4.39", features = ["serde"] }
+dotenv = { workspace = true }
+futures-util = { workspace = true }
+jsonwebtoken = { workspace = true }
+tracing = { workspace = true }
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = { workspace = true }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-async-std", "debug-print"] }
+
+
+uuid = { version = "1.13.2", features = ["serde", "v4"] }
+validator = { version = "0.20.0", features = ["derive"] }
+#paste = {version = "1.0"}
+
+shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-app =  { workspace = true }
+
+features-auth-migrations = { workspace = true }
+features-auth-model = { workspace = true }
+features-auth-entities = { workspace = true }
+features-auth-service = { workspace = true }

@@ -1,0 +1,24 @@
+[package]
+name = "features-bakery-service"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "features_bakery_service"
+path = "src/lib.rs"
+
+[dependencies]
+serde_json = { workspace = true }
+sea-orm = { workspace = true, features = ["with-json"] }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-data-app = { workspace = true }
+shared-shared-macro-rule = { workspace = true }
+shared-shared-macro = { workspace = true }
+
+features-bakery-entities = { workspace = true }
+features-bakery-model = { workspace = true }

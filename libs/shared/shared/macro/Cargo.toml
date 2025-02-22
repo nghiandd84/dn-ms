@@ -1,0 +1,18 @@
+[package]
+name = "shared-shared-macro"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_macro"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+quote = { workspace = true }
+syn = { workspace = true, features = ["derive"] }
+proc-macro2 = "1.0"
+

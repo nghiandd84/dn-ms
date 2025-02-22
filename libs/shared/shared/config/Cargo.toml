@@ -1,0 +1,16 @@
+[package]
+name = "shared-shared-config"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_config"
+path = "src/lib.rs"
+
+[dependencies]
+lettre = { workspace = true }
+log = { workspace = true }
+redis = { workspace = true }
+sea-orm = { workspace = true }

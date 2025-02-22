@@ -1,0 +1,129 @@
+
+daemon: false
+error_log: /var/log/dakia/error.log
+pid_file: /var/run/dakia.pid
+upgrade_sock: /var/run/dakia.sock
+user: dakia
+group: dakia
+threads: 8
+work_stealing: true
+grace_period_seconds: 60
+graceful_shutdown_timeout_seconds: 30
+upstream_keepalive_pool_size: 10
+upstream_connect_offload_threadpools: 2
+upstream_connect_offload_thread_per_pool: 5
+upstream_debug_ssl_keylog: false
+gateways:
+  - name: root
+    bind_addresses:
+      - host: 0.0.0.0
+        port: 8080
+      - host: 0.0.0.0
+        port: 8090
+      - host: 0.0.0.0
+        port: 8070
+    downstreams:
+      - host: example.com
+      - host: localhost
+      - host: example.net
+    upstreams:
+      - name: payment
+        default: false
+        traffic_distribution_policy:
+          node_selection_algorithm: round_robin
+        upstream_nodes:
+          - address:
+              host: 0.0.0.0
+              port: 3000
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 0.0.0.0
+              port: 3001
+            tls: false
+            sni: null
+            weight: 2
+          - address:
+              host: 0.0.0.0
+              port: 3002
+            tls: false
+            sni: null
+            weight: 2
+      - name: search
+        default: false
+        upstream_nodes:
+          - address:
+              host: 0.0.0.0
+              port: 3002
+            tls: false
+            sni: null
+      - name: default
+        default: true
+        upstream_nodes:
+          - address:
+              host: 0.0.0.0
+              port: 3001
+            tls: false
+            sni: null
+    routers:
+      - upstream: payment
+        filter: payment_router_filter
+      - upstream: search
+        filter: search_router_filter
+      - upstream: default
+    interceptors:
+      - name: request_id
+        enabled: true
+      - name: response_rewrite
+        enabled: true
+        rewrite:
+          header.from-response-rewrite: ok
+      - name: short_circuit
+        enabled: true
+        filter: short_circuit
+        response:
+          header.terminated: true
+          status: 502
+      - name: server_version
+        enabled: true
+      - name: controller
+        enabled: false
+        filter: controller
+      - name: basic_auth
+        enabled: false
+        filter: basic_auth
+        config:
+          username: dakia
+          password: dakia
+      - name: use_file
+        enabled: true
+        config:
+          root: /home/static
+      - name: rate_limiter
+        enabled: true
+        config:
+          # 1 req per minute
+          capacity: 5
+          refill_rate: 2
+          refill_interval: 12000
+    filters:
+      - name: controller
+        ds.req.path:
+          $starts_with: /controller
+        header.host: localhost
+      - name: basic_auth
+        header.host: example.net
+      - name: use_file
+        header.host: example.net
+      - name: payment_router_filter
+        path:
+          $starts_with: /payment
+      - name: search_router_filter
+        path:
+          $starts_with: /search
+      - name: short_circuit
+        path:
+          $starts_with: /search
+# ds - downstream
+# us - upstream

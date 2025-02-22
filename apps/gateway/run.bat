@@ -1,0 +1,1 @@
+cargo run -- --dp "D:\Training\Rust\dn-ms\apps\gateway"  --verbose

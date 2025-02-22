@@ -1,0 +1,84 @@
+[workspace]
+resolver = "2"
+autobins = false
+rust-version = "1.85.0"
+members = [
+    "libs/shared/shared/app",
+    "libs/shared/shared/config",
+    "libs/shared/shared/data/app",
+    "libs/shared/shared/data/core",
+    "libs/shared/shared/macro",
+    "libs/shared/shared/macro-rule",
+
+    "features/auth/entities", 
+    "features/auth/migrations", 
+    "features/auth/model", 
+    "features/auth/service", 
+
+    "features/bakery/entities", 
+    "features/bakery/migrations", 
+    "features/bakery/model", 
+    "features/bakery/service", 
+
+    "apis/auth", 
+    "apis/bakery", 
+    "apis/email-template",
+    "apps/gateway", 
+]
+
+
+[workspace.package]
+version = "0.0.1"
+authors = ["NGHIA NDD"]
+
+[workspace.dependencies]
+argon2 = "0.5.3"
+async-trait = "0.1.86"
+axum = { version = "0.8.0" }
+axum-extra = { version = "0.8.0" }
+chrono = { version = "0.4.39", features = ["serde"] }
+dotenv = "0.15.0"
+futures-util = "0.3.31"
+jsonwebtoken = "9.3.1"
+lettre = { version = "^0.10", features = ["builder","tokio1-native-tls",] }
+log = "0.4"
+quote = "1.0"
+rand = "0.8.5"
+redis = { version = "^0.22", features = ["tokio-comp", "tokio-native-tls-comp"] }
+sea-orm = { version = "1.1.0" }
+sea-orm-migration = { version = "1.1.0" }
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0.139"
+syn = "2.0"
+sqlx = { version = "0.8.3", features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"] }
+tokio = { version="1", features = ["full"] }
+tower-http = { version = "0.4", features = ["fs"]}
+utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }
+utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
+uuid = { version = "1.13.2" }
+validator = { version = "0.20.0", features = ["derive"] }
+utoipa-axum = { version = "0.2" }
+rust_decimal = { version = "1.37.1" }
+tracing-subscriber = { version = "0.3.17"}
+tracing = { version = "0.1.41" }
+serde_qs = { version = "0.15.0" }
+
+
+shared-shared-app = { path = "./libs/shared/shared/app"}
+shared-shared-config = { path = "./libs/shared/shared/config"}
+shared-shared-macro = { path = "./libs/shared/shared/macro"}
+shared-shared-macro-rule = { path = "./libs/shared/shared/macro-rule"}
+shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
+shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
+
+#Auth Module
+features-auth-entities = { path = "./features/auth/entities"}
+features-auth-migrations = { path = "./features/auth/migrations"}
+features-auth-model = { path = "./features/auth/model"}
+features-auth-service = { path = "./features/auth/service"}
+
+#Bakery Module
+features-bakery-entities = { path = "./features/bakery/entities"}
+features-bakery-migrations = { path = "./features/bakery/migrations"}
+features-bakery-model = { path = "./features/bakery/model"}
+features-bakery-service = { path = "./features/bakery/service"}
