@@ -210,7 +210,7 @@ name = "api-email-template"
 version = "0.0.1"
 
 [[package]]
-name = "app-gateway"
+name = "app-gateway-bk"
 version = "0.0.1"
 dependencies = [
  "arc-swap",
@@ -220,7 +220,6 @@ dependencies = [
  "clap 3.2.25",
  "crossbeam-epoch",
  "dashmap",
- "figlet-rs",
  "http 1.2.0",
  "once_cell",
  "pcre2",
@@ -1356,12 +1355,6 @@ dependencies = [
  "tracing",
  "uuid",
 ]
-
-[[package]]
-name = "figlet-rs"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4742a071cd9694fc86f9fa1a08fa3e53d40cc899d7ee532295da2d085639fbc5"
 
 [[package]]
 name = "flate2"

@@ -34,7 +34,7 @@ fn main() {
     println!("{}", get_dakia_ascii_art());
 
     let dakia_args = DakiaArgs::parse();
-    debug!("dakia_args {:?}", dakia_args);
+    debug!("dakia_args{:?}", dakia_args);
 
     let dakia_config = DakiaConfig::from_args(dakia_args.clone()).unwrap();
 
