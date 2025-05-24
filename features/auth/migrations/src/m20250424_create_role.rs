@@ -20,7 +20,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(role::Column::Id)
                             .uuid()
-                            .extra("DEFAULT gen_random_uuid()")
+                            .extra("DEFAULT public.uuid_generate_v4()")
                             .not_null()
                             .primary_key(),
                     )
