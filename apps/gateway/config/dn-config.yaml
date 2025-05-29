@@ -1,0 +1,69 @@
+daemon: false
+error_log: /var/log/dn-gateway/error.log
+pid_file: /var/run/dn-gateway.pid
+upgrade_sock: /var/run/dn-gateway.sock
+user: dn_gateway
+group: dn_gateway
+threads: 8
+work_stealing: true
+grace_period_seconds: 60
+graceful_shutdown_timeout_seconds: 30
+upstream_keepalive_pool_size: 10
+upstream_connect_offload_threadpools: 2
+upstream_connect_offload_thread_per_pool: 5
+upstream_debug_ssl_keylog: false
+gateways:
+  - name: root
+    bind_addresses:
+      - host: 0.0.0.0
+        port: 6000
+      - host: 0.0.0.0
+        port: 6001
+      - host: 0.0.0.0
+        port: 6002
+    routers:
+      - upstream: bakery
+        filter: bakery_router_filter
+      - upstream: auth
+        filter: auth_router_filter
+    upstreams:
+      - name: bakery
+        default: false
+        traffic_distribution_policy: round_robin
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5002
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5102
+            tls: false
+            sni: null
+            weight: 2
+      - name: auth
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5001
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5101
+            tls: false
+            sni: null
+            weight: 2
+    filters:
+      - name: bakery_router_filter
+        path:
+          $starts_with: /api/bakery
+      - name: auth_router_filter
+        path:
+          $starts_with: /api/auth
+        

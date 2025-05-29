@@ -61,6 +61,7 @@ impl ProxyHttp for Proxy {
         _session: &mut Session,
         _ctx: &mut Self::CTX,
     ) -> Result<bool, Box<Error>> {
+        
         let mut session = session::Session::build(Phase::RequestFilter, _session, _ctx);
         let host = session.ds_req_header("host")?;
 

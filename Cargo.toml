@@ -23,7 +23,12 @@ members = [
     "apis/auth", 
     "apis/bakery", 
     "apis/email-template",
+    "apps/gateway", 
     "apps/gateway-bk", 
+]
+
+exclude = [
+    "apps/gateway-bk"
 ]
 
 
@@ -78,6 +83,7 @@ utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
 uuid = { version = "1.13.2" }
 validator = { version = "0.20.0", features = ["derive"] }
 wildmatch = "2.4.0"
+config = { version = "0.15.11"}
 
 shared-shared-app = { path = "./libs/shared/shared/app"}
 shared-shared-config = { path = "./libs/shared/shared/config"}

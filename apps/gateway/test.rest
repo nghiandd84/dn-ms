@@ -1,0 +1,10 @@
+GET http://127.0.0.1:6000/api/bakery/bakeries
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:6001/api/bakery/bakeries/1?param_1=one
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:6002/api/bakery/bakeries/2
+Content-Type: application/json
