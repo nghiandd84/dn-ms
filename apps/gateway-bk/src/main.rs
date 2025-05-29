@@ -47,7 +47,6 @@ fn main() {
 
     debug!("process_args {:?}", dakia_config);
 
-
     let runtime = Builder::new_current_thread()
         .build()
         // if there is any error, just panic

@@ -11,24 +11,21 @@ use axum::{
 };
 use serde_json::{json, to_value, Value};
 use tracing::debug;
-use uuid::Uuid;
 
 use shared_shared_data_app::result::Result;
 use shared_shared_data_app::{ctx::Ctx, error::AppError};
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
-    let uuid = Uuid::new_v4();
+    // let uuid = Uuid::new_v4();
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
     match client_status_error {
         Some((status_code, client_error)) => {
-            debug!("Error: {:?} - {:?} - {:?}", uuid, status_code, app_error);
             let client_error = to_value(client_error).ok();
             let message = client_error.as_ref().and_then(|v| v.get("message"));
             let details = client_error.as_ref().and_then(|v| v.get("details"));
 
             let error_body = json!({
-              "req_id" : uuid.to_string(),
               "data" : {
                 "details" : details,
                 "message" : message,
@@ -40,12 +37,6 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             (status_code, Json(error_body)).into_response()
         }
         None => {
-            debug!(
-                "Success: {:?} - {:?} - path {:?}",
-                uuid,
-                res.status(),
-                uri.path()
-            );
             if uri.path().starts_with("/swagger-ui/") || uri.path().starts_with("/api-docs") {
                 return res;
             }
@@ -56,12 +47,10 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             let body_string = String::from_utf8(body.to_vec()).unwrap_or_default();
             let data: Value = serde_json::from_str(&body_string).unwrap_or(Value::Null);
             let json_response = json!({
-              "req_id" : uuid.to_string(),
               "status" : 1,
               "data" : data,
               "metadata" : null // pagination
             });
-            // let _ = log_request(uuid, uri, req_method, json_response.clone(), 1).await;
             (status, Json(json_response)).into_response()
         }
     }

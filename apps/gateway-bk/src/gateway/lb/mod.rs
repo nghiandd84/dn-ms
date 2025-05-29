@@ -1,9 +1,11 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{BTreeSet, HashMap},
+    sync::Arc,
+};
 
 use async_trait::async_trait;
 use pingora::lb::{
-    selection::{algorithms::RoundRobin, weighted::Weighted},
-    LoadBalancer,
+    discovery, selection::{algorithms::RoundRobin, weighted::Weighted}, Backend, Backends, LoadBalancer
 };
 
 use tokio::sync::RwLock;
@@ -50,6 +52,16 @@ pub fn build_lb(upstream_config: &UpstreamConfig) -> DakiaResult<LB> {
         .iter()
         .map(|node| node.address.get_formatted_address())
         .collect();
+    
+    let b1 = Backend::new("1.1.1.1:80").unwrap();
+    let mut b2 = Backend::new("1.0.0.1:80").unwrap();
+    b2.weight = 10; // 10x than the rest
+    let b3 = Backend::new("1.0.0.255:80").unwrap();
+    let backends = BTreeSet::from_iter([b1.clone(), b2.clone(), b3.clone()]);
+    let discovery = discovery::Static::new(backends);
+    let backends = Backends::new(discovery);
+    let lb: LoadBalancer<Weighted<RoundRobin>> = LoadBalancer::from_backends(backends);
+    
 
     let lb: LoadBalancer<Weighted<RoundRobin>> = LoadBalancer::try_from_iter(addrs)?;
     Ok(lb)
