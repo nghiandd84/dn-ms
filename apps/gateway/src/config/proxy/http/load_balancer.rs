@@ -71,7 +71,6 @@ impl UpStreamLoadBalaner {
             LoadBalancerEnum::RoundRobin(load_balancer) => {
                 let b = load_balancer.select(b"", 256).unwrap();
                 b
-                // todo!()
             }
             LoadBalancerEnum::Random(load_balancer) => {
                 let b = load_balancer.select(b"", 256).unwrap();

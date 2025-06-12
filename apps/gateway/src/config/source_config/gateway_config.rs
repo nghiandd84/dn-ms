@@ -20,7 +20,6 @@ pub struct GatewayConfig {
     // pub downstreams: Vec<DownstreamConfig>,
     pub upstreams: Vec<UpstreamConfig>,
     pub routers: Vec<RouterConfig>,
-
     // #[serde(default)]
     // pub interceptors: Vec<InterceptorConfig>,
 

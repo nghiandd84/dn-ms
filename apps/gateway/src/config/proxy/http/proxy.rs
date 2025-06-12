@@ -149,6 +149,7 @@ impl ProxyHttp for Proxy {
         // _session.req_header_mut().set_uri(uri);
         let peer = HttpPeer::new("127.0.0.1:5202", tls, "bakery".to_string());
         Ok(Box::new(peer))
+        
         // }
         // let peer = HttpPeer::new("127.0.0.1:5101", tls, "auth".to_string());
         // Ok(Box::new(peer))

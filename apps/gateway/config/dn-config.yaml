@@ -69,4 +69,3 @@ gateways:
           operator: start_with
           value: /api/auth
          
-        
