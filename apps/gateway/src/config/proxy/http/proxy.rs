@@ -31,6 +31,7 @@ impl Proxy {
         let upstreams = gateway_config.clone().upstreams;
         let upstream_load_balancers: Vec<UpStreamLoadBalaner> =
             UpStreamLoadBalaner::from_upstream_config(upstreams).await;
+
         Proxy {
             gateway_state_store,
             upstream_load_balancers: Arc::new(upstream_load_balancers),
@@ -86,8 +87,6 @@ impl ProxyHttp for Proxy {
             .iter()
             .find(|us_balance| us_balance.name == upstream_name)
             .unwrap();
-
-        // debug!("upstream_load_balancer {:?}", upstream_load_balancer);
         let back_end = upstream_load_balancer.get_backend();
         debug!("back_end {:?}", back_end);
         let ext = back_end.ext.get::<HashMap<String, bool>>().unwrap();
