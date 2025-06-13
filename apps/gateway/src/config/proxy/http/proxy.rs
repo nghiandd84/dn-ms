@@ -35,12 +35,12 @@ pub struct Proxy {
 }
 
 impl Proxy {
-    pub fn build(gateway_state_store: Arc<GatewayStateStore>) -> Proxy {
+    pub async fn build(gateway_state_store: Arc<GatewayStateStore>) -> Proxy {
         let state = gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let upstreams = gateway_config.clone().upstreams;
         let upstream_load_balancers: Vec<UpStreamLoadBalaner> =
-            UpStreamLoadBalaner::from_upstream_config(upstreams);
+            UpStreamLoadBalaner::from_upstream_config(upstreams).await;
         /*
         for upstream in upstreams {
             let mut backends: BTreeSet<Backend> = BTreeSet::new();
@@ -133,7 +133,7 @@ impl ProxyHttp for Proxy {
             .find(|us_balance| us_balance.name == upstream_name)
             .unwrap();
 
-        // debug!("upstream_load_balancer {:?}", upstream_load_balancer);
+        debug!("upstream_load_balancer {:?}", upstream_load_balancer);
         let back_end = upstream_load_balancer.get_backend();
         debug!("back_end {:?}", back_end);
 

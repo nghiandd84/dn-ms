@@ -5,6 +5,7 @@ use pingora::lb::{
 };
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
+use tracing::debug;
 
 use crate::config::source_config::{LoadBalancerAlgorithm, UpstreamConfig};
 
@@ -29,7 +30,7 @@ pub struct UpStreamLoadBalaner {
 }
 
 impl UpStreamLoadBalaner {
-    pub fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+    pub async fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
         let mut upstream_load_balancers: Vec<UpStreamLoadBalaner> = vec![];
         for upstream in upstreams {
             let mut backends: BTreeSet<Backend> = BTreeSet::new();
@@ -44,18 +45,21 @@ impl UpStreamLoadBalaner {
                 back_end.ext.insert(ext_data);
                 backends.insert(back_end);
             }
+
             let discovery = discovery::Static::new(backends);
+            let backends = Backends::new(discovery);
+            // Do not remove update
+            backends.update(|_| {}).await.unwrap();
+            // Do not remove update
 
             if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::RoundRobin {
-                let lb: LoadBalancer<RoundRobin> =
-                    LoadBalancer::from_backends(Backends::new(discovery));
+                let lb = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
                     load_balancer: LoadBalancerEnum::RoundRobin(lb),
                 });
             } else if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::Random {
-                let lb: LoadBalancer<Random> =
-                    LoadBalancer::from_backends(Backends::new(discovery));
+                let lb = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
                     load_balancer: LoadBalancerEnum::Random(lb),
@@ -68,14 +72,8 @@ impl UpStreamLoadBalaner {
 
     pub fn get_backend(&self) -> Backend {
         let back_end: Backend = match &self.load_balancer {
-            LoadBalancerEnum::RoundRobin(load_balancer) => {
-                let b = load_balancer.select(b"", 256).unwrap();
-                b
-            }
-            LoadBalancerEnum::Random(load_balancer) => {
-                let b = load_balancer.select(b"", 256).unwrap();
-                b
-            }
+            LoadBalancerEnum::RoundRobin(load_balancer) => load_balancer.select(b"", 256).unwrap(),
+            LoadBalancerEnum::Random(load_balancer) => load_balancer.select(b"", 256).unwrap(),
         };
         back_end
     }

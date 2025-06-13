@@ -31,7 +31,7 @@ if [ "$1" == "kill" ]; then
     exit 0  # Exit after killing processes
 fi
 
-echo "Start Bakery app"
+echo "------------ Start Bakery app ------------"
 for i in {1..3}; do
     PORT=520$i
     echo "--- Bakery on port $PORT ---"
@@ -39,7 +39,7 @@ for i in {1..3}; do
     BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery > $LOG_DIRECTORY/api-bakery-instance-$i.log &
 done
 
-echo "Start Auth app"
+echo "------------ Start Auth app ------------"
 for i in {1..3}; do
     PORT=510$i
     echo "--- Auth on port $PORT ---"
