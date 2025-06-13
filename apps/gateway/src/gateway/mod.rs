@@ -10,11 +10,11 @@ use super::Proxy;
 
 pub type HttpGateway = Service<HttpProxy<Proxy>>;
 
-pub fn build_http(
+pub async fn build_http(
     gateway_state_store: Arc<GatewayStateStore>,
     server_conf: Arc<ServerConf>,
 ) -> HttpGateway {
-    let proxy = Proxy::build(gateway_state_store.clone());
+    let proxy = Proxy::build(gateway_state_store.clone()).await;
     let gateway_state = &gateway_state_store.get_state();
     let gateway_config = gateway_state.gateway_config();
 

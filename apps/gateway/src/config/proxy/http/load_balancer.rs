@@ -9,15 +9,15 @@ use std::fmt::Debug;
 use crate::config::source_config::{LoadBalancerAlgorithm, UpstreamConfig};
 
 pub enum LoadBalancerEnum {
-    RoundRobin(LoadBalancer<RoundRobin>),
-    Random(LoadBalancer<Random>),
+    RoundRobin { bl: LoadBalancer<RoundRobin> },
+    Random { bl: LoadBalancer<Random> },
 }
 
 impl Debug for LoadBalancerEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::RoundRobin(arg0) => f.debug_tuple("RoundRobin").finish(),
-            Self::Random(arg0) => f.debug_tuple("Random").finish(),
+            Self::RoundRobin { bl } => f.debug_tuple("RoundRobin").finish(),
+            Self::Random { bl } => f.debug_tuple("Random").finish(),
         }
     }
 }
@@ -29,7 +29,7 @@ pub struct UpStreamLoadBalaner {
 }
 
 impl UpStreamLoadBalaner {
-    pub fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+    pub async fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
         let mut upstream_load_balancers: Vec<UpStreamLoadBalaner> = vec![];
         for upstream in upstreams {
             let mut backends: BTreeSet<Backend> = BTreeSet::new();
@@ -44,21 +44,24 @@ impl UpStreamLoadBalaner {
                 back_end.ext.insert(ext_data);
                 backends.insert(back_end);
             }
+
             let discovery = discovery::Static::new(backends);
+            let backends = Backends::new(discovery);
+            // Do not remove update
+            backends.update(|_| {}).await.unwrap();
+            // Do not remove update
 
             if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::RoundRobin {
-                let lb: LoadBalancer<RoundRobin> =
-                    LoadBalancer::from_backends(Backends::new(discovery));
+                let bl = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
-                    load_balancer: LoadBalancerEnum::RoundRobin(lb),
+                    load_balancer: LoadBalancerEnum::RoundRobin { bl },
                 });
             } else if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::Random {
-                let lb: LoadBalancer<Random> =
-                    LoadBalancer::from_backends(Backends::new(discovery));
+                let bl = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
-                    load_balancer: LoadBalancerEnum::Random(lb),
+                    load_balancer: LoadBalancerEnum::Random { bl },
                 });
             }
         }
@@ -68,14 +71,8 @@ impl UpStreamLoadBalaner {
 
     pub fn get_backend(&self) -> Backend {
         let back_end: Backend = match &self.load_balancer {
-            LoadBalancerEnum::RoundRobin(load_balancer) => {
-                let b = load_balancer.select(b"", 256).unwrap();
-                b
-            }
-            LoadBalancerEnum::Random(load_balancer) => {
-                let b = load_balancer.select(b"", 256).unwrap();
-                b
-            }
+            LoadBalancerEnum::RoundRobin { bl } => bl.select(b"", 256).unwrap(),
+            LoadBalancerEnum::Random { bl } => bl.select(b"", 256).unwrap(),
         };
         back_end
     }

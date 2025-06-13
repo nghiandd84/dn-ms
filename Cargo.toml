@@ -40,6 +40,7 @@ authors = ["NGHIA NDD"]
 
 arc-swap = "1.7.1"
 argon2 = "0.5.3"
+async-std = { version = "1", features = ["attributes"] }
 async-trait = "0.1.86"
 axum = { version = "0.8.0" }
 axum-extra = { version = "0.8.0" }

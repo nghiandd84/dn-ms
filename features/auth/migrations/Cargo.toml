@@ -13,7 +13,7 @@ name = "migrations_auth"
 path = "src/main.rs"
 
 [dependencies]
-async-std = { version = "1", features = ["attributes"] }
+async-std = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
 
 features-auth-entities = { workspace = true }

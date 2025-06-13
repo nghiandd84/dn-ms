@@ -43,6 +43,12 @@ gateways:
             tls: false
             sni: null
             weight: 2
+          - address:
+              host: 127.0.0.1
+              port: 5203
+            tls: false
+            sni: null
+            weight: 1
       - name: auth
         default: false
         traffic_distribution_policy: random

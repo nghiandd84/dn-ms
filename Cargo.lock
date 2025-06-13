@@ -214,6 +214,7 @@ name = "app-gateway"
 version = "0.0.1"
 dependencies = [
  "arc-swap",
+ "async-std",
  "async-trait",
  "base64 0.22.1",
  "bytes",

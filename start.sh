@@ -9,42 +9,46 @@ echo "Argument 1 is $1"
 
 APP_DIRECTORY=./target/debug
 LOG_DIRECTORY=./target/logs
+CURRENT_DATE=$(date +%Y%m%d)
+
 export BAKERY_PORT=5201
 export AUTH_PORT=5101
 
 echo "Kill current instances"
 
-    # Kill port
-    for i in {1..3}; do 
-        fuser -k 520$i/tcp 
-    done
+# Kill port
+for i in {1..3}; do 
+    fuser -k 520$i/tcp 
+done
 
-    # Kill port
-    for i in {1..3}; do 
-        fuser -k 510$i/tcp 
-    done
+# Kill port
+for i in {1..3}; do 
+    fuser -k 510$i/tcp 
+done
 
-    echo "Sucess kill all instances"
+echo "Sucess kill all instances"
+
+rm -v $LOG_DIRECTORY/*
 
     
 if [ "$1" == "kill" ]; then
     exit 0  # Exit after killing processes
 fi
 
-echo "Start Bakery app"
+echo "------------ Start Bakery app ------------"
 for i in {1..3}; do
     PORT=520$i
     echo "--- Bakery on port $PORT ---"
     # Execute the program
-    BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery > $LOG_DIRECTORY/api-bakery-instance-$i.log &
+    BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery > $LOG_DIRECTORY/api-bakery-${CURRENT_DATE}-instance-$i.log &
 done
 
-echo "Start Auth app"
+echo "------------ Start Auth app ------------"
 for i in {1..3}; do
     PORT=510$i
     echo "--- Auth on port $PORT ---"
     # Execute the program
-    AUTH_PORT=510$i $APP_DIRECTORY/api-auth > $LOG_DIRECTORY/api-auth-instance-$i.log &
+    AUTH_PORT=510$i $APP_DIRECTORY/api-auth > $LOG_DIRECTORY/api-auth-${CURRENT_DATE}-instance-$i.log &
 done
 
 #wait
