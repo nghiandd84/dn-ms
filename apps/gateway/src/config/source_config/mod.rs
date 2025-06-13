@@ -13,3 +13,4 @@ pub use inet_address::InetAddress;
 pub use interceptor_config::*;
 pub use router_config::RouterConfig;
 pub use upstream_config::*;
+pub use interceptor_config::*;

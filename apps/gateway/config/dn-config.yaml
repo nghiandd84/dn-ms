@@ -65,6 +65,20 @@ gateways:
             tls: false
             sni: null
             weight: 2
+    
+    interceptors:
+      - name: request_id
+        enabled: true
+        filter: bakery_router_filter
+      - name: rate_limiter
+        enabled: true
+        filter: auth_router_filter
+        config:
+          # 1 req per 10 second
+          capacity: 5
+          refill_rate: 2
+          refill_interval: 10
+    
     filters:
       - name: bakery_router_filter
         path:

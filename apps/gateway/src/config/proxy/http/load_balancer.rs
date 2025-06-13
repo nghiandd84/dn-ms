@@ -9,15 +9,15 @@ use std::fmt::Debug;
 use crate::config::source_config::{LoadBalancerAlgorithm, UpstreamConfig};
 
 pub enum LoadBalancerEnum {
-    RoundRobin { bl: LoadBalancer<RoundRobin> },
-    Random { bl: LoadBalancer<Random> },
+    RoundRobin { lb: LoadBalancer<RoundRobin> },
+    Random { lb: LoadBalancer<Random> },
 }
 
 impl Debug for LoadBalancerEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::RoundRobin { bl } => f.debug_tuple("RoundRobin").finish(),
-            Self::Random { bl } => f.debug_tuple("Random").finish(),
+            Self::RoundRobin { lb: _ } => f.debug_tuple("RoundRobin").finish(),
+            Self::Random { lb: _ } => f.debug_tuple("Random").finish(),
         }
     }
 }
@@ -52,16 +52,16 @@ impl UpStreamLoadBalaner {
             // Do not remove update
 
             if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::RoundRobin {
-                let bl = LoadBalancer::from_backends(backends);
+                let lb = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
-                    load_balancer: LoadBalancerEnum::RoundRobin { bl },
+                    load_balancer: LoadBalancerEnum::RoundRobin { lb },
                 });
             } else if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::Random {
-                let bl = LoadBalancer::from_backends(backends);
+                let lb = LoadBalancer::from_backends(backends);
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
-                    load_balancer: LoadBalancerEnum::Random { bl },
+                    load_balancer: LoadBalancerEnum::Random { lb },
                 });
             }
         }
@@ -71,8 +71,8 @@ impl UpStreamLoadBalaner {
 
     pub fn get_backend(&self) -> Backend {
         let back_end: Backend = match &self.load_balancer {
-            LoadBalancerEnum::RoundRobin { bl } => bl.select(b"", 256).unwrap(),
-            LoadBalancerEnum::Random { bl } => bl.select(b"", 256).unwrap(),
+            LoadBalancerEnum::RoundRobin { lb } => lb.select(b"", 256).unwrap(),
+            LoadBalancerEnum::Random { lb } => lb.select(b"", 256).unwrap(),
         };
         back_end
     }
