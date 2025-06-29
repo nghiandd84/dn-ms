@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use arc_swap::ArcSwap;
+use tracing::debug;
 
 use crate::config::source_config::GatewayConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GatewayState {
     gateway_config: GatewayConfig,
 }
@@ -45,5 +46,6 @@ impl GatewayStateStore {
 
 pub fn build_gateway_state(gateway_config: GatewayConfig) -> GatewayState {
     let gateway_state = GatewayState::build(gateway_config);
+    debug!("Gateway state {:?}", gateway_state);
     gateway_state
 }

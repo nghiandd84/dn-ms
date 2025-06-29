@@ -1,11 +1,13 @@
 use async_trait::async_trait;
+use tracing::debug;
 
 use crate::{
     config::proxy::http::Session,
     error::GatewayResult,
-    gateway::interceptor::{Interceptor, InterceptorName, Phase, PhaseMask},
+    gateway::interceptor::{Interceptor, InterceptorType, Phase, PhaseMask, PhaseResult},
 };
 
+#[derive(Debug)]
 pub struct RequestIdInterceptor {
     filter: Option<String>,
 }
@@ -18,8 +20,8 @@ impl RequestIdInterceptor {
 
 #[async_trait]
 impl Interceptor for RequestIdInterceptor {
-    fn name(&self) -> InterceptorName {
-        InterceptorName::RequestId
+    fn interceptor_type(&self) -> InterceptorType {
+        InterceptorType::RequestId
     }
 
     fn phase_mask(&self) -> PhaseMask {
@@ -30,10 +32,13 @@ impl Interceptor for RequestIdInterceptor {
         &self.filter
     }
 
-    async fn init(&self, _session: &mut Session) -> GatewayResult<()> {
-        let req_id = uuid::Uuid::new_v4();
-        let req_id = req_id.to_string().as_bytes().to_vec();
+    async fn init(&self, _session: &mut Session) -> PhaseResult {
+        let req_id = uuid::Uuid::new_v4().to_string().as_bytes().to_vec();
         // TODO send req_id to upstream and downstream
-        Ok(())
+        debug!(
+            "Init RequestIdInterceptor with filter {}",
+            self.filter.as_ref().unwrap()
+        );
+        Ok(true)
     }
 }

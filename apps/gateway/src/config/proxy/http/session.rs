@@ -1,22 +1,30 @@
+use std::sync::Arc;
+
 use http::Uri;
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
 use pingora_proxy::Session as PSession;
+use tracing::debug;
 
-use crate::config::source_config::{Filter, PathFilter};
+use crate::{
+    config::source_config::{Filter, PathFilter},
+    gateway::interceptor::Phase,
+};
 
 use super::ctx::HttpGatewayCtx;
 
 pub struct Session<'a> {
+    ctx: &'a mut HttpGatewayCtx,
+    phase: Phase,
     psession: &'a mut PSession,
     upstream_request: Option<&'a mut PRequestHeader>,
     upstream_response: Option<&'a mut PResponseHeader>,
-    ctx: &'a mut HttpGatewayCtx,
 }
 
 impl<'a> Session<'a> {
-    pub fn build(psession: &'a mut PSession, ctx: &'a mut HttpGatewayCtx) -> Self {
+    pub fn build(phase: Phase, psession: &'a mut PSession, ctx: &'a mut HttpGatewayCtx) -> Self {
         Session {
             ctx,
+            phase,
             psession,
             upstream_request: None,
             upstream_response: None,
@@ -32,20 +40,26 @@ impl<'a> Session<'a> {
     }
 }
 
+
+impl<'a> Session<'a> {
+    pub fn set_us_req_header(&mut self, header_name: String, header_value: Vec<u8>) {
+        self.ctx
+            .us_req_header_buffer
+            .insert(header_name, header_value);
+    }
+
+    pub fn set_ds_res_header(&mut self, header_name: String, header_value: Vec<u8>) {
+        self.ctx
+            .ds_res_header_buffer
+            .insert(header_name, header_value);
+    }
+}
+
 /// Override request path
 impl<'a> Session<'a> {
     pub fn ds_req_path(&self) -> &str {
         self.psession.as_downstream().req_header().uri.path()
     }
-
-    // pub fn set_us_req_uri(&mut self, uri: Uri) -> () {
-    //     match self.upstream_request.as_mut() {
-    //         Some(upstream_request) => {
-    //             upstream_request.set_uri(uri);
-    //         }
-    //         None => {}
-    //     }
-    // }
 
     pub fn flush_path_and_query(&mut self, filter: &Filter) -> () {
         let current_path_and_query = self.path_and_query();

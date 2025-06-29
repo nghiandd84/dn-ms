@@ -12,7 +12,11 @@ use crate::{
         proxy::http::session,
         source_config::{find_filter_config, find_router_config},
     },
-    gateway::state::GatewayStateStore,
+    gateway::{
+        interceptor::{execute_interceptors, Interceptor, Phase, PhaseResult},
+        interceptor_builder::{utils::build_interceptors, InterceptorBuilderRegistry},
+        state::GatewayStateStore,
+    },
 };
 
 use super::ctx::HttpGatewayCtx;
@@ -22,6 +26,7 @@ use super::load_balancer::UpStreamLoadBalaner;
 pub struct Proxy {
     gateway_state_store: Arc<GatewayStateStore>,
     upstream_load_balancers: Arc<Vec<UpStreamLoadBalaner>>,
+    insterceptors: Vec<Arc<dyn Interceptor>>,
 }
 
 impl Proxy {
@@ -31,11 +36,36 @@ impl Proxy {
         let upstreams = gateway_config.clone().upstreams;
         let upstream_load_balancers: Vec<UpStreamLoadBalaner> =
             UpStreamLoadBalaner::from_upstream_config(upstreams).await;
+        let interceptor_builder_registry = InterceptorBuilderRegistry::build();
+        let interceptors =
+            build_interceptors(gateway_config, &interceptor_builder_registry).unwrap();
+        debug!("Interceptor len {}", interceptors.len());
 
         Proxy {
             gateway_state_store,
             upstream_load_balancers: Arc::new(upstream_load_balancers),
+            insterceptors: interceptors,
         }
+    }
+
+    pub fn get_interceptors(&self, phase: Phase, filter_name: String) -> Vec<Arc<dyn Interceptor>> {
+        let r = self
+            .insterceptors
+            .iter()
+            .filter(|interceptor| {
+                let is_match_phase = interceptor.phase_mask() & phase.mask() != 0;
+                let default_filter = String::from("");
+                let interceptor_filter = interceptor.filter().as_ref().unwrap_or(&default_filter);
+                let is_match_filter = *interceptor_filter == filter_name;
+                debug!(
+                    "get_interceptors filter_name: {} is_match_phase: {} is_match_filter: {}",
+                    filter_name, is_match_phase, is_match_filter
+                );
+                is_match_phase && is_match_filter
+            })
+            .cloned()
+            .collect();
+        r
     }
 }
 
@@ -54,16 +84,24 @@ impl ProxyHttp for Proxy {
         ctx: &mut HttpGatewayCtx,
     ) -> Result<(), Box<Error>> {
         debug!("early_request_filter -----------------");
-        let request_id = ctx.request_id.as_ref().unwrap();
-        let _ = psession
-            .req_header_mut()
-            .insert_header("X-Request-Id", request_id);
-        let mut session = session::Session::build(psession, ctx);
+        // let request_id = ctx.request_id.as_ref().unwrap();
+        // let _ = psession
+        //     .req_header_mut()
+        //     .insert_header("X-Request-Id", request_id);
+
+        let mut session = session::Session::build(Phase::Init, psession, ctx);
+        // let _ = self.execute_interceptors_phase(Phase::Init).await;
+
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let filter = find_filter_config(gateway_config, session.ds_req_path()).unwrap();
-        session.flush_path_and_query(&filter);
+        let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
+        // let _ = session
+        //     .execute_interceptors(self.get_interceptors(Phase::Init, filter.name.clone()))
+        //     .await;
+        let _ = execute_interceptors(&filter_interceptors, &mut session).await;
 
+        session.flush_path_and_query(&filter);
         ctx.set_filter(filter);
 
         Ok(())
@@ -71,11 +109,14 @@ impl ProxyHttp for Proxy {
 
     async fn upstream_peer(
         &self,
-        _session: &mut Session,
+        psession: &mut Session,
         ctx: &mut HttpGatewayCtx,
     ) -> Result<Box<HttpPeer>, Box<Error>> {
         debug!("upstream_peer ------------------");
         debug!("Current Ctx {:?}", ctx);
+
+        let mut session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
+        // let _ = session.execute_interceptors_phase();
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let filter = ctx.filter.as_ref().unwrap();
@@ -98,13 +139,17 @@ impl ProxyHttp for Proxy {
 
     async fn response_filter(
         &self,
-        _session: &mut Session,
+        psession: &mut Session,
         response: &mut ResponseHeader,
-        _ctx: &mut Self::CTX,
+        ctx: &mut Self::CTX,
     ) -> Result<(), Box<Error>> {
-        if let Some(request_id) = &_ctx.request_id {
-            let _ = response.insert_header("X-Request-Id", request_id);
-        }
+        let mut session = session::Session::build(Phase::RequestFilter, psession, ctx);
+        // session.execute_interceptors_phase().await;
+        // let _ = session.execute_interceptors_phase().await;
+        // self.execute_interceptors_phase(Phase::UpstreamProxyFilter);
+        // if let Some(request_id) = &ctx.request_id {
+        //     let _ = response.insert_header("X-Request-Id", request_id);
+        // }
         Ok(())
     }
 }

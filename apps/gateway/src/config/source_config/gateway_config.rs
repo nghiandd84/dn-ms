@@ -7,7 +7,10 @@ use super::{
     router_config::RouterConfig, upstream_config::UpstreamConfig, Filter,
 };
 
-use crate::{config::source_config::InterceptorConfig, error::{Error as DnError, GatewayResult}};
+use crate::{
+    config::source_config::InterceptorConfig,
+    error::{Error as DnError, GatewayResult},
+};
 
 // super::filter::PathFilter;
 
@@ -27,7 +30,10 @@ pub struct GatewayConfig {
     pub filters: Vec<Filter>,
 }
 
-pub fn find_filter_config<'a>(gateway_config: &'a GatewayConfig, path: &'a str) -> GatewayResult<Filter> {
+pub fn find_filter_config<'a>(
+    gateway_config: &'a GatewayConfig,
+    path: &'a str,
+) -> GatewayResult<Filter> {
     let filter = gateway_config.filters.iter().find(|filter| {
         let path_filter = filter.path.as_ref().unwrap();
 
@@ -60,4 +66,23 @@ pub fn find_router_config<'a>(
     }
 
     Err(Box::new(DnError::from_str("Not found router".to_owned())))
+}
+
+pub fn find_interceptors_config<'a>(
+    gateway_config: &'a GatewayConfig,
+    filter: &'a Filter,
+) -> Vec<InterceptorConfig> {
+    let mut resutlt: Vec<InterceptorConfig> = vec![];
+    let search_filter = filter.name.clone();
+    for interceptor_config in &gateway_config.interceptors {
+        match &interceptor_config.filter {
+            Some(filter_name) => {
+                if *filter_name == search_filter && interceptor_config.enabled {
+                    resutlt.push(interceptor_config.clone());
+                }
+            }
+            _ => {}
+        }
+    }
+    resutlt
 }

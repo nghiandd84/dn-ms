@@ -67,10 +67,25 @@ gateways:
             weight: 2
     
     interceptors:
-      - name: request_id
+      - name: bakery_request_id
+        type: request_id
         enabled: true
         filter: bakery_router_filter
-      - name: rate_limiter
+      - name: auth_request_id
+        type: request_id
+        enabled: true
+        filter: auth_router_filter
+      - name: bakery_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: bakery_router_filter
+        config:
+          # 1 req per 10 second
+          capacity: 5
+          refill_rate: 2
+          refill_interval: 10
+      - name: auth_rate_limiter
+        type: rate_limiter
         enabled: true
         filter: auth_router_filter
         config:
