@@ -18,10 +18,9 @@ fn build_interceptor(
     let interceptor = match builder {
         Some(builder) => builder.build(interceptor_config.clone())?,
         None => {
-            let error_message = format!("Invalidate interceptor {}", interceptor_name.as_str());
-            let error = Error::PoisonError {
-                message: error_message,
-            };
+            // let error_message = format!("Invalidate interceptor {}", interceptor_name.clone().as_str());
+            // let error = Error::from_str(error_message.to_owned());
+            let error = Error::from_str("Invalidate interceptor");
             return Err(Box::new(error));
         }
     };

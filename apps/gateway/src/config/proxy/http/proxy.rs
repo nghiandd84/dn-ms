@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use async_trait::async_trait;
 
 use pingora::{prelude::HttpPeer, Error};
-use pingora_http::ResponseHeader;
+use pingora_http::{RequestHeader, ResponseHeader};
 use pingora_proxy::{ProxyHttp, Session};
 use tracing::debug;
 
@@ -13,7 +13,7 @@ use crate::{
         source_config::{find_filter_config, find_router_config},
     },
     gateway::{
-        interceptor::{execute_interceptors, Interceptor, Phase, PhaseResult},
+        interceptor::{execute_interceptors, Interceptor, Phase},
         interceptor_builder::{utils::build_interceptors, InterceptorBuilderRegistry},
         state::GatewayStateStore,
     },
@@ -96,10 +96,8 @@ impl ProxyHttp for Proxy {
         let gateway_config = state.gateway_config();
         let filter = find_filter_config(gateway_config, session.ds_req_path()).unwrap();
         let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
-        // let _ = session
-        //     .execute_interceptors(self.get_interceptors(Phase::Init, filter.name.clone()))
-        //     .await;
-        let _ = execute_interceptors(&filter_interceptors, &mut session).await;
+
+        execute_interceptors(&filter_interceptors, &mut session).await;
 
         session.flush_path_and_query(&filter);
         ctx.set_filter(filter);
@@ -116,7 +114,6 @@ impl ProxyHttp for Proxy {
         debug!("Current Ctx {:?}", ctx);
 
         let mut session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
-        // let _ = session.execute_interceptors_phase();
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let filter = ctx.filter.as_ref().unwrap();
@@ -140,16 +137,29 @@ impl ProxyHttp for Proxy {
     async fn response_filter(
         &self,
         psession: &mut Session,
-        response: &mut ResponseHeader,
+        upstream_response: &mut ResponseHeader,
         ctx: &mut Self::CTX,
     ) -> Result<(), Box<Error>> {
-        let mut session = session::Session::build(Phase::RequestFilter, psession, ctx);
-        // session.execute_interceptors_phase().await;
-        // let _ = session.execute_interceptors_phase().await;
-        // self.execute_interceptors_phase(Phase::UpstreamProxyFilter);
-        // if let Some(request_id) = &ctx.request_id {
-        //     let _ = response.insert_header("X-Request-Id", request_id);
-        // }
+        debug!("response_filter");
+        let mut session = session::Session::build(Phase::PostUpstreamResponse, psession, ctx);
+        session.upstream_response(upstream_response);
+        session.flush_ds_res_header().await;
+        Ok(())
+    }
+
+    async fn upstream_request_filter(
+        &self,
+        _session: &mut Session,
+        _upstream_request: &mut RequestHeader,
+        _ctx: &mut Self::CTX,
+    ) -> Result<(), pingora_core::BError>
+    where
+        Self::CTX: Send + Sync,
+    {
+        let mut session = session::Session::build(Phase::PreUpstreamRequest, _session, _ctx);
+        session.upstream_request(_upstream_request);
+        session.flush_us_req_header();
+
         Ok(())
     }
 }

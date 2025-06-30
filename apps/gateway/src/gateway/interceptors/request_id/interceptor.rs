@@ -39,6 +39,8 @@ impl Interceptor for RequestIdInterceptor {
             "Init RequestIdInterceptor with filter {}",
             self.filter.as_ref().unwrap()
         );
+        _session.set_ds_res_header("X-Request-Id".to_string(), req_id.clone());
+        _session.set_us_req_header("X-Request-Id".to_string(), req_id);
         Ok(true)
     }
 }

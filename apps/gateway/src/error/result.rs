@@ -2,11 +2,11 @@ pub type GatewayResult<T> = Result<T, Box<Error>>;
 
 #[derive(Debug)]
 pub enum Error {
-    PoisonError { message: String },
+    PoisonError { message: &'static str },
 }
 
 impl Error {
-    pub fn from_str(str: String) -> Self {
-        Error::PoisonError { message: str }
+    pub fn from_str(message: &'static str) -> Self {
+        Error::PoisonError { message }
     }
 }

@@ -43,7 +43,7 @@ pub fn find_filter_config<'a>(
         }
     });
     if filter.is_none() {
-        return Err(Box::new(DnError::from_str("Not found filter".to_owned())));
+        return Err(Box::new(DnError::from_str("Not found filter")));
     }
     let filter = filter.unwrap();
     Ok(filter.clone())
@@ -65,7 +65,7 @@ pub fn find_router_config<'a>(
         }
     }
 
-    Err(Box::new(DnError::from_str("Not found router".to_owned())))
+    Err(Box::new(DnError::from_str("Not found router")))
 }
 
 pub fn find_interceptors_config<'a>(
