@@ -31,16 +31,15 @@ pub struct Model {
     pub version: i16,
     #[sea_orm(column_type = "Text")]
     pub password: String,
+    pub is_active: bool,
     pub created_at: DateTime,
     pub updated_at: DateTime,
-    // pub roles
 }
-
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::access::Entity")]
-    Access
+    Access,
 }
 
 #[async_trait]
@@ -52,6 +51,7 @@ impl ActiveModelBehavior for ActiveModel {
         let current_time = Utc::now().naive_utc();
         self.updated_at = ActiveValue::Set(current_time);
         if insert {
+            self.is_active = ActiveValue::Set(true);
             self.created_at = ActiveValue::Set(current_time);
         }
         Ok(self)
@@ -68,10 +68,8 @@ impl Related<super::role::Entity> for Entity {
     }
 }
 
-
 impl Related<super::access::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Access.def()
     }
 }
-     

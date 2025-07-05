@@ -1377,6 +1377,7 @@ dependencies = [
  "async-std",
  "features-auth-entities",
  "sea-orm-migration",
+ "serde_json",
 ]
 
 [[package]]

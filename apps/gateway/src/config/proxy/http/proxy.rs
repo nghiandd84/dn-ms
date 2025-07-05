@@ -84,13 +84,9 @@ impl ProxyHttp for Proxy {
         ctx: &mut HttpGatewayCtx,
     ) -> Result<(), Box<Error>> {
         debug!("early_request_filter -----------------");
-        // let request_id = ctx.request_id.as_ref().unwrap();
-        // let _ = psession
-        //     .req_header_mut()
-        //     .insert_header("X-Request-Id", request_id);
+        
 
         let mut session = session::Session::build(Phase::Init, psession, ctx);
-        // let _ = self.execute_interceptors_phase(Phase::Init).await;
 
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use chrono::Utc;
-use sea_orm::{entity::prelude::*, ActiveValue, ConnectionTrait, IntoActiveModel};
+use sea_orm::{entity::prelude::*, ActiveValue, ConnectionTrait};
 use serde::Serialize;
 
 use shared_shared_macro::Dto;
@@ -10,7 +10,6 @@ use shared_shared_macro::Dto;
 #[dto(name(RoleForCreate), columns(name, description))]
 #[dto(name(RoleForUpdate), columns(name, description), option)]
 pub struct Model {
-    // #[sea_orm(primary_key)]
     #[sea_orm(primary_key)]
     pub id: Uuid,
     #[sea_orm(column_type = "String(StringLen::N(250))", unique)]
@@ -23,7 +22,6 @@ pub struct Model {
 
 #[derive(Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    
     #[sea_orm(has_many = "super::access::Entity")]
     Access,
 }
@@ -48,7 +46,6 @@ impl ActiveModelBehavior for ActiveModel {
         Ok(self)
     }
 }
-
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {

@@ -47,11 +47,11 @@ pub trait StartApp {
             );
 
             db.connect().await;
-
+            let default_port = 6101;
             let port = env::var(format!("{}_PORT", app_config.app_key.clone()))
-                .unwrap()
+                .unwrap_or_else(|_| default_port.to_string())
                 .parse::<u16>()
-                .unwrap();
+                .unwrap_or_else(|_| default_port);
 
             debug!(
                 "{}",
@@ -70,7 +70,6 @@ pub trait StartApp {
             // let state = &app_state;
 
             let routes_all = Router::new()
-
                 .route("/healthchecker", get(health_checker_handler))
                 // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
