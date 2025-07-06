@@ -236,11 +236,15 @@ impl Migration {
                     )
                     .col(
                         ColumnDef::new(scope::Column::Name)
-                            .string()
+                            .string_len(128)
                             .not_null()
                             .unique_key(),
                     )
-                    .col(ColumnDef::new(scope::Column::Description).string().null())
+                    .col(
+                        ColumnDef::new(scope::Column::Description)
+                            .string_len(512)
+                            .null(),
+                    )
                     .col(
                         ColumnDef::new(scope::Column::CreatedAt)
                             .timestamp()
