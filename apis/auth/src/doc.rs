@@ -11,6 +11,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
+
+        crate::routes::client::create_client,
+        crate::routes::client::delete_client,
+        crate::routes::client::filter_clients,
+        crate::routes::client::get_client,
+        crate::routes::client::update_client,
         crate::routes::profile::change_profile,
         crate::routes::register::register,
         crate::routes::role::create_role,

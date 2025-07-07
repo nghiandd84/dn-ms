@@ -27,28 +27,29 @@ impl Migration {
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(client::Column::ClientId)
-                            .string()
-                            .not_null()
-                            .unique_key(),
-                    )
-                    .col(
                         ColumnDef::new(client::Column::ClientSecret)
                             .string()
                             .not_null(),
                     )
                     .col(
+                        ColumnDef::new(client::Column::Name)
+                            .string_len(128)
+                            .not_null()
+                            .unique_key(),
+                    )
+                    .col(
+                        ColumnDef::new(client::Column::Description)
+                            .string_len(512)
+                            .null(),
+                    )
+                    .col(
                         ColumnDef::new(client::Column::RedirectUris)
-                            .json_binary()
+                            .array(ColumnType::String(StringLen::N(512)))
                             .not_null(),
                     )
                     .col(
                         ColumnDef::new(client::Column::AllowedGrants)
-                            .json_binary()
-                            .default(Expr::value(serde_json::json!([
-                                "authorization_code",
-                                "refresh_token"
-                            ])))
+                            .array(ColumnType::String(StringLen::N(512)))
                             .not_null(),
                     )
                     .col(

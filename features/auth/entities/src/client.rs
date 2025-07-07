@@ -7,20 +7,25 @@ use shared_shared_macro::Dto;
 
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "clients")]
-#[dto(name(ClientForCreate), columns(client_id, client_secret, description))]
+#[dto(
+    name(ClientForCreate),
+    columns(client_secret, name, description, redirect_uris, allowed_grants)
+)]
+#[dto(
+    name(ClientForUpdate),
+    columns(client_secret, name, description, redirect_uris, allowed_grants),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
-    pub client_id: Uuid,
     #[sea_orm(column_type = "String(StringLen::N(256))")]
     pub client_secret: String,
     #[sea_orm(column_type = "String(StringLen::N(250))")]
     pub name: String,
     #[sea_orm(column_type = "String(StringLen::N(250))", nullable)]
     pub description: String,
-    #[sea_orm(column_type = "JsonBinary")]
     pub redirect_uris: Vec<String>,
-    #[sea_orm(column_type = "JsonBinary")]
     pub allowed_grants: Vec<String>,
     pub created_at: DateTime,
     pub updated_at: DateTime,

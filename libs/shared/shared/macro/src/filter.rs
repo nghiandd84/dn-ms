@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-const FILTER_TYPES: [&str; 11] = [
-    "string", "bool", "json", "i32", "i8", "u32", "u64", "f32", "f64", "uuid", "datetime",
+const FILTER_TYPES: [&str; 12] = [
+    "string", "bool", "json", "i32", "i8", "u32", "u64", "f32", "f64", "uuid", "datetime", "vecstring"
 ];
 
 pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
@@ -51,6 +51,8 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
 
     let builder_fields = fields.clone().into_iter().map(|(name, ty)| {
         let ty_str = ty.to_token_stream().to_string();
+        let ty_str = ty_str.replace('<', "").replace('>', "");
+        let ty_str = ty_str.replace(' ', "");
         let ty_str_lower = ty_str.to_lowercase();
         if FILTER_TYPES.iter().find(|&&x| x == ty_str_lower).is_none() {
             let param_filter_name = format_ident!("{}FilterParams", ty_str);

@@ -52,6 +52,7 @@ pub enum FilterEnum {
     F64(FilterParam<f64>),
     Uuid(FilterParam<Uuid>),
     DateTime(FilterParam<DateTime>),
+    VecString(FilterParam<Vec<String>>),
 }
 
 impl FilterEnum {
@@ -68,6 +69,7 @@ impl FilterEnum {
             FilterEnum::F32(param) => param.name.clone(),
             FilterEnum::F64(param) => param.name.clone(),
             FilterEnum::DateTime(param) => param.name.clone(),
+            FilterEnum::VecString(param) => param.name.clone(),
         }
     }
 
@@ -108,6 +110,10 @@ impl FilterEnum {
             FilterEnum::DateTime(ref mut param) => {
                 param.name = prefix.clone();
             }
+            FilterEnum::VecString(ref mut param) => {
+                param.name = prefix.clone();
+            }
+            
         }
     }
 }
@@ -119,3 +125,5 @@ pub struct FilterParam<T> {
     pub raw_value: String,
     pub operator: FilterOperator,
 }
+
+pub type  VecString = Vec<String>;

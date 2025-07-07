@@ -1,3 +1,4 @@
+pub mod client;
 pub mod login;
 pub mod register;
 pub mod profile;

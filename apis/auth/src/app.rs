@@ -13,6 +13,7 @@ use shared_shared_config::db::Database;
 use crate::{
     doc::ApiDoc,
     routes::{
+        client::routes as client_routes,
         scope::routes as scope_routes,
         login::routes as login_routes, profile::routes as profile_routes,
         register::routes as register_routes, role::routes as role_routes,
@@ -42,6 +43,7 @@ impl<'a> StartApp for MyApp<'a> {
     fn routes(&self, app_state: &AppState) -> Router {
         let all_routes = Router::new()
             .merge(scope_routes(app_state))
+            .merge(client_routes(app_state))
             .merge(login_routes(app_state))
             .merge(register_routes(app_state))
             .merge(profile_routes(app_state))

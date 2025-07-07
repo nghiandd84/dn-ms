@@ -24,6 +24,33 @@ where
         .map_err(serde::de::Error::custom)
 }
 
+// VecString
+pub fn default_none_vecstring() -> Option<FilterParam<Vec<String>>> {
+    None
+}
+
+pub fn deserialize_filter_from_vecstring<'de, D>(
+    deserializer: D,
+) -> Result<Option<FilterParam<Vec<String>>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+
+    let r = parse_filter_param::<String, _>(&value, "".to_owned(), |s| {
+        format!("\"{}\"", s.to_string())
+    })
+    .unwrap()
+    .unwrap();
+    let result: FilterParam<Vec<String>> = FilterParam {
+        name: r.name,
+        operator: r.operator,
+        value: Some(value.split(',').map(|s| s.trim().to_string()).collect()),
+        raw_value: r.raw_value,
+    };
+    Ok(Some(result))
+}
+
 // I32
 pub fn default_none_i32() -> Option<FilterParam<i32>> {
     None
