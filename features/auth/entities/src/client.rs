@@ -25,7 +25,9 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "String(StringLen::N(250))", nullable)]
     pub description: String,
+    #[sea_orm(column_type = "String(StringLen::N(512))", array)]
     pub redirect_uris: Vec<String>,
+    #[sea_orm(column_type = "String(StringLen::N(512))", array)]
     pub allowed_grants: Vec<String>,
     pub created_at: DateTime,
     pub updated_at: DateTime,

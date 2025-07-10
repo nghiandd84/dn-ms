@@ -1,12 +1,17 @@
 
+### Variables
+@baseUrl = http://localhost:6101
+@userId = 533e9294-76cf-41eb-9e2a-19064f7875e2
+@clientId = 66e18150-9bdd-48d0-8eae-c364a81f45aa
+
 ### healthchecker
-GET http://localhost:5001/healthchecker
+GET {{baseUrl}}/healthchecker
 
 ### Swagger UI
-GET http://localhost:5001/swagger-ui/
+GET {{baseUrl}}/swagger-ui/
 
 ### Login
-POST http://localhost:5001/login
+POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
@@ -16,7 +21,7 @@ Content-Type: application/json
 
 
 ### Register
-POST http://localhost:5001/register
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
@@ -24,7 +29,7 @@ Content-Type: application/json
 }
 
 ### Change Profile
-POST http://localhost:5001/profile/af6fea24-65e0-4940-a7d9-4f5b1d1d5ab9
+POST {{baseUrl}}/profile/af6fea24-65e0-4940-a7d9-4f5b1d1d5ab9
 Content-Type: application/json
 
 {
@@ -35,7 +40,7 @@ Content-Type: application/json
 
 
 ### Register 
-POST http://localhost:5001/register
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
@@ -46,34 +51,49 @@ Content-Type: application/json
 }
 
 ### Delete User
-DELETE http://localhost:5001/users/53af92fc-ba07-45dc-949e-60ae55316e71
+DELETE {{baseUrl}}/users/53af92fc-ba07-45dc-949e-60ae55316e71
 Content-Type: application/json
 
 ### Get User
-GET http://localhost:5001/users/533e9294-76cf-41eb-9e2a-19064f7875e2
+GET {{baseUrl}}/users/533e9294-76cf-41eb-9e2a-19064f7875e2
 Content-Type: application/json
 
 ### Finds User
-GET http://localhost:5001/users?page_size=1&page=4&first_name=li|nghia_like&last_name=eq|nghia_equal&age=lte|12&email=eq|nghia@test.com&id=eq|4df3f7dd-e618-4254-9330-f1d9aa65f129
+GET {{baseUrl}}/users?page_size=1&page=4&first_name=li|nghia_like&last_name=eq|nghia_equal&age=lte|12&email=eq|nghia@test.com&id=eq|4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json
 
 ### Finds User
-GET http://localhost:5001/users?page_size=10&page=1&&order_name=first_name&order_direction=-1
+GET {{baseUrl}}/users?page_size=10&page=1&&order_name=first_name&order_direction=-1
 Content-Type: application/json
 
 ### Finds User in id array
-GET http://localhost:5001/users?page_size=10&page=1&id=in|c8b35d43-a7aa-4aa7-bf7d-011ab2c76461,4df3f7dd-e618-4254-9330-f1d9aa65f129
+GET {{baseUrl}}/users?page_size=10&page=1&id=in|c8b35d43-a7aa-4aa7-bf7d-011ab2c76461,4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json
 
 ### Get Test Users 
-GET http://localhost:5001/test_users
+GET {{baseUrl}}/test_users
 Content-Type: application/json
 
 ### Get All Roles
-GET http://localhost:5001/roles
+GET {{baseUrl}}/roles
 Content-Type: application/json
 
 
 ### Logout
-POST http://localhost:5001/logout
+POST {{baseUrl}}/logout
+Content-Type: application/json
+
+
+### --------- CLIENT
+
+### Get Client
+GET {{baseUrl}}/clients/{{clientId}}
+Content-Type: application/json
+
+### Filter Client
+GET {{baseUrl}}/clients?client_secret=li|sec&allowed_grants=in|type2,type3
+Content-Type: application/json
+
+### Filter Client
+GET {{baseUrl}}/clients?sec&allowed_grants=in|auth_code
 Content-Type: application/json

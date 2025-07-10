@@ -163,6 +163,40 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                         }
                         _ => Condition::all(),
                     },
+                    FilterEnum::VecString(filter) => match filter.operator {
+                        // ONLY for postgres, other database may not support array
+                        FilterOperator::In => {
+                            let values: Vec<String> = filter
+                                    .raw_value
+                                    .split(",")
+                                    .map(|s| s.to_string())
+                                    .collect();
+                            let epxr = Expr::cust_with_exprs(
+                                "$1  && $2 ::varchar[]",
+                                vec![
+                                    Expr::col(column).into(),
+                                    Expr::value(values).into(),
+                                ],
+                            );
+                            Condition::any().add(epxr)
+                        },
+                        FilterOperator::NotIn => {
+                            let values: Vec<String> = filter
+                                    .raw_value
+                                    .split(",")
+                                    .map(|s| s.to_string())
+                                    .collect();
+                            let epxr = Expr::cust_with_exprs(
+                                "NOT ($1  @> $2 ::varchar[])",
+                                vec![
+                                    Expr::col(column).into(),
+                                    Expr::value(values).into(),
+                                ],
+                            );
+                            Condition::any().add(epxr)
+                        }
+                        _ => Condition::all(),
+                    },
                     _ => Condition::all(),
                 }
             }
@@ -208,7 +242,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             ConnectionTrait, DbConn, DbErr,
             entity::ColumnTrait, Condition, EntityTrait, Order as SeaOrder, PaginatorTrait, QueryFilter,
             QueryOrder, Select, QuerySelect, QueryTrait,
-            sea_query::{Alias, SelectStatement},
+            sea_query::{Alias, SelectStatement, SimpleExpr, Expr},
             prelude::*
         };
         use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, order::OrderDirection};
