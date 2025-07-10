@@ -91,9 +91,9 @@ GET {{baseUrl}}/clients/{{clientId}}
 Content-Type: application/json
 
 ### Filter Client
-GET {{baseUrl}}/clients?client_secret=li|sec&allowed_grants=in|type2,type3
+GET {{baseUrl}}/clients?client_secret=li|sec&allowed_grants=in|type2,type12
 Content-Type: application/json
 
 ### Filter Client
-GET {{baseUrl}}/clients?sec&allowed_grants=in|auth_code
+GET {{baseUrl}}/clients?sec&allowed_grants=nin|auth_code1
 Content-Type: application/json
