@@ -10,6 +10,7 @@ name = "features_auth_model"
 path = "src/lib.rs"
 
 [dependencies]
+chrono = { workspace = true }
 serde_json = { workspace = true }
 validator = { version = "0.20.0", features = ["derive"] }
 utoipa = { workspace = true, features = ["chrono", "axum_extras"] }

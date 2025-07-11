@@ -104,8 +104,7 @@ impl Migration {
                     )
                     .col(
                         ColumnDef::new(auth_code::Column::Scopes)
-                            .json_binary()
-                            .default(Expr::value(serde_json::json!([])))
+                            .array(ColumnType::String(StringLen::N(128)))
                             .not_null(),
                     )
                     .col(

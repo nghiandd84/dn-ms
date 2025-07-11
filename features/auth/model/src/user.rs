@@ -12,11 +12,17 @@ use shared_shared_macro::{ParamFilter, Response};
 pub struct UserForCreateRequest {
     #[validate(length(
         min = 6,
-        max = 16,
+        max = 256,
         code = "email_length",
-        message = "the length of email must be between 6 and 16"
+        message = "the length of email must be between 6 and 256"
     ))]
     pub email: String,
+    #[validate(length(
+        min = 10,
+        max = 128,
+        code = "password_length",
+        message = "the length of email must be between 10 and 128"
+    ))]
     pub password: String,
     #[validate(length(
         min = 4,
@@ -76,3 +82,4 @@ impl Into<UserData> for ModelOptionDto {
         }
     }
 }
+
