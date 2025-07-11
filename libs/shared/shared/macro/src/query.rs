@@ -174,7 +174,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                             let epxr = Expr::cust_with_exprs(
                                 "$1  && $2 ::varchar[]",
                                 vec![
-                                    Expr::col(column).into(),
+                                    Expr::col((Entity, column)).into(),
                                     Expr::value(values).into(),
                                 ],
                             );
@@ -189,7 +189,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                             let epxr = Expr::cust_with_exprs(
                                 "NOT ($1  @> $2 ::varchar[])",
                                 vec![
-                                    Expr::col(column).into(),
+                                    Expr::col((Entity, column)).into(),
                                     Expr::value(values).into(),
                                 ],
                             );

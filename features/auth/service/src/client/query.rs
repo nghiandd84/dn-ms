@@ -20,15 +20,18 @@ impl ClientQueryManager {
         let mut condition = Condition::all();
         for filter_enum in filters {
             if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                // let values: Vec<String> = vec!["type2".to_string(), "type3".to_string()];
-                // let y = Expr::cust_with_exprs(
-                //     "$1 && $2",
-                //     vec![
-                //         // Expr::col(Column::AllowedGrants).into(),
-                //         Expr::col(column).into(),
-                //         Expr::value(values).into(),
-                //     ],
-                // );
+                /*
+                let values: Vec<String> = vec!["type2".to_string(), "type3".to_string()];
+                let y = Expr::cust_with_exprs(
+                    "$1 && $2",
+                    vec![
+                        // Expr::col(Column::AllowedGrants).into(),
+                        Expr::col((Entity,column)).into(),
+                        Expr::value(values).into(),
+                    ],
+                );
+                condition = condition.add(y);
+                */
                 condition = condition.add(Self::filter_condition_column(column, filter_enum));
             }
         }
