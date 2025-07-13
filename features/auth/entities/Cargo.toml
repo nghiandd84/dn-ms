@@ -17,6 +17,7 @@ chrono = { workspace = true }
 async-trait = { workspace = true }
 sea-orm = { workspace = true , features = ["sqlx-postgres", "runtime-actix-native-tls"]}
 
+shared-shared-auth = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-data-core = { workspace = true }
 

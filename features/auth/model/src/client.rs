@@ -90,12 +90,12 @@ use shared_shared_data_core::{
 };
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct ClientData {
+    pub client_secret: Option<String>,
+    pub allowed_grants: Option<VecString>,
     id: Option<Uuid>,
-    client_secret: Option<String>,
     name: Option<String>,
     description: Option<String>,
     redirect_uris: Option<VecString>,
-    allowed_grants: Option<VecString>,
 }
 
 impl Into<ClientData> for ModelOptionDto {

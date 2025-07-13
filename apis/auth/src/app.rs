@@ -17,6 +17,7 @@ use crate::{
         login::routes as login_routes, profile::routes as profile_routes,
         register::routes as register_routes, role::routes as role_routes,
         scope::routes as scope_routes, user::routes as user_routes,
+        token::routes as token_routes,
     },
 };
 
@@ -48,6 +49,7 @@ impl<'a> StartApp for MyApp<'a> {
             .merge(register_routes(app_state))
             .merge(role_routes(app_state))
             .merge(scope_routes(app_state))
+            .merge(token_routes(app_state))
             .merge(user_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes

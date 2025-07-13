@@ -1,0 +1,17 @@
+[package]
+name = "shared-shared-auth"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_auth"
+path = "src/lib.rs"
+
+[dependencies]
+jsonwebtoken = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+utoipa = { workspace = true }
+uuid = { workspace = true }

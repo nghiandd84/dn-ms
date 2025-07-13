@@ -3,4 +3,5 @@ pub mod client;
 pub mod profile;
 pub mod role;
 pub mod scope;
+pub mod token;
 pub mod user;

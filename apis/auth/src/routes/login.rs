@@ -20,8 +20,7 @@ async fn api_login(
 ) -> Result<ResponseJson<SuccessData>> {
     if payload.username == "demo2" {
         return Err(AppError::EntityNotFound {
-            entity: "User",
-            id: 1,
+            entity: "User".to_string()
         });
     }
     if payload.username == "demo3" {

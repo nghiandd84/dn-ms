@@ -1,8 +1,9 @@
 pub mod auth_code;
 pub mod client;
 pub mod login;
-pub mod register;
 pub mod profile;
-pub mod user;
+pub mod register;
 pub mod role;
 pub mod scope;
+pub mod token;
+pub mod user;

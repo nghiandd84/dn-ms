@@ -6,8 +6,9 @@ use serde::Serialize;
 #[derive(Debug)]
 pub enum AppError {
     Auth(AuthError),
+    
     DbErr(sea_orm::DbErr),
-    EntityNotFound { entity: &'static str, id: i64 },
+    EntityNotFound { entity: String },
     JsonRejection,
     Unknown,
     Validation(validator::ValidationErrors),
@@ -53,9 +54,11 @@ impl AppError {
                 ),
             },
             JsonRejection => (StatusCode::BAD_REQUEST, ClientError::JsonRejection),
-            EntityNotFound { entity, id } => (
+            EntityNotFound { entity } => (
                 StatusCode::FORBIDDEN,
-                ClientError::EntityNotFound { entity, id: *id },
+                ClientError::EntityNotFound {
+                    entity: entity.clone(),
+                },
             ),
             Validation(err) => (
                 StatusCode::BAD_REQUEST,
@@ -70,7 +73,7 @@ impl AppError {
 #[serde(tag = "message", content = "details", rename_all = "snake_case")]
 pub enum ClientError {
     AuthError(AuthError),
-    EntityNotFound { entity: &'static str, id: i64 },
+    EntityNotFound { entity: String },
     JsonRejection,
     NotFound,
     ServerError,

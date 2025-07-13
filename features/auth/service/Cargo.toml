@@ -10,15 +10,16 @@ name = "features_auth_service"
 path = "src/lib.rs"
 
 [dependencies]
-serde_json = { workspace = true }
 sea-orm = { workspace = true, features = ["with-json"] }
+serde_json = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
-shared-shared-data-core = { workspace = true }
+shared-shared-auth = { workspace = true }
 shared-shared-data-app = { workspace = true }
-shared-shared-macro-rule = { workspace = true }
+shared-shared-data-core = { workspace = true }
 shared-shared-macro = { workspace = true }
+shared-shared-macro-rule = { workspace = true }
 
 features-auth-entities = { workspace = true }
 features-auth-model = { workspace = true }

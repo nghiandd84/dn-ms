@@ -170,8 +170,7 @@ impl Migration {
                     .col(ColumnDef::new(token::Column::ClientId).uuid().not_null())
                     .col(
                         ColumnDef::new(token::Column::Scopes)
-                            .json_binary()
-                            .default(Expr::value(serde_json::json!([])))
+                            .array(ColumnType::String(StringLen::N(128)))
                             .not_null(),
                     )
                     .col(

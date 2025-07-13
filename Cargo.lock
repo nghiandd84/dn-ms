@@ -162,6 +162,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shared-shared-app",
+ "shared-shared-auth",
  "shared-shared-config",
  "shared-shared-data-app",
  "shared-shared-data-core",
@@ -1366,6 +1367,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "shared-shared-auth",
  "shared-shared-data-core",
  "shared-shared-macro",
  "uuid",
@@ -1405,6 +1407,7 @@ dependencies = [
  "features-auth-model",
  "sea-orm",
  "serde_json",
+ "shared-shared-auth",
  "shared-shared-data-app",
  "shared-shared-data-core",
  "shared-shared-macro",
@@ -4068,6 +4071,17 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "utoipa",
+ "uuid",
+]
+
+[[package]]
+name = "shared-shared-auth"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "jsonwebtoken",
+ "serde",
  "utoipa",
  "uuid",
 ]

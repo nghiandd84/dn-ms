@@ -46,11 +46,11 @@ use shared_shared_data_core::{
 };
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct AuthCodeData {
+    pub user_id: Option<Uuid>,
+    pub scopes: Option<VecString>,
+    pub client_id: Option<Uuid>,
     id: Option<Uuid>,
     code: Option<String>,
-    user_id: Option<Uuid>,
-    client_id: Option<Uuid>,
-    scopes: Option<VecString>,
     redirect_uri: Option<String>,
     expires_at: Option<DateTime>,
     created_at: Option<DateTime>,
