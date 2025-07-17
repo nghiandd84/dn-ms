@@ -2,7 +2,10 @@
 ### Variables
 @baseUrl = http://localhost:6101
 @userId = 533e9294-76cf-41eb-9e2a-19064f7875e2
-@clientId = 66e18150-9bdd-48d0-8eae-c364a81f45aa
+@clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
+@authCode = pH96AUp7XqXTpl7qEMN0f5d82448QqFfdgO4dC97gXjeLhthv7IgqQZvXBNNkW5n
+@AccessToken = 
+@RefreshToken = 
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -97,3 +100,31 @@ Content-Type: application/json
 ### Filter Client
 GET {{baseUrl}}/clients?sec&allowed_grants=nin|auth_code
 Content-Type: application/json
+
+### TOKEN
+
+### Create new token
+# @name tokenRequest
+POST {{baseUrl}}/oauth/token
+Content-Type: application/json
+
+{   
+    "client_id": "{{clientId}}",
+    "code": "{{authCode}}",
+    "grant_type": "authorization_code"
+}
+
+@AccessToken = {{tokenRequest.response.body.data.access_token}}
+@RefreshToken = {{tokenRequest.response.body.data.refresh_token}}
+
+
+### Create new token from refresh token
+POST {{baseUrl}}/oauth/token
+Content-Type: application/json
+
+{   
+    "client_id": "{{clientId}}",
+    "code": "{{RefreshToken}}",
+    "grant_type": "refresh_token"
+}
+

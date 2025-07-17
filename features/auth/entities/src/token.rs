@@ -12,6 +12,11 @@ use shared_shared_macro::Dto;
     name(TokenForCreate),
     columns(access_token, refresh_token, user_id, client_id, scopes, code)
 )]
+#[dto(
+    name(TokenForUpdate),
+    columns(access_token, refresh_token),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,

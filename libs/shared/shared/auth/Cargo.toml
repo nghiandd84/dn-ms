@@ -15,3 +15,6 @@ serde = { workspace = true }
 chrono = { workspace = true }
 utoipa = { workspace = true }
 uuid = { workspace = true }
+tracing = { workspace = true }
+
+shared-shared-data-auth = { workspace = true }

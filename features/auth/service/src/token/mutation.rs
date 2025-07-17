@@ -5,7 +5,7 @@ use uuid::Uuid;
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::token::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, TokenForCreateDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, TokenForCreateDto, TokenForUpdateDto,
 };
 
 use crate::token::util::assign;
@@ -25,6 +25,15 @@ impl TokenMutation {
         debug!("Create token with data: {:?}", data);
         data.code = None; // Clear code as it is not needed in the token
         TokenMutationManager::create_uuid(db, data.into())
+    }
+
+    pub fn update<'a>(
+        db: &'a DbConn,
+        id: Uuid,
+        data: TokenForUpdateDto,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        debug!("Update scope {:?} data {:?}", id, data);
+        TokenMutationManager::update_by_id_uuid(db, id, data.into())
     }
 
     pub fn delete<'a>(

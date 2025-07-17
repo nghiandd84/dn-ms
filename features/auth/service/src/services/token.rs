@@ -1,14 +1,27 @@
-use features_auth_entities::token::TokenForCreateDto;
+use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::token::{GrantType, TokenForCreateRequest};
 use sea_orm::DbConn;
+use serde_json::de;
 use shared_shared_auth::{
+    claim::Access,
     data::AuthorizationCodeData,
-    token::{create_access_token, create_authorization_data},
+    token::{
+        create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
+        REFRESH_TOKEN_EXPIRATION, TOKEN_EXPIRATION, TOKEN_TYPE,
+    },
 };
 use shared_shared_data_app::{error::AppError, result::Result};
+use shared_shared_data_auth::error::TokenError;
 use tracing::{debug, error};
+use uuid::Uuid;
 
-use crate::{auth_code::AuthCodeQuery, client::ClientQuery, token::TokenMutation};
+use crate::{
+    auth_code::AuthCodeQuery,
+    client::ClientQuery,
+    scope,
+    token::{TokenMutation, TokenQuery},
+    user::UserQuery,
+};
 
 pub struct TokenService;
 
@@ -56,39 +69,110 @@ impl TokenService {
                 let client_secret = client.client_secret.unwrap_or_default();
                 let user_id = auth_code.user_id.unwrap();
                 debug!("AuthCode found: {:?}", auth_code);
-                let authorization_code_data =
-                    create_authorization_data(user_id, &client_secret, vec![], scopes)
-                        .map_err(|_| AppError::Unknown)?;
+                let authorization_code_data = create_new_token_authorization_data(
+                    db,
+                    user_id,
+                    client_id,
+                    &client_secret,
+                    vec![],
+                    scopes,
+                )
+                .await?;
+
                 authorization_data = authorization_code_data;
-                debug!("Access token created successfully");
+                debug!("Access token is created successfully");
             }
-            GrantType::RefreshToken => {}
+            GrantType::RefreshToken => {
+                debug!("RefreshToken grant type: {:?}", grant_type);
+                let old_refresh_token = token_request.code.clone().unwrap_or_default();
+                let client_secret = client.client_secret.unwrap_or_default();
+                let authorization_code_data =
+                    create_refresh_token_authorization_data(db, &old_refresh_token, &client_secret)
+                        .await?;
+                authorization_data = authorization_code_data;
+                debug!("Refresh token is created successfully");
+            }
             _ => {
                 debug!("No auth_code needed for grant type: {:?}", grant_type);
-            } /*
-              GrantType::RefreshToken => {
-                  token_dto.refresh_token = token_request.code; // Assuming code is used as refresh_token
-                  token_dto.client_id = token_request.client_id;
-                  token_dto.grant_type = Some(grant_type);
-              }
-              GrantType::ClientCredentials => {
-                  // Handle client credentials grant type if needed
-                  token_dto.client_id = token_request.client_id;
-                  token_dto.grant_type = Some(grant_type);
-              }
-               */
+            }
         }
-
-        let mut dto: TokenForCreateDto = TokenForCreateDto::default();
-        let data = authorization_data.clone();
-        dto.user_id = data.user_id;
-        dto.client_id = client_id;
-        dto.access_token = data.access_token;
-        dto.refresh_token = data.refresh_token.unwrap();
-        dto.scopes = data.scopes.unwrap_or_default();
-
-        TokenMutation::create(db, dto).await?;
 
         Ok(authorization_data)
     }
+}
+
+pub async fn create_new_token_authorization_data<'a>(
+    db: &'a DbConn,
+    user_id: Uuid,
+    client_id: Uuid,
+    client_secret: &str,
+    accesses: Vec<Access>,
+    scopes: Vec<String>,
+) -> Result<AuthorizationCodeData> {
+    let access_token = create_access_token(user_id, client_secret, accesses)
+        .map_err(|error| AppError::Token(error))?;
+
+    let mut dto: TokenForCreateDto = TokenForCreateDto::default();
+
+    dto.user_id = user_id;
+    dto.client_id = client_id;
+    dto.access_token = access_token.clone();
+    dto.scopes = scopes.clone();
+    let token_id = TokenMutation::create(db, dto).await?;
+    let refresh_token = create_refresh_token(user_id, client_secret, token_id)
+        .map_err(|error| AppError::Token(error))?;
+
+    let token_for_update = TokenForUpdateDto {
+        access_token: None,
+        refresh_token: Some(refresh_token.clone()),
+    };
+    TokenMutation::update(db, token_id, token_for_update).await?;
+
+    Ok(AuthorizationCodeData {
+        access_token,
+        token_type: TOKEN_TYPE.to_string(),
+        expires_in: TOKEN_EXPIRATION,
+        refresh_token: Some(refresh_token),
+        refresh_expires_in: Some(REFRESH_TOKEN_EXPIRATION),
+        scopes: Some(scopes), // Optional scope can be added if needed
+        user_id,
+    })
+}
+
+pub async fn create_refresh_token_authorization_data<'a>(
+    db: &'a DbConn,
+    old_refresh_token: &str,
+    client_secret: &str,
+) -> Result<AuthorizationCodeData> {
+    debug!("refresh token: {}", old_refresh_token);
+    debug!("Client secret: {}", client_secret);
+
+    let refresh_data = decode_refresh_token(old_refresh_token, client_secret).unwrap();
+    debug!("Decoded refresh_data: {:?}", refresh_data);
+    let user_id = refresh_data.user_id;
+    let token_id = refresh_data.token_id;
+    let user = UserQuery::get(db, user_id).await?;
+
+    debug!("user data {:?}", user);
+
+    // TODO get access from user
+    let access_token = create_access_token(user_id, client_secret, vec![])
+        .map_err(|error| AppError::Token(error))?;
+    let refresh_token = create_refresh_token(user_id, client_secret, token_id)
+        .map_err(|error| AppError::Token(error))?;
+    let token_for_update = TokenForUpdateDto {
+        access_token: Some(access_token.clone()),
+        refresh_token: Some(refresh_token.clone()),
+    };
+    TokenMutation::update(db, token_id, token_for_update).await?;
+
+    Ok(AuthorizationCodeData {
+        access_token,
+        token_type: TOKEN_TYPE.to_string(),
+        expires_in: TOKEN_EXPIRATION,
+        refresh_token: Some(refresh_token),
+        refresh_expires_in: Some(REFRESH_TOKEN_EXPIRATION),
+        scopes: None,
+        user_id: refresh_data.user_id,
+    })
 }

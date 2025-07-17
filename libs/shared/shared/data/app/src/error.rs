@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
 use axum::{http::StatusCode, response::IntoResponse};
+
 use serde::Serialize;
+use shared_shared_data_auth::error::TokenError;
 
 #[derive(Debug)]
 pub enum AppError {
     Auth(AuthError),
-    
+    Token(TokenError),
     DbErr(sea_orm::DbErr),
     EntityNotFound { entity: String },
     JsonRejection,

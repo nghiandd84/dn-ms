@@ -5,6 +5,7 @@ pub enum TokenError {
     InvalidToken,
     ExpiredToken,
     UnauthorizedAccess,
+    CanNotCreateToken,
 }
 
 impl Display for TokenError {
@@ -13,6 +14,7 @@ impl Display for TokenError {
             TokenError::InvalidToken => write!(f, "The provided token is invalid."),
             TokenError::ExpiredToken => write!(f, "The token has expired."),
             TokenError::UnauthorizedAccess => write!(f, "Unauthorized access attempt."),
+            TokenError::CanNotCreateToken => write!(f, "Can not create token."),
         }
     }
 }

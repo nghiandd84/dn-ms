@@ -1,0 +1,12 @@
+[package]
+name = "shared-shared-data-auth"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_data_auth"
+path = "src/lib.rs"
+
+[dependencies]

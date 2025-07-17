@@ -22,6 +22,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 utoipa = { workspace = true, features = ["uuid"] }
 sea-orm = { workspace = true }
+
 shared-shared-data-core = { workspace = true }
+shared-shared-data-auth = { workspace = true }
 
 

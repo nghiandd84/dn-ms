@@ -1409,6 +1409,7 @@ dependencies = [
  "serde_json",
  "shared-shared-auth",
  "shared-shared-data-app",
+ "shared-shared-data-auth",
  "shared-shared-data-core",
  "shared-shared-macro",
  "shared-shared-macro-rule",
@@ -4082,6 +4083,8 @@ dependencies = [
  "chrono",
  "jsonwebtoken",
  "serde",
+ "shared-shared-data-auth",
+ "tracing",
  "utoipa",
  "uuid",
 ]
@@ -4106,6 +4109,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
+ "shared-shared-data-auth",
  "shared-shared-data-core",
  "shared-shared-macro",
  "tracing",
@@ -4113,6 +4117,10 @@ dependencies = [
  "uuid",
  "validator",
 ]
+
+[[package]]
+name = "shared-shared-data-auth"
+version = "0.0.1"
 
 [[package]]
 name = "shared-shared-data-core"

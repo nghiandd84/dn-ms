@@ -1,14 +1,13 @@
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use tracing::debug;
 use uuid::Uuid;
 
-use crate::{
-    claim::{Access, Claims, ClaimsSubject},
-    data::AuthorizationCodeData,
-    error::TokenError,
-};
+use crate::claim::{Access, AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct};
 
-const TOKEN_TYPE: &str = "Bearer";
+use shared_shared_data_auth::error::TokenError;
+
+pub const TOKEN_TYPE: &str = "Bearer";
 pub const TOKEN_EXPIRATION: i64 = 7200; // 2 hours in seconds
 pub const REFRESH_TOKEN_EXPIRATION: i64 = 2592000; // 30 days in seconds
 
@@ -21,10 +20,7 @@ pub fn create_access_token(
 
     let expiration = now + Duration::seconds(TOKEN_EXPIRATION);
     let claims = Claims {
-        sub: ClaimsSubject {
-            user_id: user_id,
-            accesses: Some(accesses),
-        },
+        dn_data: ClaimSubject::AccessToken(AccessTokenStruct { user_id, accesses }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
     };
@@ -36,24 +32,24 @@ pub fn create_access_token(
         &claims,
         &EncodingKey::from_secret(client_secret.as_ref()),
     )
-    .map_err(|_| TokenError::InvalidToken)?;
-
-    // This function would typically create a JWT or similar token
-    // For demonstration, we return a dummy token
+    .map_err(|error| {
+        debug!("Failed to create token: {}", error);
+        TokenError::CanNotCreateToken
+    })?;
     Ok(access_token)
 }
 
-pub fn create_refresh_token(user_id: Uuid, client_secret: &str) -> Result<String, TokenError> {
+pub fn create_refresh_token(
+    user_id: Uuid,
+    client_secret: &str,
+    token_id: Uuid,
+) -> Result<String, TokenError> {
     let now = Utc::now();
 
     // Refresh token valid for 30 days
-    let expiration = now + Duration::days(30);
+    let expiration = now + Duration::seconds(REFRESH_TOKEN_EXPIRATION);
     let claims = Claims {
-        sub: ClaimsSubject {
-            user_id: user_id,
-            // Refresh token typically does not carry access rights
-            accesses: None,
-        },
+        dn_data: ClaimSubject::RefreshToken(RefreshTokenStruct { user_id, token_id }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
     };
@@ -65,31 +61,58 @@ pub fn create_refresh_token(user_id: Uuid, client_secret: &str) -> Result<String
         &claims,
         &EncodingKey::from_secret(client_secret.as_ref()),
     )
-    .map_err(|_| TokenError::InvalidToken)?;
+    .map_err(|error| {
+        debug!("Failed to create refresh token: {}", error);
+        TokenError::CanNotCreateToken
+    })?;
 
-    // This function would typically create a JWT or similar token
-    // For demonstration, we return a dummy token
     Ok(refresh_token)
 }
 
-pub fn create_authorization_data(
-    user_id: Uuid,
+pub fn decode_access_token(
+    refresh_token: &str,
     client_secret: &str,
-    accesses: Vec<Access>,
-    scopes: Vec<String>,
-) -> Result<AuthorizationCodeData, TokenError> {
-    let access_token = create_access_token(user_id, client_secret, accesses)
-        .map_err(|_| TokenError::InvalidToken)?;
-    let refresh_token =
-        create_refresh_token(user_id, client_secret).map_err(|_| TokenError::InvalidToken)?;
+) -> Result<AccessTokenStruct, TokenError> {
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.validate_nbf = true;
+    validation.reject_tokens_expiring_in_less_than = 10; // seconds
+    let data = decode::<Claims>(
+        refresh_token,
+        &DecodingKey::from_secret(client_secret.as_ref()),
+        &validation,
+    )
+    .map(|data| data.claims.dn_data)
+    .map_err(|error| {
+        debug!("Failed to decode refresh token: {}", error);
+        TokenError::InvalidToken
+    })?;
 
-    Ok(AuthorizationCodeData {
-        access_token,
-        token_type: TOKEN_TYPE.to_string(),
-        expires_in: TOKEN_EXPIRATION,
-        refresh_token: Some(refresh_token),
-        refresh_expires_in: Some(REFRESH_TOKEN_EXPIRATION),
-        scopes: Some(scopes), // Optional scope can be added if needed
-        user_id,
-    })
+    match data {
+        ClaimSubject::AccessToken(token_data) => Ok(token_data),
+        _ => Err(TokenError::InvalidToken),
+    }
+}
+
+pub fn decode_refresh_token(
+    refresh_token: &str,
+    client_secret: &str,
+) -> Result<RefreshTokenStruct, TokenError> {
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.validate_nbf = true;
+    validation.reject_tokens_expiring_in_less_than = 10; // seconds
+    let data = decode::<Claims>(
+        refresh_token,
+        &DecodingKey::from_secret(client_secret.as_ref()),
+        &validation,
+    )
+    .map(|data| data.claims.dn_data)
+    .map_err(|error| {
+        debug!("Failed to decode refresh token: {}", error);
+        TokenError::InvalidToken
+    })?;
+
+    match data {
+        ClaimSubject::RefreshToken(refresh_data) => Ok(refresh_data),
+        _ => Err(TokenError::InvalidToken),
+    }
 }

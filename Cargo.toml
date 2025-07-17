@@ -3,11 +3,15 @@ resolver = "2"
 autobins = false
 rust-version = "1.85.0"
 members = [
+    "libs/shared/shared/data/app",
+    "libs/shared/shared/data/auth",
+    "libs/shared/shared/data/core",
+
     "libs/shared/shared/app",
     "libs/shared/shared/auth",
     "libs/shared/shared/config",
-    "libs/shared/shared/data/app",
-    "libs/shared/shared/data/core",
+
+    
     "libs/shared/shared/macro",
     "libs/shared/shared/macro-rule",
 
@@ -87,13 +91,16 @@ validator = { version = "0.20.0", features = ["derive"] }
 wildmatch = "2.4.0"
 config = { version = "0.15.11"}
 
+shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
+shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
+shared-shared-data-auth = { path = "./libs/shared/shared/data/auth"}
+
 shared-shared-app = { path = "./libs/shared/shared/app"}
 shared-shared-auth = { path = "./libs/shared/shared/auth"}
 shared-shared-config = { path = "./libs/shared/shared/config"}
 shared-shared-macro = { path = "./libs/shared/shared/macro"}
 shared-shared-macro-rule = { path = "./libs/shared/shared/macro-rule"}
-shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
-shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
+
 
 #Auth Module
 features-auth-entities = { path = "./features/auth/entities"}
