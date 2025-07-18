@@ -1,4 +1,7 @@
+use std::vec;
+
 use sea_orm::{FromQueryResult, LoaderTrait};
+use shared_shared_auth::claim::UserAccessData;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -44,6 +47,45 @@ impl UserQueryManager {
 pub struct UserQuery;
 
 impl UserQuery {
+    pub async fn get_access_data_by_user_id(
+        db: &DbConn,
+        id: Uuid,
+    ) -> Result<Vec<UserAccessData>, DbErr> {
+        let models = Entity::find()
+            .filter(Column::Id.eq(id))
+            .find_with_related(AccessEntity)
+            .all(db)
+            .await?;
+
+        if let Some(data) = models.first() {
+            let user_model = data.0.clone();
+            let accesses = data.1.clone();
+            let users = vec![user_model.clone()];
+            let roles = users
+                .load_many_to_many(RoleEntity, AccessEntity, db)
+                .await?;
+
+            let roles = roles.first().unwrap();
+            debug!("access {:?} and roles {:?}", accesses, roles);
+            // let results: Vec<UserAccessData> = vec![];
+            let results: Vec<UserAccessData> = accesses
+                .iter()
+                .map(|item| {
+                    let find_role = roles.iter().find(|role| role.id == item.role_id);
+                    debug!("find_role {:?}", find_role);
+                    let find_role_name = find_role.map_or("".to_string(), |role| role.name.clone());
+                    let user_access_data = UserAccessData {
+                        key: Some(item.key.clone()),
+                        role_name: find_role_name.to_string(),
+                    };
+                    user_access_data
+                })
+                .collect();
+            Ok(results)
+        } else {
+            return Err(DbErr::RecordNotFound("Not found".to_string()));
+        }
+    }
     pub async fn get<'a>(db: &'a DbConn, user_id: Uuid) -> Result<UserData, DbErr> {
         let model = UserQueryManager::get_by_id_uuid(db, user_id).await?;
         let user_data: UserData = model.into();
@@ -81,24 +123,27 @@ impl UserQuery {
         // let users = Entity::find().find_with_related(RoleEntity);
         // let x = Entity::find().into_tuple()
         let users = Entity::find()
+            .filter(Column::Email.contains("nghia"))
             // .find_also_related(AccessEntity)
             // .find_also_linked(l)
             // .find_with_linked(l)
-            .find_with_related(AccessEntity);
+            .find_with_related(AccessEntity)
+            .all(db)
+            .await?;
         // .join(JoinType::LeftJoin, features_auth_entities::role::Relation::Access);
         // .join(JoinType::LeftJoin, rel);
 
         // Filter by role.name
-        let users = users
-            // .filter(RoleColumn::Name.contains("2"))
-            .filter(
-                AccessColumn::Id
-                    .ne(Uuid::parse_str("885d3245-17cd-4d16-a424-6158cb59693e").unwrap()),
-            )
-            // .filter(Column::Email.contains("2"))
-            // .into_model::<AdvanceUser>()
-            .all(db)
-            .await?;
+        // let users = users
+        //     // .filter(RoleColumn::Name.contains("2"))
+        //     // .filter(
+        //     //     AccessColumn::Id
+        //     //         .ne(Uuid::parse_str("885d3245-17cd-4d16-a424-6158cb59693e").unwrap()),
+        //     // )
+        //     // .filter(Column::Email.contains("2"))
+        //     // .into_model::<AdvanceUser>()
+        //     .all(db)
+        //     .await?;
         // let users = users.filter(Column::Email.contains("n")).all(db).await?;
         debug!("users: {:?}", users);
 

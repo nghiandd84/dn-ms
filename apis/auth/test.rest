@@ -1,7 +1,7 @@
 
 ### Variables
 @baseUrl = http://localhost:6101
-@userId = 533e9294-76cf-41eb-9e2a-19064f7875e2
+@userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 @authCode = pH96AUp7XqXTpl7qEMN0f5d82448QqFfdgO4dC97gXjeLhthv7IgqQZvXBNNkW5n
 @AccessToken = 
@@ -54,11 +54,11 @@ Content-Type: application/json
 }
 
 ### Delete User
-DELETE {{baseUrl}}/users/53af92fc-ba07-45dc-949e-60ae55316e71
+DELETE {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
 
 ### Get User
-GET {{baseUrl}}/users/533e9294-76cf-41eb-9e2a-19064f7875e2
+GET {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
 
 ### Finds User
@@ -70,12 +70,22 @@ GET {{baseUrl}}/users?page_size=10&page=1&&order_name=first_name&order_direction
 Content-Type: application/json
 
 ### Finds User in id array
-GET {{baseUrl}}/users?page_size=10&page=1&id=in|c8b35d43-a7aa-4aa7-bf7d-011ab2c76461,4df3f7dd-e618-4254-9330-f1d9aa65f129
+GET {{baseUrl}}/users?page_size=10&page=1&id=in|{{userId}},4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json
 
 ### Get Test Users 
 GET {{baseUrl}}/test_users
 Content-Type: application/json
+
+
+### Role
+POST {{baseUrl}}/roles
+Content-Type: application/json
+
+{
+  "description": "Bakery Guest",
+  "name": "BAKE_GUEST"
+}
 
 ### Get All Roles
 GET {{baseUrl}}/roles

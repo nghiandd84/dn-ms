@@ -1,27 +1,19 @@
 use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::token::{GrantType, TokenForCreateRequest};
 use sea_orm::DbConn;
-use serde_json::de;
 use shared_shared_auth::{
-    claim::Access,
+    claim::UserAccessData,
     data::AuthorizationCodeData,
     token::{
-        create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
-        REFRESH_TOKEN_EXPIRATION, TOKEN_EXPIRATION, TOKEN_TYPE,
+        create_access_token, create_refresh_token, decode_refresh_token, REFRESH_TOKEN_EXPIRATION,
+        TOKEN_EXPIRATION, TOKEN_TYPE,
     },
 };
 use shared_shared_data_app::{error::AppError, result::Result};
-use shared_shared_data_auth::error::TokenError;
 use tracing::{debug, error};
 use uuid::Uuid;
 
-use crate::{
-    auth_code::AuthCodeQuery,
-    client::ClientQuery,
-    scope,
-    token::{TokenMutation, TokenQuery},
-    user::UserQuery,
-};
+use crate::{auth_code::AuthCodeQuery, client::ClientQuery, token::TokenMutation, user::UserQuery};
 
 pub struct TokenService;
 
@@ -68,13 +60,14 @@ impl TokenService {
                 let scopes = auth_code.scopes.clone().unwrap_or_default();
                 let client_secret = client.client_secret.unwrap_or_default();
                 let user_id = auth_code.user_id.unwrap();
+                let accesses = UserQuery::get_access_data_by_user_id(db, user_id).await?;
                 debug!("AuthCode found: {:?}", auth_code);
                 let authorization_code_data = create_new_token_authorization_data(
                     db,
                     user_id,
                     client_id,
                     &client_secret,
-                    vec![],
+                    accesses,
                     scopes,
                 )
                 .await?;
@@ -106,7 +99,7 @@ pub async fn create_new_token_authorization_data<'a>(
     user_id: Uuid,
     client_id: Uuid,
     client_secret: &str,
-    accesses: Vec<Access>,
+    accesses: Vec<UserAccessData>,
     scopes: Vec<String>,
 ) -> Result<AuthorizationCodeData> {
     let access_token = create_access_token(user_id, client_secret, accesses)
@@ -144,19 +137,13 @@ pub async fn create_refresh_token_authorization_data<'a>(
     old_refresh_token: &str,
     client_secret: &str,
 ) -> Result<AuthorizationCodeData> {
-    debug!("refresh token: {}", old_refresh_token);
-    debug!("Client secret: {}", client_secret);
-
     let refresh_data = decode_refresh_token(old_refresh_token, client_secret).unwrap();
-    debug!("Decoded refresh_data: {:?}", refresh_data);
     let user_id = refresh_data.user_id;
     let token_id = refresh_data.token_id;
-    let user = UserQuery::get(db, user_id).await?;
+    // let user = UserQuery::get(db, user_id).await?;
 
-    debug!("user data {:?}", user);
-
-    // TODO get access from user
-    let access_token = create_access_token(user_id, client_secret, vec![])
+    let accesses = UserQuery::get_access_data_by_user_id(db, user_id).await?;
+    let access_token = create_access_token(user_id, client_secret, accesses)
         .map_err(|error| AppError::Token(error))?;
     let refresh_token = create_refresh_token(user_id, client_secret, token_id)
         .map_err(|error| AppError::Token(error))?;
@@ -173,6 +160,6 @@ pub async fn create_refresh_token_authorization_data<'a>(
         refresh_token: Some(refresh_token),
         refresh_expires_in: Some(REFRESH_TOKEN_EXPIRATION),
         scopes: None,
-        user_id: refresh_data.user_id,
+        user_id: user_id,
     })
 }

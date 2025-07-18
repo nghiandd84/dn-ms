@@ -62,6 +62,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
+
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct UserData {
     first_name: Option<String>,
@@ -82,4 +83,3 @@ impl Into<UserData> for ModelOptionDto {
         }
     }
 }
-

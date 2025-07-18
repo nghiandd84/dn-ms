@@ -3,7 +3,7 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use tracing::debug;
 use uuid::Uuid;
 
-use crate::claim::{Access, AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct};
+use crate::claim::{AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct, UserAccessData};
 
 use shared_shared_data_auth::error::TokenError;
 
@@ -14,7 +14,7 @@ pub const REFRESH_TOKEN_EXPIRATION: i64 = 2592000; // 30 days in seconds
 pub fn create_access_token(
     user_id: Uuid,
     client_secret: &str,
-    accesses: Vec<Access>,
+    accesses: Vec<UserAccessData>,
 ) -> Result<String, TokenError> {
     let now = Utc::now();
 
@@ -23,6 +23,7 @@ pub fn create_access_token(
         dn_data: ClaimSubject::AccessToken(AccessTokenStruct { user_id, accesses }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
+        jti: Uuid::new_v4().to_string(),
     };
 
     // Using HS256 algorithm
@@ -52,6 +53,7 @@ pub fn create_refresh_token(
         dn_data: ClaimSubject::RefreshToken(RefreshTokenStruct { user_id, token_id }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
+        jti: Uuid::new_v4().to_string(),
     };
 
     // Using HS256 algorithm
