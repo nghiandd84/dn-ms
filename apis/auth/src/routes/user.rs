@@ -5,7 +5,10 @@ use axum::{
 };
 use uuid::Uuid;
 
-use features_auth_model::user::{UserData, UserDataFilterParams, UserDataResponse};
+use features_auth_model::{
+    state::AuthCacheState,
+    user::{UserData, UserDataFilterParams, UserDataResponse},
+};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -30,7 +33,7 @@ const TAG: &str = "user";
     )
 )]
 async fn delete_user(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     UserMutation::delete_user(&state.conn, user_id).await?;
@@ -46,7 +49,7 @@ async fn delete_user(
     )
 )]
 async fn get_user(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserData>> {
     let user_dto = UserQuery::get(&state.conn, user_id).await?;
@@ -66,7 +69,7 @@ async fn get_user(
     )
 )]
 async fn filter_users(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<UserDataFilterParams>,
@@ -79,7 +82,9 @@ async fn filter_users(
     Ok(ResponseJson(result))
 }
 
-async fn test_filters(state: State<AppState>) -> Result<ResponseJson<QueryResult<UserData>>> {
+async fn test_filters(
+    state: State<AppState<AuthCacheState>>,
+) -> Result<ResponseJson<QueryResult<UserData>>> {
     let pagination = Pagination::default();
     let order = Order::default();
     let all_filters = vec![];
@@ -88,7 +93,7 @@ async fn test_filters(state: State<AppState>) -> Result<ResponseJson<QueryResult
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/users/{user_id}", delete(delete_user))
         .route("/users/{user_id}", get(get_user))

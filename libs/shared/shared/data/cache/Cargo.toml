@@ -1,0 +1,21 @@
+[package]
+name = "shared-shared-data-cache"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_data_cache"
+path = "src/lib.rs"
+
+[dependencies]
+async-trait = { workspace = true }
+uuid = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+redis = { workspace = true }
+
+
+

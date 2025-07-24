@@ -1,4 +1,5 @@
 use axum::Router;
+use features_bakery_model::state::BakeryCacheState;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -16,7 +17,7 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp for MyApp<'a> {
+impl<'a> StartApp<BakeryCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
@@ -31,7 +32,7 @@ impl<'a> StartApp for MyApp<'a> {
         }
     }
 
-    fn routes(&self, app_state: &AppState) -> Router {
+    fn routes(&self, app_state: &AppState<BakeryCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(super::routes::baker::routes(app_state))
             .merge(super::routes::bakery::routes(app_state))

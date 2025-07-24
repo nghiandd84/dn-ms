@@ -3,14 +3,13 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use features_auth_entities::token::TokenForCreateDto;
 use shared_shared_auth::data::AuthorizationCodeData;
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::token::{
+use features_auth_model::{state::AuthCacheState, token::{
     TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest,
-};
+}};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -24,6 +23,7 @@ use shared_shared_data_core::{
 
 use features_auth_service::{services::TokenService, token::TokenQuery};
 
+
 const TAG: &str = "token";
 
 #[utoipa::path(
@@ -36,7 +36,7 @@ const TAG: &str = "token";
     )
 )]
 async fn create_token(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForCreateRequest>,
 ) -> Result<ResponseJson<AuthorizationCodeData>> {
     debug!("Create token with request: {:?}", request);
@@ -56,7 +56,7 @@ async fn create_token(
     )
 )]
 async fn get_token(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(token_id): Path<Uuid>,
 ) -> Result<ResponseJson<TokenData>> {
     let token = TokenQuery::get(&state.conn, token_id).await?;
@@ -76,7 +76,7 @@ async fn get_token(
     )
 )]
 async fn filter_tokens(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TokenDataFilterParams>,
@@ -90,7 +90,7 @@ async fn filter_tokens(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/oauth/token", post(create_token))
         .route("/tokens/{token_id}", get(get_token))

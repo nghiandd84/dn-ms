@@ -12,7 +12,7 @@ use shared_shared_data_app::{
 };
 
 use features_bakery_entities::cakes_bakers::CakeBakerForCreateDto;
-use features_bakery_model::cakes_bakers::CakeBakerForCreateRequest;
+use features_bakery_model::{cakes_bakers::CakeBakerForCreateRequest, state::BakeryCacheState};
 
 const TAG: &str = "cake-bakers";
 
@@ -27,7 +27,7 @@ const TAG: &str = "cake-bakers";
     )
 )]
 async fn create(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CakeBakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: CakeBakerForCreateDto = request.into();
@@ -48,14 +48,14 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path((cake_id, baker_id)): Path<(i32, i32)>,
 ) -> Result<ResponseJson<OkI32>> {
     CakeBakerMutation::delete(&state.conn, cake_id, baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()
         .route("/cake-bakers", post(create))
         .route("/cake-bakers/{cake_id}/{baker_id}", delete(delete_by_id))

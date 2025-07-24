@@ -13,6 +13,7 @@ use shared_shared_data_app::{
 
 use features_auth_entities::user::UserForUpdateProfileDto;
 use features_auth_model::profile::UserForUpdateProfileRequest;
+use features_auth_model::state::AuthCacheState;
 use features_auth_service::user::UserMutation;
 
 #[utoipa::path(
@@ -29,7 +30,7 @@ use features_auth_service::user::UserMutation;
     )
 )]
 async fn change_profile(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(user_id): Path<Uuid>,
     ValidJson(profile_request): ValidJson<UserForUpdateProfileRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -39,7 +40,7 @@ async fn change_profile(
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/profile/{user_id}", post(change_profile))
         .with_state(app_state.clone())

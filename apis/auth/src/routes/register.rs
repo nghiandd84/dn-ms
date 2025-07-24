@@ -1,14 +1,15 @@
 use axum::{extract::State, routing::post, Router};
 
-use features_auth_entities::user::UserForCreateDto;
-use features_auth_model::user::UserForCreateRequest;
-use features_auth_service::user::UserMutation;
-
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
 };
+
+use features_auth_entities::user::UserForCreateDto;
+use features_auth_model::state::AuthCacheState;
+use features_auth_model::user::UserForCreateRequest;
+use features_auth_service::user::UserMutation;
 
 #[utoipa::path(
     post,
@@ -20,7 +21,7 @@ use shared_shared_data_app::{
     )
 )]
 async fn register(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     ValidJson(register_request): ValidJson<UserForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: UserForCreateDto = register_request.into();
@@ -32,7 +33,7 @@ async fn register(
     }))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/register", post(register))
         .with_state(app_state.clone())

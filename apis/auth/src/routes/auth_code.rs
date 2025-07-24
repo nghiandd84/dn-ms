@@ -22,6 +22,7 @@ use shared_shared_data_core::{
 };
 
 use features_auth_service::auth_code::{AuthCodeMutation, AuthCodeQuery};
+use features_auth_model::state::AuthCacheState;
 
 const TAG: &str = "auth_code";
 
@@ -35,7 +36,7 @@ const TAG: &str = "auth_code";
     )
 )]
 async fn create_auth_code(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     ValidJson(register_request): ValidJson<AuthCodeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: AuthCodeForCreateDto = register_request.into();
@@ -56,7 +57,7 @@ async fn create_auth_code(
     )
 )]
 async fn delete_auth_code(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(auth_code_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     AuthCodeMutation::delete(&state.conn, auth_code_id).await?;
@@ -72,7 +73,7 @@ async fn delete_auth_code(
     )
 )]
 async fn get_auth_code(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(auth_code_id): Path<Uuid>,
 ) -> Result<ResponseJson<AuthCodeData>> {
     let auth_code = AuthCodeQuery::get(&state.conn, auth_code_id).await?;
@@ -92,7 +93,7 @@ async fn get_auth_code(
     )
 )]
 async fn filter_auth_codes(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<AuthCodeDataFilterParams>,
@@ -106,7 +107,7 @@ async fn filter_auth_codes(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/auth-codes", post(create_auth_code))
         .route("/auth-codes/{auth_code_id}", delete(delete_auth_code))

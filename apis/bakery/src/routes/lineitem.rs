@@ -16,9 +16,9 @@ use shared_shared_data_core::{
 };
 
 
-use features_bakery_model::lineitem::{
+use features_bakery_model::{lineitem::{
     LineitemData, LineitemDataFilterParams, LineitemDataResponse, LineitemForCreateRequest,
-};
+}, state::BakeryCacheState};
 use features_bakery_service::lineitem::{LineitemMutation, LineitemQuery};
 
 const TAG: &str = "lineitem";
@@ -34,7 +34,7 @@ const TAG: &str = "lineitem";
     )
 )]
 async fn create(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<LineitemForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = LineitemMutation::create(&state.conn, request.into()).await?;
@@ -54,7 +54,7 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(lineitem_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
     LineitemMutation::delete(&state.conn, lineitem_id).await?;
@@ -71,7 +71,7 @@ async fn delete_by_id(
     )
 )]
 async fn get_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(lineitem_id): Path<i32>,
 ) -> Result<ResponseJson<LineitemData>> {
     let cake = LineitemQuery::get_by_id(&state.conn, lineitem_id).await?;
@@ -92,7 +92,7 @@ async fn get_by_id(
     )
 )]
 async fn filter(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<LineitemDataFilterParams>,
@@ -107,7 +107,7 @@ async fn filter(
 }
 
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()
         .route("/lineitems", post(create))
         .route("/lineitems/{lineitem_id}", delete(delete_by_id))

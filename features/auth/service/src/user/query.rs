@@ -66,8 +66,6 @@ impl UserQuery {
                 .await?;
 
             let roles = roles.first().unwrap();
-            debug!("access {:?} and roles {:?}", accesses, roles);
-            // let results: Vec<UserAccessData> = vec![];
             let results: Vec<UserAccessData> = accesses
                 .iter()
                 .map(|item| {

@@ -6,3 +6,4 @@ pub mod cakes_bakers;
 pub mod customer;
 pub mod order;
 pub mod lineitem;
+pub mod state;

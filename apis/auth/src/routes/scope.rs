@@ -7,10 +7,10 @@ use features_auth_entities::scope::ScopeForCreateDto;
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::scope::{
+use features_auth_model::{scope::{
     ScopeData, ScopeDataFilterParams, ScopeDataResponse, ScopeForCreateRequest,
     ScopeForUpdateRequest,
-};
+}, state::AuthCacheState};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -24,6 +24,7 @@ use shared_shared_data_core::{
 
 use features_auth_service::scope::{ScopeMutation, ScopeQuery};
 
+
 const TAG: &str = "scope";
 
 #[utoipa::path(
@@ -36,7 +37,7 @@ const TAG: &str = "scope";
     )
 )]
 async fn create_scope(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     ValidJson(register_request): ValidJson<ScopeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: ScopeForCreateDto = register_request.into();
@@ -61,7 +62,7 @@ async fn create_scope(
     )
 )]
 async fn update_scope(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(scope_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ScopeForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +79,7 @@ async fn update_scope(
     )
 )]
 async fn delete_scope(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(scope_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     ScopeMutation::delete(&state.conn, scope_id).await?;
@@ -94,7 +95,7 @@ async fn delete_scope(
     )
 )]
 async fn get_scope(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     Path(scope_id): Path<Uuid>,
 ) -> Result<ResponseJson<ScopeData>> {
     let scope = ScopeQuery::get(&state.conn, scope_id).await?;
@@ -114,7 +115,7 @@ async fn get_scope(
     )
 )]
 async fn filter_scopes(
-    state: State<AppState>,
+    state: State<AppState<AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ScopeDataFilterParams>,
@@ -128,7 +129,7 @@ async fn filter_scopes(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/scopes", post(create_scope))
         .route("/scopes/{scope_id}", patch(update_scope))

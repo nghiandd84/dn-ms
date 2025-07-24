@@ -2,7 +2,6 @@ use axum::Router;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use features_auth_migrations::{Migrator, MigratorTrait};
 use shared_shared_app::{
     config::{AppConfig, DbConfig},
     start_app::StartApp,
@@ -10,14 +9,16 @@ use shared_shared_app::{
 };
 use shared_shared_config::db::Database;
 
+use features_auth_model::state::AuthCacheState;
+use features_auth_migrations::{Migrator, MigratorTrait};
+
 use crate::{
     doc::ApiDoc,
     routes::{
         auth_code::routes as auth_code_routes, client::routes as client_routes,
         login::routes as login_routes, profile::routes as profile_routes,
         register::routes as register_routes, role::routes as role_routes,
-        scope::routes as scope_routes, user::routes as user_routes,
-        token::routes as token_routes,
+        scope::routes as scope_routes, token::routes as token_routes, user::routes as user_routes,
     },
 };
 
@@ -25,7 +26,9 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp for MyApp<'a> {
+
+
+impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
@@ -40,7 +43,7 @@ impl<'a> StartApp for MyApp<'a> {
         }
     }
 
-    fn routes(&self, app_state: &AppState) -> Router {
+    fn routes(&self, app_state: &AppState<AuthCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(auth_code_routes(app_state))
             .merge(client_routes(app_state))

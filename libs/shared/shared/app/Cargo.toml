@@ -30,3 +30,4 @@ sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
 shared-shared-config = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-data-app =  { workspace = true }
+shared-shared-data-cache =  { workspace = true }

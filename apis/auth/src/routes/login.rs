@@ -7,6 +7,7 @@ use shared_shared_data_app::{
     json::ResponseJson,
     result::Result,
 };
+use features_auth_model::state::AuthCacheState;
 
 #[derive(Debug, Deserialize)]
 struct LoginPayload {
@@ -15,7 +16,7 @@ struct LoginPayload {
 }
 
 async fn api_login(
-    State(_state): State<AppState>,
+    State(_state): State<AppState<AuthCacheState>>,
     payload: Json<LoginPayload>,
 ) -> Result<ResponseJson<SuccessData>> {
     if payload.username == "demo2" {
@@ -39,7 +40,7 @@ async fn api_login(
     Ok(ResponseJson(success_data))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/login", post(api_login))
         .with_state(app_state.clone())

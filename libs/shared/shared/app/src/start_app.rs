@@ -1,20 +1,26 @@
 use axum::{middleware, routing::get, Router};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use tracing::debug;
 
 use dotenv::dotenv;
 use std::env;
 
-use shared_shared_config::{cache::Cache, db::Database, jwt::Jwt, mailer::Mailer};
+use shared_shared_config::{db::Database, jwt::Jwt, mailer::Mailer};
+use shared_shared_data_cache::cache::Cache;
 
 use crate::config::AppConfig;
 use crate::health::health_checker_handler;
 use crate::mapper::{main_response_mapper, mw_ctx_resolver};
 use crate::state::AppState;
 
-pub trait StartApp {
+pub trait StartApp<C>
+where
+    C: Clone + Serialize + DeserializeOwned,
+{
     // fn configure_service(cfg: &mut web::ServiceConfig);
 
-    fn routes(&self, app_state: &AppState) -> Router;
+    fn routes(&self, app_state: &AppState<C>) -> Router;
 
     fn app_config(&self) -> &AppConfig;
     fn migrate(
@@ -63,9 +69,33 @@ pub trait StartApp {
 
             self.migrate(&db).await?;
 
+            // Cache
+            let default_cache_url: &str = "redis://127.0.0.1/";
+            let cache_prefix = app_key.clone();
+            let cache_url = env::var(format!("{}_REDIS_URL", app_config.app_key.clone()))
+                .unwrap_or_else(|_| default_cache_url.to_string());
+            debug!(
+                "Connect cache with url {} and prefix {}",
+                cache_url, cache_prefix
+            );
+
+            let cache = Cache::<String, C>::new(cache_url.as_str(), cache_prefix.as_str())?;
+            // match cache {
+            //     Err(e) => {
+            //         debug!("Error when connect redis {}", e);
+            //     }
+            //     Ok(data) => {
+            //         debug!("Connect cache success")
+            //     }
+            // }
+            // let cache = cache.unwrap();
+
             let app_state = AppState {
                 conn: (&db).get_connection().clone(),
+                cache,
             };
+
+            // let my_app_state = app_state.clone();
 
             // let state = &app_state;
 
@@ -74,11 +104,11 @@ pub trait StartApp {
                 // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
                 .layer(middleware::map_response(main_response_mapper))
-                // .layer(middleware::from_fn(mw_ctx_resolver))
-                .layer(middleware::from_fn_with_state(
-                    app_state.clone(),
-                    mw_ctx_resolver,
-                ));
+                .layer(middleware::from_fn(mw_ctx_resolver));
+            // .layer(middleware::from_fn_with_state(
+            //     my_app_state,
+            //     mw_ctx_resolver,
+            // ));
 
             let addr = format!("0.0.0.0:{port}");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

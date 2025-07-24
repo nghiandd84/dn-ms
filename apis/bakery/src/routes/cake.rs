@@ -15,9 +15,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_bakery_model::cake::{
+use features_bakery_model::{cake::{
     CakeData, CakeDataFilterParams, CakeDataResponse, CakeForCreateRequest,
-};
+}, state::BakeryCacheState};
 use features_bakery_service::cake::{CakeMutation, CakeQuery};
 
 const TAG: &str = "cake";
@@ -33,7 +33,7 @@ const TAG: &str = "cake";
     )
 )]
 async fn create(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CakeForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = CakeMutation::create(&state.conn,  request.into()).await?;
@@ -53,7 +53,7 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(cake_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
     CakeMutation::delete(&state.conn, cake_id).await?;
@@ -70,7 +70,7 @@ async fn delete_by_id(
     )
 )]
 async fn get_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(cake_id): Path<i32>,
 ) -> Result<ResponseJson<CakeData>> {
     let cake = CakeQuery::get_by_id(&state.conn, cake_id).await?;
@@ -91,7 +91,7 @@ async fn get_by_id(
     )
 )]
 async fn filter(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<CakeDataFilterParams>,
@@ -106,7 +106,7 @@ async fn filter(
 }
 
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()
         .route("/cakes", post(create))
         .route("/cakes/{cake_id}", delete(delete_by_id))

@@ -17,9 +17,9 @@ use shared_shared_data_core::{
 };
 
 use features_bakery_entities::baker::BakerForCreateDto;
-use features_bakery_model::baker::{
+use features_bakery_model::{baker::{
     BakerData, BakerDataFilterParams, BakerDataResponse, BakerForCreateRequest,
-};
+}, state::BakeryCacheState};
 use features_bakery_service::baker::{BakerMutation, BakerQuery};
 
 const TAG: &str = "baker";
@@ -35,7 +35,7 @@ const TAG: &str = "baker";
     )
 )]
 async fn create(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<BakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: BakerForCreateDto = request.into();
@@ -57,7 +57,7 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
     BakerMutation::delete(&state.conn, baker_id).await?;
@@ -74,7 +74,7 @@ async fn delete_by_id(
     )
 )]
 async fn get_by_id(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<BakerData>> {
     let baker = BakerQuery::get_by_id(&state.conn, baker_id).await?;
@@ -95,7 +95,7 @@ async fn get_by_id(
     )
 )]
 async fn filter(
-    state: State<AppState>,
+    state: State<AppState<BakeryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: FilterParams<BakerDataFilterParams>,
@@ -110,7 +110,7 @@ async fn filter(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState) -> Router {
+pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()
         .route("/bakers", post(create))
         .route("/bakers/{baker_id}", delete(delete_by_id))

@@ -57,7 +57,8 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
 }
 
 pub async fn mw_ctx_resolver(
-    State(_state): State<AppState>,
+    // TODO try to use app state in here
+    // State(_state): State<AppState<C>>,
     request: Request,
     next: Next,
 ) -> Response {

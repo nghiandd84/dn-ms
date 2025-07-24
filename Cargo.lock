@@ -4067,6 +4067,7 @@ dependencies = [
  "serde_json",
  "shared-shared-config",
  "shared-shared-data-app",
+ "shared-shared-data-cache",
  "shared-shared-macro",
  "tokio",
  "tower-http",
@@ -4121,6 +4122,17 @@ dependencies = [
 [[package]]
 name = "shared-shared-data-auth"
 version = "0.0.1"
+
+[[package]]
+name = "shared-shared-data-cache"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "redis",
+ "serde",
+ "serde_json",
+ "uuid",
+]
 
 [[package]]
 name = "shared-shared-data-core"

@@ -5,6 +5,7 @@ rust-version = "1.85.0"
 members = [
     "libs/shared/shared/data/app",
     "libs/shared/shared/data/auth",
+    "libs/shared/shared/data/cache",
     "libs/shared/shared/data/core",
 
     "libs/shared/shared/app",
@@ -92,6 +93,7 @@ wildmatch = "2.4.0"
 config = { version = "0.15.11"}
 
 shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
+shared-shared-data-cache = { path = "./libs/shared/shared/data/cache"}
 shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
 shared-shared-data-auth = { path = "./libs/shared/shared/data/auth"}
 
