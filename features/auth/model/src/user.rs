@@ -5,6 +5,7 @@ use uuid::Uuid;
 use validator::{Validate, ValidationError};
 
 use features_auth_entities::user::{ModelOptionDto, UserForCreateDto};
+use shared_shared_data_auth::password::hash;
 use shared_shared_macro::{ParamFilter, Response};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
@@ -36,11 +37,12 @@ pub struct UserForCreateRequest {
 
 impl Into<UserForCreateDto> for UserForCreateRequest {
     fn into(self) -> UserForCreateDto {
+        let password = hash(self.password).unwrap_or_default();
         UserForCreateDto {
             email: self.email,
             first_name: self.first_name,
             last_name: self.last_name,
-            password: self.password,
+            password: password,
         }
     }
 }
@@ -65,8 +67,8 @@ use shared_shared_data_core::{
 
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct UserData {
+    pub id: Option<Uuid>,
     first_name: Option<String>,
-    id: Option<Uuid>,
     last_name: Option<String>,
     email: Option<String>,
     age: Option<u32>,
@@ -83,3 +85,15 @@ impl Into<UserData> for ModelOptionDto {
         }
     }
 }
+
+// impl Into<ModelOptionDto> for UserData {
+//     fn into(self) -> ModelOptionDto {
+//         ModelOptionDto {
+//             email: self.email,
+//             first_name: self.first_name,
+//             id: self.id,
+//             last_name: self.last_name,
+//             ..Default::default()
+//         }
+//     }
+// }

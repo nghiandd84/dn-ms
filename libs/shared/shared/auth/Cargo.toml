@@ -10,11 +10,12 @@ name = "shared_shared_auth"
 path = "src/lib.rs"
 
 [dependencies]
+
+chrono = { workspace = true }
 jsonwebtoken = { workspace = true }
 serde = { workspace = true }
-chrono = { workspace = true }
+tracing = { workspace = true }
 utoipa = { workspace = true }
 uuid = { workspace = true }
-tracing = { workspace = true }
 
 shared-shared-data-auth = { workspace = true }

@@ -40,8 +40,9 @@ async fn create_token(
     ValidJson(request): ValidJson<TokenForCreateRequest>,
 ) -> Result<ResponseJson<AuthorizationCodeData>> {
     debug!("Create token with request: {:?}", request);
+    let cache = &state.cache;
     // Create Logic Service to convert request to DTO
-    let authorization_code = TokenService::create_authorization_data(&state.conn, &request).await?;
+    let authorization_code = TokenService::create_authorization_data(&state.conn, cache, &request).await?;
     let data = authorization_code.clone();
 
     Ok(ResponseJson(data))

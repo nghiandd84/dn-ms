@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug)]
 pub enum TokenError {
     InvalidToken,
@@ -17,4 +19,11 @@ impl Display for TokenError {
             TokenError::CanNotCreateToken => write!(f, "Can not create token."),
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum AuthError {
+    NotFoundUser,
+    WrongPassword,
+    Unknow
 }

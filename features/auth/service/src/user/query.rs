@@ -2,11 +2,13 @@ use std::vec;
 
 use sea_orm::{FromQueryResult, LoaderTrait};
 use shared_shared_auth::claim::UserAccessData;
+use shared_shared_data_app::error::AppError;
+use shared_shared_data_auth::{error::AuthError, password::compare};
 use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -47,8 +49,45 @@ impl UserQueryManager {
 pub struct UserQuery;
 
 impl UserQuery {
-    pub async fn get_access_data_by_user_id(
-        db: &DbConn,
+    pub async fn get_user_by_email_and_password<'a>(
+        db: &'a DbConn,
+        email: String,
+        password: String,
+    ) -> Result<UserData, AppError> {
+        let pagination = Pagination::new(1, 1);
+        let order = Order::default();
+
+        let param: FilterParam<String> = FilterParam {
+            name: Column::Email.to_string(),
+            operator: FilterOperator::Equal,
+            value: Some(email.clone()),
+            raw_value: email,
+        };
+        let email_filter = FilterEnum::String(param);
+        let filters: Vec<FilterEnum> = vec![email_filter];
+
+        let result = UserQueryManager::filter(db, &pagination, &order, &filters).await?;
+
+        let dto = result.result.into_iter().next();
+        if dto.is_none() {
+            return Err(AppError::Auth(AuthError::NotFoundUser));
+        }
+        let dto = dto.unwrap();
+        let current_password = dto.password.clone().unwrap();
+        let compare_password = compare(&password, &current_password);
+
+        if compare_password.is_err() {
+            return Err(AppError::Auth(AuthError::WrongPassword));
+        }
+        let compare_password = compare_password.unwrap();
+        if !compare_password {
+            return Err(AppError::Auth(AuthError::WrongPassword));
+        }
+        Ok(dto.into())
+    }
+
+    pub async fn get_access_data_by_user_id<'a>(
+        db: &'a DbConn,
         id: Uuid,
     ) -> Result<Vec<UserAccessData>, DbErr> {
         let models = Entity::find()

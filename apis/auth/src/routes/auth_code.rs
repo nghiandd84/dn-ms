@@ -40,10 +40,10 @@ async fn create_auth_code(
     ValidJson(register_request): ValidJson<AuthCodeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: AuthCodeForCreateDto = register_request.into();
-    let role_id = AuthCodeMutation::create(&state.conn, dto).await?;
+    let code_id = AuthCodeMutation::create(&state.conn, dto).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
-        id: Some(role_id),
+        id: Some(code_id),
     }))
 }
 

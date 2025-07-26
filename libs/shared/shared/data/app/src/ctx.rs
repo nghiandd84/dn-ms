@@ -1,6 +1,7 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
+use shared_shared_data_auth::error::AuthError;
 
-use crate::error::{AppError, AuthError};
+use crate::error::AppError;
 
 #[derive(Debug, Clone)]
 pub struct Ctx {
@@ -25,7 +26,7 @@ impl<S: Send + Sync> FromRequestParts<S> for Ctx {
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         match parts.extensions.get::<Ctx>() {
             Some(ctx) => Ok(ctx.clone()),
-            None => Err(AppError::Auth(AuthError::CtxNotInRequestExt)),
+            None => Err(AppError::Auth(AuthError::Unknow)),
         }
     }
 }

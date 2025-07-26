@@ -1,53 +1,45 @@
 use axum::{extract::State, routing::post, Json, Router};
-use serde::{Deserialize, Serialize};
+use features_auth_service::services::LoginService;
+use serde::Serialize;
 
-use shared_shared_app::state::AppState;
-use shared_shared_data_app::{
-    error::{AppError, AuthError},
-    json::ResponseJson,
-    result::Result,
+use features_auth_model::{
+    login::{LoginData, LoginDataResponse, LoginRequest},
+    state::AuthCacheState,
 };
-use features_auth_model::state::AuthCacheState;
+use shared_shared_app::state::AppState;
+use shared_shared_data_app::{json::ResponseJson, result::Result};
+use tracing::debug;
 
-#[derive(Debug, Deserialize)]
-struct LoginPayload {
-    username: String,
-    pwd: String,
-}
-
-async fn api_login(
-    State(_state): State<AppState<AuthCacheState>>,
-    payload: Json<LoginPayload>,
-) -> Result<ResponseJson<SuccessData>> {
-    if payload.username == "demo2" {
-        return Err(AppError::EntityNotFound {
-            entity: "User".to_string()
-        });
-    }
-    if payload.username == "demo3" {
-        return Err(AppError::Auth(AuthError::CtxNotInRequestExt));
-    }
-    if payload.username != "demo1" || payload.pwd != "welcome" {
-        return Err(AppError::Auth(AuthError::LoginFail));
-    }
+#[utoipa::path(
+    post,
+    request_body = LoginRequest,
+    
+    path = "/login",
+    tag = "login",
+    description = "Login to API",
+    responses(
+        (status = 200, description= "Login success", body= LoginDataResponse),       
+    )
+)]
+async fn login(
+    State(state): State<AppState<AuthCacheState>>,
+    Json(login_request): Json<LoginRequest>,
+) -> Result<ResponseJson<LoginData>> {
+    debug!("Login requet  {:?}", login_request);
+    let success_data =  LoginService::login(&state.conn, login_request).await;
+    let success_data = success_data.unwrap();
+    
 
     // Set cookies
-    let success_data: SuccessData = SuccessData {
-        id: 1,
-        token: "my_token".to_owned(),
-    };
+    // let success_data = LoginData {
+    //     code: "my_code".to_string(),
+    // };
 
     Ok(ResponseJson(success_data))
 }
 
 pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
-        .route("/login", post(api_login))
+        .route("/login", post(login))
         .with_state(app_state.clone())
-}
-
-#[derive(Serialize, Clone)]
-struct SuccessData {
-    id: i32,
-    token: String,
 }

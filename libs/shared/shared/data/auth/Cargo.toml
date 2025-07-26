@@ -10,3 +10,5 @@ name = "shared_shared_data_auth"
 path = "src/lib.rs"
 
 [dependencies]
+argon2 = { workspace = true }
+serde = { workspace = true }

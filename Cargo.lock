@@ -165,6 +165,7 @@ dependencies = [
  "shared-shared-auth",
  "shared-shared-config",
  "shared-shared-data-app",
+ "shared-shared-data-auth",
  "shared-shared-data-core",
  "tokio",
  "tracing",
@@ -1391,6 +1392,7 @@ dependencies = [
  "features-auth-entities",
  "serde",
  "serde_json",
+ "shared-shared-data-auth",
  "shared-shared-data-core",
  "shared-shared-macro",
  "tracing",
@@ -1410,6 +1412,7 @@ dependencies = [
  "shared-shared-auth",
  "shared-shared-data-app",
  "shared-shared-data-auth",
+ "shared-shared-data-cache",
  "shared-shared-data-core",
  "shared-shared-macro",
  "shared-shared-macro-rule",
@@ -4122,6 +4125,10 @@ dependencies = [
 [[package]]
 name = "shared-shared-data-auth"
 version = "0.0.1"
+dependencies = [
+ "argon2",
+ "serde",
+]
 
 [[package]]
 name = "shared-shared-data-cache"

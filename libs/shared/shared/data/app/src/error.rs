@@ -3,11 +3,12 @@ use std::sync::Arc;
 use axum::{http::StatusCode, response::IntoResponse};
 
 use serde::Serialize;
-use shared_shared_data_auth::error::TokenError;
+use shared_shared_data_auth::{error::{AuthError, TokenError}, password::PasswordError};
 
 #[derive(Debug)]
 pub enum AppError {
     Auth(AuthError),
+    Password(PasswordError),
     Token(TokenError),
     DbErr(sea_orm::DbErr),
     EntityNotFound { entity: String },
@@ -15,13 +16,13 @@ pub enum AppError {
     Unknown,
     Validation(validator::ValidationErrors),
 }
-#[derive(Debug, Clone, Serialize)]
-#[serde(tag = "message", rename_all = "snake_case")]
-pub enum AuthError {
-    CtxNotInRequestExt,
-    LoginFail,
-    LogoutFail,
-}
+// #[derive(Debug, Clone, Serialize)]
+// #[serde(tag = "message", rename_all = "snake_case")]
+// pub enum AuthError {
+//     CtxNotInRequestExt,
+//     LoginFail,
+//     LogoutFail,
+// }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
@@ -41,20 +42,20 @@ impl AppError {
     pub fn status_and_error(&self) -> (StatusCode, ClientError) {
         use self::AppError::*;
         match self {
-            Auth(ref auth_error) => match auth_error {
-                AuthError::CtxNotInRequestExt => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    ClientError::AuthError(AuthError::CtxNotInRequestExt),
-                ),
-                AuthError::LoginFail => (
-                    StatusCode::BAD_REQUEST,
-                    ClientError::AuthError(AuthError::LoginFail),
-                ),
-                AuthError::LogoutFail => (
-                    axum::http::StatusCode::BAD_REQUEST,
-                    ClientError::AuthError(AuthError::LogoutFail),
-                ),
-            },
+            // Auth(ref auth_error) => match auth_error {
+            //     AuthError::CtxNotInRequestExt => (
+            //         StatusCode::INTERNAL_SERVER_ERROR,
+            //         ClientError::AuthError(AuthError::CtxNotInRequestExt),
+            //     ),
+            //     AuthError::LoginFail => (
+            //         StatusCode::BAD_REQUEST,
+            //         ClientError::AuthError(AuthError::LoginFail),
+            //     ),
+            //     AuthError::LogoutFail => (
+            //         axum::http::StatusCode::BAD_REQUEST,
+            //         ClientError::AuthError(AuthError::LogoutFail),
+            //     ),
+            // },
             JsonRejection => (StatusCode::BAD_REQUEST, ClientError::JsonRejection),
             EntityNotFound { entity } => (
                 StatusCode::FORBIDDEN,

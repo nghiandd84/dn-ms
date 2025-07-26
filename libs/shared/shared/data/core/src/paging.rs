@@ -34,5 +34,11 @@ impl Pagination {
             page_size: default_page_size(),
         }
     }
-}
 
+    pub fn new(page: u64, page_size: u64) -> Self {
+        Self {
+            page: Some(page),
+            page_size: Some(page_size),
+        }
+    }
+}

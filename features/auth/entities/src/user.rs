@@ -51,7 +51,7 @@ impl ActiveModelBehavior for ActiveModel {
         let current_time = Utc::now().naive_utc();
         self.updated_at = ActiveValue::Set(current_time);
         if insert {
-            self.is_active = ActiveValue::Set(true);
+            self.is_active = ActiveValue::Set(false);
             self.created_at = ActiveValue::Set(current_time);
         }
         Ok(self)

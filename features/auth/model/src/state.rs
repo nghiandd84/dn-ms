@@ -1,4 +1,8 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct AuthCacheState {}
+pub enum AuthCacheState {
+    AccessToken(Uuid),
+    RefreshToken(Uuid)
+}

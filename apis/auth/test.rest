@@ -13,23 +13,31 @@ GET {{baseUrl}}/healthchecker
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/
 
+
+
+### Register 
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "nghia.nguyenduc@eightcap.com",
+    "password": "Abc!123456",
+    "first_name": "Nghia",
+    "last_name": "Nguyen"
+}
+
 ### Login
 POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-    "username": "demo3",
-    "pwd": "welcome_"
+    "email": "nghia.nguyenduc@eightcap.com",
+    "password": "Abc!123456",
+    "client_id": "{{clientId}}",
+    "scopes": ["scope1", "scope2"],
+    "redirect_uri": "http://localhost:4200"
 }
 
-
-### Register
-POST {{baseUrl}}/register
-Content-Type: application/json
-
-{
-    "username": "nghia123456"
-}
 
 ### Change Profile
 POST {{baseUrl}}/profile/af6fea24-65e0-4940-a7d9-4f5b1d1d5ab9
@@ -41,17 +49,6 @@ Content-Type: application/json
     "last_name1": "NGUYEN LongTextLongText"
 }
 
-
-### Register 
-POST {{baseUrl}}/register
-Content-Type: application/json
-
-{
-    "email": "test_n2",
-    "password": "Pass@wor1",
-    "first_name": "Abc002",
-    "last_name": "Xyz002"
-}
 
 ### Delete User
 DELETE {{baseUrl}}/users/{{userId}}
@@ -129,6 +126,7 @@ Content-Type: application/json
 
 
 ### Create new token from refresh token
+# @name refreshRequest
 POST {{baseUrl}}/oauth/token
 Content-Type: application/json
 
@@ -137,4 +135,8 @@ Content-Type: application/json
     "code": "{{RefreshToken}}",
     "grant_type": "refresh_token"
 }
+
+@AccessToken1 = {{refreshRequest.response.body.data.access_token}}
+@RefreshToken1 = {{refreshRequest.response.body.data.refresh_token}}
+###
 
