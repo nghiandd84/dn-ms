@@ -23,7 +23,7 @@ use features_auth_model::{
 use shared_shared_data_app::{error::AppError, result::Result};
 use shared_shared_data_cache::cache::Cache;
 
-use crate::{auth_code::AuthCodeQuery, client::ClientQuery, token::TokenMutation, user::UserQuery};
+use crate::{auth_code::{AuthCodeMutation, AuthCodeQuery}, client::ClientQuery, token::TokenMutation, user::UserQuery};
 
 pub struct TokenService;
 
@@ -68,6 +68,7 @@ impl TokenService {
                     });
                 }
                 let auth_code = auth_code.as_ref().unwrap();
+                AuthCodeMutation::delete(db, auth_code.id.unwrap()).await?;
                 let scopes = auth_code.scopes.clone().unwrap_or_default();
                 let client_secret = client.client_secret.unwrap_or_default();
                 let user_id = auth_code.user_id.unwrap();
