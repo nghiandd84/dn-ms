@@ -14,7 +14,7 @@ use shared_shared_data_app::{
 use features_auth_entities::user::UserForUpdateProfileDto;
 use features_auth_model::profile::UserForUpdateProfileRequest;
 use features_auth_model::state::AuthCacheState;
-use features_auth_service::user::UserMutation;
+use features_auth_repo::user::UserMutation;
 
 #[utoipa::path(
     post,

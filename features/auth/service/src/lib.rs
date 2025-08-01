@@ -1,7 +1,7 @@
-pub mod auth_code;
-pub mod client;
-pub mod role;
-pub mod scope;
-pub mod token;
-pub mod user;
-pub mod services;
+mod login;
+mod register;
+mod token;
+
+pub use login::LoginService;
+pub use register::RegisterService;
+pub use token::TokenService;

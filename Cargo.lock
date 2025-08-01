@@ -154,6 +154,7 @@ dependencies = [
  "features-auth-entities",
  "features-auth-migrations",
  "features-auth-model",
+ "features-auth-repo",
  "features-auth-service",
  "futures-util",
  "jsonwebtoken",
@@ -1402,7 +1403,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "features-auth-service"
+name = "features-auth-repo"
 version = "0.0.1"
 dependencies = [
  "features-auth-entities",
@@ -1412,8 +1413,26 @@ dependencies = [
  "shared-shared-auth",
  "shared-shared-data-app",
  "shared-shared-data-auth",
- "shared-shared-data-cache",
  "shared-shared-data-core",
+ "shared-shared-macro",
+ "shared-shared-macro-rule",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "features-auth-service"
+version = "0.0.1"
+dependencies = [
+ "features-auth-entities",
+ "features-auth-model",
+ "features-auth-repo",
+ "sea-orm",
+ "serde_json",
+ "shared-shared-auth",
+ "shared-shared-data-app",
+ "shared-shared-data-auth",
+ "shared-shared-data-cache",
  "shared-shared-macro",
  "shared-shared-macro-rule",
  "tracing",

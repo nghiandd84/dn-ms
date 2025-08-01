@@ -1,14 +1,13 @@
 use axum::{extract::State, routing::post, Json, Router};
-use features_auth_service::services::LoginService;
-use serde::Serialize;
+use tracing::debug;
 
+use shared_shared_app::state::AppState;
+use shared_shared_data_app::{json::ResponseJson, result::Result};
 use features_auth_model::{
     login::{LoginData, LoginDataResponse, LoginRequest},
     state::AuthCacheState,
 };
-use shared_shared_app::state::AppState;
-use shared_shared_data_app::{json::ResponseJson, result::Result};
-use tracing::debug;
+use features_auth_service::LoginService;
 
 #[utoipa::path(
     post,

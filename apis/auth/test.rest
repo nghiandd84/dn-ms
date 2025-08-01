@@ -16,24 +16,28 @@ GET {{baseUrl}}/swagger-ui/
 
 
 ### Register 
+# @prompt userEmail User email
+# @prompt userPassword User email
 POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
-    "email": "nghiandd.84@gmail.com",
-    "password": "MyPassword!123456",
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}",
     "first_name": "Nghia",
     "last_name": "Nguyen"
 }
 
 ### Login
+# @prompt userEmail User email
+# @prompt userPassword User email
 # @name loginRequest
 POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-    "email": "nghiandd.84@gmail.com",
-    "password": "MyPassword!123456",
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}",
     "client_id": "{{clientId}}",
     "scopes": ["scope1", "scope2"],
     "redirect_uri": "http://localhost:4200"

@@ -20,7 +20,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::user::{UserMutation, UserQuery};
+use features_auth_repo::user::{UserMutation, UserQuery};
 
 const TAG: &str = "user";
 

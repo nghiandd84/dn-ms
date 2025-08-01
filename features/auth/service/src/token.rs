@@ -23,7 +23,12 @@ use features_auth_model::{
 use shared_shared_data_app::{error::AppError, result::Result};
 use shared_shared_data_cache::cache::Cache;
 
-use crate::{auth_code::{AuthCodeMutation, AuthCodeQuery}, client::ClientQuery, token::TokenMutation, user::UserQuery};
+use features_auth_repo::{
+    auth_code::{AuthCodeMutation, AuthCodeQuery},
+    client::ClientQuery,
+    token::TokenMutation,
+    user::UserQuery,
+};
 
 pub struct TokenService;
 

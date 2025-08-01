@@ -7,9 +7,10 @@ use shared_shared_auth::data::AuthorizationCodeData;
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::{state::AuthCacheState, token::{
-    TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest,
-}};
+use features_auth_model::{
+    state::AuthCacheState,
+    token::{TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest},
+};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -21,8 +22,8 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::{services::TokenService, token::TokenQuery};
-
+use features_auth_repo::token::TokenQuery;
+use features_auth_service::TokenService;
 
 const TAG: &str = "token";
 
@@ -42,7 +43,8 @@ async fn create_token(
     debug!("Create token with request: {:?}", request);
     let cache = &state.cache;
     // Create Logic Service to convert request to DTO
-    let authorization_code = TokenService::create_authorization_data(&state.conn, cache, &request).await?;
+    let authorization_code =
+        TokenService::create_authorization_data(&state.conn, cache, &request).await?;
     let data = authorization_code.clone();
 
     Ok(ResponseJson(data))

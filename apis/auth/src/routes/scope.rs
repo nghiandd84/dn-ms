@@ -22,7 +22,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::scope::{ScopeMutation, ScopeQuery};
+use features_auth_repo::scope::{ScopeMutation, ScopeQuery};
 
 
 const TAG: &str = "scope";

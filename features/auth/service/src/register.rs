@@ -5,7 +5,7 @@ use uuid::Uuid;
 use features_auth_entities::user::UserForCreateDto;
 use features_auth_model::user::UserForCreateRequest;
 
-use crate::user::UserMutation;
+use features_auth_repo::user::UserMutation;
 
 pub struct RegisterService {}
 

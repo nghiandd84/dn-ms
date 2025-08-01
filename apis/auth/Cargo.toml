@@ -38,4 +38,5 @@ shared-shared-data-auth =  { workspace = true }
 features-auth-migrations = { workspace = true }
 features-auth-model = { workspace = true }
 features-auth-entities = { workspace = true }
+features-auth-repo = { workspace = true }
 features-auth-service = { workspace = true }

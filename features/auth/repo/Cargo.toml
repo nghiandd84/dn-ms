@@ -1,12 +1,12 @@
 [package]
-name = "features-auth-service"
+name = "features-auth-repo"
 edition = "2021"
 version.workspace = true
 authors.workspace = true
 publish = false
 
 [lib]
-name = "features_auth_service"
+name = "features_auth_repo"
 path = "src/lib.rs"
 
 [dependencies]
@@ -15,13 +15,12 @@ serde_json = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
-shared-shared-auth = { workspace = true }
-shared-shared-data-app = { workspace = true }
 shared-shared-data-auth = { workspace = true }
-shared-shared-data-cache = { workspace = true }
+shared-shared-data-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-macro-rule = { workspace = true }
+shared-shared-auth = { workspace = true }
 
 features-auth-entities = { workspace = true }
 features-auth-model = { workspace = true }
-features-auth-repo = { workspace = true }

@@ -10,7 +10,7 @@ use shared_shared_data_app::{
 
 use features_auth_model::state::AuthCacheState;
 use features_auth_model::user::UserForCreateRequest;
-use features_auth_service::services::RegisterService;
+use features_auth_service::RegisterService;
 
 #[utoipa::path(
     post,

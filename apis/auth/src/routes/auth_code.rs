@@ -21,7 +21,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::auth_code::{AuthCodeMutation, AuthCodeQuery};
+use features_auth_repo::auth_code::{AuthCodeMutation, AuthCodeQuery};
 use features_auth_model::state::AuthCacheState;
 
 const TAG: &str = "auth_code";

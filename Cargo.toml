@@ -19,6 +19,7 @@ members = [
     "features/auth/entities", 
     "features/auth/migrations", 
     "features/auth/model", 
+    "features/auth/repo", 
     "features/auth/service", 
 
     "features/bakery/entities", 
@@ -108,6 +109,7 @@ shared-shared-macro-rule = { path = "./libs/shared/shared/macro-rule"}
 features-auth-entities = { path = "./features/auth/entities"}
 features-auth-migrations = { path = "./features/auth/migrations"}
 features-auth-model = { path = "./features/auth/model"}
+features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
 
 #Bakery Module

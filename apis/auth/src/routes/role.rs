@@ -6,8 +6,6 @@ use axum::{
 use tracing::debug;
 use uuid::Uuid;
 
-
-
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -18,14 +16,12 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::role::{RoleMutation, RoleQuery};
-use features_auth_model::{role::{
-    RoleData, RoleDataFilterParams, RoleDataResponse, RoleForCreateRequest,
-}, state::AuthCacheState};
 use features_auth_entities::role::RoleForCreateDto;
-
-
-
+use features_auth_model::{
+    role::{RoleData, RoleDataFilterParams, RoleDataResponse, RoleForCreateRequest},
+    state::AuthCacheState,
+};
+use features_auth_repo::role::{RoleMutation, RoleQuery};
 
 const TAG: &str = "role";
 

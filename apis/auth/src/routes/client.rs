@@ -22,7 +22,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_service::client::{ClientMutation, ClientQuery};
+use features_auth_repo::client::{ClientMutation, ClientQuery};
 use features_auth_model::state::AuthCacheState;
 
 const TAG: &str = "client";
