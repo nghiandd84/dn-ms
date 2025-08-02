@@ -1,0 +1,20 @@
+[package]
+name = "features-email-template-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_email_template_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_email_template"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+serde_json = { workspace = true }
+sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
+
+features-email-template-entities = { workspace = true }

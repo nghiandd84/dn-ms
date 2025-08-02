@@ -27,6 +27,11 @@ members = [
     "features/bakery/model", 
     "features/bakery/service", 
 
+
+    "features/email-template/entities", 
+    "features/email-template/migrations", 
+    "features/email-template/model", 
+
     "apis/auth", 
     "apis/bakery", 
     "apis/email-template",
@@ -111,6 +116,11 @@ features-auth-migrations = { path = "./features/auth/migrations"}
 features-auth-model = { path = "./features/auth/model"}
 features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
+
+#Auth Email Template
+features-email-template-entities = { path = "./features/email-template/entities"}
+features-email-template-migrations = { path = "./features/email-template/migrations"}
+features-email-template-model = { path = "./features/email-template/model"}
 
 #Bakery Module
 features-bakery-entities = { path = "./features/bakery/entities"}

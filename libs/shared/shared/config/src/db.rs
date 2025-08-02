@@ -11,7 +11,10 @@ pub struct Database {
 impl Database {
     pub fn new(db_url_path: Option<String>, scheme: Option<String>) -> Self {
         let database_path = db_url_path.unwrap_or("DATABASE_URL".to_string());
-        let con_str = std::env::var(database_path).unwrap();
+        let con_str = std::env::var(&database_path).expect(format!(
+            "Environment variable '{}' not set",
+            database_path
+        ).as_str());
         let mut opt = ConnectOptions::new(con_str);
         opt.max_connections(100)
             .min_connections(5)

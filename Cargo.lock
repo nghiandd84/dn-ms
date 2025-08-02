@@ -211,6 +211,34 @@ dependencies = [
 [[package]]
 name = "api-email-template"
 version = "0.0.1"
+dependencies = [
+ "argon2",
+ "async-trait",
+ "axum",
+ "chrono",
+ "dotenv",
+ "features-email-template-entities",
+ "features-email-template-migrations",
+ "features-email-template-model",
+ "futures-util",
+ "jsonwebtoken",
+ "rand 0.8.5",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "shared-shared-app",
+ "shared-shared-auth",
+ "shared-shared-config",
+ "shared-shared-data-app",
+ "shared-shared-data-auth",
+ "shared-shared-data-core",
+ "tokio",
+ "tracing",
+ "utoipa",
+ "utoipa-swagger-ui",
+ "uuid",
+ "validator",
+]
 
 [[package]]
 name = "app-gateway"
@@ -1493,6 +1521,47 @@ dependencies = [
  "shared-shared-macro-rule",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "features-email-template-entities"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "rand 0.8.5",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "uuid",
+]
+
+[[package]]
+name = "features-email-template-migrations"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "features-email-template-entities",
+ "sea-orm-migration",
+ "serde_json",
+]
+
+[[package]]
+name = "features-email-template-model"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "features-email-template-entities",
+ "serde",
+ "serde_json",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "tracing",
+ "utoipa",
+ "uuid",
+ "validator",
 ]
 
 [[package]]
