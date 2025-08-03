@@ -220,6 +220,7 @@ dependencies = [
  "features-email-template-entities",
  "features-email-template-migrations",
  "features-email-template-model",
+ "features-email-template-service",
  "futures-util",
  "jsonwebtoken",
  "rand 0.8.5",
@@ -1562,6 +1563,43 @@ dependencies = [
  "utoipa",
  "uuid",
  "validator",
+]
+
+[[package]]
+name = "features-email-template-repo"
+version = "0.0.1"
+dependencies = [
+ "features-email-template-entities",
+ "features-email-template-model",
+ "sea-orm",
+ "serde_json",
+ "shared-shared-auth",
+ "shared-shared-data-app",
+ "shared-shared-data-auth",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "shared-shared-macro-rule",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "features-email-template-service"
+version = "0.0.1"
+dependencies = [
+ "features-email-template-model",
+ "features-email-template-repo",
+ "sea-orm",
+ "serde_json",
+ "shared-shared-auth",
+ "shared-shared-data-app",
+ "shared-shared-data-auth",
+ "shared-shared-data-cache",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "shared-shared-macro-rule",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

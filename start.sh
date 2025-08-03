@@ -19,12 +19,12 @@ echo "Kill current instances"
 
 # Kill Auth port
 for i in {1..3}; do 
-    fuser -k 520$i/tcp 
+    fuser -k 510$i/tcp 
 done
 
 # Kill Bakery port
 for i in {1..3}; do 
-    fuser -k 510$i/tcp 
+    fuser -k 520$i/tcp 
 done
 
 
@@ -66,7 +66,7 @@ for i in {1..3}; do
     PORT=530$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
-    BAKERY_PORT=530$i $APP_DIRECTORY/api-email-template > $LOG_DIRECTORY/api-email-template-${CURRENT_DATE}-instance-$i.log &
+    EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template > $LOG_DIRECTORY/api-email-template-${CURRENT_DATE}-instance-$i.log &
 done
 
 #wait

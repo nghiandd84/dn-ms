@@ -1,0 +1,37 @@
+
+### Variables
+@baseUrl = http://localhost:6101
+@userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
+
+@templateId = 1
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### Email Template API
+
+### Insert Email Template 
+POST {{baseUrl}}/email-templates
+Content-Type: application/json
+
+{
+    "name": "Email Template Name",
+    "description": "Template Description for testing"
+}
+
+
+### Insert Email Template 
+GET {{baseUrl}}/email-templates/{{templateId}}
+Content-Type: application/json
+
+### Filter Email Template 
+GET {{baseUrl}}/email-templates?description=li|testing&name=li|Name
+Content-Type: application/json
+
+
+### Delete Email Template 
+DELETE {{baseUrl}}/email-templates/2
+Content-Type: application/json

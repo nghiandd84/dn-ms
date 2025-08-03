@@ -11,8 +11,11 @@ use shared_shared_app::doc::JwtSecurityAddon;
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
-        
-        
+        crate::routes::email_template::create_email_template,
+        crate::routes::email_template::get_email_template,
+        crate::routes::email_template::filter_email_template,
+        crate::routes::email_template::update_email_template,
+        crate::routes::email_template::delete_email_template,
     ),
     tags(
         (name = "Rust REST API", description = "Email Template in Rust Endpoints")

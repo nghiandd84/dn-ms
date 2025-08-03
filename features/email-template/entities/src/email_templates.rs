@@ -2,9 +2,19 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sea_orm::{entity::prelude::*, ActiveValue};
 use serde::{Deserialize, Serialize};
+use shared_shared_macro::Dto;
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "email_templates")]
+#[dto(
+    name(EmailTemplateForCreate),
+    columns( name, description)
+)]
+#[dto(
+    name(EmailTemplateForUpdate),
+    columns( name, description, is_active),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -17,6 +27,9 @@ pub struct Model {
 
     #[sea_orm(default_value = true)]
     pub is_active: bool,
+
+    #[sea_orm(column_type = "Uuid")]
+    pub user_id: Uuid,
 
     pub created_at: DateTime,
 

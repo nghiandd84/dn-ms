@@ -38,15 +38,17 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(true),
                     )
+                    
+                    .col(ColumnDef::new(email_templates::Column::UserId).uuid().not_null())
                     .col(
                         ColumnDef::new(email_templates::Column::CreatedAt)
-                            .timestamp_with_time_zone()
+                            .timestamp()
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
                     .col(
                         ColumnDef::new(email_templates::Column::UpdatedAt)
-                            .timestamp_with_time_zone()
+                            .timestamp()
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
@@ -94,13 +96,13 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(template_translations::Column::CreatedAt)
-                            .timestamp_with_time_zone()
+                            .timestamp()
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
                     .col(
                         ColumnDef::new(template_translations::Column::UpdatedAt)
-                            .timestamp_with_time_zone()
+                            .timestamp()
                             .not_null()
                             .default(Expr::current_timestamp()),
                     )
@@ -161,6 +163,18 @@ impl MigrationTrait for Migration {
                             .boolean()
                             .not_null()
                             .default(false),
+                    )
+                    .col(
+                        ColumnDef::new(template_placeholders::Column::CreatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(template_placeholders::Column::UpdatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
                     )
                     .foreign_key(
                         ForeignKey::create()

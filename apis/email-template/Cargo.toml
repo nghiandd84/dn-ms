@@ -38,5 +38,4 @@ shared-shared-data-auth =  { workspace = true }
 features-email-template-entities = { workspace = true }
 features-email-template-migrations = { workspace = true }
 features-email-template-model = { workspace = true }
-#features-email-template-repo = { workspace = true }
-#features-email-template-service = { workspace = true }
+features-email-template-service = { workspace = true }

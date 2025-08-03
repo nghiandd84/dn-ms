@@ -21,6 +21,11 @@ pub struct Model {
 
     #[sea_orm(default_value = false)]
     pub is_required: bool,
+
+    pub created_at: DateTime,
+
+    #[sea_orm(updated_at)]
+    pub updated_at: DateTime,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

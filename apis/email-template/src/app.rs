@@ -12,7 +12,7 @@ use shared_shared_config::db::Database;
 use features_email_template_migrations::{Migrator, MigratorTrait};
 use features_email_template_model::state::EmailTemplateCacheState;
 
-use crate::{doc::ApiDoc, routes::client::routes as client_routes};
+use crate::{doc::ApiDoc, routes::email_template::routes as email_template_routes};
 
 struct MyApp<'a> {
     config: &'a AppConfig,
@@ -35,7 +35,7 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
 
     fn routes(&self, app_state: &AppState<EmailTemplateCacheState>) -> Router {
         let all_routes = Router::new()
-            .merge(client_routes(app_state))
+            .merge(email_template_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
