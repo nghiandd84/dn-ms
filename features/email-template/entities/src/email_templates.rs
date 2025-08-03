@@ -8,11 +8,11 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "email_templates")]
 #[dto(
     name(EmailTemplateForCreate),
-    columns( name, description)
+    columns(name, description, user_id, is_active)
 )]
 #[dto(
     name(EmailTemplateForUpdate),
-    columns( name, description, is_active),
+    columns(name, description, is_active),
     option
 )]
 pub struct Model {
@@ -54,10 +54,8 @@ impl ActiveModelBehavior for ActiveModel {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    
     #[sea_orm(has_many = "super::template_translations::Entity")]
     TemplateTranslations,
-    
 }
 
 impl Related<super::template_translations::Entity> for Entity {

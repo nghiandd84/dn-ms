@@ -16,6 +16,7 @@ GET {{baseUrl}}/swagger-ui/
 ### Insert Email Template 
 POST {{baseUrl}}/email-templates
 Content-Type: application/json
+dn_user_id: {{userId}}
 
 {
     "name": "Email Template Name",
@@ -23,7 +24,7 @@ Content-Type: application/json
 }
 
 
-### Insert Email Template 
+### Get Email Template 
 GET {{baseUrl}}/email-templates/{{templateId}}
 Content-Type: application/json
 

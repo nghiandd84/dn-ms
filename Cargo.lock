@@ -4253,7 +4253,10 @@ name = "shared-shared-data-auth"
 version = "0.0.1"
 dependencies = [
  "argon2",
+ "axum",
  "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

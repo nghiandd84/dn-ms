@@ -16,13 +16,6 @@ pub enum AppError {
     Unknown,
     Validation(validator::ValidationErrors),
 }
-// #[derive(Debug, Clone, Serialize)]
-// #[serde(tag = "message", rename_all = "snake_case")]
-// pub enum AuthError {
-//     CtxNotInRequestExt,
-//     LoginFail,
-//     LogoutFail,
-// }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
@@ -76,6 +69,7 @@ impl AppError {
 #[serde(tag = "message", content = "details", rename_all = "snake_case")]
 pub enum ClientError {
     AuthError(AuthError),
+
     EntityNotFound { entity: String },
     JsonRejection,
     NotFound,

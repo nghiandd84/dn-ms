@@ -4,6 +4,7 @@ use axum::{
     Router,
 };
 
+use shared_shared_data_auth::header::user_id::UserId;
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
@@ -38,9 +39,11 @@ const TAG: &str = "Email-Template";
 )]
 async fn create_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
-    ValidJson(register_request): ValidJson<EmailTemplateForCreateRequest>,
+    UserId(user_id): UserId,
+    ValidJson(mut register_request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let template_id = EmailTemplateService::create(&state.conn, register_request.into()).await?;
+    register_request.user_id = Some(user_id);
+    let template_id = EmailTemplateService::create(&state.conn, register_request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(template_id),
