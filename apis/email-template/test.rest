@@ -4,6 +4,7 @@
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 
 @templateId = 1
+@tempalateTranslationId = 1
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -35,4 +36,42 @@ Content-Type: application/json
 
 ### Delete Email Template 
 DELETE {{baseUrl}}/email-templates/2
+Content-Type: application/json
+
+### Template Translation API
+
+
+### Insert Template Translation
+POST {{baseUrl}}/template-translations 
+Content-Type: application/json
+
+{
+  "body": "Template Translation Body EN",
+  "language_code": "en",
+  "subject": "Template Translation Subject EN",
+  "template_id": {{templateId}},
+  "version_name": "1.0.0"
+}
+
+
+### Get Template Translation 
+GET {{baseUrl}}/template-translations/{{tempalateTranslationId}}
+Content-Type: application/json
+
+
+### Filter Template Translation 
+GET {{baseUrl}}/template-translations?body=li|Body&template_id=eq|1
+Content-Type: application/json
+
+
+### Update Template Translation 
+PATCH {{baseUrl}}/template-translations/{{tempalateTranslationId}}
+Content-Type: application/json
+
+{
+  "body": "Template Translation Body EN Update"
+}
+
+### DELETE Template Translation 
+DELETE {{baseUrl}}/template-translations/4
 Content-Type: application/json

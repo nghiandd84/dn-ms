@@ -16,6 +16,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::email_template::filter_email_template,
         crate::routes::email_template::update_email_template,
         crate::routes::email_template::delete_email_template,
+
+        crate::routes::template_translation::create_template_translation,
+        crate::routes::template_translation::get_template_translation,
+        crate::routes::template_translation::filter_template_translation,
+        crate::routes::template_translation::update_template_translation,
+        crate::routes::template_translation::delete_template_translation,
     ),
     tags(
         (name = "Rust REST API", description = "Email Template in Rust Endpoints")

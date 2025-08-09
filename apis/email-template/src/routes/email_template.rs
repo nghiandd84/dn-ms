@@ -3,15 +3,14 @@ use axum::{
     routing::{delete, get, patch, post},
     Router,
 };
-
-use shared_shared_data_auth::header::user_id::UserId;
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
-    result::{OkI32, OkI32Response, OkUuid, OkUuidResponse, Result},
+    result::{OkI32, OkI32Response, OkUuid, Result},
 };
+use shared_shared_data_auth::header::user_id::UserId;
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
@@ -40,10 +39,10 @@ const TAG: &str = "Email-Template";
 async fn create_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
     UserId(user_id): UserId,
-    ValidJson(mut register_request): ValidJson<EmailTemplateForCreateRequest>,
+    ValidJson(mut request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    register_request.user_id = Some(user_id);
-    let template_id = EmailTemplateService::create(&state.conn, register_request).await?;
+    request.user_id = Some(user_id);
+    let template_id = EmailTemplateService::create(&state.conn, request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(template_id),
@@ -66,9 +65,9 @@ async fn create_email_template(
 async fn update_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
     Path(template_id): Path<i32>,
-    ValidJson(scope_request): ValidJson<EmailTemplateForUpdateRequest>,
+    ValidJson(request): ValidJson<EmailTemplateForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    EmailTemplateService::update(&state.conn, template_id, scope_request.into()).await?;
+    EmailTemplateService::update(&state.conn, template_id, request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

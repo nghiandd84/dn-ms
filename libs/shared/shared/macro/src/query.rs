@@ -83,6 +83,25 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                         };
                         condition
                     }
+                    FilterEnum::I32(filter) => {
+                        let values: Vec<i32> = filter
+                            .raw_value
+                            .split(",")
+                            .filter_map(|s| i32::from_str(s).ok())
+                            .collect();
+                        let condition = match filter.operator {
+                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
+                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
+                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
+                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
+                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
+                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
+                            FilterOperator::In => Condition::any().add(column.is_in(values)),
+                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
+                            _ => Condition::all(),
+                        };
+                        condition
+                    }
                     FilterEnum::U64(filter) => {
                         let values: Vec<u64> = filter
                             .raw_value

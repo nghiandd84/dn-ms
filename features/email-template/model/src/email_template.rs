@@ -24,8 +24,11 @@ pub struct EmailTemplateForCreateRequest {
         message = "the length of description must be between 0 and 512"
     ))]
     pub description: Option<String>,
+
+    #[schema(ignore)]
     pub user_id: Option<Uuid>,
-    is_active: Option<bool>,
+
+    pub is_active: Option<bool>,
 }
 
 impl Into<EmailTemplateForCreateDto> for EmailTemplateForCreateRequest {

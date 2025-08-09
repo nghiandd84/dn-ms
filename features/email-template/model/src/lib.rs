@@ -1,3 +1,3 @@
-pub mod client;
 pub mod state;
 pub mod email_template;
+pub mod template_translation;

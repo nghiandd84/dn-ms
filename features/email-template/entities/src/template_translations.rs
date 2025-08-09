@@ -1,9 +1,20 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use sea_orm::{entity::prelude::*, ActiveValue};
+use serde::{Deserialize, Serialize};
+use shared_shared_macro::Dto;
 
-#[derive(Clone, Debug, PartialEq, Default, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "template_translations")]
+#[dto(
+    name(TemplateTranslationForCreate),
+    columns(template_id, language_code, subject, body, version_name)
+)]
+#[dto(
+    name(TemplateTranslationForUpdate),
+    columns(template_id, language_code, subject, body, version_name),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
