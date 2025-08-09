@@ -9,17 +9,17 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::Query;
 
-use features_email_template_entities::template_translations::{
+use features_email_template_entities::template_placeholders::{
     ActiveModel, Column, Entity, ModelOptionDto,
 };
-use features_email_template_model::template_translation::TemplateTranslationData;
+use features_email_template_model::template_placeholder::TemplatePlaceholderData;
 
 #[derive(Query)]
 #[query(key_type(i32))]
 #[query_filter(column_name(Column))]
-struct TemplateTranslationQueryManager;
+struct TemplatePlaceholderQueryManager;
 
-impl TemplateTranslationQueryManager {
+impl TemplatePlaceholderQueryManager {
     fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
         let mut condition = Condition::all();
         for filter_enum in filters {
@@ -31,12 +31,12 @@ impl TemplateTranslationQueryManager {
     }
 }
 
-pub struct TemplateTranslationQuery {}
+pub struct TemplatePlaceholderQuery {}
 
-impl TemplateTranslationQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: i32) -> Result<TemplateTranslationData, DbErr> {
-        let model = TemplateTranslationQueryManager::get_by_id_i32(db, id).await?;
-        let user_data: TemplateTranslationData = model.into();
+impl TemplatePlaceholderQuery {
+    pub async fn get<'a>(db: &'a DbConn, id: i32) -> Result<TemplatePlaceholderData, DbErr> {
+        let model = TemplatePlaceholderQueryManager::get_by_id_i32(db, id).await?;
+        let user_data: TemplatePlaceholderData = model.into();
         Ok(user_data)
     }
 
@@ -45,9 +45,9 @@ impl TemplateTranslationQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
-    ) -> Result<QueryResult<TemplateTranslationData>, DbErr> {
+    ) -> Result<QueryResult<TemplatePlaceholderData>, DbErr> {
         let result =
-            TemplateTranslationQueryManager::filter(db, pagination, order, filters).await?;
+            TemplatePlaceholderQueryManager::filter(db, pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

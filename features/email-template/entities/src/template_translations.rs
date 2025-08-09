@@ -12,7 +12,7 @@ use shared_shared_macro::Dto;
 )]
 #[dto(
     name(TemplateTranslationForUpdate),
-    columns(template_id, language_code, subject, body, version_name),
+    columns(language_code, subject, body, version_name),
     option
 )]
 pub struct Model {
@@ -35,8 +35,6 @@ pub struct Model {
     pub version_name: String,
 
     pub created_at: DateTime,
-
-    #[sea_orm(updated_at)]
     pub updated_at: DateTime,
 }
 

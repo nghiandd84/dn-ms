@@ -1,5 +1,4 @@
 use sea_orm::DbConn;
-use tracing::debug;
 
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
@@ -24,7 +23,6 @@ impl TemplateTranslationService {
         request: TemplateTranslationForCreateRequest,
     ) -> Result<i32> {
         let result = TemplateTranslationMutation::create(db, request.into()).await?;
-        debug!("Email template was created with ID: {}", result);
         Ok(result)
     }
 
@@ -39,8 +37,6 @@ impl TemplateTranslationService {
         request: TemplateTranslationForUpdateRequest,
     ) -> Result<bool> {
         let result = TemplateTranslationMutation::update(db, id, request.into()).await?;
-
-        debug!("Email template was updated with ID: {}", result);
         Ok(result)
     }
 

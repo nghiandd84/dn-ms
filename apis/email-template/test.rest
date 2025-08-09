@@ -5,6 +5,7 @@
 
 @templateId = 1
 @tempalateTranslationId = 1
+@placeholderId = 1
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -40,7 +41,6 @@ Content-Type: application/json
 
 ### Template Translation API
 
-
 ### Insert Template Translation
 POST {{baseUrl}}/template-translations 
 Content-Type: application/json
@@ -75,3 +75,40 @@ Content-Type: application/json
 ### DELETE Template Translation 
 DELETE {{baseUrl}}/template-translations/4
 Content-Type: application/json
+
+
+### Template Placeholder API
+
+### Insert Template Placeholder
+POST {{baseUrl}}/template-placeholders 
+Content-Type: application/json
+
+{
+  "description": "placeholder description",
+  "example_value": "placeholder example value",
+  "is_required": true,
+  "placeholder_key": "placeholder_key",
+  "template_id": {{templateId}}
+}
+
+
+### Delete Template Placeholder
+# @prompt deletePlaceholderId Delete Placeholder Id
+DELETE {{baseUrl}}/template-placeholders/{{deletePlaceholderId}}
+Content-Type: application/json
+
+### Filter Template Placeholder
+GET {{baseUrl}}/template-placeholders/{{placeholderId}}
+Content-Type: application/json
+
+### Filter Template Placeholder
+GET {{baseUrl}}/template-placeholders?example_value=li|value
+Content-Type: application/json
+
+### Update Template Placeholder
+PATCH {{baseUrl}}/template-placeholders/{{placeholderId}}
+Content-Type: application/json  
+
+{
+  "example_value": "placeholder example value update"
+}

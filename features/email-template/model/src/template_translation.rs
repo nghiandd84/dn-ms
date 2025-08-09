@@ -95,7 +95,6 @@ pub struct TemplateTranslationForUpdateRequest {
 impl Into<TemplateTranslationForUpdateDto> for TemplateTranslationForUpdateRequest {
     fn into(self) -> TemplateTranslationForUpdateDto {
         TemplateTranslationForUpdateDto {
-            template_id: self.template_id,
             language_code: self.language_code,
             subject: self.subject,
             body: self.body,

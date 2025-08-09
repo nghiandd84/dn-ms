@@ -158,6 +158,7 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(ColumnDef::new(template_placeholders::Column::Description).text())
+                    .col(ColumnDef::new(template_placeholders::Column::ExampleValue).text())
                     .col(
                         ColumnDef::new(template_placeholders::Column::IsRequired)
                             .boolean()

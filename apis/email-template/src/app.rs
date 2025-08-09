@@ -16,6 +16,7 @@ use crate::{
     doc::ApiDoc,
     routes::{
         email_template::routes as email_template_routes,
+        template_placeholder::routes as template_placeholder_routes,
         template_translation::routes as template_translation_routes,
     },
 };
@@ -43,6 +44,7 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
         let all_routes = Router::new()
             .merge(email_template_routes(app_state))
             .merge(template_translation_routes(app_state))
+            .merge(template_placeholder_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
