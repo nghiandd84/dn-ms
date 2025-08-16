@@ -38,7 +38,7 @@ const TAG: &str = "Template-Plaeceholder";
 )]
 async fn create_template_placeholder(
     state: State<AppState<EmailTemplateCacheState>>,
-    ValidJson(mut request): ValidJson<TemplatePlaceholderForCreateRequest>,
+    ValidJson(request): ValidJson<TemplatePlaceholderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let placeholder_id = TemplatePlaceholderService::create(&state.conn, request).await?;
     Ok(ResponseJson(OkI32 {

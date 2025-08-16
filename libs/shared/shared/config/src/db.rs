@@ -23,6 +23,7 @@ impl Database {
             .idle_timeout(Duration::from_secs(8))
             .max_lifetime(Duration::from_secs(8 * 60))
             .sqlx_logging(true)
+            // .sqlx_logging_level(log::LevelFilter::Info)
             // .set_schema_search_path(scheme.unwrap_or("public".to_string()))
             .sqlx_logging_level(log::LevelFilter::Info);
 

@@ -9,6 +9,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use sea_orm_migration::prelude::ExprTrait;
 use serde_json::{json, to_value, Value};
 use tracing::debug;
 
@@ -16,6 +17,10 @@ use shared_shared_data_app::result::Result;
 use shared_shared_data_app::{ctx::Ctx, error::AppError};
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
+    debug!(
+        "main_response_mapper: uri: {}, method: {}",
+        uri, _req_method
+    );
     // let uuid = Uuid::new_v4();
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
@@ -37,7 +42,11 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             (status_code, Json(error_body)).into_response()
         }
         None => {
-            if uri.path().starts_with("/swagger-ui/") || uri.path().starts_with("/api-docs") {
+            if uri.path().starts_with("/swagger-ui/")
+                || uri.path().starts_with("/api-docs")
+                || uri.path() == "/ws"
+            {
+                debug!("Skipping response mapping for static files or WebSocket endpoint.");
                 return res;
             }
             let status = res.status();

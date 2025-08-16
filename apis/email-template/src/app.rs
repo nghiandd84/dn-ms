@@ -56,6 +56,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         db_config: DbConfig {
             db_scheme: Some("email_template".to_string()),
         },
+        has_swagger: true,
     };
 
     let my_app = MyApp {

@@ -13,7 +13,10 @@ CURRENT_DATE=$(date +%Y%m%d)
 
 export AUTH_PORT=5101
 export BAKERY_PORT=5201
-export EMAIL_TEMPLATE_PORT=3201
+export EMAIL_TEMPLATE_PORT=5301
+export NOTIFICATION_PORT=5401
+
+export NOTIFICATION_APP_PORT=4001
 
 echo "Kill current instances"
 
@@ -33,6 +36,12 @@ for i in {1..3}; do
     fuser -k 530$i/tcp 
 done
 
+# Kill Notification port
+for i in {1..3}; do 
+    fuser -k 540$i/tcp 
+done
+fuser -k $NOTIFICATION_APP_PORT/tcp 
+
 echo "Sucess kill all instances"
 
 rm -v $LOG_DIRECTORY/*
@@ -43,7 +52,7 @@ if [ "$1" == "kill" ]; then
 fi
 
 
-echo "------------ Start Auth app ------------"
+echo "------------ Start Auth API ------------"
 for i in {1..3}; do
     PORT=510$i
     echo "--- Auth on port $PORT ---"
@@ -52,7 +61,7 @@ for i in {1..3}; do
 done
 
 
-echo "------------ Start Bakery app ------------"
+echo "------------ Start Bakery API ------------"
 for i in {1..3}; do
     PORT=520$i
     echo "--- Bakery on port $PORT ---"
@@ -61,12 +70,20 @@ for i in {1..3}; do
 done
 
 
-echo "------------ Start Email Template app ------------"
+echo "------------ Start Email Template API ------------"
 for i in {1..3}; do
     PORT=530$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
     EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template > $LOG_DIRECTORY/api-email-template-${CURRENT_DATE}-instance-$i.log &
+done
+
+echo "------------ Start Notification API ------------"
+for i in {1..3}; do
+    PORT=540$i
+    echo "--- Email Template on port $PORT ---"
+    # Execute the program
+    NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification > $LOG_DIRECTORY/api-notification-${CURRENT_DATE}-instance-$i.log &
 done
 
 #wait

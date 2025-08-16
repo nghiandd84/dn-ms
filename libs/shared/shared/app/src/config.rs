@@ -6,4 +6,5 @@ pub struct DbConfig {
 pub struct AppConfig {
     pub app_key: String,
     pub db_config: DbConfig,
+    pub has_swagger: bool
 }

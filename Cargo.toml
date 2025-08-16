@@ -37,7 +37,9 @@ members = [
     "apis/auth", 
     "apis/bakery", 
     "apis/email-template",
+    "apis/notification",
     "apps/gateway", 
+    "apps/notification", 
     "apps/gateway-bk", 
 ]
 

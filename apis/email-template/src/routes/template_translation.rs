@@ -38,7 +38,7 @@ const TAG: &str = "Template-Translation";
 )]
 async fn create_template_translation(
     state: State<AppState<EmailTemplateCacheState>>,
-    ValidJson(mut request): ValidJson<TemplateTranslationForCreateRequest>,
+    ValidJson(request): ValidJson<TemplateTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let translation_id = TemplateTranslationService::create(&state.conn, request).await?;
     Ok(ResponseJson(OkI32 {

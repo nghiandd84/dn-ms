@@ -1,7 +1,7 @@
 use axum::{middleware, routing::get, Router};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use tracing::debug;
+use tracing::{debug, info};
 
 use dotenv::dotenv;
 use std::env;
@@ -59,13 +59,18 @@ where
                 .parse::<u16>()
                 .unwrap_or_else(|_| default_port);
 
-            debug!(
-                "{}",
-                format!(
+            info!("Starting {} app on port {}", app_config.app_key, port);
+
+            
+            if app_config.has_swagger {
+                debug!(
+                    "{}",
+                    format!(
                     "Server is running on  {port} . Connect http://localhost:{port}/swagger-ui/",
                     port = port
                 )
-            );
+                );
+            }
 
             self.migrate(&db).await?;
 
@@ -100,7 +105,7 @@ where
             // let state = &app_state;
 
             let routes_all = Router::new()
-                .route("/healthchecker", get(health_checker_handler))
+                // .route("/healthchecker", get(health_checker_handler))
                 // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
                 .layer(middleware::map_response(main_response_mapper))
