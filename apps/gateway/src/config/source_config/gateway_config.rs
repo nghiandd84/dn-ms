@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 
 use super::{
     downstream_config::DownstreamConfig, filter::PathFilter, inet_address::InetAddress,
@@ -45,6 +46,7 @@ pub fn find_filter_config<'a>(
     if filter.is_none() {
         return Err(Box::new(DnError::from_str("Not found filter")));
     }
+    debug!("Found filter for path {}: {:?}", path, filter);
     let filter = filter.unwrap();
     Ok(filter.clone())
 }

@@ -1,8 +1,8 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use async_trait::async_trait;
 
-use pingora::{prelude::HttpPeer, Error};
+use pingora::{prelude::HttpPeer, upstreams::peer::Peer, Error};
 use pingora_http::{RequestHeader, ResponseHeader};
 use pingora_proxy::{ProxyHttp, Session};
 use tracing::debug;
@@ -84,16 +84,16 @@ impl ProxyHttp for Proxy {
         ctx: &mut HttpGatewayCtx,
     ) -> Result<(), Box<Error>> {
         debug!("early_request_filter -----------------");
-        
 
         let mut session = session::Session::build(Phase::Init, psession, ctx);
 
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
-        let filter = find_filter_config(gateway_config, session.ds_req_path()).unwrap();
+        let filter = find_filter_config(gateway_config, session.ds_req_path())
+            .expect(format!("Not found filter for path {}", session.ds_req_path()).as_str());
         let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
 
-        execute_interceptors(&filter_interceptors, &mut session).await;
+        let _ = execute_interceptors(&filter_interceptors, &mut session).await;
 
         session.flush_path_and_query(&filter);
         ctx.set_filter(filter);
@@ -109,7 +109,7 @@ impl ProxyHttp for Proxy {
         debug!("upstream_peer ------------------");
         debug!("Current Ctx {:?}", ctx);
 
-        let mut session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
+        let session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let filter = ctx.filter.as_ref().unwrap();
@@ -126,7 +126,16 @@ impl ProxyHttp for Proxy {
         let ext = back_end.ext.get::<HashMap<String, bool>>().unwrap();
 
         let tls = ext.get("tls").unwrap();
-        let peer = HttpPeer::new(&back_end.addr, *tls, upstream_name);
+        let mut peer = HttpPeer::new(&back_end.addr, *tls, upstream_name);
+        
+        if (filter.timeout.is_some()) {
+            let timeout = filter.timeout.unwrap();
+            debug!("Set timeout for peer: {} seconds", timeout);
+            let option = peer.get_mut_peer_options().unwrap();
+            option.read_timeout = Some(Duration::from_secs(timeout));
+            option.write_timeout = Some(Duration::from_secs(timeout));
+        }
+
         Ok(Box::new(peer))
     }
 

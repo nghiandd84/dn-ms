@@ -4,6 +4,7 @@ use serde::Deserialize;
 pub struct Filter {
     pub name: String,
     pub path: Option<PathFilter>,
+    pub timeout: Option<u64>,
 }
 
 #[derive(Deserialize, Debug, Clone)]

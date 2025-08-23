@@ -1,4 +1,4 @@
-use std::{mem::take, sync::Arc};
+use std::{mem::take, sync::Arc, time::Duration};
 
 use http::Uri;
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
@@ -151,6 +151,16 @@ impl<'a> Session<'a> {
         let uri = new_path_str.parse::<Uri>().unwrap();
         self.psession.req_header_mut().set_uri(uri);
     }
+
+    // pub fn flush_timeout(&mut self, filter: &Filter) -> () {
+    //     if let Some(timeout) = filter.timeout {
+    //         // self.upstream_request.
+    //         // self.psession.set_pro(Duration::from_secs(timeout));
+
+
+    //         // self.psession.set_timeout(timeout);
+    //     }
+    // }
 
     fn path_and_query(&self) -> &str {
         let path_and_query = self

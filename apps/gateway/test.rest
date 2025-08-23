@@ -1,10 +1,17 @@
-GET http://127.0.0.1:6000/api/bakery/bakeries
+
+### Variables
+@baseUrl = http://localhost:6001
+@userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
+@clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
+
+GET {{baseUrl}}/api/bakery/bakeries
 Content-Type: application/json
 
 ###
-GET http://127.0.0.1:6001/api/bakery/bakeries/1?param_1=one
+GET {{baseUrl}}/api/bakery/bakeries/1?param_1=one
 Content-Type: application/json
 
 ###
-GET http://127.0.0.1:6002/api/bakery/bakeries/2
+GET {{baseUrl}}/api/bakery/bakeries/2
 Content-Type: application/json
+

@@ -12,9 +12,10 @@ use futures_util::{
 };
 use shared_shared_app::state::AppState;
 use tokio::sync::mpsc;
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
 
+use crate::websocket::action::server::WebSocketServerResponse;
 use crate::{app::NotificationCacheState, websocket::action::client::WebSocketClientAction};
 
 // Simple counter for unique client IDs
@@ -129,6 +130,19 @@ async fn handle_receive_messages<'a>(
                                 token,
                                 user_id.as_deref().unwrap_or("None")
                             );
+                        }
+                        WebSocketClientAction::Disconnect => {
+                            info!("Client {} requested disconnection.", client_id);
+                            break;
+                        }
+                        WebSocketClientAction::Ping => {
+                            debug!("Client {} sent a Ping.", client_id);
+                            let pong_msg = WebSocketServerResponse::Pong;
+                            if let Err(e) = tx.send(Message::Text(
+                                serde_json::to_string(&pong_msg).unwrap().into(),
+                            )) {
+                                error!("Failed to send pong to client {}: {}", client_id, e);
+                            }
                         }
                         _ => {
                             debug!(
