@@ -1,4 +1,9 @@
-use axum::{routing::{any, get}, Router};
+use axum::{
+    extract::Path,
+    response::IntoResponse,
+    routing::{any, get},
+    Router,
+};
 use serde::{Deserialize, Serialize};
 
 use shared_shared_app::{
@@ -7,6 +12,8 @@ use shared_shared_app::{
     state::AppState,
 };
 use shared_shared_config::db::Database;
+use tracing::debug;
+use uuid::Uuid;
 
 use crate::{app, websocket::handler::ws_handler};
 
@@ -31,6 +38,7 @@ impl<'a> StartApp<NotificationCacheState> for MyApp<'a> {
 
     fn routes(&self, app_state: &AppState<NotificationCacheState>) -> Router {
         let all_routes = Router::new()
+            .route("/users/{user_id}", get(user_handler))
             .route("/ws", get(ws_handler))
             .with_state(app_state.clone());
         all_routes
@@ -53,4 +61,9 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     my_app.start_app().await?;
 
     Ok(())
+}
+
+async fn user_handler(Path(user_id): Path<Uuid>) -> &'static str {
+    debug!("User handler called {user_id}");
+    "User handler response"
 }

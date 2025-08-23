@@ -40,7 +40,11 @@ done
 for i in {1..3}; do 
     fuser -k 540$i/tcp 
 done
-fuser -k $NOTIFICATION_APP_PORT/tcp 
+
+# Kill Notification App port
+for i in {1..3}; do 
+    fuser -k 400$i/tcp 
+done
 
 echo "Sucess kill all instances"
 
@@ -81,9 +85,17 @@ done
 echo "------------ Start Notification API ------------"
 for i in {1..3}; do
     PORT=540$i
-    echo "--- Email Template on port $PORT ---"
+    echo "--- Notification API on port $PORT ---"
     # Execute the program
     NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification > $LOG_DIRECTORY/api-notification-${CURRENT_DATE}-instance-$i.log &
+done
+
+echo "------------ Start Notification App ------------"
+for i in {1..3}; do
+    PORT=400$i
+    echo "--- Notification App on port $PORT ---"
+    # Execute the program
+    NOTIFICATION_APP_PORT=400$i $APP_DIRECTORY/app-notification > $LOG_DIRECTORY/app-notification-${CURRENT_DATE}-instance-$i.log &
 done
 
 #wait
