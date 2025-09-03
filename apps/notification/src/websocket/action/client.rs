@@ -5,6 +5,5 @@ use serde::Deserialize;
 pub enum WebSocketClientAction {
     Authenticate { token: String },
     Disconnect,
-    Ping
-    // Add other client actions here if needed
+    Ping,
 }

@@ -13,24 +13,29 @@ use futures_util::{
 use shared_shared_app::state::AppState;
 use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
-use tracing_subscriber::field::debug;
 
+use features_email_template_model::state::{NotificationCacheState, NotificationState};
+
+use crate::websocket::action::client::WebSocketClientAction;
 use crate::websocket::action::server::WebSocketServerResponse;
-use crate::{app::NotificationCacheState, websocket::action::client::WebSocketClientAction};
 
 // Simple counter for unique client IDs
 static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(1);
 
 /// Handler for WebSocket connections.
+#[axum::debug_handler]
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
-    State(state): State<AppState<NotificationCacheState>>,
+    State(state): State<AppState<NotificationCacheState, NotificationState>>,
 ) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_websocket_connection(socket, state))
 }
 
 /// Handles a new WebSocket connection.
-async fn handle_websocket_connection(ws: WebSocket, state: AppState<NotificationCacheState>) {
+async fn handle_websocket_connection(
+    ws: WebSocket,
+    state: AppState<NotificationCacheState, NotificationState>,
+) {
     let client_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
     info!("Client {} connected to WebSocket.", client_id);

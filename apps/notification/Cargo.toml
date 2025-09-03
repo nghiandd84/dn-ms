@@ -21,3 +21,5 @@ uuid = { workspace = true }
 
 shared-shared-config = { workspace = true }
 shared-shared-app = { workspace = true }
+
+features-notification-model = { workspace = true }

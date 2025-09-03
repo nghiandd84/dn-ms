@@ -1,10 +1,6 @@
-use axum::{
-    extract::Path,
-    response::IntoResponse,
-    routing::{any, get},
-    Router,
-};
-use serde::{Deserialize, Serialize};
+use axum::{extract::Path, routing::get, Router};
+use tracing::debug;
+use uuid::Uuid;
 
 use shared_shared_app::{
     config::{AppConfig, DbConfig},
@@ -12,19 +8,19 @@ use shared_shared_app::{
     state::AppState,
 };
 use shared_shared_config::db::Database;
-use tracing::debug;
-use uuid::Uuid;
 
-use crate::{app, websocket::handler::ws_handler};
+use features_email_template_model::{
+    state::{NotificationCacheState, NotificationState},
+    types::new_clients,
+};
+
+use crate::websocket::handler::ws_handler;
 
 struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub enum NotificationCacheState {}
-
-impl<'a> StartApp<NotificationCacheState> for MyApp<'a> {
+impl<'a> StartApp<NotificationCacheState, NotificationState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
@@ -36,7 +32,7 @@ impl<'a> StartApp<NotificationCacheState> for MyApp<'a> {
         async { Ok(()) }
     }
 
-    fn routes(&self, app_state: &AppState<NotificationCacheState>) -> Router {
+    fn routes(&self, app_state: &AppState<NotificationCacheState, NotificationState>) -> Router {
         let all_routes = Router::new()
             .route("/users/{user_id}", get(user_handler))
             .route("/ws", get(ws_handler))
@@ -58,7 +54,9 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         config: &app_config,
     };
 
-    my_app.start_app().await?;
+    let app_state = NotificationState::new(new_clients()); 
+
+    my_app.start_app(Some(app_state)).await?;
 
     Ok(())
 }

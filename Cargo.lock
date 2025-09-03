@@ -331,6 +331,7 @@ dependencies = [
  "axum",
  "config",
  "dotenv",
+ "features-notification-model",
  "futures-util",
  "serde",
  "serde_json",
@@ -1650,6 +1651,23 @@ dependencies = [
  "shared-shared-macro-rule",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "features-notification-model"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "chrono",
+ "serde",
+ "serde_json",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "tokio",
+ "tracing",
+ "utoipa",
+ "uuid",
+ "validator",
 ]
 
 [[package]]

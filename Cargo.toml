@@ -22,6 +22,8 @@ members = [
     "features/auth/repo", 
     "features/auth/service", 
 
+    "features/notification/model", 
+
     "features/bakery/entities", 
     "features/bakery/migrations", 
     "features/bakery/model", 
@@ -114,22 +116,27 @@ shared-shared-macro = { path = "./libs/shared/shared/macro"}
 shared-shared-macro-rule = { path = "./libs/shared/shared/macro-rule"}
 
 
-#Auth Module
+# Auth Feature
 features-auth-entities = { path = "./features/auth/entities"}
 features-auth-migrations = { path = "./features/auth/migrations"}
 features-auth-model = { path = "./features/auth/model"}
 features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
 
-#Auth Email Template
+# Email Template Feature
 features-email-template-entities = { path = "./features/email-template/entities"}
 features-email-template-migrations = { path = "./features/email-template/migrations"}
 features-email-template-model = { path = "./features/email-template/model"}
 features-email-template-repo = { path = "./features/email-template/repo"}
 features-email-template-service = { path = "./features/email-template/service"}
 
-#Bakery Module
+# Notification Feature
+features-notification-model = { path = "./features/notification/model"}
+
+# Bakery Feature
 features-bakery-entities = { path = "./features/bakery/entities"}
 features-bakery-migrations = { path = "./features/bakery/migrations"}
 features-bakery-model = { path = "./features/bakery/model"}
 features-bakery-service = { path = "./features/bakery/service"}
+
+

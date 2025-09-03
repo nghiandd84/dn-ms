@@ -10,17 +10,17 @@ use shared_shared_config::{db::Database, jwt::Jwt, mailer::Mailer};
 use shared_shared_data_cache::cache::Cache;
 
 use crate::config::AppConfig;
-use crate::health::health_checker_handler;
 use crate::mapper::{main_response_mapper, mw_ctx_resolver};
 use crate::state::AppState;
 
-pub trait StartApp<C>
+pub trait StartApp<C, T = ()>
 where
     C: Clone + Serialize + DeserializeOwned,
+    T: Clone
 {
     // fn configure_service(cfg: &mut web::ServiceConfig);
 
-    fn routes(&self, app_state: &AppState<C>) -> Router;
+    fn routes(&self, app_state: &AppState<C, T>) -> Router;
 
     fn app_config(&self) -> &AppConfig;
     fn migrate(
@@ -30,6 +30,7 @@ where
 
     fn start_app(
         &self,
+        state: Option<T>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async {
             dotenv().ok();
@@ -61,7 +62,6 @@ where
 
             info!("Starting {} app on port {}", app_config.app_key, port);
 
-            
             if app_config.has_swagger {
                 debug!(
                     "{}",
@@ -98,6 +98,7 @@ where
             let app_state = AppState {
                 conn: (&db).get_connection().clone(),
                 cache,
+                state
             };
 
             // let my_app_state = app_state.clone();

@@ -56,7 +56,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         config: &app_config,
     };
 
-    my_app.start_app().await?;
+    my_app.start_app(None).await?;
 
     Ok(())
 }
