@@ -5,6 +5,7 @@ use tracing::{debug, info};
 
 use dotenv::dotenv;
 use std::env;
+use tracing_subscriber::field::debug;
 
 use shared_shared_config::{db::Database, jwt::Jwt, mailer::Mailer};
 use shared_shared_data_cache::cache::Cache;
@@ -16,11 +17,16 @@ use crate::state::AppState;
 pub trait StartApp<C, T = ()>
 where
     C: Clone + Serialize + DeserializeOwned,
-    T: Clone
+    T: Clone,
 {
-    // fn configure_service(cfg: &mut web::ServiceConfig);
-
     fn routes(&self, app_state: &AppState<C, T>) -> Router;
+
+    fn custom_handler(
+        &self,
+        app_state: &AppState<C, T>,
+    ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        async { Ok(()) }
+    }
 
     fn app_config(&self) -> &AppConfig;
     fn migrate(
@@ -98,7 +104,7 @@ where
             let app_state = AppState {
                 conn: (&db).get_connection().clone(),
                 cache,
-                state
+                state,
             };
 
             // let my_app_state = app_state.clone();
@@ -115,13 +121,12 @@ where
             //     my_app_state,
             //     mw_ctx_resolver,
             // ));
-
+            self.custom_handler(&app_state).await?;
             let addr = format!("0.0.0.0:{port}");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
             axum::serve(listener, routes_all.into_make_service())
                 .await
                 .unwrap();
-
             Ok(())
         }
     }

@@ -38,12 +38,17 @@ async fn handle_websocket_connection(
 ) {
     let client_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
+    let state = state.state.expect("WebSocket state is not initialized");
+    let clients = state.get_clients();
+
     info!("Client {} connected to WebSocket.", client_id);
 
     // Split the socket into sender and receiver
     let (ws_sender, ws_receiver) = ws.split();
     // Use an MPSC channel to send messages from other tasks to this client's WebSocket
     let (tx, rx) = mpsc::unbounded_channel::<axum::extract::ws::Message>();
+
+    clients.write().await.insert(client_id, tx.clone());
 
     // Task to send messages from the MPSC channel to the WebSocket
     let send_task = tokio::spawn(handle_send_messages(client_id, ws_sender, rx));

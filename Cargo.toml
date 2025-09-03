@@ -84,6 +84,7 @@ quote = "1.0"
 rand = "0.8.5"
 redis = { version = "^0.22", features = ["tokio-comp", "tokio-native-tls-comp"] }
 rust_decimal = { version = "1.37.1" }
+rdkafka = { version = "0.37.0" }
 sea-orm = { version = "1.1.0" }
 sea-orm-migration = { version = "1.1.0" }
 serde = { version = "1.0.218", features = ["derive"] }

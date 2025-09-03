@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Router};
-use tracing::debug;
+use tracing::{debug, error};
 use uuid::Uuid;
 
 use shared_shared_app::{
@@ -23,6 +23,23 @@ struct MyApp<'a> {
 impl<'a> StartApp<NotificationCacheState, NotificationState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
+    }
+
+    fn custom_handler(
+        &self,
+        app_state: &AppState<NotificationCacheState, NotificationState>,
+    ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        async {
+            tokio::spawn(async move {
+                debug!("Starting consumer task...");
+                // crate::consumer::cusumer_task().await?;
+                if let Err(e) = crate::consumer::cusumer_task().await {
+                    error!("Consumer task error: {}", e);
+                    // Optionally handle the error here
+                }
+            });
+            Ok(())
+        }
     }
 
     fn migrate(
@@ -54,9 +71,9 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         config: &app_config,
     };
 
-    let app_state = NotificationState::new(new_clients()); 
-
-    my_app.start_app(Some(app_state)).await?;
+    my_app
+        .start_app(Some(NotificationState::new(new_clients())))
+        .await?;
 
     Ok(())
 }
