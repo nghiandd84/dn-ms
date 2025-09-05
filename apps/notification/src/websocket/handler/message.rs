@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::extract::ws::Message::{Close, Text};
 use axum::{
     extract::{
@@ -12,12 +14,13 @@ use futures_util::{
 };
 use shared_shared_app::state::AppState;
 use tokio::sync::mpsc;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 use features_email_template_model::state::{NotificationCacheState, NotificationState};
 
 use crate::websocket::action::client::WebSocketClientAction;
-use crate::websocket::action::server::WebSocketServerResponse;
+use crate::websocket::handler::authenticate::handle_authenticate;
+use crate::websocket::handler::ping::handle_ping;
 
 // Simple counter for unique client IDs
 static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(1);
@@ -36,37 +39,56 @@ async fn handle_websocket_connection(
     ws: WebSocket,
     state: AppState<NotificationCacheState, NotificationState>,
 ) {
-    let client_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let websocket_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
-    let state = state.state.expect("WebSocket state is not initialized");
-    let clients = state.get_clients();
+    let arc_state = Arc::new(state);
+    let notification_state = arc_state
+        .state
+        .as_ref()
+        .expect("WebSocket state is not initialized");
+    let clients = notification_state.get_clients().clone();
 
-    info!("Client {} connected to WebSocket.", client_id);
+    info!("Client {} connected to WebSocket.", websocket_id);
 
     // Split the socket into sender and receiver
     let (ws_sender, ws_receiver) = ws.split();
     // Use an MPSC channel to send messages from other tasks to this client's WebSocket
     let (tx, rx) = mpsc::unbounded_channel::<axum::extract::ws::Message>();
 
-    clients.write().await.insert(client_id, tx.clone());
+    clients.write().await.insert(websocket_id, tx.clone());
 
     // Task to send messages from the MPSC channel to the WebSocket
-    let send_task = tokio::spawn(handle_send_messages(client_id, ws_sender, rx));
+    let send_task = tokio::spawn(handle_send_messages(websocket_id, ws_sender, rx));
     // Task to receive messages from the WebSocket (e.g., pings or close messages)
     let recv_task = tokio::spawn(async move {
-        debug!("Client {} starting to receive messages.", client_id);
+        debug!("Client {} starting to receive messages.", websocket_id);
         let mut user_id: Option<String> = None;
-        handle_receive_messages(client_id, &mut user_id, ws_receiver, tx).await;
+        handle_receive_messages(websocket_id, &mut user_id, ws_receiver, tx, &arc_state).await;
     });
 
     // Wait for either send or receive task to complete (meaning connection closed)
     tokio::select! {
-        _ = send_task => {},
-        _ = recv_task => {},
+        _ = send_task => {
+            // If send task ends, we should also end the receive task
+            info!("Send task ended for client {}, closing connection.", websocket_id);
+
+        },
+        _ = recv_task => {
+            // If receive task ends, we should also end the send task
+            info!("Receive task ended for client {}, closing connection.", websocket_id);
+        },
     }
 
-    info!("Client {} disconnected.", client_id);
+    clients.write().await.remove(&websocket_id);
+
+    info!("Client {} disconnected.", websocket_id);
 }
+
+// fn to_arc_state<'a>(
+//     state: &'a AppState<NotificationCacheState, NotificationState>,
+// ) -> Arc<AppState<NotificationCacheState, NotificationState>> {
+//     Arc::new(*state)
+// }
 
 async fn handle_send_messages(
     client_id: usize,
@@ -84,35 +106,36 @@ async fn handle_send_messages(
 }
 
 async fn handle_receive_messages<'a>(
-    client_id: usize,
+    websocket_id: usize,
     mut user_id: &mut Option<String>,
     mut ws_receiver: SplitStream<WebSocket>,
     tx: mpsc::UnboundedSender<Message>,
-) {
+    state: &'a Arc<AppState<NotificationCacheState, NotificationState>>,
+) -> () {
     {
         while let Some(result) = ws_receiver.next().await {
             debug!(
                 "Client {} user_id {:?} received message: {:?} ",
-                client_id, user_id, result
+                websocket_id, user_id, result
             );
             let msg = match result {
                 Ok(msg) => msg,
                 Err(e) => {
-                    warn!("WebSocket receive error for client {}: {}", client_id, e);
-                    break;
+                    warn!("WebSocket receive error for client {}: {}", websocket_id, e);
+                    continue;
                 }
             };
             match msg {
                 Close(_) => {
-                    info!("Client {} disconnected.", client_id);
-                    break;
+                    info!("Client {} disconnected.", websocket_id);
+                    continue;
                 }
                 Text(text_msg) => {
-                    debug!("Client {} received Text Message {}", client_id, text_msg);
+                    debug!("Client {} received Text Message {}", websocket_id, text_msg);
                     if user_id.is_none() {
                         warn!(
                             "Client {} is not authenticated, ignoring message.",
-                            client_id
+                            websocket_id
                         );
                     }
                     // Deserialize the message to WebSocketClientAction
@@ -121,65 +144,59 @@ async fn handle_receive_messages<'a>(
                     if let Err(e) = client_action {
                         warn!(
                             "Failed to deserialize message from client {}: {}",
-                            client_id, e
+                            websocket_id, e
                         );
                         continue;
                     }
                     let client_action = client_action.unwrap();
 
-                    // Handle the client action
-                    match client_action {
-                        WebSocketClientAction::Authenticate { token } => {
-                            debug!("Client {} authenticated with token: {}", client_id, token);
-                            // Here you would typically validate the token and set the user_id
-                            // For demonstration, we'll just set a dummy user_id
-                            *user_id = Some("MyUserId".to_string());
-                            debug!(
-                                "Client {} token: {:?} and new user_id: {}",
-                                client_id,
-                                token,
-                                user_id.as_deref().unwrap_or("None")
-                            );
-                        }
-                        WebSocketClientAction::Disconnect => {
-                            info!("Client {} requested disconnection.", client_id);
-                            break;
-                        }
-                        WebSocketClientAction::Ping => {
-                            debug!("Client {} sent a Ping.", client_id);
-                            let pong_msg = WebSocketServerResponse::Pong;
-                            if let Err(e) = tx.send(Message::Text(
-                                serde_json::to_string(&pong_msg).unwrap().into(),
-                            )) {
-                                error!("Failed to send pong to client {}: {}", client_id, e);
-                            }
-                        }
-                        _ => {
-                            debug!(
-                                "Client {} received unsupported action: {:?}",
-                                client_id, client_action
-                            );
-                            // Handle other actions if needed
-                        }
-                    }
-                    // user_id = &x;
+                    handle_client_action(client_action, websocket_id, &state, &tx).await;
                 }
                 _ => {
                     // If you want to echo the message back, send it through the tx channel
                     if let Err(e) = tx.send(msg) {
                         warn!(
                             "Failed to send message to client {} via channel: {}",
-                            client_id, e
+                            websocket_id, e
                         );
                         break;
                     }
                     // Handle other message types if needed
-                    debug!("Client {} received non-close message", client_id);
+                    debug!("Client {} received non-close message", websocket_id);
 
                     // }
                 }
             }
         }
-        info!("Client {} receive task finished, disconnecting.", client_id);
+        info!(
+            "Client {} receive task finished, disconnecting.",
+            websocket_id
+        );
+    }
+}
+
+async fn handle_client_action<'a>(
+    client_action: WebSocketClientAction,
+    websocket_id: usize,
+    state: &'a Arc<AppState<NotificationCacheState, NotificationState>>,
+    tx: &mpsc::UnboundedSender<Message>,
+) {
+    match client_action {
+        WebSocketClientAction::Authenticate { token, client_id } => {
+            handle_authenticate(token, websocket_id, client_id, state, tx).await;
+        }
+        WebSocketClientAction::Disconnect => {
+            info!("Client {} requested disconnection.", websocket_id);
+        }
+        WebSocketClientAction::Ping => {
+            debug!("Client {} sent a Ping.", websocket_id);
+            handle_ping(websocket_id, tx).await;
+        }
+        _ => {
+            info!(
+                "Client {} received unsupported action: {:?}",
+                websocket_id, client_action
+            );
+        }
     }
 }

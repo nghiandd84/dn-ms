@@ -1,11 +1,11 @@
-use axum::{middleware, routing::get, Router};
+use axum::{middleware, Router};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use tracing::{debug, info};
 
 use dotenv::dotenv;
 use std::env;
-use tracing_subscriber::field::debug;
+use std::sync::Arc;
 
 use shared_shared_config::{db::Database, jwt::Jwt, mailer::Mailer};
 use shared_shared_data_cache::cache::Cache;
@@ -23,7 +23,7 @@ where
 
     fn custom_handler(
         &self,
-        app_state: &AppState<C, T>,
+        app_state: Arc<AppState<C, T>>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async { Ok(()) }
     }
@@ -121,7 +121,7 @@ where
             //     my_app_state,
             //     mw_ctx_resolver,
             // ));
-            self.custom_handler(&app_state).await?;
+            self.custom_handler(Arc::new(app_state)).await?;
             let addr = format!("0.0.0.0:{port}");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
             axum::serve(listener, routes_all.into_make_service())

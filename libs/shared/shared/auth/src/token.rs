@@ -84,14 +84,14 @@ pub fn create_refresh_token(
 }
 
 pub fn decode_access_token(
-    refresh_token: &str,
+    token: &str,
     client_secret: &str,
 ) -> Result<AccessTokenStruct, TokenError> {
     let mut validation = Validation::new(Algorithm::HS256);
     validation.validate_nbf = true;
     validation.reject_tokens_expiring_in_less_than = 10; // seconds
     let data = decode::<Claims>(
-        refresh_token,
+        token,
         &DecodingKey::from_secret(client_secret.as_ref()),
         &validation,
     )

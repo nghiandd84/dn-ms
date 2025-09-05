@@ -19,3 +19,4 @@ utoipa = { workspace = true }
 uuid = { workspace = true }
 
 shared-shared-data-auth = { workspace = true }
+shared-shared-macro = { workspace = true }

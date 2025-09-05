@@ -2,10 +2,10 @@ use std::time::Duration;
 
 use sea_orm::DbConn;
 use shared_shared_auth::{
-    claim::UserAccessData,
+    claim::{AccessTokenStruct, Claims, UserAccessData},
     data::AuthorizationCodeData,
     token::{
-        create_access_token, create_refresh_token, decode_refresh_token,
+        create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
         get_access_token_cache_key, get_refresh_token_cache_key, REFRESH_TOKEN_EXPIRATION,
         TOKEN_EXPIRATION, TOKEN_TYPE,
     },
@@ -15,10 +15,10 @@ use shared_shared_data_auth::error::TokenError;
 use tracing::{debug, error, info};
 use uuid::Uuid;
 
-use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
+use features_auth_entities::token::{self, TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::{
     state::AuthCacheState,
-    token::{GrantType, TokenForCreateRequest},
+    token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},
 };
 use shared_shared_data_app::{error::AppError, result::Result};
 use shared_shared_data_cache::cache::Cache;
@@ -113,6 +113,27 @@ impl TokenService {
         }
 
         Ok(authorization_data)
+    }
+
+    pub async fn verify_token(
+        db: &DbConn,
+        token_request: &TokenForVerifyRequest,
+    ) -> Result<AccessTokenStruct> {
+        let client_id = token_request.client_id.unwrap_or_default();
+        let token = token_request.token.clone().unwrap_or_default();
+        let client = ClientQuery::get(db, client_id).await;
+        if client.is_err() {
+            // error!("Error fetching client with id : {:?}", client_id);
+            return Err(AppError::EntityNotFound {
+                entity: "Client".to_string(),
+            });
+        }
+        let client = client.unwrap();
+        debug!("Client found: {:?}", client);
+        let client_secret = client.client_secret.unwrap_or_default();
+        let access_data =
+            decode_access_token(&token, &client_secret).map_err(|error| AppError::Token(error))?;
+        Ok(access_data)
     }
 }
 

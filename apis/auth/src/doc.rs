@@ -37,6 +37,7 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::token::create_token,
         crate::routes::token::filter_tokens,
         crate::routes::token::get_token,
+        crate::routes::token::verify_token,
         crate::routes::user::delete_user,
         crate::routes::user::filter_users,
         crate::routes::user::get_user,

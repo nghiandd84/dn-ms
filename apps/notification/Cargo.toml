@@ -12,6 +12,7 @@ config = { workspace = true }
 dotenv = { workspace = true }
 futures-util = { workspace = true }
 rdkafka = { workspace = true }
+reqwest = {  workspace = true }
 serde = {  workspace = true , features = ["derive"] }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }

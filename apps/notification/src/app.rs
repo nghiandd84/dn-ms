@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{extract::Path, routing::get, Router};
 use tracing::{debug, error};
 use uuid::Uuid;
@@ -14,7 +16,7 @@ use features_email_template_model::{
     types::new_clients,
 };
 
-use crate::websocket::handler::ws_handler;
+use crate::websocket::handler::message::ws_handler;
 
 struct MyApp<'a> {
     config: &'a AppConfig,
@@ -27,13 +29,12 @@ impl<'a> StartApp<NotificationCacheState, NotificationState> for MyApp<'a> {
 
     fn custom_handler(
         &self,
-        app_state: &AppState<NotificationCacheState, NotificationState>,
+        app_state: Arc<AppState<NotificationCacheState, NotificationState>>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        async {
+        async move {
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
-                // crate::consumer::cusumer_task().await?;
-                if let Err(e) = crate::consumer::cusumer_task().await {
+                if let Err(e) = crate::consumer::task::cusumer_task(app_state).await {
                     error!("Consumer task error: {}", e);
                     // Optionally handle the error here
                 }

@@ -1,8 +1,9 @@
 use crate::app::start_app;
 
+
 mod app;
-mod email;
 mod consumer;
+mod email;
 mod websocket;
 
 #[tokio::main]

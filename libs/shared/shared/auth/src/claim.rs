@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
+
+use shared_shared_macro::Response;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -16,7 +19,7 @@ pub enum ClaimSubject {
     AccessToken(AccessTokenStruct),
     RefreshToken(RefreshTokenStruct),
 }
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema, Response)]
 pub struct AccessTokenStruct {
     pub user_id: Uuid,
     pub accesses: Vec<UserAccessData>,
@@ -28,7 +31,7 @@ pub struct RefreshTokenStruct {
     pub token_id: Uuid,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct UserAccessData {
     pub role_name: String,
     pub key: Option<String>, // Optional: Access key

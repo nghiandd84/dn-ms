@@ -3,13 +3,19 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use shared_shared_auth::data::AuthorizationCodeData;
+use shared_shared_auth::{
+    claim::{AccessTokenStruct, AccessTokenStructResponse, Claims},
+    data::AuthorizationCodeData,
+};
 use tracing::debug;
 use uuid::Uuid;
 
 use features_auth_model::{
     state::AuthCacheState,
-    token::{TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest},
+    token::{
+        TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest,
+        TokenForVerifyRequest,
+    },
 };
 
 use shared_shared_app::state::AppState;
@@ -48,6 +54,26 @@ async fn create_token(
     let data = authorization_code.clone();
 
     Ok(ResponseJson(data))
+}
+
+#[utoipa::path(
+    post,
+    request_body = TokenForVerifyRequest,
+    path = "/tokens/verify",
+    tag = TAG,
+    responses(
+        (status = 200, description = "Token is created", body = AccessTokenStructResponse),       
+    )
+)]
+async fn verify_token(
+    state: State<AppState<AuthCacheState>>,
+    ValidJson(request): ValidJson<TokenForVerifyRequest>,
+) -> Result<ResponseJson<AccessTokenStruct>> {
+    debug!("Create token with request: {:?}", request);
+    // Create Logic Service to convert request to DTO
+    let access_token_struct = TokenService::verify_token(&state.conn, &request).await?;
+
+    Ok(ResponseJson(access_token_struct))
 }
 
 #[utoipa::path(
@@ -97,6 +123,7 @@ pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
     Router::new()
         .route("/oauth/token", post(create_token))
         .route("/tokens/{token_id}", get(get_token))
+        .route("/tokens/verify", post(verify_token))
         .route("/tokens", get(filter_tokens))
         .with_state(app_state.clone())
 }

@@ -1,11 +1,14 @@
 
 ### Variables
-@baseUrl = http://localhost:6101
-@userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
+@baseUrl = http://localhost:5101
+@userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
-@authCode = 
+# @authCode = 
 @AccessToken = 
 @RefreshToken = 
+
+@userEmail = nghiandd@gmail.com
+@userPassword = Test@123456
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -16,8 +19,8 @@ GET {{baseUrl}}/swagger-ui/
 
 
 ### Register 
-# @prompt userEmail User email
-# @prompt userPassword User email
+# @ prompt userEmail User email
+# @ prompt userPassword Password
 POST {{baseUrl}}/register
 Content-Type: application/json
 
@@ -29,8 +32,8 @@ Content-Type: application/json
 }
 
 ### Login
-# @prompt userEmail User email
-# @prompt userPassword User email
+# @ prompt userEmail User email
+# @ prompt userPassword User email
 # @name loginRequest
 POST {{baseUrl}}/login
 Content-Type: application/json
@@ -148,3 +151,13 @@ Content-Type: application/json
 @RefreshToken1 = {{refreshRequest.response.body.data.refresh_token}}
 ###
 
+
+### Verify access token
+# @name verifyTokenRequest
+POST {{baseUrl}}/tokens/verify
+Content-Type: application/json
+
+{   
+    "client_id": "{{clientId}}",
+    "token": "{{AccessToken}}"
+}

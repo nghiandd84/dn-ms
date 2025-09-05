@@ -6,6 +6,7 @@ use validator::Validate;
 
 use features_auth_entities::token::{ModelOptionDto, TokenForCreateDto};
 use shared_shared_macro::{ParamFilter, Response};
+
 #[derive(Clone, Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct TokenForCreateRequest {
     #[validate(required(code = "code_required", message = "code is required"))]
@@ -14,6 +15,14 @@ pub struct TokenForCreateRequest {
     pub client_id: Option<Uuid>,
     #[validate(required(code = "grant_type_required", message = "Grant type is required"))]
     pub grant_type: Option<GrantType>,
+}
+
+#[derive(Clone, Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct TokenForVerifyRequest {
+    #[validate(required(code = "token_required", message = "token is required"))]
+    pub token: Option<String>,
+    #[validate(required(code = "client_id_required", message = "client id is required"))]
+    pub client_id: Option<Uuid>,
 }
 
 #[derive(Deserialize, Serialize, Debug, ToSchema, Clone)]
