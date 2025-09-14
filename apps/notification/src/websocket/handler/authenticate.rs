@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 use axum::extract::ws::Message;
 use tokio::sync::mpsc;
 use tracing::debug;
@@ -11,12 +13,16 @@ pub async fn handle_authenticate<'a>(
     token: String,
     websocket_id: usize,
     client_id: Uuid,
-    app_state: &'a AppState<NotificationCacheState, NotificationState>,
+    notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &'a mpsc::UnboundedSender<Message>,
 ) {
-    let state = app_state.state.as_ref().unwrap();
-    let clients = state.get_clients();
-    let len = clients.read().await.len();
+    // let clients = notification_state.read().unwrap().get_clients();
+
+    let clients = {
+        let state_read_guard = notification_state.read().unwrap();
+        state_read_guard.get_clients().clone()
+    };
+    let len = clients.len();
     debug!(
         "Client {} authenticated with token: {}",
         websocket_id, token
@@ -98,5 +104,10 @@ pub async fn handle_authenticate<'a>(
     // Map user_id to client_id
     // state_one.insert_user_client_mapping(user_id, websocket_id);
     debug!("Mapped user_id {} to client_id {}", user_id, websocket_id);
+    {
+        let mut state_read_guard = notification_state.write().unwrap();
+        state_read_guard.insert_user_client_mapping(user_id, websocket_id);
+    }
+
     // Send a authentication success message back to client
 }

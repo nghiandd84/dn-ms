@@ -1,20 +1,18 @@
-use axum::handler;
 use futures_util::StreamExt;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
-use std::sync::Arc;
-use tracing::{debug, error, event};
+use std::sync::{Arc, RwLock};
+use tracing::{debug, error};
+use tracing_subscriber::field::debug;
 
-use shared_shared_app::state::AppState;
-
-use features_email_template_model::state::{NotificationCacheState, NotificationState};
+use features_email_template_model::state::NotificationState;
 
 use crate::consumer::event::KafkaEvent;
 use crate::consumer::handler::handler_event;
 
 pub fn cusumer_task(
-    app_state: Arc<AppState<NotificationCacheState, NotificationState>>,
+    notification_state: Arc<RwLock<NotificationState>>,
 ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
     async move {
         debug!("Starting Kafka consumer task...");
@@ -50,13 +48,9 @@ pub fn cusumer_task(
 
         let mut message_stream = consumer.stream();
         while let Some(message) = message_stream.next().await {
+            debug!("Received message from Kafka");
             match message {
                 Ok(m) => {
-                
-                    let current_timestamp = std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .unwrap()
-                        .as_secs();
                     let message = match m.payload_view::<str>() {
                         Some(Ok(s)) => s,
                         Some(Err(e)) => {
@@ -77,7 +71,7 @@ pub fn cusumer_task(
                         }
                     };
                     debug!("Received Kafka event: {:?}", event);
-                    handler_event(event, &app_state).await;
+                    handler_event(event, &notification_state).await;
                 }
                 Err(e) => error!("Kafka error: {}", e),
             }

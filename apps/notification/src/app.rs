@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use axum::{extract::Path, routing::get, Router};
 use tracing::{debug, error};
@@ -22,19 +22,20 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp<NotificationCacheState, NotificationState> for MyApp<'a> {
+impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
 
     fn custom_handler(
         &self,
-        app_state: Arc<AppState<NotificationCacheState, NotificationState>>,
+        app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        let notification_state = app_state.state.clone().unwrap();
         async move {
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
-                if let Err(e) = crate::consumer::task::cusumer_task(app_state).await {
+                if let Err(e) = crate::consumer::task::cusumer_task(notification_state).await {
                     error!("Consumer task error: {}", e);
                     // Optionally handle the error here
                 }
@@ -50,7 +51,10 @@ impl<'a> StartApp<NotificationCacheState, NotificationState> for MyApp<'a> {
         async { Ok(()) }
     }
 
-    fn routes(&self, app_state: &AppState<NotificationCacheState, NotificationState>) -> Router {
+    fn routes(
+        &self,
+        app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
+    ) -> Router {
         let all_routes = Router::new()
             .route("/users/{user_id}", get(user_handler))
             .route("/ws", get(ws_handler))
@@ -72,9 +76,9 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         config: &app_config,
     };
 
-    my_app
-        .start_app(Some(NotificationState::new(new_clients())))
-        .await?;
+    let notification_state = Arc::new(RwLock::new(NotificationState::new(new_clients())));
+
+    my_app.start_app(Some(notification_state)).await?;
 
     Ok(())
 }

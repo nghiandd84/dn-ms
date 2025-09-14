@@ -1,4 +1,6 @@
-use std::sync::Arc;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 
 use axum::extract::ws::Message::{Close, Text};
 use axum::{
@@ -8,6 +10,7 @@ use axum::{
     },
     response::IntoResponse,
 };
+use features_email_template_model::types::Clients;
 use futures_util::{
     stream::{SplitSink, SplitStream, StreamExt},
     SinkExt,
@@ -29,33 +32,30 @@ static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::Atomi
 #[axum::debug_handler]
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
-    State(state): State<AppState<NotificationCacheState, NotificationState>>,
+    State(state): State<AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>>,
 ) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_websocket_connection(socket, state))
+    let notification_state = state.state.unwrap();
+    ws.on_upgrade(move |socket| handle_websocket_connection(socket, notification_state))
 }
 
 /// Handles a new WebSocket connection.
 async fn handle_websocket_connection(
     ws: WebSocket,
-    state: AppState<NotificationCacheState, NotificationState>,
+    notification_state: Arc<RwLock<NotificationState>>,
 ) {
     let websocket_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-
-    let arc_state = Arc::new(state);
-    let notification_state = arc_state
-        .state
-        .as_ref()
-        .expect("WebSocket state is not initialized");
-    let clients = notification_state.get_clients().clone();
-
-    info!("Client {} connected to WebSocket.", websocket_id);
-
     // Split the socket into sender and receiver
     let (ws_sender, ws_receiver) = ws.split();
     // Use an MPSC channel to send messages from other tasks to this client's WebSocket
-    let (tx, rx) = mpsc::unbounded_channel::<axum::extract::ws::Message>();
 
-    clients.write().await.insert(websocket_id, tx.clone());
+    let (tx, rx) = mpsc::unbounded_channel::<axum::extract::ws::Message>();
+    let notification_state_clone = notification_state.clone();
+
+    {
+        let mut notification_state_write_guard = notification_state_clone.write().unwrap();
+        notification_state_write_guard.insert_client(websocket_id, tx.clone());
+        info!("Client {} connected to WebSocket.", websocket_id);
+    }
 
     // Task to send messages from the MPSC channel to the WebSocket
     let send_task = tokio::spawn(handle_send_messages(websocket_id, ws_sender, rx));
@@ -63,7 +63,14 @@ async fn handle_websocket_connection(
     let recv_task = tokio::spawn(async move {
         debug!("Client {} starting to receive messages.", websocket_id);
         let mut user_id: Option<String> = None;
-        handle_receive_messages(websocket_id, &mut user_id, ws_receiver, tx, &arc_state).await;
+        handle_receive_messages(
+            websocket_id,
+            &mut user_id,
+            ws_receiver,
+            tx,
+            notification_state_clone,
+        )
+        .await;
     });
 
     // Wait for either send or receive task to complete (meaning connection closed)
@@ -79,16 +86,14 @@ async fn handle_websocket_connection(
         },
     }
 
-    clients.write().await.remove(&websocket_id);
+    {
+        let mut notification_state_write_guard = notification_state.write().unwrap();
+        info!("Client {} disconnect to WebSocket.", websocket_id);
+        notification_state_write_guard.remove_client(&websocket_id);
+    }
 
     info!("Client {} disconnected.", websocket_id);
 }
-
-// fn to_arc_state<'a>(
-//     state: &'a AppState<NotificationCacheState, NotificationState>,
-// ) -> Arc<AppState<NotificationCacheState, NotificationState>> {
-//     Arc::new(*state)
-// }
 
 async fn handle_send_messages(
     client_id: usize,
@@ -110,7 +115,7 @@ async fn handle_receive_messages<'a>(
     mut user_id: &mut Option<String>,
     mut ws_receiver: SplitStream<WebSocket>,
     tx: mpsc::UnboundedSender<Message>,
-    state: &'a Arc<AppState<NotificationCacheState, NotificationState>>,
+    notification_state: Arc<RwLock<NotificationState>>,
 ) -> () {
     {
         while let Some(result) = ws_receiver.next().await {
@@ -150,7 +155,8 @@ async fn handle_receive_messages<'a>(
                     }
                     let client_action = client_action.unwrap();
 
-                    handle_client_action(client_action, websocket_id, &state, &tx).await;
+                    handle_client_action(client_action, websocket_id, &notification_state, &tx)
+                        .await;
                 }
                 _ => {
                     // If you want to echo the message back, send it through the tx channel
@@ -178,12 +184,12 @@ async fn handle_receive_messages<'a>(
 async fn handle_client_action<'a>(
     client_action: WebSocketClientAction,
     websocket_id: usize,
-    state: &'a Arc<AppState<NotificationCacheState, NotificationState>>,
+    notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &mpsc::UnboundedSender<Message>,
 ) {
     match client_action {
         WebSocketClientAction::Authenticate { token, client_id } => {
-            handle_authenticate(token, websocket_id, client_id, state, tx).await;
+            handle_authenticate(token, websocket_id, client_id, notification_state, tx).await;
         }
         WebSocketClientAction::Disconnect => {
             info!("Client {} requested disconnection.", websocket_id);
