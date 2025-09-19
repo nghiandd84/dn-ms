@@ -4,7 +4,6 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
-use tracing_subscriber::field::debug;
 
 use features_email_template_model::state::NotificationState;
 
@@ -29,10 +28,17 @@ pub fn cusumer_task(
                 "notification_topic".to_string()
             });
 
+        let instance_id = std::env::var("INSTANCE_ID")
+            .map_err(|_| ("INSTANCE_ID not set").into())
+            .unwrap_or_else(|e: String| {
+                error!("{}", e);
+                "0".to_string()
+            });
+        // Each instance should have its own group id to receive all messages
+        let notification_group = format!("notification_group_{}", instance_id);
         let consumer: StreamConsumer = ClientConfig::new()
-            .set("group.id", "notification_group")
+            .set("group.id", notification_group.as_str())
             .set("bootstrap.servers", &kafka_bootstrap_servers)
-            .set("enable.auto.commit", "true")
             .set("auto.offset.reset", "latest")
             .set("session.timeout.ms", "6000") // Example: longer session timeout
             .set("enable.auto.commit", "true")

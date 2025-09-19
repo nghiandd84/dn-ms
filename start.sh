@@ -95,7 +95,7 @@ for i in {1..3}; do
     PORT=400$i
     echo "--- Notification App on port $PORT ---"
     # Execute the program
-    NOTIFICATION_APP_PORT=400$i $APP_DIRECTORY/app-notification > $LOG_DIRECTORY/app-notification-${CURRENT_DATE}-instance-$i.log &
+    NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification > $LOG_DIRECTORY/app-notification-${CURRENT_DATE}-instance-$i.log &
 done
 
 #wait

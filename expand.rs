@@ -15,8 +15,8 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::AsyncSmtpTransport;
 use lettre::AsyncMailer;
 use lettre::Message as EmailMessage;
-use serde_json::json; // Import the json! macro
-use std::time::Duration; // Import Duration
+use serde_json::json;
+use std::time::Duration;
 
 // Axum specific imports
 use axum::{
@@ -37,7 +37,7 @@ use tower_http::cors::CorsLayer;
 struct KafkaEvent {
     email: String,
     template_id: String,
-    data: HashMap<String, String>, // Dynamic data for template placeholders
+    data: HashMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -51,7 +51,7 @@ struct NotificationSuccess {
     message: String,
     recipient: String,
     template_id: String,
-    timestamp: u64, // Unix timestamp
+    timestamp: u64,
 }
 
 #[derive(Debug, Serialize)]
@@ -59,7 +59,7 @@ struct NotificationFailure {
     message: String,
     recipient: Option<String>,
     template_id: Option<String>,
-    timestamp: u64, // Unix timestamp
+    timestamp: u64,
     error: String,
 }
 
@@ -76,8 +76,7 @@ struct KafkaStatusUpdate {
 #[serde(tag = "action", rename_all = "camelCase")]
 enum WebSocketClientAction {
     Authenticate { token: String },
-    Ping, // Added Ping action from client
-    // Add other client actions here if needed
+    Ping,
 }
 
 #[derive(Debug, Serialize)]
@@ -88,14 +87,11 @@ enum WebSocketServerResponse {
     NotificationSuccess(NotificationSuccess),
     NotificationFailure(NotificationFailure),
     KafkaStatusUpdate(KafkaStatusUpdate),
-    Pong, // Added Pong response from server
+    Pong,
 }
 
-// --- Shared WebSocket State ---
-type Clients = Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<AxumWsMessage>>>>;
-
-// Simple counter for unique client IDs
-static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(1);
+// --- NEW: Shared WebSocket State now maps user IDs to a list of senders ---
+type Clients = Arc<RwLock<HashMap<String, Vec<mpsc::UnboundedSender<AxumWsMessage>>>>>;
 
 /// Fetches an email template from an external API.
 async fn fetch_email_template(template_id: &str) -> Result<EmailTemplate> {
@@ -144,18 +140,23 @@ async fn send_email(to_email: &str, subject: &str, body: &str) -> Result<()> {
     Ok(())
 }
 
-/// Broadcasts a WebSocket message to all connected clients.
-/// Messages are now of type `WebSocketServerResponse`.
-async fn broadcast_ws_message(clients: Clients, response_type: WebSocketServerResponse) {
+/// NEW: Sends a WebSocket message to all connections for a specific user ID.
+async fn send_ws_message_to_user(clients: Clients, user_id: &str, response_type: WebSocketServerResponse) {
     let message = serde_json::to_string(&response_type).expect("Failed to serialize WS message");
     let message_ws = AxumWsMessage::Text(message);
 
-    // Acquire read lock to iterate over clients
+    // Acquire read lock to access the map
     let clients_map = clients.read().await;
-    for (&_id, tx) in clients_map.iter() {
-        if let Err(e) = tx.send(message_ws.clone()).await {
-            log::warn!("Failed to send message to client: {}", e);
+
+    // Find the list of senders for the given user ID
+    if let Some(senders) = clients_map.get(user_id) {
+        for tx in senders.iter() {
+            if let Err(e) = tx.send(message_ws.clone()).await {
+                log::warn!("Failed to send message to client for user {}: {}", user_id, e);
+            }
         }
+    } else {
+        log::warn!("Attempted to send message to non-existent user: {}", user_id);
     }
 }
 
@@ -179,9 +180,9 @@ async fn kafka_consumer_task(clients: Clients) {
         .set("bootstrap.servers", &kafka_bootstrap_servers)
         .set("enable.auto.commit", "true")
         .set("auto.offset.reset", "latest")
-        .set("session.timeout.ms", "6000") // Example: longer session timeout
+        .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "true")
-        .set("allow.auto.create.topics", "true") // Allow Kafka to create topic if it doesn't exist
+        .set("allow.auto.create.topics", "true")
         .create()
         .expect("Consumer creation failed");
 
@@ -190,7 +191,8 @@ async fn kafka_consumer_task(clients: Clients) {
         .expect("Can't subscribe to specified topic");
 
     log::info!("Kafka consumer connected to topic: {}", kafka_topic);
-    broadcast_ws_message(
+    // TODO: This message is broadcast to all users regardless of auth. This is OK for status.
+    broadcast_all_ws_message(
         clients.clone(),
         WebSocketServerResponse::KafkaStatusUpdate(KafkaStatusUpdate {
             status: "Running".to_string(),
@@ -200,7 +202,6 @@ async fn kafka_consumer_task(clients: Clients) {
     )
     .await;
 
-    // Stream messages from Kafka
     loop {
         match consumer.recv().await {
             Ok(message) => {
@@ -212,7 +213,8 @@ async fn kafka_consumer_task(clients: Clients) {
                     Some(Ok(s)) => s,
                     Some(Err(e)) => {
                         log::error!("Error decoding payload: {:?}", e);
-                        broadcast_ws_message(
+                        // TODO: Update to send to a specific user if the user info is in the payload.
+                        broadcast_all_ws_message(
                             clients.clone(),
                             WebSocketServerResponse::NotificationFailure(NotificationFailure {
                                 message: "Error decoding Kafka payload".to_string(),
@@ -237,7 +239,8 @@ async fn kafka_consumer_task(clients: Clients) {
                     Ok(e) => e,
                     Err(e) => {
                         log::error!("Failed to parse Kafka event JSON: {} - {}", payload, e);
-                        broadcast_ws_message(
+                        // TODO: Update to send to a specific user if the user info is in the payload.
+                        broadcast_all_ws_message(
                             clients.clone(),
                             WebSocketServerResponse::NotificationFailure(NotificationFailure {
                                 message: "Failed to parse Kafka event JSON".to_string(),
@@ -260,7 +263,6 @@ async fn kafka_consumer_task(clients: Clients) {
                     continue;
                 }
 
-                // 1. Fetch email template
                 let template = match fetch_email_template(&event.template_id).await {
                     Ok(t) => t,
                     Err(e) => {
@@ -269,7 +271,8 @@ async fn kafka_consumer_task(clients: Clients) {
                             event.template_id,
                             e
                         );
-                        broadcast_ws_message(
+                        // TODO: Update to send to a specific user if the user info is in the payload.
+                        broadcast_all_ws_message(
                             clients.clone(),
                             WebSocketServerResponse::NotificationFailure(NotificationFailure {
                                 message: format!(
@@ -287,7 +290,6 @@ async fn kafka_consumer_task(clients: Clients) {
                     }
                 };
 
-                // Simple template rendering
                 let mut rendered_subject = template.subject;
                 let mut rendered_body = template.body;
 
@@ -297,12 +299,12 @@ async fn kafka_consumer_task(clients: Clients) {
                     rendered_body = rendered_body.replace(&placeholder, value);
                 }
 
-                // 2. Send email
                 let email_sent = match send_email(&event.email, &rendered_subject, &rendered_body).await {
                     Ok(_) => true,
                     Err(e) => {
                         log::error!("Failed to send email to {}: {}", event.email, e);
-                        broadcast_ws_message(
+                        // TODO: Update to send to a specific user if the user info is in the payload.
+                        broadcast_all_ws_message(
                             clients.clone(),
                             WebSocketServerResponse::NotificationFailure(NotificationFailure {
                                 message: format!("Failed to send email to {}", event.email),
@@ -317,16 +319,20 @@ async fn kafka_consumer_task(clients: Clients) {
                     }
                 };
 
-                // 3. Notify clients via WebSocket if successful
+                // NEW: Logic to find the user ID and send message only to them
                 if email_sent {
-                    broadcast_ws_message(
+                    // NOTE: This assumes `event.email` can be used to uniquely identify a user.
+                    // In a real system, you'd likely have a dedicated user_id field in your Kafka event payload.
+                    // For now, we'll just use the email as a placeholder for the user ID.
+                    send_ws_message_to_user(
                         clients.clone(),
+                        &event.email,
                         WebSocketServerResponse::NotificationSuccess(NotificationSuccess {
                             message: format!(
                                 "Email sent to {} for template {}",
                                 event.email, event.template_id
                             ),
-                            recipient: event.email,
+                            recipient: event.email.clone(),
                             template_id: event.template_id,
                             timestamp: current_timestamp,
                         }),
@@ -336,27 +342,38 @@ async fn kafka_consumer_task(clients: Clients) {
             }
             Err(e) => {
                 log::error!("Kafka error: {}", e);
-                // Optionally, emit a Kafka status error to clients
-                tokio::time::sleep(Duration::from_secs(1)).await; // Prevent busy-looping on persistent errors
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+        }
+    }
+}
+
+// A new function to broadcast a message to *all* clients.
+// Useful for server-wide status messages.
+async fn broadcast_all_ws_message(clients: Clients, response_type: WebSocketServerResponse) {
+    let message = serde_json::to_string(&response_type).expect("Failed to serialize WS message");
+    let message_ws = AxumWsMessage::Text(message);
+
+    let clients_map = clients.read().await;
+    for (user_id, senders) in clients_map.iter() {
+        for tx in senders.iter() {
+            if let Err(e) = tx.send(message_ws.clone()).await {
+                log::warn!("Failed to send broadcast message to user {}: {}", user_id, e);
             }
         }
     }
 }
 
 /// Placeholder for real token validation logic.
-/// In a real app, this would verify a JWT, query a database, or call an auth service.
-/// Returns Ok(user_id_string) if valid, Err(message) otherwise.
 async fn validate_access_token(token: &str) -> Result<String, String> {
     if token == "your_super_secret_token" {
-        // In a real app, you might decode the token to get a user ID
+        // In a real app, you would decode the token to get a user ID
         Ok("authenticated_user_123".to_string())
     } else {
         Err("Invalid access token".to_string())
     }
 }
 
-/// Handler for WebSocket connections.
-/// This handler now simply upgrades the connection. Authentication happens via payload.
 async fn ws_handler(
     ws: WebSocketUpgrade,
     State(clients): State<Clients>,
@@ -365,52 +382,40 @@ async fn ws_handler(
     ws.on_upgrade(move |socket| handle_websocket_connection(socket, clients)).into_response()
 }
 
-/// Handles a new WebSocket connection.
-/// Now performs authentication based on a message received over the WebSocket.
 async fn handle_websocket_connection(mut ws: WebSocket, clients: Clients) {
-    let client_id = NEXT_CLIENT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let mut authenticated_user_id: Option<String> = None;
     let mut is_authenticated = false;
 
-    // Load inactivity timeout from env or use default
     let inactivity_timeout_secs: u64 = std::env::var("WS_INACTIVITY_TIMEOUT_SECS")
-        .unwrap_or_else(|_| "55".to_string()) // Default to 55 seconds, just under 1 minute
+        .unwrap_or_else(|_| "55".to_string())
         .parse()
         .unwrap_or(55);
     let inactivity_timeout = Duration::from_secs(inactivity_timeout_secs);
 
-    // Ping interval for server-sent pings (if client is not active)
     let server_ping_interval = Duration::from_secs(30);
 
-    log::info!(
-        "Client {} connected to WebSocket. Awaiting authentication message. Inactivity timeout: {:?}",
-        client_id, inactivity_timeout
-    );
+    log::info!("Awaiting authentication message. Inactivity timeout: {:?}", inactivity_timeout);
 
     let (tx, mut rx) = mpsc::unbounded_channel();
-    clients.write().await.insert(client_id, tx.clone());
-
-    let mut ws_sender = ws; // Take ownership of the WebSocket for sending
-    let mut ws_receiver = tokio_stream::wrappers::WebSocketStream::new(&mut ws_sender).split().1; // Split for receiving
+    
+    let (mut ws_sender, mut ws_receiver) = ws.split();
 
     // Task to send messages from the MPSC channel to the WebSocket
-    let send_task_clients = clients.clone(); // Clone for the cleanup in the select! block
     let send_task_user_id = authenticated_user_id.clone();
     let send_task = tokio::spawn(async move {
-        // Send a server-side ping if no messages have been sent for a while
         let mut last_send_time = tokio::time::Instant::now();
         loop {
             tokio::select! {
                 Some(message) = rx.recv() => {
                     if let Err(e) = ws_sender.send(message).await {
-                        log::warn!("Client {} send error: {}", client_id, e);
+                        log::warn!("User {:?} send error: {}", send_task_user_id, e);
                         break;
                     }
                     last_send_time = tokio::time::Instant::now();
                 }
                 _ = tokio::time::sleep_until(last_send_time + server_ping_interval) => {
                     if let Err(e) = ws_sender.send(AxumWsMessage::Text(serde_json::to_string(&WebSocketServerResponse::Pong).unwrap())).await {
-                        log::warn!("Client {} (User: {:?}) server-ping send error: {}", client_id, send_task_user_id, e);
+                        log::warn!("User {:?} server-ping send error: {}", send_task_user_id, e);
                         break;
                     }
                     last_send_time = tokio::time::Instant::now();
@@ -420,93 +425,91 @@ async fn handle_websocket_connection(mut ws: WebSocket, clients: Clients) {
                 }
             }
         }
-        log::info!("Client {} send task finished.", client_id);
     });
 
     // Task to receive messages from the WebSocket (e.g., pings, close, or auth messages)
-    let recv_task_clients = clients.clone(); // Clone for cleanup
+    let recv_task_clients = clients.clone();
     let recv_task_user_id = authenticated_user_id.clone();
     let recv_task = tokio::spawn(async move {
-        let current_client_id = client_id;
-        let local_tx_for_responses = tx; // Use the local sender for client-specific responses
+        let local_tx_for_responses = tx;
+        let mut local_user_id: Option<String> = None;
 
         loop {
             tokio::select! {
-                // Timeout if no message received within inactivity_timeout
                 result = tokio::time::timeout(inactivity_timeout, ws_receiver.next()) => {
                     match result {
                         Ok(Some(Ok(msg))) => {
                             if msg.is_close() {
-                                log::info!("Client {} sent close frame.", current_client_id);
+                                log::info!("User {:?} sent close frame.", local_user_id);
                                 break;
                             }
-
                             if let Some(text_msg) = msg.to_str().ok() {
                                 if !is_authenticated {
                                     match serde_json::from_str::<WebSocketClientAction>(text_msg) {
                                         Ok(WebSocketClientAction::Authenticate { token }) => {
                                             match validate_access_token(&token).await {
                                                 Ok(user_id) => {
-                                                    authenticated_user_id = Some(user_id.clone());
+                                                    local_user_id = Some(user_id.clone());
                                                     is_authenticated = true;
-                                                    log::info!("Client {} authenticated as user: {}", current_client_id, user_id);
+                                                    
+                                                    // NEW: Add the sender to the user's vector of senders
+                                                    let mut clients_map = recv_task_clients.write().await;
+                                                    clients_map.entry(user_id.clone()).or_insert_with(Vec::new).push(local_tx_for_responses.clone());
+
+                                                    log::info!("Client authenticated as user: {}", user_id);
                                                     let auth_success_msg = WebSocketServerResponse::AuthSuccess { user_id };
                                                     if let Err(e) = local_tx_for_responses.send(AxumWsMessage::Text(serde_json::to_string(&auth_success_msg).unwrap())).await {
-                                                        log::error!("Failed to send auth_success to client {}: {}", current_client_id, e);
+                                                        log::error!("Failed to send auth_success to user {}: {}", local_user_id.as_ref().unwrap(), e);
                                                     }
                                                 },
                                                 Err(e) => {
-                                                    log::warn!("Client {} authentication failed: {}", current_client_id, e);
+                                                    log::warn!("Authentication failed: {}", e);
                                                     let auth_failure_msg = WebSocketServerResponse::AuthFailure { error: e };
                                                     if let Err(e) = local_tx_for_responses.send(AxumWsMessage::Text(serde_json::to_string(&auth_failure_msg).unwrap())).await {
-                                                        log::error!("Failed to send auth_failure to client {}: {}", current_client_id, e);
+                                                        log::error!("Failed to send auth_failure: {}", e);
                                                     }
                                                 }
                                             }
                                         },
                                         Ok(WebSocketClientAction::Ping) => {
-                                            // Reply with Pong if an authenticated client pings
-                                            log::debug!("Client {} (User: {:?}) sent ping.", current_client_id, authenticated_user_id);
+                                            log::debug!("Unauthenticated client sent ping.");
                                             let pong_msg = WebSocketServerResponse::Pong;
                                             if let Err(e) = local_tx_for_responses.send(AxumWsMessage::Text(serde_json::to_string(&pong_msg).unwrap())).await {
-                                                log::error!("Failed to send pong to client {}: {}", current_client_id, e);
+                                                log::error!("Failed to send pong: {}", e);
                                             }
                                         }
                                         Err(_) => {
-                                            log::warn!("Client {} (unauthenticated) sent unhandled message: {}", current_client_id, text_msg);
+                                            log::warn!("Unauthenticated client sent unhandled message: {}", text_msg);
                                         }
                                     }
                                 } else {
-                                    // Client is authenticated
                                     match serde_json::from_str::<WebSocketClientAction>(text_msg) {
                                         Ok(WebSocketClientAction::Ping) => {
-                                            // Reply with Pong if an authenticated client pings
-                                            log::debug!("Client {} (User: {:?}) sent ping.", current_client_id, authenticated_user_id);
+                                            log::debug!("User {:?} sent ping.", local_user_id);
                                             let pong_msg = WebSocketServerResponse::Pong;
                                             if let Err(e) = local_tx_for_responses.send(AxumWsMessage::Text(serde_json::to_string(&pong_msg).unwrap())).await {
-                                                log::error!("Failed to send pong to client {}: {}", current_client_id, e);
+                                                log::error!("Failed to send pong to user {:?}: {}", local_user_id, e);
                                             }
                                         }
                                         _ => {
-                                            log::info!("Client {} (User: {:?}) sent message: {}", current_client_id, authenticated_user_id, text_msg);
-                                            // Add logic for other messages from authenticated clients here
+                                            log::info!("User {:?} sent message: {}", local_user_id, text_msg);
                                         }
                                     }
                                 }
                             } else {
-                                log::info!("Client {} sent non-text message.", current_client_id);
+                                log::info!("User {:?} sent non-text message.", local_user_id);
                             }
                         },
                         Ok(Some(Err(e))) => {
-                            log::warn!("Client {} WebSocket receive error: {}", current_client_id, e);
+                            log::warn!("User {:?} WebSocket receive error: {}", local_user_id, e);
                             break;
                         },
                         Ok(None) => {
-                            log::info!("Client {} WebSocket stream ended.", current_client_id);
+                            log::info!("User {:?} WebSocket stream ended.", local_user_id);
                             break;
                         },
-                        Err(_) => { // tokio::time::timeout elapsed
-                            log::info!("Client {} inactive for {:?}. Disconnecting.", current_client_id, inactivity_timeout);
+                        Err(_) => {
+                            log::info!("User {:?} inactive for {:?}. Disconnecting.", local_user_id, inactivity_timeout);
                             break;
                         }
                     }
@@ -516,21 +519,26 @@ async fn handle_websocket_connection(mut ws: WebSocket, clients: Clients) {
                 }
             }
         }
-        log::info!("Client {} receive task finished, disconnecting.", current_client_id);
+        
+        // NEW: Cleanup logic to remove the sender from the user's vector
+        if let Some(user_id) = local_user_id {
+            let mut clients_map = recv_task_clients.write().await;
+            if let Some(senders) = clients_map.get_mut(&user_id) {
+                senders.retain(|tx_in_map| !tx_in_map.is_closed());
+                if senders.is_empty() {
+                    clients_map.remove(&user_id);
+                }
+            }
+            log::info!("User {} disconnected. Remaining connections: {}", user_id, clients_map.get(&user_id).map_or(0, |v| v.len()));
+        }
     });
 
-    // Wait for either send or receive task to complete (meaning connection closed)
     tokio::select! {
         _ = send_task => {},
         _ = recv_task => {},
     }
-
-    // Remove client from shared state on disconnect
-    clients.write().await.remove(&client_id);
-    log::info!("Client {} (User: {:?}) disconnected.", client_id, authenticated_user_id);
 }
 
-// HTML dashboard route
 async fn index_handler() -> Html<String> {
     let html_content = r#"
         <!DOCTYPE html>
@@ -542,8 +550,8 @@ async fn index_handler() -> Html<String> {
                     font-family: 'Inter', sans-serif;
                     margin: 0;
                     padding: 20px;
-                    background-color: #e2e8f0; /* Tailwind gray-200 */
-                    color: #2d3748; /* Tailwind gray-800 */
+                    background-color: #e2e8f0;
+                    color: #2d3748;
                     display: flex;
                     justify-content: center;
                     align-items: flex-start;
@@ -559,13 +567,13 @@ async fn index_handler() -> Html<String> {
                     margin-top: 20px;
                 }
                 h1 {
-                    color: #2c5282; /* Tailwind blue-800 */
-                    font-size: 2.25rem; /* Tailwind text-4xl */
+                    color: #2c5282;
+                    font-size: 2.25rem;
                     margin-bottom: 20px;
                     text-align: center;
                 }
                 p {
-                    font-size: 1.125rem; /* Tailwind text-lg */
+                    font-size: 1.125rem;
                     line-height: 1.6;
                     text-align: center;
                     margin-bottom: 20px;
@@ -574,24 +582,24 @@ async fn index_handler() -> Html<String> {
                     margin-top: 20px;
                     padding: 15px;
                     border-radius: 8px;
-                    background-color: #f7fafc; /* Tailwind gray-100 */
-                    border: 1px solid #cbd5e0; /* Tailwind gray-300 */
+                    background-color: #f7fafc;
+                    border: 1px solid #cbd5e0;
                     text-align: center;
                 }
                 .status-label {
                     font-weight: bold;
-                    color: #4a5568; /* Tailwind gray-700 */
+                    color: #4a5568;
                 }
                 .log-area {
                     margin-top: 20px;
-                    background: #f0f4f8; /* Tailwind gray-100 */
+                    background: #f0f4f8;
                     padding: 15px;
                     border-radius: 8px;
-                    border: 1px solid #cbd5e0; /* Tailwind gray-300 */
+                    border: 1px solid #cbd5e0;
                     max-height: 500px;
                     overflow-y: auto;
                     display: flex;
-                    flex-direction: column-reverse; /* New items appear at the top */
+                    flex-direction: column-reverse;
                 }
                 .log-entry {
                     margin-bottom: 10px;
@@ -602,18 +610,18 @@ async fn index_handler() -> Html<String> {
                     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
                 }
                 .log-success {
-                    background-color: #d4edda; /* Tailwind green-100 */
-                    color: #155724; /* Dark green text */
+                    background-color: #d4edda;
+                    color: #155724;
                     border: 1px solid #c3e6cb;
                 }
                 .log-info {
-                    background-color: #d1ecf1; /* Tailwind blue-100 */
-                    color: #0c5460; /* Dark blue text */
+                    background-color: #d1ecf1;
+                    color: #0c5460;
                     border: 1px solid #bee5eb;
                 }
                 .log-error, .log-failure {
-                    background-color: #f8d7da; /* Tailwind red-100 */
-                    color: #721c24; /* Dark red text */
+                    background-color: #f8d7da;
+                    color: #721c24;
                     border: 1px solid #f5c6cb;
                 }
                 @media (max-width: 768px) {
@@ -622,10 +630,10 @@ async fn index_handler() -> Html<String> {
                         margin-top: 10px;
                     }
                     h1 {
-                        font-size: 1.75rem; /* Tailwind text-3xl */
+                        font-size: 1.75rem;
                     }
                     p {
-                        font-size: 1rem; /* Tailwind text-base */
+                        font-size: 1rem;
                     }
                 }
             </style>
@@ -649,30 +657,19 @@ async fn index_handler() -> Html<String> {
             </div>
 
             <script type="text/javascript">
-                // This is the client-side JavaScript for the dashboard.
-                // It now attempts to send an "authenticate" message over the WebSocket
-                // after the connection is established.
-
-                // IMPORTANT: In a real application, you would obtain this token
-                // after a user successfully logs in (e.g., from an API response).
-                const ACCESS_TOKEN = "your_super_secret_token"; // Use a valid token for successful connection
-                // const ACCESS_TOKEN = "invalid_token"; // Uncomment to test authentication failure
-
-                const PING_INTERVAL_MS = 30 * 1000; // Client sends a ping every 30 seconds
-                let pingTimer; // To store the ping interval ID
-
+                const ACCESS_TOKEN = "your_super_secret_token";
+                const PING_INTERVAL_MS = 30 * 1000;
+                let pingTimer;
                 const socket = new WebSocket('ws://' + window.location.host + '/ws');
                 const notificationsDiv = document.getElementById('notifications');
                 const kafkaStatusSpan = document.getElementById('kafka-status');
-                let isAuthenticated = false; // Track client-side authentication status
+                let isAuthenticated = false;
 
-                // Helper to add log entries
                 function addLogEntry(message, type) {
                     const entry = document.createElement('div');
                     entry.className = 'log-entry ' + (type || 'log-info');
                     entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-                    notificationsDiv.prepend(entry); // Add to top
-                    // Keep only a reasonable number of entries (e.g., 50)
+                    notificationsDiv.prepend(entry);
                     if (notificationsDiv.children.length > 50) {
                         notificationsDiv.removeChild(notificationsDiv.lastChild);
                     }
@@ -681,14 +678,12 @@ async fn index_handler() -> Html<String> {
                 socket.onopen = function(event) {
                     console.log('Connected to WebSocket server');
                     addLogEntry('Connected to server. Sending authentication message...', 'log-info');
-                    // Send authentication action immediately after connection opens
                     const authMessage = {
                         action: "authenticate",
                         token: ACCESS_TOKEN
                     };
                     socket.send(JSON.stringify(authMessage));
 
-                    // Start sending pings
                     if (pingTimer) clearInterval(pingTimer);
                     pingTimer = setInterval(() => {
                         if (socket.readyState === WebSocket.OPEN) {
@@ -736,7 +731,6 @@ async fn index_handler() -> Html<String> {
                                 break;
                             case 'pong':
                                 console.log("Received pong from server.");
-                                // No specific action, just acknowledge activity
                                 break;
                             default:
                                 addLogEntry(`Received unhandled message type: ${data.type}`, 'log-info');
@@ -749,20 +743,19 @@ async fn index_handler() -> Html<String> {
 
                 socket.onclose = function(event) {
                     console.log('Disconnected from WebSocket server:', event.code, event.reason);
-                    clearInterval(pingTimer); // Stop pinging on disconnect
-                    if (event.code === 1000) { // Normal closure
+                    clearInterval(pingTimer);
+                    if (event.code === 1000) {
                         addLogEntry('Disconnected from server.', 'log-info');
-                    } else if (event.code === 1006) { // Abnormally closed (e.g., server rejected or timeout)
+                    } else if (event.code === 1006) {
                         addLogEntry('Connection closed abnormally. Check server logs or token.', 'log-error');
-                    } else if (event.code === 1008 || event.code === 1011) { // Policy Violation or Internal Error
+                    } else if (event.code === 1008 || event.code === 1011) {
                         addLogEntry(`WebSocket error: ${event.reason || 'Server rejected connection.'} (Code: ${event.code})`, 'log-error');
                     } else {
                          addLogEntry('Disconnected from server. Attempting to reconnect...', 'log-error');
                     }
-                    isAuthenticated = false; // Reset auth status on close
-                    // Simple reconnect logic (for production, use exponential backoff)
+                    isAuthenticated = false;
                     setTimeout(() => {
-                        window.location.reload(); // Simplest way to reconnect for this demo
+                        window.location.reload();
                     }, 5000);
                 };
 
@@ -779,32 +772,24 @@ async fn index_handler() -> Html<String> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Load environment variables from .env file
     dotenv::dotenv().ok();
-
-    // Initialize logging
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-
     log::info!("Starting Rust Notification Server with Axum...");
 
-    // Shared state for WebSocket clients
     let clients: Clients = Arc::new(RwLock::new(HashMap::new()));
 
-    // Spawn the Kafka consumer task
     let clients_for_kafka = clients.clone();
     tokio::spawn(async move {
         kafka_consumer_task(clients_for_kafka).await;
     });
 
-    // Build the Axum router
     let app = Router::new()
-        .route("/", get(index_handler)) // Route for the HTML dashboard
-        .route("/ws", get(ws_handler)) // Route for WebSocket connections
-        .with_state(clients) // Share the clients state with handlers
-        .layer(CorsLayer::permissive()); // Allow CORS for all origins (for development)
+        .route("/", get(index_handler))
+        .route("/ws", get(ws_handler))
+        .with_state(clients)
+        .layer(CorsLayer::permissive());
 
-    // Start the server
-    let addr = ([0, 0, 0, 0], 5000); // Listen on 0.0.0.0:5000
+    let addr = ([0, 0, 0, 0], 5000);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     log::info!("Server listening on http://{}:{}", addr.0.iter().map(|s| s.to_string()).collect::<Vec<String>>().join("."), addr.1);
     axum::serve(listener, app).await?;
