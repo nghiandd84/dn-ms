@@ -77,7 +77,7 @@ pub fn cusumer_task(
                         }
                     };
                     debug!("Received Kafka event: {:?}", event);
-                    handler_event(event, &notification_state).await;
+                    handler_event(event, notification_state.clone()).await;
                 }
                 Err(e) => error!("Kafka error: {}", e),
             }

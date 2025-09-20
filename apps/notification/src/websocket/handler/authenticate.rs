@@ -1,13 +1,12 @@
-use std::sync::{Arc, RwLock};
-
 use axum::extract::ws::Message;
+use std::sync::{Arc, RwLock};
 use tokio::sync::mpsc;
-use tracing::debug;
-
-use shared_shared_app::state::AppState;
-
-use features_email_template_model::state::{NotificationCacheState, NotificationState};
+use tracing::{debug, error};
 use uuid::Uuid;
+
+use features_email_template_model::state::NotificationState;
+
+use crate::websocket::action::server::{Auth, WebSocketServerResponse};
 
 pub async fn handle_authenticate<'a>(
     token: String,
@@ -16,8 +15,6 @@ pub async fn handle_authenticate<'a>(
     notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &'a mpsc::UnboundedSender<Message>,
 ) {
-    // let clients = notification_state.read().unwrap().get_clients();
-
     let clients = {
         let state_read_guard = notification_state.read().unwrap();
         state_read_guard.get_clients().clone()
@@ -64,7 +61,6 @@ pub async fn handle_authenticate<'a>(
     if body.is_err() {
         let err_msg = format!("Failed to read response body: {}", body.err().unwrap());
         debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
         return;
     }
     let body = body.unwrap();
@@ -73,7 +69,6 @@ pub async fn handle_authenticate<'a>(
     if data.is_err() {
         let err_msg = format!("Failed to parse response body: {}", data.err().unwrap());
         debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
         return;
     }
     let data = data.unwrap();
@@ -97,17 +92,21 @@ pub async fn handle_authenticate<'a>(
     if user_id.is_err() {
         let err_msg = format!("Failed to parse user_id: {}", user_id.err().unwrap());
         debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
         return;
     }
     let user_id = user_id.unwrap();
-    // Map user_id to client_id
-    // state_one.insert_user_client_mapping(user_id, websocket_id);
     debug!("Mapped user_id {} to client_id {}", user_id, websocket_id);
     {
         let mut state_read_guard = notification_state.write().unwrap();
         state_read_guard.insert_user_client_mapping(user_id, websocket_id);
     }
 
-    // Send a authentication success message back to client
+    let websocket_message = WebSocketServerResponse::Auth {
+        status: Auth::Success,
+    };
+    if let Err(e) = tx.send(Message::Text(
+        serde_json::to_string(&websocket_message).unwrap().into(),
+    )) {
+        error!("Failed to send message to user {:?}: {}", user_id, e);
+    }
 }

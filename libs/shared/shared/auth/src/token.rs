@@ -10,7 +10,7 @@ use crate::claim::{AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct, 
 use shared_shared_data_auth::error::TokenError;
 
 pub const TOKEN_TYPE: &str = "Bearer";
-pub const TOKEN_EXPIRATION: i64 = 7200; // 2 hours in seconds
+pub const TOKEN_EXPIRATION: i64 = 3600 * 24; // 24 hours in seconds
 pub const REFRESH_TOKEN_EXPIRATION: i64 = 2592000; // 30 days in seconds
 
 pub fn get_access_token_cache_key(user_id: Uuid) -> String {

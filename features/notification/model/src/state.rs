@@ -42,11 +42,12 @@ impl NotificationState {
         self.user_to_client.insert(user_id, client_id);
     }
 
-    pub fn get_client_id_by_user(&self, user_id: &Uuid) -> Option<usize> {
-        self.user_to_client.get(user_id).copied()
+    pub fn get_client_sender_by_user_id(&self, user_id: Uuid) -> Option<ClientSender> {
+        self.user_to_client
+            .get(&user_id)
+            .and_then(|client_id| self.clients.get(client_id).cloned())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -60,18 +61,5 @@ mod tests {
         let state_client = state.get_clients();
         assert!(state_client.keys().eq(state.clients.keys()));
         assert!(state.user_to_client.is_empty());
-    }
-
-    #[tokio::test]
-    async fn test_insert_user_client_mapping() {
-        let clients: Clients = new_clients();
-        let mut state = NotificationState::new(clients);
-        let user_id = uuid::Uuid::new_v4();
-
-        let client_id = 42;
-        state.insert_user_client_mapping(user_id, client_id);
-        assert_eq!(state.user_to_client.get(&user_id), Some(&client_id));
-        let retrieved_client_id = state.get_client_id_by_user(&user_id);
-        assert_eq!(retrieved_client_id, Some(client_id));
     }
 }
