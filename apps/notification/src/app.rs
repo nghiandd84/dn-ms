@@ -64,13 +64,12 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig {
-        app_key: "NOTIFICATION_APP".to_string(),
-        db_config: DbConfig {
-            db_scheme: Some("notification_app".to_string()),
-        },
-        has_swagger: false,
-    };
+    let app_config = AppConfig::new(
+        "NOTIFICATION_APP".to_string(),
+        Some("autnotification_apph".to_string()),
+        false,
+        true,
+    );
 
     let my_app = MyApp {
         config: &app_config,

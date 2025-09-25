@@ -15,17 +15,6 @@ pub async fn handle_authenticate<'a>(
     notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &'a mpsc::UnboundedSender<Message>,
 ) {
-    let clients = {
-        let state_read_guard = notification_state.read().unwrap();
-        state_read_guard.get_clients().clone()
-    };
-    let len = clients.len();
-    debug!(
-        "Client {} authenticated with token: {}",
-        websocket_id, token
-    );
-    debug!("Number of connected clients: {}", len);
-
     let auth_server = std::env::var("AUTH_SERVER").expect("AUTH_SERVER must be set");
     let verify_endpoint = std::env::var("AUTH_ENDPOINT_VERIFY_TOKEN")
         .expect("AUTH_ENDPOINT_VERIFY_TOKEN must be set");
@@ -46,29 +35,27 @@ pub async fn handle_authenticate<'a>(
             "Failed to send request to auth server: {}",
             res.err().unwrap()
         );
-        debug!("{}", err_msg);
-        let _ = tx.send(Message::Text(err_msg.into()));
+        send_failure_message(tx, err_msg);
         return;
     }
     let res = res.unwrap();
     if !res.status().is_success() {
         let err_msg = format!("Authentication failed with status: {}", res.status());
-        debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
+        send_failure_message(tx, err_msg);
         return;
     }
     let body = res.text().await;
     if body.is_err() {
         let err_msg = format!("Failed to read response body: {}", body.err().unwrap());
-        debug!("{}", err_msg);
+        send_failure_message(tx, err_msg);
         return;
     }
     let body = body.unwrap();
-    debug!("Response body: {}", body);
     let data = serde_json::from_str::<serde_json::Value>(&body);
     if data.is_err() {
         let err_msg = format!("Failed to parse response body: {}", data.err().unwrap());
-        debug!("{}", err_msg);
+
+        send_failure_message(tx, err_msg);
         return;
     }
     let data = data.unwrap();
@@ -76,22 +63,21 @@ pub async fn handle_authenticate<'a>(
     debug!("Parsed response body: {:#?}", data);
     if data.get("user_id").is_none() {
         let err_msg = "Response body does not contain user_id".to_string();
-        debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
+        send_failure_message(tx, err_msg);
         return;
     }
     let user_id = data.get("user_id").unwrap().as_str();
     if user_id.is_none() {
         let err_msg = "user_id is not a string".to_string();
-        debug!("{}", err_msg);
-        // let _ = tx.send(Message::Text(err_msg));
+        send_failure_message(tx, err_msg);
+
         return;
     }
     let user_id = user_id.unwrap();
     let user_id = Uuid::parse_str(user_id);
     if user_id.is_err() {
         let err_msg = format!("Failed to parse user_id: {}", user_id.err().unwrap());
-        debug!("{}", err_msg);
+        send_failure_message(tx, err_msg);
         return;
     }
     let user_id = user_id.unwrap();
@@ -108,5 +94,17 @@ pub async fn handle_authenticate<'a>(
         serde_json::to_string(&websocket_message).unwrap().into(),
     )) {
         error!("Failed to send message to user {:?}: {}", user_id, e);
+    }
+}
+
+fn send_failure_message(tx: &mpsc::UnboundedSender<Message>, err_msg: String) {
+    error!("Authentication failed: {}", err_msg);
+    let websocket_message = WebSocketServerResponse::Auth {
+        status: Auth::Failure,
+    };
+    if let Err(e) = tx.send(Message::Text(
+        serde_json::to_string(&websocket_message).unwrap().into(),
+    )) {
+        error!("Failed to send failure message: {}", e);
     }
 }

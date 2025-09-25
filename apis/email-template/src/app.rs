@@ -51,13 +51,12 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig {
-        app_key: "EMAIL_TEMPLATE".to_string(),
-        db_config: DbConfig {
-            db_scheme: Some("email_template".to_string()),
-        },
-        has_swagger: true,
-    };
+    let app_config = AppConfig::new(
+        "EMAIL_TEMPLATE".to_string(),
+        Some("email_template".to_string()),
+        true,
+        true,
+    );
 
     let my_app = MyApp {
         config: &app_config,

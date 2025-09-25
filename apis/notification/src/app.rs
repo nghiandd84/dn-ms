@@ -5,7 +5,8 @@ use utoipa_swagger_ui::SwaggerUi;
 
 use shared_shared_app::{
     config::{AppConfig, DbConfig},
-    start_app::StartApp, state::AppState,
+    start_app::StartApp,
+    state::AppState,
 };
 use shared_shared_config::db::Database;
 
@@ -28,9 +29,7 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
         db: &Database,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let _ = db;
-        async {
-            Ok(())
-        }
+        async { Ok(()) }
     }
 
     fn routes(&self, _app_state: &AppState<EmailTemplateCacheState>) -> Router {
@@ -44,13 +43,12 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig {
-        app_key: "NOTIFICATION".to_string(),
-        db_config: DbConfig {
-            db_scheme: Some("notification".to_string()),
-        },
-        has_swagger: true
-    };
+    let app_config = AppConfig::new(
+        "NOTIFICATION".to_string(),
+        Some("notification".to_string()),
+        true,
+        true,
+    );
 
     let my_app = MyApp {
         config: &app_config,

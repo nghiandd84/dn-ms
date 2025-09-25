@@ -47,13 +47,7 @@ impl<'a> StartApp<BakeryCacheState> for MyApp<'a> {
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig {
-        app_key: "BAKERY".to_string(),
-        db_config: DbConfig {
-            db_scheme: Some("bakery".to_string()),
-        },
-        has_swagger: true
-    };
+    let app_config = AppConfig::new("BAKERY".to_string(), Some("bakery".to_string()), true, true);
 
     let my_app = MyApp {
         config: &app_config,

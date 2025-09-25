@@ -9,8 +9,8 @@ use shared_shared_app::{
 };
 use shared_shared_config::db::Database;
 
-use features_auth_model::state::AuthCacheState;
 use features_auth_migrations::{Migrator, MigratorTrait};
+use features_auth_model::state::AuthCacheState;
 
 use crate::{
     doc::ApiDoc,
@@ -25,8 +25,6 @@ use crate::{
 struct MyApp<'a> {
     config: &'a AppConfig,
 }
-
-
 
 impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
@@ -60,13 +58,7 @@ impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig {
-        app_key: "AUTH".to_string(),
-        db_config: DbConfig {
-            db_scheme: Some("auth".to_string()),
-        },
-        has_swagger: true,
-    };
+    let app_config = AppConfig::new("AUTH".to_string(), Some("auth".to_string()), true, true);
 
     let my_app = MyApp {
         config: &app_config,

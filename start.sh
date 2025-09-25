@@ -22,28 +22,28 @@ echo "Kill current instances"
 
 # Kill Auth port
 for i in {1..3}; do 
-    fuser -k 510$i/tcp 
+    fuser -k -15 510$i/tcp 
 done
 
 # Kill Bakery port
 for i in {1..3}; do 
-    fuser -k 520$i/tcp 
+    fuser -k -15 520$i/tcp 
 done
 
 
 # Kill Email Template port
 for i in {1..3}; do 
-    fuser -k 530$i/tcp 
+    fuser -k -15 530$i/tcp 
 done
 
 # Kill Notification port
 for i in {1..3}; do 
-    fuser -k 540$i/tcp 
+    fuser -k -15 540$i/tcp 
 done
 
 # Kill Notification App port
 for i in {1..3}; do 
-    fuser -k 400$i/tcp 
+    fuser -k -15 400$i/tcp 
 done
 
 echo "Sucess kill all instances"

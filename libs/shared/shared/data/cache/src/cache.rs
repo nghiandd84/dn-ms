@@ -12,7 +12,7 @@ use std::time::Duration;
 /// This cache leverages Redis for storage, expiration (TTL), and concurrent access.
 /// Keys and values are serialized to JSON before being stored in Redis.
 
-#[derive(Clone)] 
+#[derive(Clone)]
 pub struct Cache<K, V>
 where
     K: Eq + std::hash::Hash + Clone + Serialize + DeserializeOwned + Display,
@@ -54,7 +54,7 @@ where
             default_ttl: None,
             key_prefix: key_prefix.to_string(),
             _phantom_k: PhantomData, // Initialize PhantomData
-            _phantom_v: PhantomData
+            _phantom_v: PhantomData,
         })
     }
 
@@ -74,12 +74,13 @@ where
         default_ttl: Duration,
     ) -> RedisResult<Self> {
         let client = Client::open(redis_url)?;
+        client.get_connection()?; // Test connection
         Ok(Cache {
             client,
             default_ttl: Some(default_ttl),
             key_prefix: key_prefix.to_string(),
             _phantom_k: PhantomData, // Initialize PhantomData
-            _phantom_v: PhantomData
+            _phantom_v: PhantomData,
         })
     }
 
@@ -108,14 +109,20 @@ where
     pub fn insert(&self, key: K, value: V, ttl: Option<Duration>) -> RedisResult<()> {
         let mut conn = self.get_connection()?;
         let full_key = self.get_full_key(&key);
-        let serialized_value = serde_json::to_string(&value)
-            .map_err(|e| redis::RedisError::from((redis::ErrorKind::TypeError, "Serialization failed", e.to_string())))?;
+        let serialized_value = serde_json::to_string(&value).map_err(|e| {
+            redis::RedisError::from((
+                redis::ErrorKind::TypeError,
+                "Serialization failed",
+                e.to_string(),
+            ))
+        })?;
 
         let actual_ttl = ttl.or(self.default_ttl);
 
         match actual_ttl {
             Some(duration) => {
-                let _: () = conn.set_ex(&full_key, serialized_value, duration.as_secs() as usize)?;
+                let _: () =
+                    conn.set_ex(&full_key, serialized_value, duration.as_secs() as usize)?;
             }
             None => {
                 let _: () = conn.set(&full_key, serialized_value)?;
@@ -142,8 +149,13 @@ where
 
         match result {
             Some(serialized_value) => {
-                let value: V = serde_json::from_str(&serialized_value)
-                    .map_err(|e| redis::RedisError::from((redis::ErrorKind::TypeError, "Deserialization failed", e.to_string())))?;
+                let value: V = serde_json::from_str(&serialized_value).map_err(|e| {
+                    redis::RedisError::from((
+                        redis::ErrorKind::TypeError,
+                        "Deserialization failed",
+                        e.to_string(),
+                    ))
+                })?;
                 Ok(Some(value))
             }
             None => Ok(None),
@@ -205,4 +217,6 @@ where
     pub fn is_empty(&self) -> RedisResult<bool> {
         Ok(self.len()? == 0)
     }
+
+    
 }

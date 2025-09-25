@@ -112,7 +112,7 @@ async fn handle_send_messages(
 
 async fn handle_receive_messages<'a>(
     websocket_id: usize,
-    mut user_id: &mut Option<String>,
+    user_id: &mut Option<String>,
     mut ws_receiver: SplitStream<WebSocket>,
     tx: mpsc::UnboundedSender<Message>,
     notification_state: Arc<RwLock<NotificationState>>,
@@ -169,8 +169,6 @@ async fn handle_receive_messages<'a>(
                     }
                     // Handle other message types if needed
                     debug!("Client {} received non-close message", websocket_id);
-
-                    // }
                 }
             }
         }

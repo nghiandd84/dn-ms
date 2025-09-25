@@ -66,6 +66,9 @@ base64 = "0.22.1"
 bytes = "1.0"
 chrono = { version = "0.4.39", features = ["serde"] }
 clap = { version = "3.2.25", features = ["derive"] }
+config = { version = "0.15.11"}
+consulrs = { version = "0.1.0"}
+local-ip-address  = { version = "0.6.5"}
 crossbeam-epoch = "0.9.18"
 dashmap = "6.1.0"
 dotenv = "0.15.0"
@@ -104,7 +107,7 @@ utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
 uuid = { version = "1.13.2" }
 validator = { version = "0.20.0", features = ["derive"] }
 wildmatch = "2.4.0"
-config = { version = "0.15.11"}
+
 
 shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
 shared-shared-data-cache = { path = "./libs/shared/shared/data/cache"}
