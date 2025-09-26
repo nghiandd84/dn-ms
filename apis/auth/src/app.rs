@@ -1,4 +1,5 @@
 use axum::Router;
+use tracing::debug;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -65,6 +66,8 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     my_app.start_app(None).await?;
+
+    debug!("Auth app stopped");
 
     Ok(())
 }

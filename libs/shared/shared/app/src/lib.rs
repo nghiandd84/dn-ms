@@ -4,3 +4,4 @@ pub mod health;
 pub mod start_app;
 pub mod state;
 pub mod mapper;
+pub mod discovery;

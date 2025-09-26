@@ -12,7 +12,7 @@ path = "src/lib.rs"
 [dependencies]
 async-trait = { workspace = true }
 axum = { workspace = true }
-consulrs = { workspace = true }
+rs-consul = { workspace = true }
 dotenv = { workspace = true }
 local-ip-address  = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
