@@ -1529,6 +1529,7 @@ name = "features-auth-remote"
 version = "0.0.1"
 dependencies = [
  "features-auth-model",
+ "reqwest",
  "rs-consul",
  "sea-orm",
  "serde_json",

@@ -76,15 +76,12 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     let notification_state = Arc::new(RwLock::new(NotificationState::new(new_clients())));
 
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
         loop {
             interval.tick().await;
-            // Place your code here to run every interval
             debug!("Interval task running...");
             let consul_client = get_consul_client().unwrap();
             TokenService::update_remote(&consul_client).await;
-            let d = TokenService::get_instance().unwrap();
-            debug!("Auth service instance: {:?}", d);
         }
     });
 
