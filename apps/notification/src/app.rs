@@ -5,12 +5,11 @@ use tracing::{debug, error};
 use uuid::Uuid;
 
 use shared_shared_app::{
-    config::{AppConfig, DbConfig},
-    start_app::StartApp,
-    state::AppState,
+    config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
 };
 use shared_shared_config::db::Database;
 
+use features_auth_remote::TokenService;
 use features_email_template_model::{
     state::{NotificationCacheState, NotificationState},
     types::new_clients,
@@ -56,7 +55,6 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
         app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
     ) -> Router {
         let all_routes = Router::new()
-            .route("/users/{user_id}", get(user_handler))
             .route("/ws", get(ws_handler))
             .with_state(app_state.clone());
         all_routes
@@ -77,12 +75,20 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
 
     let notification_state = Arc::new(RwLock::new(NotificationState::new(new_clients())));
 
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
+        loop {
+            interval.tick().await;
+            // Place your code here to run every interval
+            debug!("Interval task running...");
+            let consul_client = get_consul_client().unwrap();
+            TokenService::update_remote(&consul_client).await;
+            let d = TokenService::get_instance().unwrap();
+            debug!("Auth service instance: {:?}", d);
+        }
+    });
+
     my_app.start_app(Some(notification_state)).await?;
 
     Ok(())
-}
-
-async fn user_handler(Path(user_id): Path<Uuid>) -> &'static str {
-    debug!("User handler called {user_id}");
-    "User handler response"
 }

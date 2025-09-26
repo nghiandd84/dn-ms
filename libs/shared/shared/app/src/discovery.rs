@@ -95,9 +95,9 @@ pub async fn deregister_service(
     // let addresses: Vec<(String, u16)> = consul.get_service_addresses_and_ports(service_name, None).await.unwrap();
     // info!("Service data: {:?}", addresses);
     // consul.watch_lock(request)
-    let lock_key = format!("service/{}/lock", instance_id);
-    let lock_result = consul.watch_lock(&lock_key).await;
-    info!("Lock watch result for '{}': {:?}", lock_key, lock_result);
+    // let lock_key = format!("service/{}/lock", instance_id);
+    // let lock_result = consul.watch_lock(&lock_key).await;
+    // info!("Lock watch result for '{}': {:?}", lock_key, lock_result);
     // consul.read_key(request)
 
     let payload = DeregisterEntityPayload {

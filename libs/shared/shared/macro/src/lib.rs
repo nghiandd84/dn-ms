@@ -7,6 +7,7 @@ mod mutation;
 mod proc_example;
 mod query;
 mod response;
+mod service;
 
 #[proc_macro]
 pub fn make_answer(input: TokenStream) -> TokenStream {
@@ -21,6 +22,11 @@ pub fn query_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Mutation, attributes(mutation))]
 pub fn mutation_derive(input: TokenStream) -> TokenStream {
     mutation::mutation_impl(input)
+}
+
+#[proc_macro_derive(RemoteService, attributes(remote))]
+pub fn remote_service_macro_derive(input: TokenStream) -> TokenStream {
+    service::remote_service(input)
 }
 
 #[proc_macro_derive(Greet)]

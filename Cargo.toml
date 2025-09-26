@@ -21,6 +21,7 @@ members = [
     "features/auth/model", 
     "features/auth/repo", 
     "features/auth/service", 
+    "features/auth/remote", 
 
     "features/notification/model", 
 
@@ -104,7 +105,7 @@ tracing-subscriber = { version = "0.3.17"}
 utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }
 utoipa-axum = { version = "0.2" }
 utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
-uuid = { version = "1.13.2" }
+uuid = { version = "1.13.2", features = ["serde", "v4"] }
 validator = { version = "0.20.0", features = ["derive"] }
 wildmatch = "2.4.0"
 
@@ -127,6 +128,7 @@ features-auth-migrations = { path = "./features/auth/migrations"}
 features-auth-model = { path = "./features/auth/model"}
 features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
+features-auth-remote = { path = "./features/auth/remote"}
 
 # Email Template Feature
 features-email-template-entities = { path = "./features/email-template/entities"}

@@ -331,10 +331,12 @@ dependencies = [
  "axum",
  "config",
  "dotenv",
+ "features-auth-remote",
  "features-notification-model",
  "futures-util",
  "rdkafka",
  "reqwest",
+ "rs-consul",
  "serde",
  "serde_json",
  "serde_yaml 0.9.34+deprecated",
@@ -1520,6 +1522,25 @@ dependencies = [
  "utoipa",
  "uuid",
  "validator",
+]
+
+[[package]]
+name = "features-auth-remote"
+version = "0.0.1"
+dependencies = [
+ "features-auth-model",
+ "rs-consul",
+ "sea-orm",
+ "serde_json",
+ "shared-shared-auth",
+ "shared-shared-data-app",
+ "shared-shared-data-auth",
+ "shared-shared-data-cache",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "shared-shared-macro-rule",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

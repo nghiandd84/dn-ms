@@ -13,6 +13,7 @@ dotenv = { workspace = true }
 futures-util = { workspace = true }
 rdkafka = { workspace = true }
 reqwest = {  workspace = true }
+rs-consul = { workspace = true }
 serde = {  workspace = true , features = ["derive"] }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
@@ -24,4 +25,5 @@ uuid = { workspace = true }
 shared-shared-config = { workspace = true }
 shared-shared-app = { workspace = true }
 
+features-auth-remote = { workspace = true }
 features-notification-model = { workspace = true }
