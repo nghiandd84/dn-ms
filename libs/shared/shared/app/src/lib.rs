@@ -5,3 +5,4 @@ pub mod start_app;
 pub mod state;
 pub mod mapper;
 pub mod discovery;
+pub mod event_task;

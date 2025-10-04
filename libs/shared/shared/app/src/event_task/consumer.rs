@@ -1,12 +1,9 @@
-/*
 use futures_util::StreamExt;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use serde::Deserialize;
 use tracing::{debug, error};
-
-
 
 pub fn cusumer_task<E, F>(
     kafka_server_env: String,
@@ -16,7 +13,7 @@ pub fn cusumer_task<E, F>(
 ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>>
 where
     E: for<'de> Deserialize<'de> + std::fmt::Debug,
-    F: Fn(E) + Send + 'static ,
+    F: Fn(E) + Send + 'static,
 {
     async move {
         let kafka_bootstrap_servers = std::env::var(&kafka_server_env)
@@ -54,7 +51,6 @@ where
             .subscribe(&[&kafka_topic])
             .expect("Can't subscribe to specified topic");
 
-
         let mut message_stream = consumer.stream();
         while let Some(message) = message_stream.next().await {
             debug!("Received message from Kafka");
@@ -88,4 +84,3 @@ where
         Ok(())
     }
 }
-*/

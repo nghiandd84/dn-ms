@@ -1,8 +1,6 @@
+use axum::{routing::get, Router};
 use std::sync::{Arc, RwLock};
-
-use axum::{extract::Path, routing::get, Router};
 use tracing::{debug, error};
-use uuid::Uuid;
 
 use shared_shared_app::{
     config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
@@ -15,10 +13,20 @@ use features_email_template_model::{
     types::new_clients,
 };
 
-use crate::websocket::handler::message::ws_handler;
+use crate::{
+    consumer::{event::KafkaEvent, handler::handler_event},
+    websocket::handler::message::ws_handler,
+};
 
 struct MyApp<'a> {
     config: &'a AppConfig,
+}
+
+fn handle_kafka_event(event: KafkaEvent, state: Arc<RwLock<NotificationState>>) {
+    tokio::spawn(async move {
+        debug!("Handling Kafka event: {:?}", event);
+        handler_event(event, state).await;
+    });
 }
 
 impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for MyApp<'a> {
@@ -31,12 +39,31 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
         app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let notification_state = app_state.state.clone().unwrap();
+        let app_key = self.config.app_key.clone();
+        let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
+        let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
+        let instance_id = std::env::var("INSTANCE_ID");
+
+        let kafka_group = if instance_id.is_ok() {
+            format!("notification_group_{}", instance_id.unwrap())
+        } else {
+            "notification_group".to_string()
+        };
+
         async move {
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
-                if let Err(e) = crate::consumer::task::cusumer_task(notification_state).await {
-                    error!("Consumer task error: {}", e);
-                    // Optionally handle the error here
+                {
+                    let result = shared_shared_app::event_task::consumer::cusumer_task::<KafkaEvent, _>(
+                        kafka_server_env,
+                        kafka_topic_env,
+                        kafka_group,
+                        move |event| handle_kafka_event(event, notification_state.clone()),
+                    )
+                    .await;
+                    if let Err(e) = result {
+                        error!("Consumer task error: {}", e);
+                    }
                 }
             });
             Ok(())

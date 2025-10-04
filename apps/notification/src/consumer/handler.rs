@@ -6,6 +6,16 @@ use features_email_template_model::state::NotificationState;
 
 use crate::{consumer::event::KafkaEvent, websocket::action::server::WebSocketServerResponse};
 
+
+// fn handle_kafka_event(event: KafkaEvent, state: Arc<RwLock<NotificationState>>) {
+//     tokio::spawn(async move {
+//         match handler_event(event.clone(), state).await {
+//             Ok(_) => debug!("Successfully processed event: {:?}", event),
+//             Err(e) => error!("Failed to process event {:?}: {}", event, e),
+//         }
+//     });
+// }
+
 pub async fn handler_event(event: KafkaEvent, notification_state: Arc<RwLock<NotificationState>>) {
     match event {
         KafkaEvent::Notification { user_id, message } => {

@@ -1,4 +1,3 @@
-
 use rs_consul::{
     Config, Consul, DeregisterEntityPayload, RegisterEntityCheck, RegisterEntityPayload,
     RegisterEntityService,
@@ -41,7 +40,6 @@ pub async fn register_service(
         "deregister_critical_service_after".to_string(),
         "1m".to_string(),
     );
-
     let check = RegisterEntityCheck {
         CheckID: Some(format!("service:{}:health", instance_id)),
         Node: None,
@@ -68,7 +66,7 @@ pub async fn register_service(
             Port: Some(service_port),
             Namespace: None,
         }),
-        Check: Some(check),
+        Checks: vec![check],
         SkipNodeUpdate: None,
     };
 
@@ -90,15 +88,6 @@ pub async fn deregister_service(
         "Deregistering service '{}' with instance '{}'...",
         service_name, instance_id
     );
-
-    // Test get service data
-    // let addresses: Vec<(String, u16)> = consul.get_service_addresses_and_ports(service_name, None).await.unwrap();
-    // info!("Service data: {:?}", addresses);
-    // consul.watch_lock(request)
-    // let lock_key = format!("service/{}/lock", instance_id);
-    // let lock_result = consul.watch_lock(&lock_key).await;
-    // info!("Lock watch result for '{}': {:?}", lock_key, lock_result);
-    // consul.read_key(request)
 
     let payload = DeregisterEntityPayload {
         Node: Some(NODE_ID.to_string()),

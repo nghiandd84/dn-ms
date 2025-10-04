@@ -1,7 +1,3 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
-
 use axum::extract::ws::Message::{Close, Text};
 use axum::{
     extract::{
@@ -10,20 +6,23 @@ use axum::{
     },
     response::IntoResponse,
 };
-use features_email_template_model::types::Clients;
 use futures_util::{
     stream::{SplitSink, SplitStream, StreamExt},
     SinkExt,
 };
-use shared_shared_app::state::AppState;
+use std::sync::{Arc, RwLock};
+
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
+use shared_shared_app::state::AppState;
+
 use features_email_template_model::state::{NotificationCacheState, NotificationState};
 
-use crate::websocket::action::client::WebSocketClientAction;
-use crate::websocket::handler::authenticate::handle_authenticate;
-use crate::websocket::handler::ping::handle_ping;
+use crate::websocket::{
+    action::client::WebSocketClientAction,
+    handler::{authenticate::handle_authenticate, ping::handle_ping},
+};
 
 // Simple counter for unique client IDs
 static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(1);

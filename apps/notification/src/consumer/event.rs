@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-#[derive(Debug, Deserialize)]
-#[serde(tag = "event_type", rename_all = "camelCase")]
+#[derive(Debug, Deserialize, Clone)]
+#[serde(tag = "event_type", rename_all = "snake_case")]
 pub enum KafkaEvent {
     Notification {
         user_id: Uuid,
@@ -14,3 +14,5 @@ pub enum KafkaEvent {
         message: String,
     },
 }
+
+// {"event_type":"notification", "user_id": "3158787f-7b76-4b04-b79d-4d8fac17d841", "message": "My Message"}
