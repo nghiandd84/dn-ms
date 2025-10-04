@@ -25,7 +25,7 @@ where
 
     fn custom_handler(
         &self,
-        app_state: &AppState<C, T>,
+        app_state: &mut AppState<C, T>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async { Ok(()) }
     }
@@ -37,10 +37,10 @@ where
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>>;
 
     fn start_app(
-        &self,
+        &mut self,
         state: Option<T>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        async {
+        async move {
             dotenv().ok();
             env::set_var("RUST_LOG", "debug");
 
@@ -114,10 +114,11 @@ where
 
             let db_connection = (&db).get_connection().clone();
 
-            let app_state = AppState {
+            let mut app_state = AppState {
                 conn: db_connection.clone(),
                 cache,
                 state,
+                producer: None,
             };
 
             let routes_all = Router::new()
@@ -130,7 +131,7 @@ where
             //     my_app_state,
             //     mw_ctx_resolver,
             // ));
-            self.custom_handler(&app_state).await?;
+            self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
             debug!("Listener created");

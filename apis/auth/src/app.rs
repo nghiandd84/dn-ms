@@ -61,7 +61,7 @@ impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     let app_config = AppConfig::new("AUTH".to_string(), Some("auth".to_string()), true, true);
 
-    let my_app = MyApp {
+    let mut my_app = MyApp {
         config: &app_config,
     };
 

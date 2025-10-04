@@ -49,7 +49,7 @@ impl<'a> StartApp<BakeryCacheState> for MyApp<'a> {
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     let app_config = AppConfig::new("BAKERY".to_string(), Some("bakery".to_string()), true, true);
 
-    let my_app = MyApp {
+    let mut my_app = MyApp {
         config: &app_config,
     };
 

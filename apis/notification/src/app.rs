@@ -50,7 +50,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         true,
     );
 
-    let my_app = MyApp {
+    let mut my_app = MyApp {
         config: &app_config,
     };
 

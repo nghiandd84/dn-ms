@@ -3,7 +3,14 @@ use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
 
 use shared_shared_app::{
-    config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
+    config::AppConfig,
+    discovery::get_consul_client,
+    event_task::{
+        consumer::cusumer_task,
+        producer::{Producer, ProducerConfig, ProducerMessage},
+    },
+    start_app::StartApp,
+    state::AppState,
 };
 use shared_shared_config::db::Database;
 
@@ -36,7 +43,7 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
 
     fn custom_handler(
         &self,
-        app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
+        app_state: &mut AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let notification_state = app_state.state.clone().unwrap();
         let app_key = self.config.app_key.clone();
@@ -49,12 +56,41 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
         } else {
             "notification_group".to_string()
         };
+        // shared_shared_app::event_task::producer::
 
         async move {
+            let producer = Producer::from_config(ProducerConfig {
+                kafka_server_env: kafka_server_env.clone(),
+                kafka_topic_env: kafka_topic_env.clone(),
+            })
+            .await;
+
+            app_state.set_producer(producer);
+
+            /*
+            // Test sending a message to kafka
+            let send = producer
+                .send(&ProducerMessage {
+                    topic: "test_topic".to_string(),
+                    payload: "Test message".to_string(),
+                    key: Some("test_key".to_string()),
+                })
+                .await
+                .map_err(|e| {
+                    error!("Failed to send test message: {}", e.reason);
+                    e
+                });
+            if let Err(_) = send {
+                error!("Failed to send test message");
+            } else {
+                debug!("Test message sent successfully");
+            }
+             */
+
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
                 {
-                    let result = shared_shared_app::event_task::consumer::cusumer_task::<KafkaEvent, _>(
+                    let result = cusumer_task::<KafkaEvent, _>(
                         kafka_server_env,
                         kafka_topic_env,
                         kafka_group,
@@ -96,7 +132,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         true,
     );
 
-    let my_app = MyApp {
+    let mut my_app = MyApp {
         config: &app_config,
     };
 
