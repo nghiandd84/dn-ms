@@ -1,5 +1,11 @@
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+
 use sea_orm_migration::sea_orm::DatabaseConnection;
 use serde::{de::DeserializeOwned, Serialize};
+use tracing::error;
 
 use shared_shared_data_cache::cache::Cache;
 
@@ -13,7 +19,7 @@ where
     pub conn: DatabaseConnection,
     pub cache: Cache<String, C>,
     pub state: Option<T>,
-    pub producer: Option<Producer>,
+    pub producer: Arc<Mutex<HashMap<String, Producer>>>,
 }
 
 impl<C, T> Clone for AppState<C, T>
@@ -41,7 +47,7 @@ where
             conn,
             cache,
             state,
-            producer: None,
+            producer: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -49,11 +55,25 @@ where
         self.state.as_ref()
     }
 
-    pub fn get_producer(&self) -> Option<&Producer> {
-        self.producer.as_ref()
+    pub fn get_producer(&self, key: String) -> Option<Producer> {
+        let prodecer_map = match self.producer.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => {
+                error!("Failed to acquire lock on producer map: {}", poisoned);
+                return None;
+            }
+        };
+        prodecer_map.get(&key).cloned()
     }
 
-    pub fn set_producer(&mut self, producer: Producer) {
-        self.producer = Some(producer);
+    pub fn set_producer(&mut self, key: String, producer: Producer) {
+        let mut prodecer_map = match self.producer.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => {
+                error!("Failed to acquire lock on producer map: {}", poisoned);
+                return;
+            }
+        };
+        prodecer_map.insert(key, producer);
     }
 }

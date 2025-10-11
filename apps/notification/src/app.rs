@@ -59,17 +59,21 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
         // shared_shared_app::event_task::producer::
 
         async move {
+            /*
             let producer = Producer::from_config(ProducerConfig {
                 kafka_server_env: kafka_server_env.clone(),
                 kafka_topic_env: kafka_topic_env.clone(),
             })
             .await;
 
-            app_state.set_producer(producer);
+            let topic_key = "test_topic_key".to_string();
 
-            /*
+            app_state.set_producer(topic_key.clone(), producer);
+
             // Test sending a message to kafka
-            let send = producer
+            let send = app_state
+                .get_producer(topic_key)
+                .expect("Producer not found")
                 .send(&ProducerMessage {
                     topic: "test_topic".to_string(),
                     payload: "Test message".to_string(),
@@ -86,7 +90,6 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
                 debug!("Test message sent successfully");
             }
              */
-
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
                 {

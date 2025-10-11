@@ -3,7 +3,9 @@ use axum::{middleware, Router};
 use dotenv::dotenv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::env;
+use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
 
@@ -118,7 +120,7 @@ where
                 conn: db_connection.clone(),
                 cache,
                 state,
-                producer: None,
+                producer: Arc::new(Mutex::new(HashMap::new())),
             };
 
             let routes_all = Router::new()
@@ -148,7 +150,7 @@ where
             // TODO disconnect Cache
             info!("Cache connection closed");
 
-            deregister_service(&consul_client, &service_name,  instance_id.as_str()).await?;
+            deregister_service(&consul_client, &service_name, instance_id.as_str()).await?;
 
             debug!("Stopped {} app", app_config.app_key);
             Ok(())
