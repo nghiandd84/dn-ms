@@ -1,9 +1,4 @@
-use rdkafka::{
-    message,
-    producer::{self, FutureProducer},
-    util::Timeout,
-    ClientConfig,
-};
+use rdkafka::{producer::FutureProducer, util::Timeout, ClientConfig};
 use serde::Serialize;
 use tracing::{debug, error};
 

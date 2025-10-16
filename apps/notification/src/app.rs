@@ -146,6 +146,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             interval.tick().await;
             debug!("Interval task running...");
+            error!("Interval task running...");
             let consul_client = get_consul_client().unwrap();
             TokenService::update_remote(&consul_client).await;
         }

@@ -78,7 +78,13 @@ where
                     debug!("Received Kafka event: {:?}", event);
                     handler(event);
                 }
-                Err(e) => error!("Kafka error: {}", e),
+                Err(e) => 
+                {
+                    // TODO implement retry logic
+                    
+                    // TODO implement dead letter queue
+                    error!("Kafka error: {}", e)
+                },
             }
         }
         Ok(())
