@@ -4,34 +4,32 @@ use tracing::{debug, error};
 
 use features_email_template_model::state::NotificationState;
 
-use crate::{consumer::event::KafkaEvent, websocket::action::server::WebSocketServerResponse};
+use crate::{
+    consumer::message::NotificationMessage, websocket::action::server::WebSocketServerResponse,
+};
 
-
-// fn handle_kafka_event(event: KafkaEvent, state: Arc<RwLock<NotificationState>>) {
-//     tokio::spawn(async move {
-//         match handler_event(event.clone(), state).await {
-//             Ok(_) => debug!("Successfully processed event: {:?}", event),
-//             Err(e) => error!("Failed to process event {:?}: {}", event, e),
-//         }
-//     });
-// }
-
-pub async fn handler_event(event: KafkaEvent, notification_state: Arc<RwLock<NotificationState>>) {
-    match event {
-        KafkaEvent::Notification { user_id, message } => {
-            handle_notification_event(notification_state, user_id, message).await;
+pub async fn handler_message(
+    message: NotificationMessage,
+    notification_state: Arc<RwLock<NotificationState>>,
+) {
+    let result = match message {
+        NotificationMessage::Notification { user_id, message } => {
+            handle_notification_message(notification_state, user_id, message).await;
         }
-        KafkaEvent::Payment {
+        NotificationMessage::Payment {
             user_id,
             platform,
             message,
         } => {
-            handle_payment_event(notification_state, user_id, platform, message).await;
+            handle_payment_message(notification_state, user_id, platform, message).await;
         }
-    }
+    };
+    // TODO handle possible errors
+    // Retry logic
+    // Dead letter queue
 }
 
-async fn handle_payment_event<'a>(
+async fn handle_payment_message<'a>(
     notification_state: Arc<RwLock<NotificationState>>,
     user_id: uuid::Uuid,
     platform: String,
@@ -55,7 +53,7 @@ async fn handle_payment_event<'a>(
     }
 }
 
-async fn handle_notification_event<'a>(
+async fn handle_notification_message<'a>(
     notification_state: Arc<RwLock<NotificationState>>,
     user_id: uuid::Uuid,
     message: String,

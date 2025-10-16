@@ -3,14 +3,8 @@ use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
 
 use shared_shared_app::{
-    config::AppConfig,
-    discovery::get_consul_client,
-    event_task::{
-        consumer::cusumer_task,
-        producer::{Producer, ProducerConfig, ProducerMessage},
-    },
-    start_app::StartApp,
-    state::AppState,
+    config::AppConfig, discovery::get_consul_client, event_task::consumer::cusumer_task,
+    start_app::StartApp, state::AppState,
 };
 use shared_shared_config::db::Database;
 
@@ -21,7 +15,7 @@ use features_email_template_model::{
 };
 
 use crate::{
-    consumer::{event::KafkaEvent, handler::handler_event},
+    consumer::{handler::handler_message, message::NotificationMessage},
     websocket::handler::message::ws_handler,
 };
 
@@ -29,10 +23,10 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-fn handle_kafka_event(event: KafkaEvent, state: Arc<RwLock<NotificationState>>) {
+fn handle_notification_message(event: NotificationMessage, state: Arc<RwLock<NotificationState>>) {
     tokio::spawn(async move {
         debug!("Handling Kafka event: {:?}", event);
-        handler_event(event, state).await;
+        handler_message(event, state).await;
     });
 }
 
@@ -93,11 +87,13 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
             tokio::spawn(async move {
                 debug!("Starting consumer task...");
                 {
-                    let result = cusumer_task::<KafkaEvent, _>(
+                    let result = cusumer_task::<NotificationMessage, _>(
                         kafka_server_env,
                         kafka_topic_env,
                         kafka_group,
-                        move |event| handle_kafka_event(event, notification_state.clone()),
+                        move |event| {
+                            handle_notification_message(event, notification_state.clone());
+                        },
                     )
                     .await;
                     if let Err(e) = result {

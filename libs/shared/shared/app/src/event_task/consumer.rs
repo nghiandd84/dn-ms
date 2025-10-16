@@ -78,7 +78,9 @@ where
                     debug!("Received Kafka event: {:?}", event);
                     handler(event);
                 }
-                Err(e) => error!("Kafka error: {}", e),
+                Err(e) => {
+                    error!("Kafka error: {}", e)
+                }
             }
         }
         Ok(())
