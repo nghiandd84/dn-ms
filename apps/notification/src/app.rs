@@ -3,8 +3,11 @@ use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
 
 use shared_shared_app::{
-    config::AppConfig, discovery::get_consul_client, event_task::consumer::cusumer_task,
-    start_app::StartApp, state::AppState,
+    config::AppConfig,
+    discovery::get_consul_client,
+    event_task::consumer::{consumer_task, ConsumerConfig},
+    start_app::StartApp,
+    state::AppState,
 };
 use shared_shared_config::db::Database;
 
@@ -23,11 +26,12 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-fn handle_notification_message(event: NotificationMessage, state: Arc<RwLock<NotificationState>>) {
-    tokio::spawn(async move {
-        debug!("Handling Kafka event: {:?}", event);
-        handler_message(event, state).await;
-    });
+async fn handle_notification_message(
+    event: NotificationMessage,
+    state: Arc<RwLock<NotificationState>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    debug!("Handling notification message: {:?}", event);
+    handler_message(event, state).await
 }
 
 impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for MyApp<'a> {
@@ -41,16 +45,18 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let notification_state = app_state.state.clone().unwrap();
         let app_key = self.config.app_key.clone();
-        let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
-        let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
         let instance_id = std::env::var("INSTANCE_ID");
-
         let kafka_group = if instance_id.is_ok() {
             format!("notification_group_{}", instance_id.unwrap())
         } else {
             "notification_group".to_string()
         };
-        // shared_shared_app::event_task::producer::
+
+        let consumer_config = ConsumerConfig::from_env(
+            format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key),
+            format!("{}_KAFKA_TOPIC", app_key),
+            kafka_group,
+        );
 
         async move {
             /*
@@ -83,24 +89,21 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
             } else {
                 debug!("Test message sent successfully");
             }
-             */
+            */
             tokio::spawn(async move {
-                debug!("Starting consumer task...");
-                {
-                    let result = cusumer_task::<NotificationMessage, _>(
-                        kafka_server_env,
-                        kafka_topic_env,
-                        kafka_group,
-                        move |event| {
-                            handle_notification_message(event, notification_state.clone());
-                        },
+                let res =
+                    consumer_task::<NotificationMessage, Arc<RwLock<NotificationState>>, _, _>(
+                        consumer_config,
+                        notification_state,
+                        handle_notification_message,
                     )
                     .await;
-                    if let Err(e) = result {
-                        error!("Consumer task error: {}", e);
-                    }
+
+                if let Err(e) = res {
+                    error!("Consumer task exited with error: {}", e);
                 }
             });
+
             Ok(())
         }
     }
@@ -142,7 +145,6 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             interval.tick().await;
             debug!("Interval task running...");
-            error!("Interval task running...");
             let consul_client = get_consul_client().unwrap();
             TokenService::update_remote(&consul_client).await;
         }
