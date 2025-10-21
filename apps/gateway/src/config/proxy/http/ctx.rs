@@ -7,7 +7,6 @@ use crate::{
         proxy::http::HeaderBuffer,
         source_config::{Filter, RouterConfig},
     },
-    gateway::interceptor::Phase,
 };
 
 #[derive(Debug)]

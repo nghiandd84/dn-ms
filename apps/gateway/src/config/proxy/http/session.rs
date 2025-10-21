@@ -1,8 +1,7 @@
-use std::{mem::take, sync::Arc, time::Duration};
-
 use http::Uri;
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
 use pingora_proxy::Session as PSession;
+use std::mem::take;
 use tracing::debug;
 
 use crate::{
@@ -65,7 +64,7 @@ impl<'a> Session<'a> {
                 let headers = take(&mut self.ctx.ds_res_header_buffer);
                 for (header_name, header_value) in headers.into_iter() {
                     debug!("Insert header to downstream {} ", header_name);
-                    let _ = upstream_response.insert_header(header_name, header_value);
+                    let _insert = upstream_response.insert_header(header_name, header_value);
                 }
                 Ok(true)
             }
@@ -92,7 +91,7 @@ impl<'a> Session<'a> {
                 let headers = take(&mut self.ctx.us_req_header_buffer);
                 for (header_name, header_value) in headers.into_iter() {
                     debug!("Insert header to upstream {} ", header_name);
-                    let _ = upstream_request.insert_header(header_name, header_value);
+                    let _insert = upstream_request.insert_header(header_name, header_value);
                 }
                 Ok(true)
             }
@@ -119,7 +118,7 @@ impl<'a> Session<'a> {
                 Ok(true)
             }
             Phase::PostUpstreamResponse => {
-                self.flush_header_to_ds().await;
+                let _flush = self.flush_header_to_ds().await;
                 Ok(true)
             }
             _ => Ok(false),
@@ -156,7 +155,6 @@ impl<'a> Session<'a> {
     //     if let Some(timeout) = filter.timeout {
     //         // self.upstream_request.
     //         // self.psession.set_pro(Duration::from_secs(timeout));
-
 
     //         // self.psession.set_timeout(timeout);
     //     }

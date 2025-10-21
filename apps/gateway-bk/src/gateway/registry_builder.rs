@@ -19,7 +19,7 @@ pub async fn build_ds_host_pattern_registry(
     for ds in &gateway_config.downstreams {
         let ds_addr = ds.get_formatted_address();
         let pcre2pattern_matcher = Pcre2PatternMatcher::build(&ds_addr)?;
-        let _ = pattern_registry
+        let _reg = pattern_registry
             .register(ds_addr, Arc::new(pcre2pattern_matcher))
             .await;
     }
@@ -33,12 +33,12 @@ pub async fn build_lb_registry(gateway_config: &GatewayConfig) -> DakiaResult<Lb
         let lb = build_lb(upstream_config)?;
         let arc_lb = Arc::new(lb);
 
-        let _ = lb_registry
+        let _reg = lb_registry
             .register(upstream_config.name.clone(), arc_lb.clone())
             .await;
 
         if upstream_config.default {
-            let _ = lb_registry.register("default".to_string(), arc_lb).await;
+            let _reg = lb_registry.register("default".to_string(), arc_lb).await;
         }
     }
 

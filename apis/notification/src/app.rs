@@ -24,7 +24,6 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
         &self,
         db: &Database,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        let _ = db;
         async { Ok(()) }
     }
 

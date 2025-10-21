@@ -1,11 +1,9 @@
-use std::error::Error;
-
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::debug;
 
 use super::{
-    downstream_config::DownstreamConfig, filter::PathFilter, inet_address::InetAddress,
-    router_config::RouterConfig, upstream_config::UpstreamConfig, Filter,
+    filter::PathFilter, inet_address::InetAddress, router_config::RouterConfig,
+    upstream_config::UpstreamConfig, Filter,
 };
 
 use crate::{

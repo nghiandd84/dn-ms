@@ -4,11 +4,7 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use features_bakery_migrations::{Migrator, MigratorTrait};
-use shared_shared_app::{
-    config::{AppConfig, DbConfig},
-    start_app::StartApp,
-    state::AppState,
-};
+use shared_shared_app::{config::AppConfig, start_app::StartApp, state::AppState};
 use shared_shared_config::db::Database;
 
 use crate::doc::ApiDoc;

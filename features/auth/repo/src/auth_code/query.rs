@@ -1,7 +1,7 @@
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{self, FilterEnum, FilterParam},
+    filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -36,7 +36,6 @@ impl AuthCodeQuery {
         Ok(user_data)
     }
     pub async fn get_by_client_id_and_code<'a>(
-
         db: &'a DbConn,
         client_id: Uuid,
         code: String,

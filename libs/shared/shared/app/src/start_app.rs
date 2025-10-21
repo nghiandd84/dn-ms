@@ -30,7 +30,7 @@ where
 
     fn custom_handler(
         &self,
-        app_state: &mut AppState<C, T>,
+        _app_state: &mut AppState<C, T>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async { Ok(()) }
     }
@@ -52,11 +52,11 @@ where
             let kafka_server_env = "ERROR_KAFKA_BOOTSTRAP_SERVERS".to_string();
             let kafka_bootstrap_servers = std::env::var(&kafka_server_env)
                 .map_err(|_| format!("${kafka_server_env} not set").into())
-                .unwrap_or_else(|e: String| "localhost:9092".to_string());
+                .unwrap_or_else(|_e: String| "localhost:9092".to_string());
             let kafka_topic_env = "ERROR_KAFKA_TOPIC".to_string();
             let kafka_topic = std::env::var(&kafka_topic_env)
                 .map_err(|_| format!("${kafka_topic_env} not set").into())
-                .unwrap_or_else(|e: String| "error_topic".to_string());
+                .unwrap_or_else(|_e: String| "error_topic".to_string());
             let kafka_layer =
                 KafkaErrorSender::new(kafka_bootstrap_servers.as_str(), kafka_topic.as_str());
             let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());

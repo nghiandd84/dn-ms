@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use sea_orm::DbConn;
 use shared_shared_auth::{
-    claim::{AccessTokenStruct, Claims, UserAccessData},
+    claim::{AccessTokenStruct, UserAccessData},
     data::AuthorizationCodeData,
     token::{
         create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
@@ -15,7 +15,7 @@ use shared_shared_data_auth::error::TokenError;
 use tracing::{debug, error, info};
 use uuid::Uuid;
 
-use features_auth_entities::token::{self, TokenForCreateDto, TokenForUpdateDto};
+use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::{
     state::AuthCacheState,
     token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},

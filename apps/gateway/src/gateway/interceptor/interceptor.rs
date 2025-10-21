@@ -62,7 +62,7 @@ pub async fn execute_interceptors<'a>(
     session: &mut Session<'a>,
 ) -> PhaseResult {
     for interceptor in interceptors.iter() {
-        let _ = execute_interceptor(interceptor, session).await;
+        let _execute = execute_interceptor(interceptor, session).await;
     }
     Ok(true)
 }

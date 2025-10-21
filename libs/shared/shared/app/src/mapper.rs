@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
-use crate::state::AppState;
 use axum::{
     body::to_bytes,
-    extract::{Request, State},
+    extract::Request,
     http::{Method, Uri},
     middleware::Next,
     response::{IntoResponse, Response},
     Json,
 };
-use sea_orm_migration::prelude::ExprTrait;
 use serde_json::{json, to_value, Value};
 use tracing::debug;
 

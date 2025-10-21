@@ -322,7 +322,7 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Add the `is_active` column to the `users` table
         // with a default value of false and not null constraint.
-        let _ = manager
+        let _alter = manager
             .alter_table(
                 Table::alter()
                     .table(user::Entity)
@@ -346,9 +346,8 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Remove the `is_active` column from the `users` table
         // This is a destructive operation, so ensure you have backups if necessary.
-        let _ = manager
+        let _alter = manager
             .alter_table(
                 Table::alter()
                     .table(user::Entity)
@@ -358,23 +357,23 @@ impl MigrationTrait for Migration {
             .await;
 
         // Drop the tables in reverse order of creation
-        let _ = manager
+        let _drop_token = manager
             .drop_table(Table::drop().table(token::Entity).to_owned())
             .await;
 
-        let _ = manager
+        let _drop_auth_code = manager
             .drop_table(Table::drop().table(auth_code::Entity).to_owned())
             .await;
 
-        let _ = manager
+        let _drop_client = manager
             .drop_table(Table::drop().table(client::Entity).to_owned())
             .await;
 
-        let _ = manager
+        let _drop_client_scope = manager
             .drop_table(Table::drop().table(client_scope::Entity).to_owned())
             .await;
 
-        let _ = manager
+        let _drop_scope = manager
             .drop_table(Table::drop().table(scope::Entity).to_owned())
             .await;
 

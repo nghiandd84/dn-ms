@@ -3,7 +3,6 @@ use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use serde::{Deserialize, Serialize};
-use serde_json::to_string;
 use std::future::Future;
 use tracing::{debug, error};
 

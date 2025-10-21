@@ -93,7 +93,7 @@ impl ProxyHttp for Proxy {
             .expect(format!("Not found filter for path {}", session.ds_req_path()).as_str());
         let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
 
-        let _ = execute_interceptors(&filter_interceptors, &mut session).await;
+        let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
 
         session.flush_path_and_query(&filter);
         ctx.set_filter(filter);
@@ -109,7 +109,7 @@ impl ProxyHttp for Proxy {
         debug!("upstream_peer ------------------");
         debug!("Current Ctx {:?}", ctx);
 
-        let session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
+        let _session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
         let filter = ctx.filter.as_ref().unwrap();
@@ -127,8 +127,8 @@ impl ProxyHttp for Proxy {
 
         let tls = ext.get("tls").unwrap();
         let mut peer = HttpPeer::new(&back_end.addr, *tls, upstream_name);
-        
-        if (filter.timeout.is_some()) {
+
+        if filter.timeout.is_some() {
             let timeout = filter.timeout.unwrap();
             debug!("Set timeout for peer: {} seconds", timeout);
             let option = peer.get_mut_peer_options().unwrap();
@@ -148,7 +148,7 @@ impl ProxyHttp for Proxy {
         debug!("response_filter");
         let mut session = session::Session::build(Phase::PostUpstreamResponse, psession, ctx);
         session.upstream_response(upstream_response);
-        session.flush_ds_res_header().await;
+        let _flush = session.flush_ds_res_header().await;
         Ok(())
     }
 
@@ -162,8 +162,8 @@ impl ProxyHttp for Proxy {
         Self::CTX: Send + Sync,
     {
         let mut session = session::Session::build(Phase::PreUpstreamRequest, _session, _ctx);
-        session.upstream_request(_upstream_request);
-        session.flush_us_req_header();
+        let _up = session.upstream_request(_upstream_request);
+        let _plush = session.flush_us_req_header();
 
         Ok(())
     }
