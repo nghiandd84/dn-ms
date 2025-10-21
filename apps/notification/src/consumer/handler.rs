@@ -9,11 +9,10 @@ use crate::{
     websocket::action::server::WebSocketServerResponse,
 };
 
-
-pub async fn handler_message(
+pub async fn handle_consumer_message(
     message: NotificationMessage,
     notification_state: Arc<RwLock<NotificationState>>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let result = match message {
         NotificationMessage::Notification { user_id, message } => {
             handle_notification_message(notification_state, user_id, message).await
@@ -32,7 +31,7 @@ async fn handle_payment_message<'a>(
     user_id: uuid::Uuid,
     platform: String,
     message: String,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let client_sender = {
         let state_read_guard = notification_state.write().unwrap();
         let client_sender = state_read_guard.get_client_sender_by_user_id(user_id);
@@ -60,7 +59,7 @@ async fn handle_notification_message<'a>(
     notification_state: Arc<RwLock<NotificationState>>,
     user_id: uuid::Uuid,
     message: String,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let client_sender = {
         let state_read_guard = notification_state.write().unwrap();
         let client_sender = state_read_guard.get_client_sender_by_user_id(user_id);

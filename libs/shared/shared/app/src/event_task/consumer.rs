@@ -2,9 +2,12 @@ use futures_util::StreamExt;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
 use std::future::Future;
 use tracing::{debug, error};
+
+use crate::event_task::producer::{Producer, ProducerMessage};
 
 pub struct ConsumerConfig {
     server: String,
@@ -38,13 +41,15 @@ impl ConsumerConfig {
 pub async fn consumer_task<M, S, F, Fut>(
     config: ConsumerConfig,
     state: S,
+    dlq_producer: Producer,
+    dlq_key: String,
     handler: F,
 ) -> Result<(), Box<dyn std::error::Error + Send>>
 where
     M: for<'de> Deserialize<'de> + std::fmt::Debug + Send + 'static,
     S: Clone + Send + 'static,
     F: Fn(M, S) -> Fut + Send + Sync + 'static,
-    Fut: Future<Output = Result<(), Box<dyn std::error::Error>>> + Send + 'static,
+    Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send + 'static,
 {
     let bootstrap_server = config.server;
     let topic = config.topic;
@@ -71,8 +76,8 @@ where
     while let Some(message) = message_stream.next().await {
         debug!("Received message from Kafka");
         match message {
-            Ok(m) => {
-                let message = match m.payload_view::<str>() {
+            Ok(borrow_message) => {
+                let origin_message = match borrow_message.payload_view::<str>() {
                     Some(Ok(s)) => s,
                     Some(Err(e)) => {
                         error!("Error while deserializing message payload: {:?}", e);
@@ -84,16 +89,19 @@ where
                     }
                 };
 
-                let message: M = match serde_json::from_str(message) {
+                let message: M = match serde_json::from_str(origin_message) {
                     Ok(event) => event,
                     Err(e) => {
                         error!("Failed to deserialize message: {}", e);
                         continue;
                     }
                 };
-                debug!("Received Kafka event: {:?}", message);
+                debug!("Received Kafka event: {:?}", origin_message);
                 let handler = handler.clone();
                 let handler_state = state.clone();
+                let handler_origin_message = origin_message.to_string();
+                let handler_producer = dlq_producer.clone();
+                let dlq_key_clone = dlq_key.clone();
                 tokio::spawn(async move {
                     let result = (handler)(message, handler_state).await;
                     match result {
@@ -107,6 +115,24 @@ where
                                 "Failed to handle event: {} and send message to DLQ topic",
                                 error_message
                             );
+
+                            let dlq_message = ProducerMessage {
+                                payload: create_dlq_payload(
+                                    handler_origin_message.to_string(),
+                                    error_message,
+                                )
+                                .unwrap(),
+                                key: Some(dlq_key_clone),
+                            };
+                            let result = handler_producer.send(&dlq_message).await;
+                            if result.is_ok() {
+                                debug!("Sent message to DLQ topic successfully");
+                            } else {
+                                error!(
+                                    "Failed to send message to DLQ topic: {}",
+                                    result.err().unwrap().reason
+                                );
+                            }
                         }
                     }
                 });
@@ -117,4 +143,22 @@ where
         }
     }
     Ok(())
+}
+
+#[derive(Serialize)]
+struct DlqMessage {
+    origin_payload: String,
+    error_msg: String,
+}
+
+fn create_dlq_payload(
+    origin_payload: String,
+    error_msg: String,
+) -> Result<DlqMessage, serde_json::Error> {
+    let report = DlqMessage {
+        origin_payload,
+        error_msg,
+    };
+
+    Ok(report)
 }

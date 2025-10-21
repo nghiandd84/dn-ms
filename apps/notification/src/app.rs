@@ -5,7 +5,10 @@ use tracing::{debug, error};
 use shared_shared_app::{
     config::AppConfig,
     discovery::get_consul_client,
-    event_task::consumer::{consumer_task, ConsumerConfig},
+    event_task::{
+        consumer::{consumer_task, ConsumerConfig},
+        producer::{Producer, ProducerConfig},
+    },
     start_app::StartApp,
     state::AppState,
 };
@@ -18,20 +21,12 @@ use features_email_template_model::{
 };
 
 use crate::{
-    consumer::{handler::handler_message, message::NotificationMessage},
+    consumer::{handler::handle_consumer_message, message::NotificationMessage},
     websocket::handler::message::ws_handler,
 };
 
 struct MyApp<'a> {
     config: &'a AppConfig,
-}
-
-async fn handle_notification_message(
-    event: NotificationMessage,
-    state: Arc<RwLock<NotificationState>>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    debug!("Handling notification message: {:?}", event);
-    handler_message(event, state).await
 }
 
 impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for MyApp<'a> {
@@ -90,12 +85,20 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
                 debug!("Test message sent successfully");
             }
             */
+
+            let dlq_producer = Producer::from_config(ProducerConfig {
+                kafka_server_env: format!("DLQ_KAFKA_BOOTSTRAP_SERVERS"),
+                kafka_topic_env: format!("DLQ_KAFKA_TOPIC"),
+            })
+            .await;
             tokio::spawn(async move {
                 let res =
                     consumer_task::<NotificationMessage, Arc<RwLock<NotificationState>>, _, _>(
                         consumer_config,
                         notification_state,
-                        handle_notification_message,
+                        dlq_producer,
+                        app_key.clone(),
+                        handle_consumer_message,
                     )
                     .await;
 

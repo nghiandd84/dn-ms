@@ -29,7 +29,6 @@ pub struct ProducerMessage<T>
 where
     T: Serialize,
 {
-    pub topic: String,
     pub key: Option<String>,
     pub payload: T,
 }
@@ -45,22 +44,24 @@ pub struct ProducerError {
 
 pub struct Producer {
     producer: FutureProducer,
+    topic: String,
 }
 
 impl Clone for Producer {
     fn clone(&self) -> Self {
         Self {
             producer: self.producer.clone(),
+            topic: self.topic.clone(),
         }
     }
 }
 
 impl Producer {
     pub async fn from_config(config: ProducerConfig) -> Self {
-        let producer = Self::get_producer_connection(config)
+        let (producer, topic) = Self::get_producer_connection(config)
             .await
             .expect("Failed to create Kafka producer");
-        Self { producer }
+        Self { producer, topic }
     }
 
     pub async fn send<T>(
@@ -75,7 +76,7 @@ impl Producer {
         })?;
 
         let key = message.key.clone().unwrap_or_default();
-        let record = rdkafka::producer::FutureRecord::to(&message.topic)
+        let record = rdkafka::producer::FutureRecord::to(&self.topic)
             .payload(&payload_str)
             .key(&key);
 
@@ -89,7 +90,8 @@ impl Producer {
 
     fn get_producer_connection(
         config: ProducerConfig,
-    ) -> impl std::future::Future<Output = Result<FutureProducer, Box<dyn std::error::Error>>> {
+    ) -> impl std::future::Future<Output = Result<(FutureProducer, String), Box<dyn std::error::Error>>>
+    {
         async move {
             let kafka_bootstrap_servers = std::env::var(&config.kafka_server_env)
                 .map_err(|_| format!("${} not set", config.kafka_server_env).into())
@@ -124,7 +126,7 @@ impl Producer {
                 .create()
                 .expect("Producer creation error");
 
-            Ok(producer)
+            Ok((producer, kafka_topic))
         }
     }
 }
