@@ -2,12 +2,10 @@ use axum::extract::ws::Message;
 use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
 
-use features_email_template_model::state::NotificationState;
+use features_notification_model::state::NotificationState;
+use features_notification_stream::{message::NotificationMessage, websocket::ServerResponse};
 
-use crate::{
-    consumer::{error::ConsumerError, message::NotificationMessage},
-    websocket::action::server::WebSocketServerResponse,
-};
+use crate::consumer::error::ConsumerError;
 
 pub async fn handle_consumer_message(
     message: NotificationMessage,
@@ -42,7 +40,7 @@ async fn handle_payment_message<'a>(
         return Err(Box::new(ConsumerError::NotFoundClient { user_id }));
     }
     let client_sender = client_sender.unwrap();
-    let websocket_message = WebSocketServerResponse::Payment { platform, message };
+    let websocket_message = ServerResponse::Payment { platform, message };
     if let Err(e) = client_sender.send(Message::Text(
         serde_json::to_string(&websocket_message).unwrap().into(),
     )) {
@@ -70,7 +68,7 @@ async fn handle_notification_message<'a>(
         return Err(Box::new(ConsumerError::NotFoundClient { user_id }));
     }
     let client_sender = client_sender.unwrap();
-    let websocket_message = WebSocketServerResponse::Notification { message };
+    let websocket_message = ServerResponse::Notification { message };
     if let Err(e) = client_sender.send(Message::Text(
         serde_json::to_string(&websocket_message).unwrap().into(),
     )) {

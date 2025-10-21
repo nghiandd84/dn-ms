@@ -295,35 +295,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "app-gateway-bk"
-version = "0.0.1"
-dependencies = [
- "arc-swap",
- "async-trait",
- "base64 0.22.1",
- "bytes",
- "clap 3.2.25",
- "crossbeam-epoch",
- "dashmap",
- "http 1.2.0",
- "once_cell",
- "pcre2",
- "pingora",
- "pingora-core",
- "pingora-http",
- "pingora-proxy",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "serde_yaml 0.9.34+deprecated",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
- "wildmatch",
-]
-
-[[package]]
 name = "app-notification"
 version = "0.0.1"
 dependencies = [
@@ -333,6 +304,7 @@ dependencies = [
  "dotenv",
  "features-auth-remote",
  "features-notification-model",
+ "features-notification-stream",
  "futures-util",
  "reqwest",
  "rs-consul",
@@ -1719,6 +1691,22 @@ name = "features-notification-model"
 version = "0.0.1"
 dependencies = [
  "axum",
+ "chrono",
+ "serde",
+ "serde_json",
+ "shared-shared-data-core",
+ "shared-shared-macro",
+ "tokio",
+ "tracing",
+ "utoipa",
+ "uuid",
+ "validator",
+]
+
+[[package]]
+name = "features-notification-stream"
+version = "0.0.1"
+dependencies = [
  "chrono",
  "serde",
  "serde_json",

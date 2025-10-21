@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use shared_shared_auth::{
-    claim::{AccessTokenStruct, AccessTokenStructResponse, Claims},
+    claim::{AccessTokenStruct, AccessTokenStructResponse},
     data::AuthorizationCodeData,
 };
 use tracing::debug;

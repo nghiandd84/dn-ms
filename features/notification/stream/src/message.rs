@@ -15,5 +15,3 @@ pub enum NotificationMessage {
         message: String,
     },
 }
-
-// {"message_type":"notification", "user_id": "3158787f-7b76-4b04-b79d-4d8fac17d841", "message": "My Message"}

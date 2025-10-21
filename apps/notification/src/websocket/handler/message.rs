@@ -6,6 +6,7 @@ use axum::{
     },
     response::IntoResponse,
 };
+use features_notification_stream::websocket::ClientRequest;
 use futures_util::{
     stream::{SplitSink, SplitStream, StreamExt},
     SinkExt,
@@ -17,12 +18,9 @@ use tracing::{debug, info, warn};
 
 use shared_shared_app::state::AppState;
 
-use features_email_template_model::state::{NotificationCacheState, NotificationState};
+use features_notification_model::state::{NotificationCacheState, NotificationState};
 
-use crate::websocket::{
-    action::client::WebSocketClientAction,
-    handler::{authenticate::handle_authenticate, ping::handle_ping},
-};
+use crate::websocket::handler::{authenticate::handle_authenticate, ping::handle_ping};
 
 // Simple counter for unique client IDs
 static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(1);
@@ -142,9 +140,9 @@ async fn handle_receive_messages<'a>(
                             websocket_id
                         );
                     }
-                    // Deserialize the message to WebSocketClientAction
-                    let client_action =
-                        serde_json::from_str::<WebSocketClientAction>(text_msg.as_str());
+                    // Deserialize the message to ClientAction
+                    let client_action: Result<ClientRequest, serde_json::Error> =
+                        serde_json::from_str::<ClientRequest>(text_msg.as_str());
                     if let Err(e) = client_action {
                         warn!(
                             "Failed to deserialize message from client {}: {}",
@@ -179,19 +177,19 @@ async fn handle_receive_messages<'a>(
 }
 
 async fn handle_client_action<'a>(
-    client_action: WebSocketClientAction,
+    client_action: ClientRequest,
     websocket_id: usize,
     notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &mpsc::UnboundedSender<Message>,
 ) {
     match client_action {
-        WebSocketClientAction::Authenticate { token, client_id } => {
+        ClientRequest::Authenticate { token, client_id } => {
             handle_authenticate(token, websocket_id, client_id, notification_state, tx).await;
         }
-        WebSocketClientAction::Disconnect => {
+        ClientRequest::Disconnect => {
             info!("Client {} requested disconnection.", websocket_id);
         }
-        WebSocketClientAction::Ping => {
+        ClientRequest::Ping => {
             debug!("Client {} sent a Ping.", websocket_id);
             handle_ping(websocket_id, tx).await;
         }

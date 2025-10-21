@@ -1,4 +1,5 @@
 use axum::{routing::get, Router};
+use features_notification_stream::message::NotificationMessage;
 use std::sync::{Arc, RwLock};
 use tracing::{debug, error};
 
@@ -15,15 +16,12 @@ use shared_shared_app::{
 use shared_shared_config::db::Database;
 
 use features_auth_remote::TokenService;
-use features_email_template_model::{
+use features_notification_model::{
     state::{NotificationCacheState, NotificationState},
     types::new_clients,
 };
 
-use crate::{
-    consumer::{handler::handle_consumer_message, message::NotificationMessage},
-    websocket::handler::message::ws_handler,
-};
+use crate::{consumer::handler::handle_consumer_message, websocket::handler::message::ws_handler};
 
 struct MyApp<'a> {
     config: &'a AppConfig,

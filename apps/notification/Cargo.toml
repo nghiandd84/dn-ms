@@ -26,3 +26,4 @@ shared-shared-app = { workspace = true }
 
 features-auth-remote = { workspace = true }
 features-notification-model = { workspace = true }
+features-notification-stream = { workspace = true }

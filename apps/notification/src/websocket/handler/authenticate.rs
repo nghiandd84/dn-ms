@@ -5,9 +5,8 @@ use tracing::{debug, error};
 use uuid::Uuid;
 
 use features_auth_remote::TokenService;
-use features_email_template_model::state::NotificationState;
-
-use crate::websocket::action::server::{Auth, WebSocketServerResponse};
+use features_notification_model::state::NotificationState;
+use features_notification_stream::websocket::{Auth, ServerResponse};
 
 pub async fn handle_authenticate<'a>(
     token: String,
@@ -29,7 +28,7 @@ pub async fn handle_authenticate<'a>(
         state_read_guard.insert_user_client_mapping(user_id, websocket_id);
     }
 
-    let websocket_message = WebSocketServerResponse::Auth {
+    let websocket_message = ServerResponse::Auth {
         status: Auth::Success,
     };
     if let Err(e) = tx.send(Message::Text(
@@ -41,7 +40,7 @@ pub async fn handle_authenticate<'a>(
 
 fn send_failure_message(tx: &mpsc::UnboundedSender<Message>, err_msg: String) {
     error!("Authentication failed: {}", err_msg);
-    let websocket_message = WebSocketServerResponse::Auth {
+    let websocket_message = ServerResponse::Auth {
         status: Auth::Failure,
     };
     if let Err(e) = tx.send(Message::Text(

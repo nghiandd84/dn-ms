@@ -1,16 +1,16 @@
 [package]
-name = "features-notification-model"
+name = "features-notification-stream"
 edition = "2021"
 version.workspace = true
 authors.workspace = true
 publish = false
 
 [lib]
-name = "features_notification_model"
+name = "features_notification_stream"
 path = "src/lib.rs"
 
 [dependencies]
-axum = { workspace = true , features = ["ws"]}
+
 tokio = { workspace = true }
 chrono = { workspace = true }
 serde_json = { workspace = true }
@@ -22,4 +22,3 @@ tracing = { workspace = true }
 
 shared-shared-data-core = { workspace = true }
 shared-shared-macro = { workspace = true }
-# features-email-template-entities = { workspace = true }

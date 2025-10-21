@@ -24,6 +24,7 @@ members = [
     "features/auth/remote", 
 
     "features/notification/model", 
+    "features/notification/stream", 
 
     "features/bakery/entities", 
     "features/bakery/migrations", 
@@ -42,13 +43,9 @@ members = [
     "apis/email-template",
     "apis/notification",
     "apps/gateway", 
-    "apps/notification", 
-    "apps/gateway-bk", 
+    "apps/notification"
 ]
 
-exclude = [
-    "apps/gateway-bk"
-]
 
 
 [workspace.package]
@@ -139,6 +136,7 @@ features-email-template-service = { path = "./features/email-template/service"}
 
 # Notification Feature
 features-notification-model = { path = "./features/notification/model"}
+features-notification-stream = { path = "./features/notification/stream"}
 
 # Bakery Feature
 features-bakery-entities = { path = "./features/bakery/entities"}
