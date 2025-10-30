@@ -42,9 +42,11 @@ members = [
     "apis/bakery", 
     "apis/email-template",
     "apis/notification",
+    "apps/auth_web",
     "apps/gateway", 
     "apps/notification"
-]
+ 
+ ]
 
 
 
@@ -53,7 +55,6 @@ version = "0.0.1"
 authors = ["NGHIA NDD"]
 
 [workspace.dependencies]
-
 arc-swap = "1.7.1"
 argon2 = "0.5.3"
 async-std = { version = "1", features = ["attributes"] }
@@ -70,6 +71,7 @@ local-ip-address  = { version = "0.6.5"}
 crossbeam-epoch = "0.9.18"
 dashmap = "6.1.0"
 dotenv = "0.15.0"
+dioxus = { version = "0.6.3", features = ["web"] }
 futures-util = "0.3.31"
 http = "1.0.0"
 jsonwebtoken = "9.3.1"
@@ -89,7 +91,7 @@ rdkafka = { version = "0.37.0" }
 reqwest = { version = "0.12", features = ["json"] }
 sea-orm = { version = "1.1.0" }
 sea-orm-migration = { version = "1.1.0" }
-serde = { version = "1.0.218", features = ["derive"] }
+serde = { version = "1.0.223", features = ["derive"] }
 serde_json = "1.0.139"
 serde_qs = { version = "0.15.0" }
 serde_yaml = "0.9.34"
@@ -143,5 +145,17 @@ features-bakery-entities = { path = "./features/bakery/entities"}
 features-bakery-migrations = { path = "./features/bakery/migrations"}
 features-bakery-model = { path = "./features/bakery/model"}
 features-bakery-service = { path = "./features/bakery/service"}
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
 
 

@@ -1,0 +1,20 @@
+[package]
+name = "auth_web"
+edition = "2024"
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+dioxus = { workspace = true, features = ["router", "fullstack"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+
+#features-auth-remote = { workspace = true }
+#shared-shared-config = { workspace = true }
+#shared-shared-app = { workspace = true }
+
+[features]
+default = []
+web = ["dioxus/web"]
+server = ["dioxus/server"]

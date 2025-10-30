@@ -100,5 +100,8 @@ done
 
 #wait
 
+# Run Auth_web from release
+# IP=0.0.0.0 PORT=8080 ./target/dx/auth_web/release/web/server
+
 echo "All done"
 exit 0 
