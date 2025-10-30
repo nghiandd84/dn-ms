@@ -580,9 +580,13 @@ dependencies = [
 name = "auth_web"
 version = "0.0.1"
 dependencies = [
+ "axum 0.7.9",
  "dioxus",
+ "dioxus-fullstack",
+ "features-auth-remote",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]

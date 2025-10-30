@@ -71,7 +71,8 @@ local-ip-address  = { version = "0.6.5"}
 crossbeam-epoch = "0.9.18"
 dashmap = "6.1.0"
 dotenv = "0.15.0"
-dioxus = { version = "0.6.3", features = ["web"] }
+dioxus = { version = "0.6.3", features = ["fullstack"] }
+dioxus-fullstack = { version = "0.6.3" }
 futures-util = "0.3.31"
 http = "1.0.0"
 jsonwebtoken = "9.3.1"

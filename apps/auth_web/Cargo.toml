@@ -5,16 +5,17 @@ version.workspace = true
 authors.workspace = true
 
 [dependencies]
-dioxus = { workspace = true, features = ["router", "fullstack"] }
+dioxus = { workspace = true, features = ["router"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 
-
-#features-auth-remote = { workspace = true }
-#shared-shared-config = { workspace = true }
-#shared-shared-app = { workspace = true }
+#Run on server
+dioxus-fullstack = { workspace = true }
+axum = { version = "0.7.0", optional = true  }
+tokio = { workspace = true , features = ["full"], optional = true}
+features-auth-remote = { workspace = true,  optional = true }
 
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server"]
+server = ["dioxus/server" ,"axum", "dioxus-fullstack/axum", "tokio", "features-auth-remote"]
