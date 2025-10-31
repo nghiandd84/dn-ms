@@ -4,3 +4,4 @@ pub mod role;
 pub mod scope;
 pub mod token;
 pub mod user;
+pub mod authentication;

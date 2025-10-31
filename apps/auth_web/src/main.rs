@@ -11,7 +11,7 @@ mod views;
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
-    #[route("/authenticate?:client_id&:redirect_uri&:response_type&:scope")]
+    #[route("/authenticate?:client_id&:redirect_uri&:response_type&:scope&:state")]
     Authenticate {
         client_id: String,
         redirect_uri: String,
@@ -58,6 +58,7 @@ async fn main() {
 
 #[component]
 fn App() -> Element {
+    /*
     let mut meaning = use_signal(|| None);
 
     rsx! {
@@ -87,6 +88,13 @@ fn App() -> Element {
 
         }
 
+
+        Router::<Route> {}
+    }
+    */
+    rsx! {
+        document::Link { rel: "icon", href: FAVICON }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
 
         Router::<Route> {}
     }

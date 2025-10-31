@@ -12,10 +12,11 @@ use features_auth_model::state::AuthCacheState;
 use crate::{
     doc::ApiDoc,
     routes::{
-        auth_code::routes as auth_code_routes, client::routes as client_routes,
-        login::routes as login_routes, profile::routes as profile_routes,
-        register::routes as register_routes, role::routes as role_routes,
-        scope::routes as scope_routes, token::routes as token_routes, user::routes as user_routes,
+        auth_code::routes as auth_code_routes, authentication::routes as authentication_routes,
+        client::routes as client_routes, login::routes as login_routes,
+        profile::routes as profile_routes, register::routes as register_routes,
+        role::routes as role_routes, scope::routes as scope_routes, token::routes as token_routes,
+        user::routes as user_routes,
     },
 };
 
@@ -41,6 +42,7 @@ impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
     fn routes(&self, app_state: &AppState<AuthCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(auth_code_routes(app_state))
+            .merge(authentication_routes(app_state))
             .merge(client_routes(app_state))
             .merge(login_routes(app_state))
             .merge(profile_routes(app_state))

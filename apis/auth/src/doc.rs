@@ -11,11 +11,10 @@ use shared_shared_app::doc::JwtSecurityAddon;
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
-        
+        crate::routes::authentication::request_authentication,
         crate::routes::register::register,
         crate::routes::login::login,
         crate::routes::profile::change_profile,
-
         crate::routes::auth_code::create_auth_code,
         crate::routes::auth_code::get_auth_code,
         crate::routes::auth_code::delete_auth_code,

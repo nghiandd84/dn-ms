@@ -9,7 +9,7 @@ use crate::models::authenticate::AuthenticateParams;
 // use features_auth_remote::TokenService;
 
 /*
-http://172.25.43.223:8080/authenticate?client_id=DhjTpB9YQPY379KyAJI3BteZhNtT43NN&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost&response_type=code&state=xyzABC123
+http://172.25.43.223:8080/authenticate?client_id=DhjTpB9YQPY379KyAJI3BteZhNtT43NN&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fauth_result&response_type=code&state=eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ%3D%3D
  */
 #[component]
 pub fn Authenticate(
@@ -19,13 +19,12 @@ pub fn Authenticate(
     scope: String,
     state: String
 ) -> Element {
-    info!("Authenticate component mounted {client_id}, {redirect_uri}, {response_type}, {scope}");
+    info!("Authenticate client_id: {client_id}, redirect_uri: {redirect_uri}, response_type:  {response_type}, scope:  {scope}, state: {state}");
     use_effect(|| {
         // You can perform side effects here, such as fetching data or initializing state
         info!("Call API to validate authentication request...");
     });
     info!("Redirect to login or signup screen");
-    // let query_params = use_route().query::<AuthenticateParams>().unwrap_or_default();
     rsx! {
         div {
             h1 { "Authenticate Page" }
