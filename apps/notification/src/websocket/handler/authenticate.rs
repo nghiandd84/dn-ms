@@ -15,13 +15,14 @@ pub async fn handle_authenticate<'a>(
     notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &'a mpsc::UnboundedSender<Message>,
 ) {
-    let validate_token = TokenService::validate_token(token, client_id, |err_msg| {
-        send_failure_message(tx, err_msg);
-    })
-    .await
-    .unwrap();
+    // let validate_token = TokenService::validate_token(token, client_id).await;
+    let validate_token = TokenService::validate_token(token, client_id).await;
 
-    let user_id = validate_token;
+    if validate_token.is_err() {
+        send_failure_message(tx, validate_token.err().unwrap());
+        return;
+    }
+    let user_id = validate_token.unwrap();
     debug!("Mapped user_id {} to client_id {}", user_id, websocket_id);
     {
         let mut state_read_guard = notification_state.write().unwrap();
