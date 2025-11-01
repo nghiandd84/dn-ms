@@ -2,7 +2,7 @@ use dioxus::{
     logger::tracing::{debug, info},
     prelude::*,
 };
-use dioxus_router::prelude::*;
+// use dioxus_router::prelude::*;
 use serde::Deserialize;
 
 use crate::models::authenticate::AuthenticateParams;

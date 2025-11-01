@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use dioxus::prelude::*;
-use dioxus_fullstack::prelude::*;
+// use dioxus_fullstack::prelude::*;
 
 use views::{Authenticate, Blog, Home};
 
@@ -41,11 +41,15 @@ fn main() {
 #[tokio::main]
 async fn main() {
     use dioxus::logger::tracing::Level;
-
+    use dioxus::logger::tracing::info;
+    info!("Start Server..."); 
+    
     dioxus::logger::init(Level::INFO).expect("Failed to initialize logger");
     // Connect to the IP and PORT env vars passed by the Dioxus CLI (or your dockerfile)
     let socket_addr = dioxus::cli_config::fullstack_address_or_localhost();
-
+    // use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+    // let socket_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8081);
+    /*
     // Build a custom axum router
     let router = axum::Router::new()
         .serve_dioxus_application(ServeConfigBuilder::new(), App)
@@ -54,6 +58,14 @@ async fn main() {
     // And launch it!
     let listener = tokio::net::TcpListener::bind(socket_addr).await.unwrap();
     axum::serve(listener, router).await.unwrap();
+     */
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            info!("Interval task running...");
+        }
+    });
 }
 
 #[component]
