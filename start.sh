@@ -100,9 +100,11 @@ done
 
 #wait
 
-# Run Auth_web from release
-# IP=0.0.0.0 PORT=8080 ./target/dx/auth_web/release/web/server
-# IP=0.0.0.0 PORT=8080 RUST_BACKTRACE=1 ./target/dx/auth_web/release/web/server
+# Build Auth-web to release
+# dx bundle --package auth-web --release
+# Run Auth-web from release
+# IP=0.0.0.0 PORT=8080 ./target/dx/auth-web/release/web/auth-web
+# IP=0.0.0.0 PORT=8080 RUST_BACKTRACE=1 ./target/dx/auth-web/release/web/auth-web
 
 echo "All done"
 exit 0 
