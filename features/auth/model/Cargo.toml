@@ -20,5 +20,6 @@ tracing = { workspace = true }
 
 shared-shared-data-core = { workspace = true }
 shared-shared-data-auth =  { workspace = true }
+shared-shared-data-error =  { workspace = true }
 shared-shared-macro = { workspace = true }
 features-auth-entities = { workspace = true }

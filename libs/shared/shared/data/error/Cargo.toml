@@ -1,12 +1,12 @@
 [package]
-name = "shared-shared-data-auth"
+name = "shared-shared-data-error"
 edition = "2021"
 version.workspace = true
 authors.workspace = true
 publish = false
 
 [lib]
-name = "shared_shared_data_auth"
+name = "shared_shared_data_error"
 path = "src/lib.rs"
 
 [dependencies]
@@ -14,5 +14,9 @@ argon2 = { workspace = true }
 axum = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-shared-shared-data-error = { workspace = true }
-uuid = { workspace = true }
+thiserror = { workspace = true }
+sea-orm = { workspace = true }
+validator = { workspace = true }
+
+
+

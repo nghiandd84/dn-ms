@@ -11,7 +11,7 @@ use shared_shared_auth::{
     },
 };
 
-use shared_shared_data_auth::error::TokenError;
+use shared_shared_data_error::auth::TokenError;
 use tracing::{debug, error, info};
 use uuid::Uuid;
 
@@ -20,7 +20,8 @@ use features_auth_model::{
     state::AuthCacheState,
     token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},
 };
-use shared_shared_data_app::{error::AppError, result::Result};
+use shared_shared_data_app::{ result::Result};
+use shared_shared_data_error::app::AppError;
 use shared_shared_data_cache::cache::Cache;
 
 use features_auth_repo::{

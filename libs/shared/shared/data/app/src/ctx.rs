@@ -1,7 +1,7 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
-use shared_shared_data_auth::error::AuthError;
+use shared_shared_data_error::auth::AuthError;
 
-use crate::error::AppError;
+use shared_shared_data_error::app::AppError;
 
 #[derive(Debug, Clone)]
 pub struct Ctx {

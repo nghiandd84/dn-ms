@@ -1,7 +1,7 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
 use uuid::Uuid;
 
-use crate::header::error::HeaderError; // For sharing AppState across threads
+use shared_shared_data_error::auth::HeaderError;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserId(pub Uuid);

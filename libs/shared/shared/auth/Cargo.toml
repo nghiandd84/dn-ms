@@ -19,4 +19,5 @@ utoipa = { workspace = true }
 uuid = { workspace = true, features = ["serde", "v4"] }
 
 shared-shared-data-auth = { workspace = true }
+shared-shared-data-error = { workspace = true }
 shared-shared-macro = { workspace = true }

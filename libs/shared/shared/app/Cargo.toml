@@ -30,4 +30,5 @@ uuid = { workspace = true, features = ["fast-rng", "v4"] }
 shared-shared-config = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-data-app =  { workspace = true }
+shared-shared-data-error =  { workspace = true }
 shared-shared-data-cache =  { workspace = true }

@@ -5,7 +5,7 @@ use uuid::Uuid;
 use validator::{Validate, ValidationError};
 
 use features_auth_entities::user::{ModelOptionDto, UserForCreateDto};
-use shared_shared_data_auth::password::hash;
+use shared_shared_data_error::password::hash;
 use shared_shared_macro::{ParamFilter, Response};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]

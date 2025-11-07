@@ -1,5 +1,5 @@
 use sea_orm::DbConn;
-use shared_shared_data_auth::error::AuthError;
+use shared_shared_data_error::auth::AuthError;
 use uuid::Uuid;
 
 use features_auth_entities::user::UserForCreateDto;

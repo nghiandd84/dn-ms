@@ -12,7 +12,8 @@ use serde_json::{json, to_value, Value};
 use tracing::debug;
 
 use shared_shared_data_app::result::Result;
-use shared_shared_data_app::{ctx::Ctx, error::AppError};
+use shared_shared_data_app::{ctx::Ctx};
+use shared_shared_data_error::app::AppError;
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
     debug!(

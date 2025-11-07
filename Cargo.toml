@@ -7,6 +7,7 @@ members = [
     "libs/shared/shared/data/auth",
     "libs/shared/shared/data/cache",
     "libs/shared/shared/data/core",
+    "libs/shared/shared/data/error",
 
     "libs/shared/shared/app",
     "libs/shared/shared/auth",
@@ -98,6 +99,7 @@ serde_qs = { version = "0.15.0" }
 serde_yaml = "0.9.34"
 sqlx = { version = "0.8.3", features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"] }
 syn = "2.0"
+thiserror = { version="2" }
 tokio = { version="1", features = ["full"] }
 tower-http = { version = "0.4", features = ["fs"]}
 tracing = { version = "0.1.41" }
@@ -111,9 +113,10 @@ wildmatch = "2.4.0"
 
 
 shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
+shared-shared-data-auth = { path = "./libs/shared/shared/data/auth"}
 shared-shared-data-cache = { path = "./libs/shared/shared/data/cache"}
 shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
-shared-shared-data-auth = { path = "./libs/shared/shared/data/auth"}
+shared-shared-data-error = { path = "./libs/shared/shared/data/error"}
 
 shared-shared-app = { path = "./libs/shared/shared/app"}
 shared-shared-auth = { path = "./libs/shared/shared/auth"}

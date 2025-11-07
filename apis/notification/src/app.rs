@@ -22,7 +22,7 @@ impl<'a> StartApp<EmailTemplateCacheState> for MyApp<'a> {
 
     fn migrate(
         &self,
-        db: &Database,
+        _db: &Database,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async { Ok(()) }
     }

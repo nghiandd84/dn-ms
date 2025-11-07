@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::claim::{AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct, UserAccessData};
 
-use shared_shared_data_auth::error::TokenError;
+use shared_shared_data_error::auth::TokenError;
 
 pub const TOKEN_TYPE: &str = "Bearer";
 pub const TOKEN_EXPIRATION: i64 = 3600 * 24; // 24 hours in seconds

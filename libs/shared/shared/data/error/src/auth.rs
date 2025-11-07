@@ -1,3 +1,28 @@
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum TokenError {
+    #[error("The provided token is invalid")]
+    InvalidToken,
+    #[error("The token has expired")]
+    ExpiredToken,
+    #[error("Unauthorized access attempt")]
+    UnauthorizedAccess,
+    #[error("Can not create token")]
+    CanNotCreateToken,
+}
+
+#[derive(Debug, Serialize, Deserialize, Error)]
+pub enum AuthError {
+    #[error("Context not found in request extensions")]
+    NotFoundUser,
+    #[error("Login failed due to invalid credentials")]
+    WrongPassword,
+    #[error("Logout failed")]
+    Unknow,
+}
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},

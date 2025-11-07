@@ -174,6 +174,7 @@ dependencies = [
  "shared-shared-data-app",
  "shared-shared-data-auth",
  "shared-shared-data-core",
+ "shared-shared-data-error",
  "tokio",
  "tracing",
  "utoipa",
@@ -2438,6 +2439,7 @@ dependencies = [
  "serde_json",
  "shared-shared-data-auth",
  "shared-shared-data-core",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "tracing",
  "utoipa",
@@ -2477,6 +2479,7 @@ dependencies = [
  "shared-shared-data-app",
  "shared-shared-data-auth",
  "shared-shared-data-core",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "shared-shared-macro-rule",
  "tracing",
@@ -2496,6 +2499,7 @@ dependencies = [
  "shared-shared-data-app",
  "shared-shared-data-auth",
  "shared-shared-data-cache",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "shared-shared-macro-rule",
  "tracing",
@@ -6004,6 +6008,7 @@ dependencies = [
  "shared-shared-config",
  "shared-shared-data-app",
  "shared-shared-data-cache",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "tokio",
  "tower-http 0.4.4",
@@ -6021,6 +6026,7 @@ dependencies = [
  "jsonwebtoken",
  "serde",
  "shared-shared-data-auth",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "tracing",
  "utoipa",
@@ -6049,6 +6055,7 @@ dependencies = [
  "serde_qs",
  "shared-shared-data-auth",
  "shared-shared-data-core",
+ "shared-shared-data-error",
  "shared-shared-macro",
  "tracing",
  "utoipa",
@@ -6064,6 +6071,7 @@ dependencies = [
  "axum 0.8.6",
  "serde",
  "serde_json",
+ "shared-shared-data-error",
  "uuid",
 ]
 
@@ -6090,6 +6098,19 @@ dependencies = [
  "tracing",
  "utoipa",
  "uuid",
+]
+
+[[package]]
+name = "shared-shared-data-error"
+version = "0.0.1"
+dependencies = [
+ "argon2",
+ "axum 0.8.6",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "validator",
 ]
 
 [[package]]

@@ -1,12 +1,11 @@
 use axum::{extract::State, routing::post, Router};
 
 use shared_shared_app::state::AppState;
-
 use shared_shared_data_app::{
-    error::AppError,
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
 };
+use shared_shared_data_error::app::AppError;
 
 use features_auth_model::state::AuthCacheState;
 use features_auth_model::user::UserForCreateRequest;

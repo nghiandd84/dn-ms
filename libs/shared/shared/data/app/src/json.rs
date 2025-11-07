@@ -6,7 +6,7 @@ use axum::{
 use tracing::debug;
 use validator::Validate;
 
-use crate::error::AppError;
+use shared_shared_data_error::app::AppError;
 
 #[derive(FromRequest)]
 #[from_request(via(axum::Json), rejection(AppError))]
