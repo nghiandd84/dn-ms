@@ -14,9 +14,9 @@ serde_json = { workspace = true }
 #Run on server
 axum = { version = "0.7.0", optional = true  }
 tokio = { workspace = true , features = ["full"], optional = true}
-#features-auth-remote = { workspace = true,  optional = true }
+features-auth-remote = { workspace = true,  optional = true }
 
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server" ,"axum", "dep:tokio"]
+server = ["dioxus/server" ,"axum", "dep:tokio", "features-auth-remote"]

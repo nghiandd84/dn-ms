@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use dioxus::prelude::*;
+use dioxus::{logger::tracing::debug, prelude::*};
 
-use views::{Authenticate, Blog, Home};
+use views::{Authenticate, Blog, ErrorPage, Home, Login};
 
 mod models;
 mod views;
@@ -22,19 +22,27 @@ enum Route {
     #[route("/")]
     Home {},
 
-    
     #[route("/blog/:id")]
     Blog { id: i32 },
+
+    
+    #[route("/login?:state")]
+    Login { state: String },
+
+    
+    #[route("/error?:message")]
+    ErrorPage { message: String },
 }
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
 fn main() {
-    info!("Starting auth-web application...");
+    debug!("Starting auth-web application...");
     dioxus::launch(App);
 }
 fn App() -> Element {
+    debug!("Rendering App component...");
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }

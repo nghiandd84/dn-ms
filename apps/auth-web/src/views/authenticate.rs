@@ -1,10 +1,15 @@
-use crate::models::authenticate::AuthenticateParams;
+use crate::{
+    Route,
+    models::authenticate::{self, AuthenticateParams},
+};
 use dioxus::{
+    CapturedError,
     logger::tracing::{debug, info},
     prelude::*,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
 // use features_auth_remote::TokenService;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -27,16 +32,56 @@ pub fn Authenticate(
     info!(
         "Authenticate client_id: {client_id}, redirect_uri: {redirect_uri}, response_type:  {response_type}, scope:  {scope}, state: {state}"
     );
+    let navigator = use_navigator();
+    let authenticate_params = AuthenticateParams {
+        client_id,
+        scope,
+        redirect_uri,
+        response_type,
+        state,
+        screen: authenticate::AuthenticateScreen::Login,
+    };
+
+    /*
+    let authentication_state = use_server_future(move || {
+        debug!("Creating AuthenticateParams inside use_server_future...");
+        create_authenticate_state(authenticate_params.clone())
+    })?
+    .unwrap();
+    */
+    let authentication_state = use_server_future(move || {
+        debug!("Creating AuthenticateParams inside use_server_future...");
+        create_authenticate_state(authenticate_params.clone())
+    })?
+    .value()
+    .unwrap();
+
+    match &authentication_state {
+        Ok(state) => {
+            info!("Successfully created authenticate state {state}.");
+            navigator.push(Route::Login {
+                state: state.clone(),
+            });
+        }
+        Err(e) => {
+            debug!("Redirect to error page.");
+            navigator.push(Route::ErrorPage {
+                message: e.to_string(),
+            });
+        }
+    }
+
+    /*
     let breed_list = use_loader(move || async move {
+        info!("Call Dog API to get list of breeds...");
         reqwest::get("https://dog.ceo/api/breeds/list/all")
             .await?
             .json::<ListBreeds>()
             .await
     })?;
-    // use_effect(|| {
-    //     // You can perform side effects here, such as fetching data or initializing state
-    //     info!("Call API to validate authentication request...");
-    // });
+    let len = breed_list.read().message.len();
+    info!("Number of breeds received: {len}");
+
     info!("Redirect to login or signup screen");
     rsx! {
         div {
@@ -53,4 +98,15 @@ pub fn Authenticate(
 
         }
     }
+    */
+    rsx! {
+        h1 {  "Unknown state, redirecting..." }
+
+    }
+}
+
+async fn create_authenticate_state(_authenticate_params: AuthenticateParams) -> Result<String> {
+    info!("Creating AuthenticateParams...");
+    Ok("MY_CODE".to_string())
+    // Err(CapturedError::msg("Error when create state"))
 }

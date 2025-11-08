@@ -605,6 +605,7 @@ version = "0.0.1"
 dependencies = [
  "axum 0.7.9",
  "dioxus",
+ "features-auth-remote",
  "reqwest",
  "serde",
  "serde_json",
