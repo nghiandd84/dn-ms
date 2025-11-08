@@ -10,18 +10,18 @@ name = "shared_shared_data_app"
 path = "src/lib.rs"
 
 [dependencies]
-axum = { workspace = true, features = ["macros"] }
+argon2 = { workspace = true }
 async-trait = { workspace = true }
-uuid = { workspace = true }
-shared-shared-macro = { workspace = true}
-tracing = { workspace = true }
-serde_qs = { workspace = true }
-
-validator = { workspace = true, features = ["derive"] }
+axum = { workspace = true, features = ["macros"] }
+sea-orm = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+serde_qs = { workspace = true }
+shared-shared-macro = { workspace = true}
+tracing = { workspace = true }
 utoipa = { workspace = true, features = ["uuid"] }
-sea-orm = { workspace = true }
+uuid = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
 
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }

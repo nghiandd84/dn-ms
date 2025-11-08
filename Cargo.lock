@@ -2437,6 +2437,7 @@ dependencies = [
  "features-auth-entities",
  "serde",
  "serde_json",
+ "shared-shared-data-app",
  "shared-shared-data-auth",
  "shared-shared-data-core",
  "shared-shared-data-error",
@@ -6047,6 +6048,7 @@ dependencies = [
 name = "shared-shared-data-app"
 version = "0.0.1"
 dependencies = [
+ "argon2",
  "async-trait",
  "axum 0.8.6",
  "sea-orm",
@@ -6104,7 +6106,6 @@ dependencies = [
 name = "shared-shared-data-error"
 version = "0.0.1"
 dependencies = [
- "argon2",
  "axum 0.8.6",
  "sea-orm",
  "serde",

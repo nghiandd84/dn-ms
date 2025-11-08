@@ -4,12 +4,13 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_auth::claim::UserAccessData;
+use shared_shared_data_app::password::compare;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
-use shared_shared_data_error::{app::AppError, auth::AuthError, password::compare};
+use shared_shared_data_error::{app::AppError, auth::AuthError};
 use shared_shared_macro::Query;
 
 use features_auth_entities::access::{Column as AccessColumn, Entity as AccessEntity};
