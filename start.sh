@@ -8,7 +8,7 @@ echo "Start DN-MS"
 echo "Argument 1 is $1"
 
 APP_DIRECTORY=./target/debug
-LOG_DIRECTORY=./target/logs
+LOG_DIRECTORY=./logs
 CURRENT_DATE=$(date +%Y%m%d)
 
 export AUTH_PORT=5101

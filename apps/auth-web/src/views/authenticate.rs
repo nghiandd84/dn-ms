@@ -7,6 +7,9 @@ use dioxus::{
     logger::tracing::{debug, info},
     prelude::*,
 };
+
+// use dioxus::fullstack::routing
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -59,15 +62,22 @@ pub fn Authenticate(
     match &authentication_state {
         Ok(state) => {
             info!("Successfully created authenticate state {state}.");
+
             navigator.push(Route::Login {
                 state: state.clone(),
             });
         }
         Err(e) => {
             debug!("Redirect to error page.");
+            // TODO use true HTTP redirect with a status code 
             navigator.push(Route::ErrorPage {
                 message: e.to_string(),
             });
+            // if let Ok(mut resp) = server_context().response_parts_mut() {
+            //     resp.status = StatusCode::UNAUTHORIZED;
+            // }
+            // // Return an error to stop processing the function
+            // return Err(ServerFnError::ServerError("Unauthorized".to_string()));
         }
     }
 
