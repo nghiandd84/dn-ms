@@ -1,45 +1,22 @@
-#![allow(non_snake_case)]
+use dioxus::{fullstack::Redirect, logger::tracing::debug, prelude::*};
+use views::{ErrorPage, Home, Login, SignUp};
 
-use dioxus::{logger::tracing::debug, prelude::*};
-
-use views::{Authenticate, Blog, ErrorPage, Home, Login};
-
-// #[cfg(feature = "server")]
-// use {
-//     dioxus::fullstack::Lazy,
-//     dioxus::fullstack::axum_core as axum,
-//     // dioxus::fullstack::routing::Router,
-//     axum::Router
-//     // futures::lock::Mutex,
-//     // sqlx::{Executor, Row},
-//     // std::sync::LazyLock,
-// };
+use crate::models::authenticate::AuthenticateParams;
 
 mod models;
+mod services;
 mod views;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
-    #[route("/authenticate?:client_id&:redirect_uri&:response_type&:scope&:state")]
-    Authenticate {
-        client_id: String,
-        redirect_uri: String,
-        response_type: String,
-        scope: String,
-        state: String
-    },
-    
     #[route("/")]
     Home {},
-
-    #[route("/blog/:id")]
-    Blog { id: i32 },
-
-    
+ 
     #[route("/login?:state")]
     Login { state: String },
-
+    #[route("/signup?:state")]
+    SignUp { state: String },
     
     #[route("/error?:message")]
     ErrorPage { message: String },
@@ -48,43 +25,6 @@ enum Route {
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
-/*
-
-#[cfg(feature = "server")]
-#[tokio::main]
-async fn main() {
-    debug!("Starting auth-web application in server mode...");
-    dioxus::logger::initialize_default();
-    let addr = dioxus::cli_config::fullstack_address_or_localhost();
-
-    let app = Router::new().with_app("/", App);
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app.into_make_service())
-        .await
-        .unwrap();
-    // dioxus::launch(App);
-    // let launcher = dioxus::LaunchBuilder::server();
-
-    // let router = axum::Router::new()
-    //     // Server side render the application, serve static assets, and register server functions
-    //     .serve_dioxus_application(
-    //         dioxus::server::ServeConfig::builder().enable_out_of_order_streaming(),
-    //         App,
-    //     )
-    //     .into_make_service();
-    // let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    // axum::serve(listener, router).await.unwrap();
-
-    // launcher::launch(App);
-    // dioxus::server::launch(App).await;
-}
-
-#[cfg(not(feature = "server"))]
-fn main() {
-    debug!("Starting auth-web application...");
-    dioxus::launch(App);
-}
-*/
 fn App() -> Element {
     debug!("Rendering App component...");
     rsx! {
@@ -101,24 +41,31 @@ struct AppState {
 }
 
 fn main() {
-    // Run `serve()` on the server only
     #[cfg(feature = "server")]
     dioxus::serve(|| async move {
         use axum::{
             extract::Request,
+            http::StatusCode,
             middleware::{Next, from_fn},
             routing::get,
         };
         use dioxus::server::axum;
-        use features_auth_remote::TokenService;
+        use dotenv::dotenv;
+
+        use features_auth_remote::AuthenticationRequestService;
         use shared_shared_app::discovery::get_consul_client;
+
+        dotenv().ok();
+
+        // dioxus::logger::init(Level::INFO).expect("Failed to initialize logger");
+
         tokio::spawn(async move {
-            let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
             loop {
                 interval.tick().await;
                 debug!("Interval task running...");
                 let consul_client = get_consul_client().unwrap();
-                TokenService::update_remote(&consul_client).await;
+                AuthenticationRequestService::update_remote(&consul_client).await;
             }
         });
 
@@ -152,9 +99,10 @@ fn main() {
             res
         }));
          */
+        // TODO will remove
         server_router = server_router.layer(from_fn(|request: Request, next: Next| async move {
             // Read the incoming request
-            debug!("Request: {} {}", request.method(), request.uri().path());
+            // debug!("Request: {} {}", request.method(), request.uri().path());
 
             // Run the handler, returning the response
             let res = next.run(request).await;
@@ -178,4 +126,27 @@ fn main() {
         debug!("Rendering App on web...");
         dioxus::launch(App);
     }
+}
+
+// http://127.0.0.1:8080/request?client_id=b9794d29-c2a2-47f5-9ed2-a9821b4a92a7&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fauth_result&response_type=code&state=eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ%3D%3D&screen=login
+#[get("/request?{query}")]
+async fn authenticatie(query: AuthenticateParams) -> Result<Redirect> {
+    debug!("Authentecate with params: {query:?}");
+    let state = crate::services::authenticate::create_authenticate_state(query.clone()).await;
+    if state.is_ok() {
+        let state = state.unwrap();
+        if query.screen == crate::models::authenticate::AuthenticateScreen::Login {
+            debug!("Redirect to login page with state: {state}");
+            return Ok(Redirect::permanent(&format!("/login?state={}", state)));
+        } else if query.screen == crate::models::authenticate::AuthenticateScreen::SignUp {
+            debug!("Redirect to signup page with state: {state}");
+            return Ok(Redirect::permanent(&format!("/signup?state={}", state)));
+        }
+    } else if state.is_err() {
+        return Ok(Redirect::permanent(&format!(
+            "/error?message={}",
+            state.err().unwrap()
+        )));
+    }
+    Ok(Redirect::permanent("/error?message=Unknown error"))
 }

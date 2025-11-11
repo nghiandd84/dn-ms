@@ -22,12 +22,11 @@ impl AuthenticationRequestService {
     ) -> Result<Uuid, String> {
         let body = serde_json::json!({
             "client_id": client_id,
-            "scope": scope,
+            "scopes": scope,
             "redirect_uri": redirect_uri,
             "response_type": response_type,
             "state": state
         });
-
         let auth_endpoint = std::env::var("AUTH_ENDPOINT_AUTHENTICATE_REQUEST")
             .expect("AUTH_ENDPOINT_AUTHENTICATE_REQUEST must be set");
 

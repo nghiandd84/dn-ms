@@ -13,6 +13,8 @@ serde_json = { workspace = true }
 
 #Run on server
 axum = { workspace = true, optional = true  }
+uuid = { workspace = true, optional = true  }
+dotenv = { workspace = true, optional = true  }
 tokio = { workspace = true , features = ["full"], optional = true}
 
 shared-shared-app = { workspace = true,  optional = true }
@@ -22,4 +24,4 @@ features-auth-remote = { workspace = true,  optional = true }
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server" ,"axum", "tokio", "features-auth-remote", "shared-shared-app"]
+server = ["dioxus/server" ,"axum", "dotenv", "tokio", "features-auth-remote", "shared-shared-app", "uuid"]

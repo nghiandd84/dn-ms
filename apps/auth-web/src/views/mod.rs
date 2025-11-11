@@ -1,11 +1,9 @@
-mod authenticate;
-mod blog;
+mod error;
 mod home;
 mod login;
-mod error;
+mod signup;
 
-pub use authenticate::Authenticate;
-pub use blog::Blog;
+pub use error::ErrorPage;
 pub use home::Home;
 pub use login::Login;
-pub use error::ErrorPage;
+pub use signup::SignUp;
