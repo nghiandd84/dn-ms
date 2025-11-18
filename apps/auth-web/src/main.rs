@@ -1,5 +1,8 @@
 use dioxus::{fullstack::Redirect, logger::tracing::debug, prelude::*};
+use serde::{Deserialize, Serialize};
 use views::{ErrorPage, Home, Login, SignUp};
+
+// Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
 use crate::models::authenticate::AuthenticateParams;
 
@@ -25,12 +28,42 @@ enum Route {
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
+#[derive(Clone, Serialize, Deserialize, Default, Debug)]
+pub struct Context {
+    accept_language: String,
+}
+
+#[cfg(feature = "server")]
+use dioxus::fullstack::{extract, extract::Extension};
+#[cfg(feature = "server")]
+#[server]
+async fn get_request_context() -> Result<Context, ServerFnError> {
+    debug!("Resolving app state from request extensions...");
+    let Extension(state) = extract::<Extension<Context>, _>().await?;
+    Ok(state)
+}
+#[cfg(not(feature = "server"))]
+async fn get_request_context() -> Result<Context, ServerFnError> {
+    Ok(Context::default())
+}
+
 fn App() -> Element {
     debug!("Rendering App component...");
+    let context = use_server_future(|| async move {
+        let state = get_request_context().await;
+        let state = state.unwrap();
+        state
+    })?()
+    .unwrap_or_default();
+    debug!("Context: {:?}", context);
+    let language = context.accept_language;
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-
+        div {
+            {language}
+         }
         Router::<Route> {}
     }
 }
@@ -39,6 +72,7 @@ fn App() -> Element {
 struct AppState {
     title: String,
 }
+
 
 fn main() {
     #[cfg(feature = "server")]
@@ -100,18 +134,35 @@ fn main() {
         }));
          */
         // TODO will remove
-        server_router = server_router.layer(from_fn(|request: Request, next: Next| async move {
-            // Read the incoming request
-            // debug!("Request: {} {}", request.method(), request.uri().path());
+        server_router =
+            server_router.layer(from_fn(|mut request: Request, next: Next| async move {
+                // Read the incoming request
+                // debug!("Request: {} {}", request.method(), request.uri().path());
 
-            // Run the handler, returning the response
-            let res = next.run(request).await;
+                let header_map = request.headers();
+                let accept_language = header_map
+                    .get("accept-language")
+                    .and_then(|h| h.to_str().ok())
+                    .unwrap_or("No accept-language")
+                    .to_string();
+                debug!("Accpet-Language from request: {}", accept_language);
+                // In a real app, you would validate the token and look up the user_id
+                let context = Context {
+                    accept_language: accept_language,
+                };
 
-            // Read/write the response
-            // debug!("Response: {}", res.status());
+                // 2. Insert the data into the request extensions
+                request.extensions_mut().insert(context);
+                debug!("Inserted Context into request extensions.");
 
-            res
-        }));
+                // Run the handler, returning the response
+                let res = next.run(request).await;
+
+                // Read/write the response
+                // debug!("Response: {}", res.status());
+
+                res
+            }));
 
         debug!("Rendering App on server...");
         // .. customize the router, adding layers and new routes

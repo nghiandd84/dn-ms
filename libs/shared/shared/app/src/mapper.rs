@@ -11,8 +11,8 @@ use axum::{
 use serde_json::{json, to_value, Value};
 use tracing::debug;
 
+use shared_shared_data_app::ctx::Ctx;
 use shared_shared_data_app::result::Result;
-use shared_shared_data_app::{ctx::Ctx};
 use shared_shared_data_error::app::AppError;
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
@@ -71,6 +71,7 @@ pub async fn mw_ctx_resolver(
     next: Next,
 ) -> Response {
     debug!("mw_ctx_resolver");
+    use axum::extract::Extension;
     // Create ctx from token
     let ctx = Ctx::new(1);
     let _result_ctx: Result<Ctx> = Ok(ctx);

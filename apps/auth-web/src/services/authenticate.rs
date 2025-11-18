@@ -28,8 +28,8 @@ pub async fn create_authenticate_state(authenticate_params: AuthenticateParams) 
     Ok(code.to_string())
 }
 
-#[cfg(not(feature = "server"))]
-pub async fn create_authenticate_state(_authenticate_params: AuthenticateParams) -> Result<String> {
-    let err_msg = "Client-side state creation is not implemented yet.";
-    Err(dioxus::CapturedError::from_display(err_msg))
-}
+// #[cfg(not(feature = "server"))]
+// pub async fn create_authenticate_state(_authenticate_params: AuthenticateParams) -> Result<String> {
+//     let err_msg = "Client-side state creation is not implemented yet.";
+//     Err(dioxus::CapturedError::from_display(err_msg))
+// }

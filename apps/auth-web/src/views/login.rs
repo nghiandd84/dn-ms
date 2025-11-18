@@ -6,7 +6,6 @@ pub fn Login(state: String) -> Element {
         div {
             id: "login",
             h3 { "Login with state #{state}!" }
-
         }
     }
 }
