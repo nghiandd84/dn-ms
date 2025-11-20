@@ -1,76 +1,41 @@
-use dioxus::{fullstack::Redirect, logger::tracing::debug, prelude::*};
-use serde::{Deserialize, Serialize};
-use views::{ErrorPage, Home, Login, SignUp};
+use dioxus::{logger::tracing::debug, prelude::*};
 
 // Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
-use crate::models::authenticate::AuthenticateParams;
+use crate::models::{context::{Context, get_request_context}};
+use crate::routes::Route;
 
 mod models;
+mod routes;
 mod services;
-mod views;
-
-#[derive(Debug, Clone, Routable, PartialEq)]
-#[rustfmt::skip]
-enum Route {
-    #[route("/")]
-    Home {},
- 
-    #[route("/login?:state")]
-    Login { state: String },
-    #[route("/signup?:state")]
-    SignUp { state: String },
-    
-    #[route("/error?:message")]
-    ErrorPage { message: String },
-}
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
-
-#[derive(Clone, Serialize, Deserialize, Default, Debug)]
-pub struct Context {
-    accept_language: String,
-}
-
-#[cfg(feature = "server")]
-use dioxus::fullstack::{extract, extract::Extension};
-#[cfg(feature = "server")]
-#[server]
-async fn get_request_context() -> Result<Context, ServerFnError> {
-    debug!("Resolving app state from request extensions...");
-    let Extension(state) = extract::<Extension<Context>, _>().await?;
-    Ok(state)
-}
-#[cfg(not(feature = "server"))]
-async fn get_request_context() -> Result<Context, ServerFnError> {
-    Ok(Context::default())
-}
 
 fn App() -> Element {
     debug!("Rendering App component...");
     let context = use_server_future(|| async move {
         let state = get_request_context().await;
+        if state.is_err() {
+            debug!("Error getting request context: {:?}", state.err());
+            return Context::default();
+        }
         let state = state.unwrap();
         state
     })?()
     .unwrap_or_default();
+    use_context_provider(|| context.clone());
     debug!("Context: {:?}", context);
-    let language = context.accept_language;
+    let language = context.accept_language();
 
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         div {
-            {language}
-         }
+            { language }
+        }
         Router::<Route> {}
     }
-}
-
-#[derive(Debug)]
-struct AppState {
-    title: String,
 }
 
 
@@ -85,13 +50,12 @@ fn main() {
         };
         use dioxus::server::axum;
         use dotenv::dotenv;
+        use crate::models::state::AppState;
 
         use features_auth_remote::AuthenticationRequestService;
         use shared_shared_app::discovery::get_consul_client;
 
         dotenv().ok();
-
-        // dioxus::logger::init(Level::INFO).expect("Failed to initialize logger");
 
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
@@ -103,9 +67,7 @@ fn main() {
             }
         });
 
-        let app_state = std::sync::Arc::new(AppState {
-            title: "Auth Web Application".to_string(),
-        });
+        let app_state = std::sync::Arc::new(AppState::new("Auth Web Application"));
 
         // Create a new router for our app using the `router` function
         let mut server_router = dioxus::server::router(App);
@@ -136,20 +98,24 @@ fn main() {
         // TODO will remove
         server_router =
             server_router.layer(from_fn(|mut request: Request, next: Next| async move {
-                // Read the incoming request
-                // debug!("Request: {} {}", request.method(), request.uri().path());
-
                 let header_map = request.headers();
+                
+
+                let accept = header_map
+                    .get("accept")
+                    .and_then(|h| h.to_str().ok())
+                    .unwrap_or("");
+                if !accept.contains("text/html") {
+                    debug!("Accept header does not contain text/html, skipping Context insertion. Accept: {}", accept);
+                    return next.run(request).await;
+                }
+
                 let accept_language = header_map
                     .get("accept-language")
                     .and_then(|h| h.to_str().ok())
                     .unwrap_or("No accept-language")
                     .to_string();
-                debug!("Accpet-Language from request: {}", accept_language);
-                // In a real app, you would validate the token and look up the user_id
-                let context = Context {
-                    accept_language: accept_language,
-                };
+                let context = Context::new(accept_language);
 
                 // 2. Insert the data into the request extensions
                 request.extensions_mut().insert(context);
@@ -157,9 +123,6 @@ fn main() {
 
                 // Run the handler, returning the response
                 let res = next.run(request).await;
-
-                // Read/write the response
-                // debug!("Response: {}", res.status());
 
                 res
             }));
@@ -177,27 +140,4 @@ fn main() {
         debug!("Rendering App on web...");
         dioxus::launch(App);
     }
-}
-
-// http://127.0.0.1:8080/request?client_id=b9794d29-c2a2-47f5-9ed2-a9821b4a92a7&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fauth_result&response_type=code&state=eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ%3D%3D&screen=login
-#[get("/request?{query}")]
-async fn authenticatie(query: AuthenticateParams) -> Result<Redirect> {
-    debug!("Authentecate with params: {query:?}");
-    let state = crate::services::authenticate::create_authenticate_state(query.clone()).await;
-    if state.is_ok() {
-        let state = state.unwrap();
-        if query.screen == crate::models::authenticate::AuthenticateScreen::Login {
-            debug!("Redirect to login page with state: {state}");
-            return Ok(Redirect::permanent(&format!("/login?state={}", state)));
-        } else if query.screen == crate::models::authenticate::AuthenticateScreen::SignUp {
-            debug!("Redirect to signup page with state: {state}");
-            return Ok(Redirect::permanent(&format!("/signup?state={}", state)));
-        }
-    } else if state.is_err() {
-        return Ok(Redirect::permanent(&format!(
-            "/error?message={}",
-            state.err().unwrap()
-        )));
-    }
-    Ok(Redirect::permanent("/error?message=Unknown error"))
 }

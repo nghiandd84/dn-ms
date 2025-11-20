@@ -8,3 +8,8 @@ GET http://127.0.0.1:8080/request?client_id=b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 accept: text/html
 accept-encoding: gzip, deflate, br, zstd
 accept-language: en-US,en;q=0.9
+
+### Health
+GET http://127.0.0.1:8080/health
+accept-encoding: gzip, deflate, br, zstd
+accept-language: en-US,en;q=0.9
