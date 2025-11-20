@@ -26,14 +26,18 @@ fn App() -> Element {
     .unwrap_or_default();
     use_context_provider(|| context.clone());
     debug!("Context: {:?}", context);
-    let language = context.accept_language();
+    // let language = context.accept_language();
 
     rsx! {
+        document::Stylesheet {
+            href: asset!("/assets/tailwind.css")
+        }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        div {
-            { language }
-        }
+        // div {
+        //     style: "display:none;",
+        //     { language }
+        // }
         Router::<Route> {}
     }
 }
@@ -106,7 +110,7 @@ fn main() {
                     .and_then(|h| h.to_str().ok())
                     .unwrap_or("");
                 if !accept.contains("text/html") {
-                    debug!("Accept header does not contain text/html, skipping Context insertion. Accept: {}", accept);
+                    // debug!("Accept header does not contain text/html, skipping Context insertion. Accept: {}", accept);
                     return next.run(request).await;
                 }
 

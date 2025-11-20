@@ -38,3 +38,6 @@ Or, if you don't want/need a background service you can run:
   code-server
 
   netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=$(wsl hostname -i)
+
+auth-web
+Training/dn-ms/apps/auth-web$ npx @tailwindcss/cli -i ./tailwind.css -o ./assets/tailwind.css --watch

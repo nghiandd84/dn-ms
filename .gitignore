@@ -1,5 +1,7 @@
 /target
 /logs
+/apps/**/node_modules
+/apps/**/package-lock.json
 /apps/**/target
 /apis/**/target
 Cargo.lock
