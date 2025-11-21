@@ -101,7 +101,8 @@ sqlx = { version = "0.8.3", features = ["tls-native-tls", "runtime-async-std", "
 syn = "2.0"
 thiserror = { version="2" }
 tokio = { version="1", features = ["full"] }
-tower-http = { version = "0.4", features = ["fs"]}
+tower-sessions = { version="0.14.0" }
+time = { version="0.3.31" }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.17"}
 utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }

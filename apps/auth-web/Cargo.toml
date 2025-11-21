@@ -16,6 +16,8 @@ axum = { workspace = true, optional = true  }
 uuid = { workspace = true, optional = true  }
 dotenv = { workspace = true, optional = true  }
 tokio = { workspace = true , features = ["full"], optional = true}
+tower-sessions = { workspace = true , optional = true}
+time = { workspace = true , optional = true}
 
 shared-shared-app = { workspace = true,  optional = true }
 
@@ -24,4 +26,4 @@ features-auth-remote = { workspace = true,  optional = true }
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server" ,"axum", "dotenv", "tokio", "features-auth-remote", "shared-shared-app", "uuid"]
+server = ["dioxus/server" ,"axum", "dotenv", "tokio", "features-auth-remote", "shared-shared-app", "time", "tower-sessions", "uuid"]

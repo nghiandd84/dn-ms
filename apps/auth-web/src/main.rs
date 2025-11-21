@@ -1,8 +1,9 @@
 use dioxus::{logger::tracing::debug, prelude::*};
+use serde::{Deserialize, Serialize};
 
 // Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
-use crate::models::{context::{Context, get_request_context}};
+use crate::models::context::{Context, get_request_context};
 use crate::routes::Route;
 
 mod models;
@@ -11,6 +12,11 @@ mod services;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
+
+const COUNTER_KEY: &str = "counter";
+
+#[derive(Default, Deserialize, Serialize, Debug)]
+struct Counter(usize);
 
 fn App() -> Element {
     debug!("Rendering App component...");
@@ -26,7 +32,6 @@ fn App() -> Element {
     .unwrap_or_default();
     use_context_provider(|| context.clone());
     debug!("Context: {:?}", context);
-    // let language = context.accept_language();
 
     rsx! {
         document::Stylesheet {
@@ -34,14 +39,9 @@ fn App() -> Element {
         }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        // div {
-        //     style: "display:none;",
-        //     { language }
-        // }
         Router::<Route> {}
     }
 }
-
 
 fn main() {
     #[cfg(feature = "server")]
@@ -54,12 +54,19 @@ fn main() {
         };
         use dioxus::server::axum;
         use dotenv::dotenv;
-        use crate::models::state::AppState;
+        use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
         use features_auth_remote::AuthenticationRequestService;
         use shared_shared_app::discovery::get_consul_client;
 
+        use crate::models::state::AppState;
+
         dotenv().ok();
+
+        let session_store = MemoryStore::default();
+        let session_layer = SessionManagerLayer::new(session_store)
+            .with_secure(false)
+            .with_expiry(Expiry::OnInactivity(time::Duration::seconds(10)));
 
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
@@ -79,9 +86,14 @@ fn main() {
         // add a simple route
         server_router = server_router.route(
             "/health",
-            get(|| async move {
+            get(|session: Session| async move {
                 let shared_state = app_state.clone();
-                debug!("Health check accessed. AppState: {:?}", shared_state);
+                let counter: Counter = session.get(COUNTER_KEY).await.unwrap().unwrap_or_default();
+                session.insert(COUNTER_KEY, counter.0 + 1).await.unwrap();
+                debug!(
+                    "Health check accessed. AppState: {:?} and counter: {:?}",
+                    shared_state, counter
+                );
                 "OK"
             }),
         );
@@ -103,7 +115,6 @@ fn main() {
         server_router =
             server_router.layer(from_fn(|mut request: Request, next: Next| async move {
                 let header_map = request.headers();
-                
 
                 let accept = header_map
                     .get("accept")
@@ -113,6 +124,29 @@ fn main() {
                     // debug!("Accept header does not contain text/html, skipping Context insertion. Accept: {}", accept);
                     return next.run(request).await;
                 }
+
+                let cookie_header = header_map
+                    .get("cookie")
+                    .and_then(|h| h.to_str().ok())
+                    .unwrap_or("");
+
+                let session_id = cookie_header.split(';').map(|c| c.trim()).find_map(|c| {
+                    if let Some(v) = c.strip_prefix("session-id=") {
+                        Some(v.trim_matches('"').to_string())
+                    } else {
+                        let new_sid = format!(
+                            "{}",
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap()
+                                .as_nanos()
+                        );
+                        Some(new_sid)
+                    }
+                });
+
+                let session_id = session_id.unwrap();
+                debug!("session-id: {}", session_id);
 
                 let accept_language = header_map
                     .get("accept-language")
@@ -126,10 +160,21 @@ fn main() {
                 debug!("Inserted Context into request extensions.");
 
                 // Run the handler, returning the response
-                let res = next.run(request).await;
+                let mut res = next.run(request).await;
+
+                // Append Set-Cookie header to response
+                let cookie_value = format!(
+                    "session-id=\"{}\"; Path=/; HttpOnly; SameSite=Lax",
+                    session_id
+                );
+                if let Ok(val) = axum::http::HeaderValue::from_str(&cookie_value) {
+                    res.headers_mut()
+                        .append(axum::http::header::SET_COOKIE, val);
+                }
 
                 res
             }));
+        server_router = server_router.layer(session_layer);
 
         debug!("Rendering App on server...");
         // .. customize the router, adding layers and new routes
