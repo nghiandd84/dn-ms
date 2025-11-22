@@ -1,7 +1,8 @@
-use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
+use dioxus::{html::link, prelude::*};
+use dioxus_i18n::t;
+use serde::{Deserialize, Serialize, de};
 
-use crate::{models::context::Context, routes::Route};
+use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 
 #[component]
 pub fn Login(state: String) -> Element {
@@ -13,6 +14,14 @@ pub fn Login(state: String) -> Element {
     let context = use_context::<Context>();
     debug!("Login component context: {:?}", context);
 
+    let link_to_signup = Route::SignUp {
+        state: state.clone(),
+    };
+    // link_to_signup.to_string();
+    debug!("Link to signup route: {:?}", link_to_signup);
+    let signup_url = link_to_signup.to_string();
+    debug!("Signup URL: {}", signup_url);
+
     rsx!(
       form {
         id: "login-form",
@@ -20,8 +29,8 @@ pub fn Login(state: String) -> Element {
             debug!("Form submitted to log in with username: {} and password: {}", username, password);
             ev.prevent_default();
             let formData = FormData {
-                username: username.to_string(),
-                email: password.to_string(),
+                email: username.to_string(),
+                password: password.to_string(),
             };
             let _ = login(formData).await;
         },
@@ -29,14 +38,14 @@ pub fn Login(state: String) -> Element {
 
         div { class: "screen flex justify-center items-center bg-slate-50",
           div { class: "border-solid border-2 border-slate-100 rounded-lg px-3 py-5 w-1/4",
-            div { class: "text-center text-3xl", "Login" }
+            div { class: "text-center text-3xl", {t!("login.title")} }
             if !error_msg.to_string().is_empty() {
               div { class: "bg-rose-100 text-rose-600 py-1 px-2 rounded-lg my-3",
                 " {error_msg}"
               }
             }
             div { class: "my-5",
-              div { class: "text-lg", "username: " }
+              div { class: "text-lg", { t!("login.email")}}
               input {
                 class: "w-full rounded-lg px-2 py-1",
                 r#type: "text",
@@ -45,7 +54,7 @@ pub fn Login(state: String) -> Element {
               }
             }
             div { class: "my-5",
-              div { class: "text-lg", "password: " }
+              div { class: "text-lg", { t!("login.password")  } }
               input {
                 class: "w-full rounded-lg px-2 py-1",
                 r#type: "password",
@@ -53,7 +62,7 @@ pub fn Login(state: String) -> Element {
                 oninput: move |e| password.set(e.value()),
               }
             }
-            button { r#type: "submit", value: "Submit", "Login" }
+            button { r#type: "submit", value: "Submit", {t!("login.submit_title")} }
 
 
             button {
@@ -73,12 +82,17 @@ pub fn Login(state: String) -> Element {
                   //     }
                   // }
               },
-              "Login"
+              {t!("login.submit_title")}
           }
 
             div {
-              "Don't have an account ?"
-              // Link { to: Route::SignUp {}, class: "text-sky-400", "register now" }
+              // {t!("login.dont_have_account")}
+              TextWithLink {
+                  id: "login.dont_have_account",
+                  to: signup_url,
+                  class: "not-have-account" // CSS styling
+              }
+              // Link { to: Route::SignUp {}, class: "text-sky-400", "Register now" }
             }
           }
         }
@@ -88,8 +102,8 @@ pub fn Login(state: String) -> Element {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FormData {
-    username: String,
     email: String,
+    password: String,
 }
 
 // #[post("/api/login")]

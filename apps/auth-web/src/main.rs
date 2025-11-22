@@ -1,14 +1,19 @@
 use dioxus::{logger::tracing::debug, prelude::*};
+use dioxus_i18n::prelude::*;
 use serde::{Deserialize, Serialize};
+use unic_langid::{LanguageIdentifier, langid};
 
 // Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
-use crate::models::context::{Context, get_request_context};
-use crate::routes::Route;
+use crate::{
+    models::context::{Context, Languages, get_request_context},
+    routes::Root,
+};
 
 mod models;
 mod routes;
 mod services;
+mod ui;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
@@ -33,13 +38,22 @@ fn App() -> Element {
     use_context_provider(|| context.clone());
     debug!("Context: {:?}", context);
 
+    let _i18n = use_init_i18n(|| {
+        let en_lang = LanguageIdentifier::from_bytes(Languages::EnUs.as_bytes()).unwrap();
+        let vi_lang = LanguageIdentifier::from_bytes(Languages::ViVn.as_bytes()).unwrap();
+        I18nConfig::new(en_lang.clone())
+            .with_locale((en_lang.clone(), include_str!("../locales/en-US.ftl")))
+            .with_locale((vi_lang, include_str!("../locales/vi-VN.ftl")))
+            .with_fallback(en_lang)
+    });
+
     rsx! {
         document::Stylesheet {
             href: asset!("/assets/tailwind.css")
         }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        Router::<Route> {}
+        Root {}
     }
 }
 
@@ -114,6 +128,8 @@ fn main() {
         // TODO will remove
         server_router =
             server_router.layer(from_fn(|mut request: Request, next: Next| async move {
+                use crate::models::context::extract_language;
+
                 let header_map = request.headers();
 
                 let accept = header_map
@@ -153,7 +169,7 @@ fn main() {
                     .and_then(|h| h.to_str().ok())
                     .unwrap_or("No accept-language")
                     .to_string();
-                let context = Context::new(accept_language);
+                let context = Context::new(extract_language(&accept_language));
 
                 // 2. Insert the data into the request extensions
                 request.extensions_mut().insert(context);

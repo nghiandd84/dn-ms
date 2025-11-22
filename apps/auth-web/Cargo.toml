@@ -6,9 +6,11 @@ authors.workspace = true
 
 [dependencies]
 dioxus = { workspace = true, features = ["router", "fullstack"] }
+dioxus-i18n = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+unic-langid = { workspace = true }
 #dioxus-fullstack = { workspace = true }
 
 #Run on server

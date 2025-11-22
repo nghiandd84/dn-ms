@@ -1,0 +1,9 @@
+greeting = Hello, { $name }
+login = 
+    .title = Login
+    .email = Email
+    .password = Password
+    .submit_title = Login
+    .dont_have_account = Do not have account? <link>Sign Up</link>
+    .register_now = Register now 
+test = Test

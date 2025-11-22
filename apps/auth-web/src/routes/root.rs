@@ -1,4 +1,10 @@
 use dioxus::{fullstack::Redirect, prelude::*};
+use dioxus_i18n::{prelude::*, t};
+use unic_langid::LanguageIdentifier;
+
+use crate::{models::context::Context, routes::Route};
+
+use crate::models::context::Languages;
 
 #[cfg(feature = "server")]
 use {crate::models::authenticate::AuthenticateScreen, dioxus::logger::tracing::debug};
@@ -27,3 +33,43 @@ async fn authenticatie(query: AuthenticateParams) -> Result<Redirect> {
     }
     Ok(Redirect::permanent("/error?message=Unknown error"))
 }
+
+#[component]
+pub fn Root() -> Element {
+    let request_context = use_context::<Context>();
+    debug!("Request context: {:?}", request_context);
+    let mut i18n = i18n(); // Access the i18n context
+    let language = request_context.accept_language();
+    let language_identifier = LanguageIdentifier::from_bytes(language.as_bytes()).unwrap();
+    // Set initial language based on request context
+    i18n.set_language(language_identifier);
+
+    // Change  language
+    let change_to_vietnamese = move |_| {
+        debug!("Changing language to Vietnamese");
+        set_language_to_cookie(Languages::ViVn);
+        let vi_language = LanguageIdentifier::from_bytes(Languages::ViVn.as_bytes()).unwrap();
+        i18n.set_language(vi_language); // Dynamic switching
+    };
+
+    let change_to_english = move |_| {
+        debug!("Changing language to English");
+        set_language_to_cookie(Languages::EnUs);
+        let en_language = LanguageIdentifier::from_bytes(Languages::EnUs.as_bytes()).unwrap();
+        i18n.set_language(en_language);
+    };
+
+    rsx! {
+        div {
+            button { class:"m-5",  onclick: change_to_english, "English" }
+            button { class:"m-5",  onclick: change_to_vietnamese, "Tiếng Việt" }
+            Router::<Route> {}
+        }
+    }
+}
+
+fn set_language_to_cookie(lan: Languages) {
+    let cookie_value = format!("accept_language={}; Path=/; SameSite=Lax", lan.as_str());
+    debug!("Setting language cookie: {}", cookie_value);
+}
+

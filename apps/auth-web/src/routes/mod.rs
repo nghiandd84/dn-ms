@@ -10,6 +10,7 @@ pub use error::ErrorPage;
 pub use home::Home;
 pub use login::Login;
 pub use signup::SignUp;
+pub use root::Root;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
