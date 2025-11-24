@@ -35,4 +35,6 @@ impl AuthenticationRequestQuery {
         let authentication_request_data: AuthenticationRequestData = model.into();
         Ok(authentication_request_data)
     }
+
+    
 }

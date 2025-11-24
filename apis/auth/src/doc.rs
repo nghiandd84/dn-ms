@@ -11,7 +11,8 @@ use shared_shared_app::doc::JwtSecurityAddon;
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
-        crate::routes::authentication::request_authentication,
+        crate::routes::authentication::request_code,
+        crate::routes::authentication::request_login,
         crate::routes::register::register,
         crate::routes::login::login,
         crate::routes::profile::change_profile,

@@ -1,27 +1,27 @@
 use dioxus::{fullstack::Redirect, prelude::*};
-use dioxus_i18n::{prelude::*, t};
+use dioxus_i18n::prelude::*;
 use unic_langid::LanguageIdentifier;
 
 use crate::{models::context::Context, routes::Route};
 
 use crate::models::context::Languages;
 
-#[cfg(feature = "server")]
-use {crate::models::authenticate::AuthenticateScreen, dioxus::logger::tracing::debug};
+// #[cfg(feature = "server")]
+// use {crate::models::request::RequestScreen, dioxus::logger::tracing::debug};
 
-use crate::models::authenticate::AuthenticateParams;
+use crate::models::request::{RequestParams, RequestScreen};
 
 // http://127.0.0.1:8080/request?client_id=b9794d29-c2a2-47f5-9ed2-a9821b4a92a7&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fauth_result&response_type=code&state=eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ%3D%3D&screen=login
 #[get("/request?{query}")]
-async fn authenticatie(query: AuthenticateParams) -> Result<Redirect> {
+async fn authenticatie(query: RequestParams) -> Result<Redirect> {
     debug!("Authentecate with params: {query:?}");
     let state = crate::services::authenticate::create_authenticate_state(query.clone()).await;
     if state.is_ok() {
         let state = state.unwrap();
-        if query.screen == AuthenticateScreen::Login {
+        if query.screen == RequestScreen::Login {
             debug!("Redirect to login page with state: {state}");
             return Ok(Redirect::permanent(&format!("/login?state={}", state)));
-        } else if query.screen == AuthenticateScreen::SignUp {
+        } else if query.screen == RequestScreen::SignUp {
             debug!("Redirect to signup page with state: {state}");
             return Ok(Redirect::permanent(&format!("/signup?state={}", state)));
         }
@@ -49,7 +49,7 @@ pub fn Root() -> Element {
         debug!("Changing language to Vietnamese");
         set_language_to_cookie(Languages::ViVn);
         let vi_language = LanguageIdentifier::from_bytes(Languages::ViVn.as_bytes()).unwrap();
-        i18n.set_language(vi_language); // Dynamic switching
+        i18n.set_language(vi_language);
     };
 
     let change_to_english = move |_| {
@@ -69,7 +69,7 @@ pub fn Root() -> Element {
 }
 
 fn set_language_to_cookie(lan: Languages) {
+    // TODO set cookie in response header
     let cookie_value = format!("accept_language={}; Path=/; SameSite=Lax", lan.as_str());
     debug!("Setting language cookie: {}", cookie_value);
 }
-

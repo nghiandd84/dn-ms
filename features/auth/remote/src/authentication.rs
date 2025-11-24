@@ -55,4 +55,41 @@ impl AuthenticationRequestService {
         let request_id = request_id.unwrap();
         Ok(request_id)
     }
+
+    pub async fn login_password(
+        email: String,
+        password: String,
+        state: Uuid,
+    ) -> Result<String, String> {
+        let body = serde_json::json!({
+            "email": email,
+            "password": password,
+            "state": state
+        });
+
+        let login_password_endpoint = std::env::var("AUTH_ENDPOINT_LOGIN_PASSWORD")
+            .expect("AUTH_ENDPOINT_LOGIN_PASSWORD must be set");
+
+        let res = Self::call_api(
+            login_password_endpoint,
+            reqwest::Method::POST,
+            body,
+            HashMap::new(),
+        )
+        .await;
+        if res.is_err() {
+            let err_msg = res.err().unwrap();
+            return Err(err_msg);
+        }
+        let data = res.unwrap();
+
+        let code = data.get("code").unwrap().as_str();
+        if code.is_none() {
+            let err_msg = "Response do not contains code".to_string();
+            return Err(err_msg);
+        }
+        let code = code.unwrap();
+
+        Ok(code.to_string())
+    }
 }

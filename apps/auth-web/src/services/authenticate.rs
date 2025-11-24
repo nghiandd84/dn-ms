@@ -1,8 +1,8 @@
-use crate::models::authenticate::AuthenticateParams;
+use crate::models::request::RequestParams;
 use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
-pub async fn create_authenticate_state(authenticate_params: AuthenticateParams) -> Result<String> {
+pub async fn create_authenticate_state(authenticate_params: RequestParams) -> Result<String> {
     debug!("Create state code on the server...");
 
     let code = features_auth_remote::AuthenticationRequestService::authenticate_request(

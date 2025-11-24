@@ -66,7 +66,7 @@ pub struct AuthenticationRequestData {
     pub response_type: Option<String>,
     pub scopes: Option<VecString>,
     pub state: Option<String>,
-    redirect_uri: Option<String>,
+    pub redirect_uri: Option<String>,
     expires_at: Option<DateTime>,
     created_at: Option<DateTime>,
     updated_at: Option<DateTime>,
@@ -87,4 +87,21 @@ impl Into<AuthenticationRequestData> for ModelOptionDto {
             ..Default::default()
         }
     }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema, Validate)]
+pub struct AuthLoginRequest {
+    #[validate(required(code = "email_required", message = "email is required"))]
+    pub email: Option<String>,
+    #[validate(required(code = "password_required", message = "password is required"))]
+    pub password: Option<String>,
+    #[validate(required(code = "state_required", message = "state is required"))]
+    pub state: Option<String>,
+}
+
+
+#[derive(Serialize, Clone, ToSchema, Response)]
+pub struct AuthLoginData {
+    pub id_token: String,
+    pub redirect_uri: String,
 }

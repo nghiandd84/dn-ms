@@ -1,5 +1,5 @@
-mod token;
 mod authentication;
+mod token;
 
-pub use token::TokenService;
 pub use authentication::AuthenticationRequestService;
+pub use token::TokenService;
