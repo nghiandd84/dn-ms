@@ -1,6 +1,6 @@
-use dioxus::{html::link, prelude::*};
+use dioxus::prelude::*;
 use dioxus_i18n::t;
-use serde::{Deserialize, Serialize, de};
+use serde::{Deserialize, Serialize};
 
 use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 
@@ -8,6 +8,7 @@ use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 pub fn Login(state: String) -> Element {
     let mut username = use_signal(|| String::new());
     let mut password = use_signal(|| String::new());
+    let state_clone = use_signal(|| state.clone());
     let mut error_msg = use_signal(|| String::new());
     let navigator = use_navigator();
 
@@ -31,13 +32,27 @@ pub fn Login(state: String) -> Element {
             let formData = FormData {
                 email: username.to_string(),
                 password: password.to_string(),
+                state: state_clone.to_string()
             };
-            let _ = login(formData).await;
+            match login(formData).await {
+                Ok(data) => {
+                  debug!("Login successful, {:?}", data);
+                  let redirect_uri = data.redirect_uri;
+                  let id_token = data.id_token;
+                  let redirect_url = format!("{}?id_token={}", redirect_uri, id_token);
+                  debug!("Redirecting to URL: {}", redirect_url);
+                  navigator.push(redirect_url);
+                },
+                Err(e) => {
+                  debug!("Login failed: {:?}", e);
+                  error_msg.set(format!("Login failed"));
+                }
+            }
         },
 
 
-        div { class: "screen flex justify-center items-center bg-slate-50",
-          div { class: "border-solid border-2 border-slate-100 rounded-lg px-3 py-5 w-1/4",
+        div { class: "flex justify-center items-center bg-slate-50",
+          div { class: "border-solid border-2 border-slate-100 px-3 py-5 w-1 min-w-[400px]",
             div { class: "text-center text-3xl", {t!("login.title")} }
             if !error_msg.to_string().is_empty() {
               div { class: "bg-rose-100 text-rose-600 py-1 px-2 rounded-lg my-3",
@@ -45,54 +60,43 @@ pub fn Login(state: String) -> Element {
               }
             }
             div { class: "my-5",
-              div { class: "text-lg", { t!("login.email")}}
+              label {
+                for: "username",
+                class: "block mb-2.5 text-sm font-medium text-heading",
+                { t!("login.email") }
+              }
               input {
-                class: "w-full rounded-lg px-2 py-1",
+                id: "username",
+                class: "bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body",
                 r#type: "text",
                 value: username,
                 oninput: move |e| username.set(e.value()),
               }
             }
             div { class: "my-5",
-              div { class: "text-lg", { t!("login.password")  } }
+              label {
+                for: "password",
+                class: "block mb-2.5 text-sm font-medium text-heading",
+                { t!("login.password")  }
+              }
               input {
-                class: "w-full rounded-lg px-2 py-1",
+                id: "password",
+                class: "bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body",
                 r#type: "password",
                 value: password,
                 oninput: move |e| password.set(e.value()),
               }
             }
-            button { r#type: "submit", value: "Submit", {t!("login.submit_title")} }
-
-
             button {
               class: "bg-sky-500 text-slate-50 px-3 py-2 rounded-lg w-full my-5 hover:bg-sky-600",
-              onclick: move |_| async move {
-                  debug!("Attempting to log in with username: {} and password: {}", username, password);
-                  // match log_in(username(), password()).await {
-                  //     Ok(_) => {
-                  //         match navigator.push(Route::User {}) {
-                  //             Some(_) => {}
-                  //             None => {}
-                  //         }
-                  //     }
-                  //     Err(e) => {
-                  //         error_msg
-                  //             .set(e.to_string().split(":").collect::<Vec<&str>>()[1].to_string())
-                  //     }
-                  // }
-              },
-              {t!("login.submit_title")}
-          }
+              r#type: "submit", value: "Submit", {t!("login.submit_title")} }
 
             div {
-              // {t!("login.dont_have_account")}
               TextWithLink {
                   id: "login.dont_have_account",
                   to: signup_url,
                   class: "not-have-account" // CSS styling
               }
-              // Link { to: Route::SignUp {}, class: "text-sky-400", "Register now" }
             }
           }
         }
@@ -104,14 +108,37 @@ pub fn Login(state: String) -> Element {
 pub struct FormData {
     email: String,
     password: String,
+    state: String,
 }
 
-// #[post("/api/login")]
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LoginResponse {
+    pub id_token: String,
+    pub redirect_uri: String,
+}
+
 #[server]
-// Or #[server] for a general RPC endpoint
-pub async fn login(data: FormData) -> Result<()> {
+pub async fn login(data: FormData) -> Result<LoginResponse> {
     debug!("Received form data on server: {:?}", data);
-    // Your server-side processing logic (e.g., database interaction) goes here.
-    // If successful, return Ok(()) or some serializable result.
-    Ok(())
+    let login_data = features_auth_remote::AuthenticationRequestService::login_password(
+        data.email,
+        data.password,
+        uuid::Uuid::parse_str(&data.state).unwrap_or_default(),
+    )
+    .await;
+    let login_data = match login_data {
+        Ok(info) => {
+            debug!("Login successful, received data: {:?}", info);
+            LoginResponse {
+                id_token: info.id_token,
+                redirect_uri: info.redirect_uri,
+            }
+        }
+        Err(e) => {
+            debug!("Login failed with error: {}", e);
+            let err_msg = format!("Login failed");
+            return Err(dioxus::CapturedError::from_display(err_msg));
+        }
+    };
+    Ok(login_data)
 }

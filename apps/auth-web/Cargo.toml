@@ -28,4 +28,4 @@ features-auth-remote = { workspace = true,  optional = true }
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server" ,"axum", "dotenv", "tokio", "features-auth-remote", "shared-shared-app", "time", "tower-sessions", "uuid"]
+server = ["dioxus/server" ,"axum", "dotenv", "tokio",  "features-auth-remote", "shared-shared-app", "time", "tower-sessions", "uuid"]

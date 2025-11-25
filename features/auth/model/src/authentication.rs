@@ -100,7 +100,7 @@ pub struct AuthLoginRequest {
 }
 
 
-#[derive(Serialize, Clone, ToSchema, Response)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Response, Debug)]
 pub struct AuthLoginData {
     pub id_token: String,
     pub redirect_uri: String,

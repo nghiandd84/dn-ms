@@ -1,4 +1,5 @@
 use rs_consul::Consul;
+use shared_shared_macro::RemoteService;
 use std::{
     collections::HashMap,
     sync::{LazyLock, Mutex},
@@ -6,7 +7,7 @@ use std::{
 use tracing::debug;
 use uuid::Uuid;
 
-use shared_shared_macro::RemoteService;
+use features_auth_model::authentication::AuthLoginData;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]
@@ -60,7 +61,7 @@ impl AuthenticationRequestService {
         email: String,
         password: String,
         state: Uuid,
-    ) -> Result<String, String> {
+    ) -> Result<AuthLoginData, String> {
         let body = serde_json::json!({
             "email": email,
             "password": password,
@@ -82,14 +83,7 @@ impl AuthenticationRequestService {
             return Err(err_msg);
         }
         let data = res.unwrap();
-
-        let code = data.get("code").unwrap().as_str();
-        if code.is_none() {
-            let err_msg = "Response do not contains code".to_string();
-            return Err(err_msg);
-        }
-        let code = code.unwrap();
-
-        Ok(code.to_string())
+        let login_data: AuthLoginData = serde_json::from_value(data).map_err(|e| e.to_string())?;
+        Ok(login_data)
     }
 }

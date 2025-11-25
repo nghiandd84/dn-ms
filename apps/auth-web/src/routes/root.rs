@@ -1,15 +1,12 @@
 use dioxus::{fullstack::Redirect, prelude::*};
-use dioxus_i18n::prelude::*;
+use dioxus_i18n::{prelude::*, t};
 use unic_langid::LanguageIdentifier;
 
-use crate::{models::context::Context, routes::Route};
-
-use crate::models::context::Languages;
-
-// #[cfg(feature = "server")]
-// use {crate::models::request::RequestScreen, dioxus::logger::tracing::debug};
-
 use crate::models::request::{RequestParams, RequestScreen};
+use crate::{
+    models::context::{Context, Languages},
+    routes::Route,
+};
 
 // http://127.0.0.1:8080/request?client_id=b9794d29-c2a2-47f5-9ed2-a9821b4a92a7&scope=openid+profile+email+offline_access&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Fauth_result&response_type=code&state=eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ%3D%3D&screen=login
 #[get("/request?{query}")]
@@ -61,8 +58,14 @@ pub fn Root() -> Element {
 
     rsx! {
         div {
-            button { class:"m-5",  onclick: change_to_english, "English" }
-            button { class:"m-5",  onclick: change_to_vietnamese, "Tiếng Việt" }
+            class: "flex flex-col justify-center items-center bg-slate-50 min-h-screen",
+           
+            div {
+                class: "mb-5",
+                button { class:"m-5",  onclick: change_to_english, "English" }
+                button { class:"m-5",  onclick: change_to_vietnamese, "Tiếng Việt" }
+            }
+
             Router::<Route> {}
         }
     }
