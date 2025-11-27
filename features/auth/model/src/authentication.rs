@@ -105,3 +105,22 @@ pub struct AuthLoginData {
     pub id_token: String,
     pub redirect_uri: String,
 }
+
+
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema, Validate)]
+pub struct AuthRegisterRequest {
+    #[validate(required(code = "email_required", message = "email is required"))]
+    pub email: Option<String>,
+    #[validate(required(code = "password_required", message = "password is required"))]
+    pub password: Option<String>,
+    #[validate(required(code = "state_required", message = "state is required"))]
+    pub state: Option<String>,
+}
+
+
+#[derive(Serialize, Deserialize, Clone, ToSchema, Response, Debug)]
+pub struct AuthRegisterData {
+    pub id_token: String,
+    pub redirect_uri: String,
+}

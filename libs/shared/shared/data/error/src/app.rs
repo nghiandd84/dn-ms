@@ -1,6 +1,6 @@
 use axum::{http::StatusCode, response::IntoResponse};
 use serde::Serialize;
-use std::sync::Arc;
+use std::{fmt::Debug, sync::Arc};
 use thiserror::Error;
 
 use crate::{
@@ -40,20 +40,10 @@ impl AppError {
     pub fn status_and_error(&self) -> (StatusCode, ClientError) {
         use self::AppError::*;
         match self {
-            // Auth(ref auth_error) => match auth_error {
-            //     AuthError::CtxNotInRequestExt => (
-            //         StatusCode::INTERNAL_SERVER_ERROR,
-            //         ClientError::AuthError(AuthError::CtxNotInRequestExt),
-            //     ),
-            //     AuthError::LoginFail => (
-            //         StatusCode::BAD_REQUEST,
-            //         ClientError::AuthError(AuthError::LoginFail),
-            //     ),
-            //     AuthError::LogoutFail => (
-            //         axum::http::StatusCode::BAD_REQUEST,
-            //         ClientError::AuthError(AuthError::LogoutFail),
-            //     ),
-            // },
+            Auth(auth_error) => (
+                auth_error.get_status_code(),
+                ClientError::AuthError(auth_error.clone()),
+            ),
             JsonRejection => (StatusCode::BAD_REQUEST, ClientError::JsonRejection),
             EntityNotFound { entity } => (
                 StatusCode::FORBIDDEN,
@@ -71,7 +61,7 @@ impl AppError {
 }
 
 #[derive(Serialize, Debug)]
-#[serde(tag = "message", content = "details", rename_all = "snake_case")]
+#[serde(tag = "error_type", content = "details", rename_all = "snake_case")]
 pub enum ClientError {
     AuthError(AuthError),
     EntityNotFound { entity: String },

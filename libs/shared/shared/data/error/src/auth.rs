@@ -13,14 +13,28 @@ pub enum TokenError {
     CanNotCreateToken,
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, Clone)]
+#[serde(tag = "message", content = "details", rename_all = "snake_case")]
 pub enum AuthError {
-    #[error("Context not found in request extensions")]
+    #[error("Not found user")]
     NotFoundUser,
-    #[error("Login failed due to invalid credentials")]
+    #[error("Wrong password")]
     WrongPassword,
-    #[error("Logout failed")]
+    #[error("User already exists")]
+    ExistingUser,
+    #[error("Unknow error")]
     Unknow,
+}
+
+impl AuthError {
+    pub fn get_status_code(&self) -> StatusCode {
+        match self {
+            AuthError::NotFoundUser => StatusCode::NOT_FOUND,
+            AuthError::WrongPassword => StatusCode::UNAUTHORIZED,
+            AuthError::ExistingUser => StatusCode::CONFLICT,
+            AuthError::Unknow => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
 }
 
 use axum::{

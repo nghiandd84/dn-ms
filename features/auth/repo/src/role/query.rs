@@ -1,3 +1,4 @@
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -42,11 +43,21 @@ impl RoleQuery {
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<RoleData>, DbErr> {
-        let result = RoleQueryManager::filter(db, pagination, order, filters).await?;
+        debug!("RoleQuery::search filters: {:?}", filters); 
+        let result = RoleQueryManager::filter(db, pagination, order, filters).await;
+        let result = match result {
+            Ok(res) => res,
+            Err(e) => {
+                debug!("RoleQuery::search error: {:?}", e);
+                return Err(e);
+            }
+        };
+        debug!("RoleQuery::search result: {:?}", result);
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),
         };
+        debug!("RoleQuery::search mapped_result: {:?}", mapped_result);
         Ok(mapped_result)
     }
 }

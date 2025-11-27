@@ -25,14 +25,18 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
     let client_status_error = app_error.map(|e| e.status_and_error());
     match client_status_error {
         Some((status_code, client_error)) => {
+            debug!(
+                "Mapping AppError to client response: status_code: {}, client_error: {:?}",
+                status_code, client_error
+            );
             let client_error = to_value(client_error).ok();
-            let message = client_error.as_ref().and_then(|v| v.get("message"));
+            let error_type = client_error.as_ref().and_then(|v| v.get("error_type")).cloned();
             let details = client_error.as_ref().and_then(|v| v.get("details"));
 
             let error_body = json!({
               "data" : {
                 "details" : details,
-                "message" : message,
+                "error_type" : error_type,
               },
               "status" : 0
             });
@@ -56,8 +60,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             let data: Value = serde_json::from_str(&body_string).unwrap_or(Value::Null);
             let json_response = json!({
               "status" : 1,
-              "data" : data,
-              "metadata" : null // pagination
+              "data" : data
             });
             (status, Json(json_response)).into_response()
         }
@@ -71,7 +74,6 @@ pub async fn mw_ctx_resolver(
     next: Next,
 ) -> Response {
     debug!("mw_ctx_resolver");
-    use axum::extract::Extension;
     // Create ctx from token
     let ctx = Ctx::new(1);
     let _result_ctx: Result<Ctx> = Ok(ctx);

@@ -19,6 +19,7 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(column_type = "String(StringLen::N(250))", unique)]
     pub email: String,
+    // TODO Move first_name and last_name to profile table
     #[sea_orm(column_type = "String(StringLen::N(50))")]
     pub first_name: String,
     #[sea_orm(column_type = "String(StringLen::N(50))")]

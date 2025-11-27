@@ -7,7 +7,7 @@ use std::{
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::authentication::AuthLoginData;
+use features_auth_model::authentication::{AuthLoginData, AuthRegisterData};
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]
@@ -85,5 +85,36 @@ impl AuthenticationRequestService {
         let data = res.unwrap();
         let login_data: AuthLoginData = serde_json::from_value(data).map_err(|e| e.to_string())?;
         Ok(login_data)
+    }
+
+
+    pub async fn register_password(
+        email: String,
+        password: String,
+        state: Uuid,
+    ) -> Result<AuthRegisterData, String> {
+        let body = serde_json::json!({
+            "email": email,
+            "password": password,
+            "state": state
+        });
+
+        let login_password_endpoint = std::env::var("AUTH_ENDPOINT_REGISTER_PASSWORD")
+            .expect("AUTH_ENDPOINT_REGISTER_PASSWORD must be set");
+
+        let res = Self::call_api(
+            login_password_endpoint,
+            reqwest::Method::POST,
+            body,
+            HashMap::new(),
+        )
+        .await;
+        if res.is_err() {
+            let err_msg = res.err().unwrap();
+            return Err(err_msg);
+        }
+        let data = res.unwrap();
+        let register_data: AuthRegisterData = serde_json::from_value(data).map_err(|e| e.to_string())?;
+        Ok(register_data)
     }
 }

@@ -6,9 +6,9 @@ use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 
 #[component]
 pub fn Login(state: String) -> Element {
-    let mut username = use_signal(|| String::new());
+    let mut email = use_signal(|| String::new());
     let mut password = use_signal(|| String::new());
-    let state_clone = use_signal(|| state.clone());
+    let state_signal = use_signal(|| state.clone());
     let mut error_msg = use_signal(|| String::new());
     let navigator = use_navigator();
 
@@ -27,12 +27,12 @@ pub fn Login(state: String) -> Element {
       form {
         id: "login-form",
         onsubmit: move |ev| async move {
-            debug!("Form submitted to log in with username: {} and password: {}", username, password);
+            debug!("Form submitted to log in with email: {} and password: {}", email, password);
             ev.prevent_default();
             let formData = FormData {
-                email: username.to_string(),
+                email: email.to_string(),
                 password: password.to_string(),
-                state: state_clone.to_string()
+                state: state_signal.to_string()
             };
             match login(formData).await {
                 Ok(data) => {
@@ -69,8 +69,8 @@ pub fn Login(state: String) -> Element {
                 id: "username",
                 class: "bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body",
                 r#type: "text",
-                value: username,
-                oninput: move |e| username.set(e.value()),
+                value: email,
+                oninput: move |e| email.set(e.value()),
               }
             }
             div { class: "my-5",
@@ -95,7 +95,7 @@ pub fn Login(state: String) -> Element {
               TextWithLink {
                   id: "login.dont_have_account",
                   to: signup_url,
-                  class: "not-have-account" // CSS styling
+                  class: "not-have-account" 
               }
             }
           }

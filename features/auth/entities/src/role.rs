@@ -7,7 +7,7 @@ use shared_shared_macro::Dto;
 
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "roles")]
-#[dto(name(RoleForCreate), columns(name, description))]
+#[dto(name(RoleForCreate), columns(name, description, client_id))]
 #[dto(name(RoleForUpdate), columns(name, description), option)]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -16,6 +16,9 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "String(StringLen::N(250))", unique)]
     pub description: String,
+    #[sea_orm(column_type = "Uuid")]
+    pub client_id: Uuid,
+    pub is_default: bool,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

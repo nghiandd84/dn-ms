@@ -21,6 +21,12 @@ pub struct RoleForCreateRequest {
         message = "the length of first_name must be between 1 and 250"
     ))]
     pub description: String,
+
+    #[validate(required(
+        code = "client_id_required",
+        message = "client_id is required"
+    ))]
+    pub client_id: Option<Uuid>,
 }
 
 impl Into<RoleForCreateDto> for RoleForCreateRequest {
@@ -28,6 +34,7 @@ impl Into<RoleForCreateDto> for RoleForCreateRequest {
         RoleForCreateDto {
             name: self.name,
             description: self.description,
+            client_id: self.client_id.unwrap_or_default(),
         }
     }
 }
@@ -41,6 +48,8 @@ pub struct RoleData {
     id: Option<Uuid>,
     name: Option<String>,
     description: Option<String>,
+    client_id: Option<Uuid>,
+    is_default: Option<bool>,
 }
 
 impl Into<RoleData> for ModelOptionDto {
@@ -49,6 +58,7 @@ impl Into<RoleData> for ModelOptionDto {
             name: self.name,
             description: self.description,
             id: self.id,
+            client_id: self.client_id,
             ..Default::default()
         }
     }

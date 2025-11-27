@@ -1,7 +1,7 @@
 
 ### Variables
-@baseUrl = http://localhost:5101
-# @baseUrl = http://localhost:6101
+# @baseUrl = http://localhost:5101
+@baseUrl = http://localhost:6101
 @userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 # @authCode = 
@@ -47,8 +47,21 @@ Content-Type: application/json
 }
 
 ### Request Login
-# @name authloginRequest
+# @name authLoginRequest
 POST {{baseUrl}}/requests/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}",
+  "state": "b40f3665-7bc4-42c4-bfcf-41e32fc127a7"
+}
+
+
+
+### Request Register
+# @name authRegisterRequest
+POST {{baseUrl}}/requests/register
 Content-Type: application/json
 
 {
