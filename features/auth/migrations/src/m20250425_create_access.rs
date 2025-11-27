@@ -24,19 +24,12 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(access::Column::UserId)
-                            .uuid()
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(access::Column::RoleId)
-                            .uuid()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(access::Column::UserId).uuid().not_null())
+                    .col(ColumnDef::new(access::Column::RoleId).uuid().not_null())
                     .to_owned(),
             )
             .await
+
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {

@@ -19,6 +19,7 @@ shared-shared-auth = { workspace = true }
 shared-shared-data-app = { workspace = true }
 shared-shared-data-auth = { workspace = true }
 shared-shared-data-cache = { workspace = true }
+shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-macro-rule = { workspace = true }

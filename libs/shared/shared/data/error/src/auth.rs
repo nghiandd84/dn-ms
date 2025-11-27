@@ -22,6 +22,8 @@ pub enum AuthError {
     WrongPassword,
     #[error("User already exists")]
     ExistingUser,
+    #[error("Unknow role")]
+    UnknowRole,
     #[error("Unknow error")]
     Unknow,
 }
@@ -30,6 +32,7 @@ impl AuthError {
     pub fn get_status_code(&self) -> StatusCode {
         match self {
             AuthError::NotFoundUser => StatusCode::NOT_FOUND,
+            AuthError::UnknowRole => StatusCode::NOT_FOUND,
             AuthError::WrongPassword => StatusCode::UNAUTHORIZED,
             AuthError::ExistingUser => StatusCode::CONFLICT,
             AuthError::Unknow => StatusCode::INTERNAL_SERVER_ERROR,

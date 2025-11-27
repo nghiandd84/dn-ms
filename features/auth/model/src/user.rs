@@ -85,15 +85,3 @@ impl Into<UserData> for ModelOptionDto {
         }
     }
 }
-
-// impl Into<ModelOptionDto> for UserData {
-//     fn into(self) -> ModelOptionDto {
-//         ModelOptionDto {
-//             email: self.email,
-//             first_name: self.first_name,
-//             id: self.id,
-//             last_name: self.last_name,
-//             ..Default::default()
-//         }
-//     }
-// }

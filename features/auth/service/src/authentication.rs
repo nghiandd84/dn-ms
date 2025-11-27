@@ -1,9 +1,14 @@
 use sea_orm::DbConn;
-use shared_shared_data_error::{app::AppError, auth::AuthError};
 use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_app::result::Result;
+use shared_shared_data_core::{
+    filter::{FilterEnum, FilterParam},
+    order::Order,
+    paging::Pagination,
+};
+use shared_shared_data_error::{app::AppError, auth::AuthError};
 
 use features_auth_entities::{
     authentication::AuthenticationRequestForCreateDto, user::UserForCreateDto,
@@ -11,12 +16,16 @@ use features_auth_entities::{
 use features_auth_model::{
     auth_code::AuthCodeForCreateRequest,
     authentication::{AuthLoginData, AuthLoginRequest, AuthRegisterData, AuthRegisterRequest},
+    user::UserForCreateRequest,
 };
 use features_auth_repo::{
     auth_code::{AuthCodeMutation, AuthCodeQuery},
     authentication::{AuthenticationRequestMutation, AuthenticationRequestQuery},
+    role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
+
+use crate::RegisterService;
 
 pub struct AuthenticationRequestService {}
 
@@ -81,25 +90,71 @@ impl AuthenticationRequestService {
             });
         }
         let request_code_data = request_code_data.unwrap();
-        let user_dto = UserForCreateDto {
+        let create_user_request = UserForCreateRequest {
             email: request.email.unwrap(),
             password: request.password.unwrap(),
-            ..Default::default()
+            first_name: "".to_string(),
+            last_name: "".to_string(),
         };
 
         debug!("Request data for code: {:?}", request_code_data);
-        debug!("User data for create: {:?}", user_dto);
+        debug!("User data for create: {:?}", create_user_request);
 
-        let user_id = UserMutation::create_user(db, user_dto).await;
+        let client_id = request_code_data.client_id.unwrap();
+        let filters = vec![
+            FilterEnum::Bool(FilterParam {
+                name: "is_default".to_string(),
+                operator: shared_shared_data_core::filter::FilterOperator::Equal,
+                value: Some(true),
+                raw_value: "true".to_string(),
+            }),
+            FilterEnum::Uuid(FilterParam {
+                name: "client_id".to_string(),
+                operator: shared_shared_data_core::filter::FilterOperator::Equal,
+                value: Some(client_id),
+                raw_value: client_id.to_string(),
+            }),
+        ];
+        let default_roles =
+            RoleQuery::search(db, &Pagination::default(), &Order::default(), &filters).await;
+        if default_roles.is_err() {
+            let error = default_roles.err().unwrap();
+            debug!("Error fetching default roles: {:?}", error);
+            return Err(AppError::Unknown);
+        }
+        let default_roles = default_roles.unwrap();
+        debug!(
+            "Default roles for client_id {}: {:?}",
+            client_id, default_roles
+        );
+        if default_roles.result.is_empty() {
+            debug!("No default roles found for client_id {}", client_id);
+            return Err(AppError::Auth(AuthError::UnknowRole));
+        }
+        let default_role = &default_roles.result[0];
+        debug!("Assigning default role: {:?}", default_role);
+
+        let user_id = RegisterService::register(db, create_user_request.into()).await;
         if user_id.is_err() {
             let error = user_id.err().unwrap();
             debug!("Error creating user: {:?}", error);
             return Err(AppError::Auth(AuthError::ExistingUser));
         }
         let user_id = user_id.unwrap();
-        // TODO: 
-        // 1. Get default roles for the client_id
-        // 2. Assign roles to the user
+
+        // Asign default role to user
+        let assign_role_result =
+            RegisterService::assgin_user_to_role(db, user_id, default_role.get_id().unwrap()).await;
+        if assign_role_result.is_err() {
+            let error = assign_role_result.err().unwrap();
+            debug!("Error assigning role to user: {:?}", error);
+            // Rollback user creation?
+            UserMutation::delete_user(db, user_id).await.ok();
+            return Err(AppError::Auth(AuthError::UnknowRole));
+        }
+
+        // Notify email verification
+
         let redirect_uri = request_code_data.redirect_uri.clone().unwrap_or_default();
         let auth_code_request: AuthCodeForCreateRequest = AuthCodeForCreateRequest {
             client_id: Some(request_code_data.client_id.unwrap()),

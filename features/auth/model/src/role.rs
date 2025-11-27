@@ -52,6 +52,12 @@ pub struct RoleData {
     is_default: Option<bool>,
 }
 
+impl RoleData {
+    pub fn get_id(&self) -> Option<Uuid> {
+        self.id
+    }
+}
+
 impl Into<RoleData> for ModelOptionDto {
     fn into(self) -> RoleData {
         RoleData {
