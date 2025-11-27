@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use crate::{models::context::Context, routes::Route, ui::TextWithLink};
+use crate::{routes::Route, ui::TextWithLink};
 
 #[component]
 pub fn SignUp(state: String) -> Element {
@@ -19,11 +19,6 @@ pub fn SignUp(state: String) -> Element {
     let login_url = link_to_login.to_string();
     debug!("Signup URL: {}", login_url);
     rsx! {
-        // div {
-        //     id: "signup",
-        //     h3 { "Signup with state #{state}!" }
-
-        // }
         form {
         id: "login-form",
         onsubmit: move |ev| async move {
@@ -49,7 +44,6 @@ pub fn SignUp(state: String) -> Element {
                 }
             }
         },
-
         div { class: "flex justify-center items-center bg-slate-50",
           div { class: "border-solid border-2 border-slate-100 px-3 py-5 w-1 min-w-[400px]",
             div { class: "text-center text-3xl", {t!("signup.title")} }
@@ -119,10 +113,28 @@ pub struct SignUpResponse {
 #[server]
 pub async fn signup(data: FormData) -> Result<SignUpResponse> {
     debug!("Signup called with data: {:?}", data);
-    // Here you would typically call your backend service to handle signup
-    // For demonstration, we will just return a dummy response
+    let register_data = features_auth_remote::AuthenticationRequestService::register_password(
+        data.email,
+        data.password,
+        uuid::Uuid::parse_str(&data.state).unwrap_or_default(),
+    )
+    .await;
+    let register_data = match register_data {
+        Ok(info) => {
+            debug!("register successful, received data: {:?}", info);
+            SignUpResponse {
+                id_token: info.id_token,
+                redirect_uri: info.redirect_uri,
+            }
+        }
+        Err(e) => {
+            debug!("Register failed with error: {}", e);
+            let err_msg = format!("Register failed");
+            return Err(dioxus::CapturedError::from_display(err_msg));
+        }
+    };
     Ok(SignUpResponse {
-        id_token: "dummy_id_token".to_string(),
-        redirect_uri: "https://example.com/welcome".to_string(),
+        id_token: register_data.id_token,
+        redirect_uri: register_data.redirect_uri,
     })
 }
