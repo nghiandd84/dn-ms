@@ -7,3 +7,4 @@ pub mod kafka_error;
 pub mod mapper;
 pub mod start_app;
 pub mod state;
+pub mod tracing;

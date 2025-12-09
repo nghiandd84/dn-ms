@@ -1,0 +1,58 @@
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4319
+      http:
+        endpoint: 0.0.0.0:4321
+
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  batch:
+
+exporters:
+  # 1. Define the OTLP exporter pointing to the local Jaeger service
+  otlp/jaeger:
+    endpoint: "localhost:4320"
+    insecure: true # Use insecure since this is local testing
+
+  # Keep the logging exporter for debugging
+  logging:
+    loglevel: debug
+
+
+service:
+
+  pipelines:
+
+    # 2. TRACES pipeline now uses the OTLP/Jaeger exporter
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [logging, otlp/jaeger] # Send traces to both logging AND Jaeger
+
+    # 3. METRICS and LOGS can stay on the logging exporter for now
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [logging]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [logging]
+
+  extensions: [health_check, pprof, zpages]
