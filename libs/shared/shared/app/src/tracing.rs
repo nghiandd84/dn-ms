@@ -1,11 +1,9 @@
-use opentelemetry::trace::{FutureExt, TracerProvider};
-use opentelemetry_appender_tracing::layer;
+use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_sdk::{logs::SdkLoggerProvider, Resource};
 use std::env;
 use tracing::info;
 use tracing_appender::rolling;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
-use tracing_subscriber::{fmt::format::FmtSpan, Registry};
+use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::kafka_error::KafkaErrorSender;
 
@@ -24,53 +22,10 @@ pub fn init_tracing_log(service_name: String) -> Result<(), Box<dyn std::error::
     // TODO check send error to kafka server
     let kafka_layer = KafkaErrorSender::new(kafka_bootstrap_servers.as_str(), kafka_topic.as_str());
     let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
-    // let fmt_layer = tracing_subscriber::fmt::layer();
 
-    // Opentelemetry tracing layer can be added here if needed
-    let exporter = opentelemetry_otlp::SpanExporter::builder()
-        // .with_tonic()
-        .with_http()
-        .build()
-        .expect("Failed to create span exporter");
-    let exporter = opentelemetry_stdout::LogExporter::default();
+    let logger_otel_provider = init_otel_logger_provider(service_name.clone());
+    let logger_otel_layer = OpenTelemetryTracingBridge::new(&logger_otel_provider);
 
-    let provider: SdkLoggerProvider = SdkLoggerProvider::builder()
-        .with_resource(
-            Resource::builder()
-                .with_service_name("log-appender-tracing-example")
-                .build(),
-        )
-        .with_simple_exporter(exporter)
-        .build();
-    
-    let otel_layer = layer::OpenTelemetryTracingBridge::new(&provider);
-
-    /*
-    let tracer = opentelemetry_sdk::trace::SdkTracerProvider::builder()
-        .with_simple_exporter(otlp_exporter)
-
-        // .with_batch_exporter(otlp_exporter)
-
-        .build()
-        .tracer(service_name.clone());
-    */
-    // Configure the OTLP exporter (defaults to sending to localhost:4317)
-    // let tracer = opentelemetry_otlp::new_pipeline()
-    //     .tracing()
-    //     .with_exporter_config(WithExporterConfiguration::default())
-    //     .install_batch(opentelemetry::runtime::Tokio)?;
-
-    // let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
-    /*
-
-    let subscriber1 = Registry::default()
-        .with(tracing_subscriber::EnvFilter::new(log_level.clone())) // drop debug/trace, keep info+
-        .with(kafka_layer)
-        .with(otel_layer)
-        .with(fmt::layer().compact().with_target(true));
-    subscriber1.init();
-     */
-    // let subscriber = tracing_subscriber::FmtSubscriber::new();
     let default_port = 6101;
     let port = env::var(format!("{}_PORT", service_name.clone()))
         .unwrap_or_else(|_| default_port.to_string())
@@ -82,29 +37,33 @@ pub fn init_tracing_log(service_name: String) -> Result<(), Box<dyn std::error::
 
     let log_file_name = format!("{}_{}.log", service_name, port);
     let log_appender = rolling::daily(log_dir, log_file_name.to_lowercase());
-    /*
-    let subscriber = tracing_subscriber::fmt()
-        .compact()
-        .with_writer(log_appender)
-        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-        .with_env_filter(tracing_subscriber::EnvFilter::new(log_level))
-        .with_ansi(false)
-        .finish();
 
-    tracing::subscriber::set_global_default(subscriber)?;
-    */
     let log_layer = tracing_subscriber::fmt::layer()
         .with_writer(log_appender)
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-        .with_ansi(false);
+        .with_ansi(true);
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
         .with(log_layer)
         .with(tracing_subscriber::fmt::layer().with_thread_names(true)) // Log to stdout
         .with(kafka_layer)
-        .with(otel_layer)
+        .with(logger_otel_layer)
         .init();
     info!("Tracing subscriber initialized");
 
     Ok(())
+}
+
+fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
+    let exporter = opentelemetry_otlp::LogExporter::builder()
+        // .with_tonic()
+        .with_http()
+        .build()
+        .expect("Failed to create log exporter");
+    let logger_provider: SdkLoggerProvider = SdkLoggerProvider::builder()
+        .with_resource(Resource::builder().with_service_name(service_name).build())
+        .with_batch_exporter(exporter)
+        .build();
+
+    logger_provider
 }
