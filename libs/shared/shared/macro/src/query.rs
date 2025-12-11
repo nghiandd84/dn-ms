@@ -56,6 +56,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         let fn_name = format_ident!("filter_condition_{}", column_name.to_lowercase());
         let column_name = format_ident!("{}", column_name);
         quote! { 
+
             fn #fn_name (column: #column_name, filter_enum: &FilterEnum) -> Condition {
                 match filter_enum {
                     FilterEnum::Bool(filter) => match filter.operator {
@@ -224,6 +225,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
 
     let get_by_id_quote = match key_type_str.as_str() {
         "Uuid" => quote! {
+            #[tracing::instrument(skip(db))]
             async fn get_by_id_uuid(db: &DbConn, id: Uuid) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
                     .one(db)
@@ -241,7 +243,8 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             async fn get_by_id_uuid(db: &DbConn, id: Uuid) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
-
+            
+            #[tracing::instrument(skip(db))]
             async fn get_by_id_i32(db: &DbConn, id: i32) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
                     .one(db)
@@ -330,7 +333,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         impl QueryManager<ActiveModel, ModelOptionDto> for #name {
             
             #get_by_id_quote
-
+            #[tracing::instrument(skip(db))]
             async fn filter(
                 db: &DbConn,
                 pagination: &Pagination,

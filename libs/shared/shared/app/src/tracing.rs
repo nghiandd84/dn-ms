@@ -1,7 +1,8 @@
 use opentelemetry::trace::TracerProvider;
 use std::env;
-use tracing::info;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, Registry};
+use tracing::{info, instrument::WithSubscriber};
+use tracing_subscriber::{Registry, fmt::{ format::FmtSpan}};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::kafka_error::KafkaErrorSender;
 
@@ -17,6 +18,7 @@ pub fn init_tracing_log(service_name: String) -> anyhow::Result<()> {
     let kafka_topic = std::env::var(&kafka_topic_env)
         .map_err(|_| format!("${kafka_topic_env} not set").into())
         .unwrap_or_else(|_e: String| "error_topic".to_string());
+    // TODO check send error to kafka server
     let kafka_layer = KafkaErrorSender::new(kafka_bootstrap_servers.as_str(), kafka_topic.as_str());
     let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
     // let fmt_layer = tracing_subscriber::fmt::layer();
@@ -31,19 +33,26 @@ pub fn init_tracing_log(service_name: String) -> anyhow::Result<()> {
         .with_simple_exporter(otlp_exporter)
         .build()
         .tracer(service_name.clone());
-    // let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+    /*
+    let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
-    let subscriber = Registry::default()
-        .with(tracing_subscriber::EnvFilter::new(log_level)) // drop debug/trace, keep info+
+    let subscriber1 = Registry::default()
+        .with(tracing_subscriber::EnvFilter::new(log_level.clone())) // drop debug/trace, keep info+
         .with(kafka_layer)
-        // .with(otel_layer)
+        .with(otel_layer)
         .with(fmt::layer().compact().with_target(true));
-        // .with(tracing_opentelemetry::layer().with_tracer(tracer));
-    subscriber.init();
+    subscriber1.init();
+     */
+    // let subscriber = tracing_subscriber::FmtSubscriber::new();
+    let subscriber = tracing_subscriber::fmt()
+        .compact()
+        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .with_file(true)
+        .with_env_filter(tracing_subscriber::EnvFilter::new(log_level))
+        .finish();
 
+    tracing::subscriber::set_global_default(subscriber)?;
     info!("Tracing subscriber initialized");
 
     Ok(())
 }
-
-// End

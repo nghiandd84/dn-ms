@@ -1,3 +1,4 @@
+use axum::body::Bytes;
 use axum::routing::get;
 use axum::{middleware, Router};
 use dotenv::dotenv;
@@ -6,7 +7,10 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::env;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tokio::signal;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tower_http::LatencyUnit;
 use tracing::{debug, info};
 
 use shared_shared_config::db::Database;
@@ -124,10 +128,18 @@ where
                 producer: Arc::new(Mutex::new(HashMap::new())),
             };
 
+            let http_tracer = TraceLayer::new_for_http()
+                .on_body_chunk(|chunk: &Bytes, latency: Duration, _: &tracing::Span| {
+                    info!(size_bytes = chunk.len(), latency = ?latency, "sending body chunk")
+                })
+                .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .on_response(DefaultOnResponse::new().include_headers(true).latency_unit(LatencyUnit::Micros));
+
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
                 // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
+                .layer(http_tracer)
                 .layer(middleware::map_response(main_response_mapper))
                 .layer(middleware::from_fn(mw_ctx_resolver));
             // .layer(middleware::from_fn_with_state(

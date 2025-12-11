@@ -1,7 +1,7 @@
 use axum::response::Json;
 use serde::Serialize;
 use serde_json::{json, Value};
-use tracing::{span, trace};
+use tracing::instrument;
 use utoipa::ToSchema;
 
 use shared_shared_macro::Response;
@@ -15,13 +15,16 @@ use shared_shared_macro::Response;
     )
 )]
 pub async fn health_checker_handler() -> Json<Value> {
-    const MESSAGE: &str = "OK";
+    let message = get_message();
     let health = Health {
-        message: MESSAGE.to_string(),
+        message: message.clone(),
     };
-    trace!("Health check performed, returning status: {}", MESSAGE);
-    span!(tracing::Level::INFO, "tracing_initialized");
     Json(json!(health))
+}
+
+#[instrument]
+fn get_message() -> String {
+    "Service is healthy".to_string()
 }
 
 #[derive(Serialize, ToSchema, Response)]
