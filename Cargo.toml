@@ -111,6 +111,7 @@ time = { version="0.3.31" }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.17"}
 tracing-opentelemetry = { version = "0.32.0"}
+tracing-appender = { version = "0.2.4" }
 tower-http = { version = "0.6.8"}
 unic-langid = { version = "0.9" }
 utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }

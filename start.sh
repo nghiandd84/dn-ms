@@ -8,7 +8,7 @@ echo "Start DN-MS"
 echo "Argument 1 is $1"
 
 APP_DIRECTORY=./target/debug
-LOG_DIRECTORY=./logs
+RUST_LOG_DIRECTORY=/home/nghiandd/Training/dn-ms/logs
 CURRENT_DATE=$(date +%Y%m%d)
 
 export AUTH_PORT=5101
@@ -48,7 +48,7 @@ done
 
 echo "Sucess kill all instances"
 
-rm -v $LOG_DIRECTORY/*
+rm -v -rf $RUST_LOG_DIRECTORY/*
 
     
 if [ "$1" == "kill" ]; then
@@ -61,7 +61,7 @@ for i in {1..3}; do
     PORT=510$i
     echo "--- Auth on port $PORT ---"
     # Execute the program
-    AUTH_PORT=510$i $APP_DIRECTORY/api-auth > $LOG_DIRECTORY/api-auth-${CURRENT_DATE}-instance-$i.log &
+    AUTH_PORT=510$i $APP_DIRECTORY/api-auth  &
 done
 
 
@@ -70,7 +70,7 @@ for i in {1..3}; do
     PORT=520$i
     echo "--- Bakery on port $PORT ---"
     # Execute the program
-    BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery > $LOG_DIRECTORY/api-bakery-${CURRENT_DATE}-instance-$i.log &
+    BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery  &
 done
 
 
@@ -79,7 +79,7 @@ for i in {1..3}; do
     PORT=530$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
-    EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template > $LOG_DIRECTORY/api-email-template-${CURRENT_DATE}-instance-$i.log &
+    EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template  &
 done
 
 echo "------------ Start Notification API ------------"
@@ -87,7 +87,7 @@ for i in {1..3}; do
     PORT=540$i
     echo "--- Notification API on port $PORT ---"
     # Execute the program
-    NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification > $LOG_DIRECTORY/api-notification-${CURRENT_DATE}-instance-$i.log &
+    NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification  &
 done
 
 echo "------------ Start Notification App ------------"
@@ -95,7 +95,7 @@ for i in {1..3}; do
     PORT=400$i
     echo "--- Notification App on port $PORT ---"
     # Execute the program
-    NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification > $LOG_DIRECTORY/app-notification-${CURRENT_DATE}-instance-$i.log &
+    NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification  &
 done
 
 #wait

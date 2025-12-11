@@ -1,8 +1,9 @@
 use opentelemetry::trace::TracerProvider;
 use std::env;
 use tracing::{info, instrument::WithSubscriber};
-use tracing_subscriber::{Registry, fmt::{ format::FmtSpan}};
+use tracing_appender::rolling;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{fmt::format::FmtSpan, Registry};
 
 use crate::kafka_error::KafkaErrorSender;
 
@@ -20,7 +21,7 @@ pub fn init_tracing_log(service_name: String) -> anyhow::Result<()> {
         .unwrap_or_else(|_e: String| "error_topic".to_string());
     // TODO check send error to kafka server
     let kafka_layer = KafkaErrorSender::new(kafka_bootstrap_servers.as_str(), kafka_topic.as_str());
-    let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
+    let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
     // let fmt_layer = tracing_subscriber::fmt::layer();
 
     // Opentelemetry tracing layer can be added here if needed
@@ -44,11 +45,23 @@ pub fn init_tracing_log(service_name: String) -> anyhow::Result<()> {
     subscriber1.init();
      */
     // let subscriber = tracing_subscriber::FmtSubscriber::new();
+    let default_port = 6101;
+    let port = env::var(format!("{}_PORT", service_name.clone()))
+        .unwrap_or_else(|_| default_port.to_string())
+        .parse::<u16>()
+        .unwrap_or_else(|_| default_port);
+    let log_dir = env::var("RUST_LOG_DIRECTORY").unwrap_or_else(|_| "./logs".to_string());
+    let log_dir = format!("{}/{}", log_dir, service_name.to_lowercase());
+    std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
+
+    let log_file_name = format!("{}_{}.log", service_name, port);
+    let log_appender = rolling::daily(log_dir, log_file_name.to_lowercase());
     let subscriber = tracing_subscriber::fmt()
         .compact()
+        .with_writer(log_appender)
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-        .with_file(true)
         .with_env_filter(tracing_subscriber::EnvFilter::new(log_level))
+        .with_ansi(false)
         .finish();
 
     tracing::subscriber::set_global_default(subscriber)?;

@@ -9,9 +9,9 @@ use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::signal;
-use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer, DefaultOnRequest};
 use tower_http::LatencyUnit;
-use tracing::{debug, info};
+use tracing::{Level, debug, info};
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;
@@ -133,6 +133,7 @@ where
                     info!(size_bytes = chunk.len(), latency = ?latency, "sending body chunk")
                 })
                 .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
                 .on_response(DefaultOnResponse::new().include_headers(true).latency_unit(LatencyUnit::Micros));
 
             let routes_all = Router::new()
