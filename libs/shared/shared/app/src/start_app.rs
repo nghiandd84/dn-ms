@@ -53,7 +53,7 @@ where
             let app_key = app_config.app_key.clone();
             let service_key = app_key.clone();
 
-            init_tracing_log(service_key).unwrap();
+            init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 

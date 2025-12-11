@@ -16,10 +16,11 @@ anyhow = { workspace = true }
 dotenv = { workspace = true }
 futures-util = { workspace = true }
 local-ip-address  = { workspace = true }
-opentelemetry = { workspace = true, features = ["trace"] }
-opentelemetry_sdk = { workspace = true, features = ["trace"] }
+opentelemetry = { workspace = true, features = [ "trace"] }
+opentelemetry_sdk = { workspace = true, features = ["trace", "rt-tokio"] }
 opentelemetry-stdout = { workspace = true, features = ["trace"] }
 opentelemetry-otlp = { workspace = true, features = ["trace", "http-proto", "grpc-tonic"] }
+opentelemetry-appender-tracing = { workspace = true }
 rdkafka = { workspace = true }
 rs-consul = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}

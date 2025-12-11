@@ -80,7 +80,7 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-    "email": "{{userEmail}}",
+    "email": "{{userEmail}}1",
     "password": "{{userPassword}}",
     "client_id": "{{clientId}}",
     "scopes": ["scope1", "scope2"],

@@ -85,6 +85,7 @@ opentelemetry = { version = "0.31.0" }
 opentelemetry_sdk = { version = "0.31.0" }
 opentelemetry-otlp = { version = "0.31.0", features = ["http-proto"] }
 opentelemetry-stdout = { version = "0.31.0", features = ["trace"] }
+opentelemetry-appender-tracing = { version = "0.31.0"}
 pcre2 = "0.2.9"
 pingora = { version = "0.5.0", features = ["lb"] }
 pingora-core = { version = "0.5.0" }
