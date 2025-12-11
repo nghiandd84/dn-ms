@@ -12,6 +12,7 @@ path = "src/lib.rs"
 [dependencies]
 async-trait = { workspace = true }
 axum = { workspace = true }
+# axum-tracing-opentelemetry  = { workspace = true }
 anyhow = { workspace = true }
 dotenv = { workspace = true }
 futures-util = { workspace = true }

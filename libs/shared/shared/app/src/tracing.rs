@@ -1,6 +1,8 @@
+use opentelemetry::global;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-use opentelemetry_sdk::{logs::SdkLoggerProvider, Resource};
-use std::env;
+use opentelemetry_otlp::{Protocol, SpanExporter};
+use opentelemetry_sdk::{logs::SdkLoggerProvider, trace::SdkTracerProvider, Resource};
+use std::{env, io::IsTerminal};
 use tracing::info;
 use tracing_appender::rolling;
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
@@ -9,7 +11,11 @@ use crate::kafka_error::KafkaErrorSender;
 
 // https://dev.to/ciscoemerge/trace-through-a-kafka-cluster-with-rust-and-opentelemetry-2jln
 
-pub fn init_tracing_log(service_name: String) -> Result<(), Box<dyn std::error::Error>> {
+pub fn init_tracing_log(
+    service_name: String,
+) -> Result<(SdkLoggerProvider, SdkTracerProvider), Box<dyn std::error::Error>> {
+    // Get Log level
+    let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
     // Set up tracing with Kafka error layer
     let kafka_server_env = "ERROR_KAFKA_BOOTSTRAP_SERVERS".to_string();
     let kafka_bootstrap_servers = std::env::var(&kafka_server_env)
@@ -19,9 +25,9 @@ pub fn init_tracing_log(service_name: String) -> Result<(), Box<dyn std::error::
     let kafka_topic = std::env::var(&kafka_topic_env)
         .map_err(|_| format!("${kafka_topic_env} not set").into())
         .unwrap_or_else(|_e: String| "error_topic".to_string());
+
     // TODO check send error to kafka server
     let kafka_layer = KafkaErrorSender::new(kafka_bootstrap_servers.as_str(), kafka_topic.as_str());
-    let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
 
     let logger_otel_provider = init_otel_logger_provider(service_name.clone());
     let logger_otel_layer = OpenTelemetryTracingBridge::new(&logger_otel_provider);
@@ -42,16 +48,31 @@ pub fn init_tracing_log(service_name: String) -> Result<(), Box<dyn std::error::
         .with_writer(log_appender)
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
         .with_ansi(true);
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
-        .with(log_layer)
-        .with(tracing_subscriber::fmt::layer().with_thread_names(true)) // Log to stdout
-        .with(kafka_layer)
-        .with(logger_otel_layer)
-        .init();
+
+    if std::io::stdout().is_terminal() {
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
+            .with(log_layer)
+            .with(tracing_subscriber::fmt::layer()) // Log to stdout
+            .with(kafka_layer)
+            .with(logger_otel_layer)
+            .init();
+    } else {
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
+            .with(log_layer)
+            .with(kafka_layer)
+            .with(logger_otel_layer)
+            .init();
+    }
+
+    let tracer_provider = init_otel_traces(service_name.clone());
+    global::set_tracer_provider(tracer_provider.clone());
+    global::set_text_map_propagator(opentelemetry_sdk::propagation::TraceContextPropagator::new());
+
     info!("Tracing subscriber initialized");
 
-    Ok(())
+    Ok((logger_otel_provider, tracer_provider))
 }
 
 fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
@@ -66,4 +87,18 @@ fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
         .build();
 
     logger_provider
+}
+
+fn init_otel_traces(service_name: String) -> SdkTracerProvider {
+    let exporter = SpanExporter::builder()
+        .with_http()
+        // .with_protocol(Protocol::HttpBinary) //can be changed to `Protocol::HttpJson` to export in JSON format
+        .build()
+        .expect("Failed to create trace exporter");
+
+    SdkTracerProvider::builder()
+        // .with_span_processor
+        .with_batch_exporter(exporter)
+        .with_resource(Resource::builder().with_service_name(service_name).build())
+        .build()
 }

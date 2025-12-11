@@ -53,7 +53,7 @@ where
             let app_key = app_config.app_key.clone();
             let service_key = app_key.clone();
 
-            init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
+            let (log_provider, trace_provider) =  init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 
@@ -141,6 +141,7 @@ where
                 // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
                 .layer(http_tracer)
+                // .layer(axum_tracing_opentelemetry::opentelemetry_tracing_layer())
                 .layer(middleware::map_response(main_response_mapper))
                 .layer(middleware::from_fn(mw_ctx_resolver));
             // .layer(middleware::from_fn_with_state(
@@ -160,6 +161,9 @@ where
             // Close DB connection
             db_connection.close().await?;
             info!("Database connection closed");
+
+            log_provider.shutdown().expect("Shutdown log provider failed");
+            trace_provider.shutdown().expect("Shutdown trace provider failed");
 
             // TODO disconnect Cache
             info!("Cache connection closed");

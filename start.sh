@@ -21,82 +21,88 @@ export NOTIFICATION_APP_PORT=4001
 echo "Kill current instances"
 
 # Kill Auth port
-for i in {1..3}; do 
+for i in {1..2}; do 
     fuser -k -15 510$i/tcp 
 done
 
 # Kill Bakery port
-for i in {1..3}; do 
+for i in {1..2}; do 
     fuser -k -15 520$i/tcp 
 done
 
 
 # Kill Email Template port
-for i in {1..3}; do 
+for i in {1..2}; do 
     fuser -k -15 530$i/tcp 
 done
 
 # Kill Notification port
-for i in {1..3}; do 
+for i in {1..2}; do 
     fuser -k -15 540$i/tcp 
 done
 
 # Kill Notification App port
-for i in {1..3}; do 
+for i in {1..2}; do 
     fuser -k -15 400$i/tcp 
 done
 
 echo "Sucess kill all instances"
 
 rm -v -rf $RUST_LOG_DIRECTORY/*
-
     
 if [ "$1" == "kill" ]; then
+    echo "Kill all api or app"
     exit 0  # Exit after killing processes
 fi
 
 
 echo "------------ Start Auth API ------------"
-for i in {1..3}; do
+for i in {1..2}; do
     PORT=510$i
     echo "--- Auth on port $PORT ---"
     # Execute the program
     AUTH_PORT=510$i $APP_DIRECTORY/api-auth  &
 done
+sleep 1s
 
 
 echo "------------ Start Bakery API ------------"
-for i in {1..3}; do
+for i in {1..2}; do
     PORT=520$i
     echo "--- Bakery on port $PORT ---"
     # Execute the program
     BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery  &
 done
-
+sleep 1s
 
 echo "------------ Start Email Template API ------------"
-for i in {1..3}; do
+for i in {1..2}; do
     PORT=530$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
     EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template  &
 done
+sleep 1s
 
 echo "------------ Start Notification API ------------"
-for i in {1..3}; do
+for i in {1..2}; do
     PORT=540$i
     echo "--- Notification API on port $PORT ---"
     # Execute the program
     NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification  &
 done
+sleep 1s
+
 
 echo "------------ Start Notification App ------------"
-for i in {1..3}; do
+for i in {1..2}; do
     PORT=400$i
     echo "--- Notification App on port $PORT ---"
     # Execute the program
     NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification  &
 done
+sleep 1s
+
 
 #wait
 
