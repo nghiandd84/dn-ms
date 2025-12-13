@@ -1,10 +1,13 @@
-use opentelemetry::global;
+use opentelemetry::{global, trace::TracerProvider, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-use opentelemetry_otlp::{Protocol, SpanExporter};
-use opentelemetry_sdk::{logs::SdkLoggerProvider, trace::SdkTracerProvider, Resource};
-use std::{env, io::IsTerminal};
+use opentelemetry_otlp::SpanExporter;
+use opentelemetry_sdk::{
+    logs::SdkLoggerProvider, propagation::TraceContextPropagator, trace::SdkTracerProvider,
+    Resource,
+};
+use std::env;
 use tracing::info;
-use tracing_appender::rolling;
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::kafka_error::KafkaErrorSender;
@@ -14,8 +17,6 @@ use crate::kafka_error::KafkaErrorSender;
 pub fn init_tracing_log(
     service_name: String,
 ) -> Result<(SdkLoggerProvider, SdkTracerProvider), Box<dyn std::error::Error>> {
-    // Get Log level
-    let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
     // Set up tracing with Kafka error layer
     let kafka_server_env = "ERROR_KAFKA_BOOTSTRAP_SERVERS".to_string();
     let kafka_bootstrap_servers = std::env::var(&kafka_server_env)
@@ -41,34 +42,39 @@ pub fn init_tracing_log(
     let log_dir = format!("{}/{}", log_dir, service_name.to_lowercase());
     std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
 
-    let log_file_name = format!("{}_{}.log", service_name, port);
-    let log_appender = rolling::daily(log_dir, log_file_name.to_lowercase());
+    let log_file_name = format!("{}_{}.log", service_name, port).to_lowercase();
+    let log_appender = RollingFileAppender::builder()
+        .rotation(Rotation::DAILY)
+        .filename_suffix(log_file_name)
+        .build(log_dir)
+        .expect("Failed to create log appender");
 
     let log_layer = tracing_subscriber::fmt::layer()
         .with_writer(log_appender)
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
         .with_ansi(true);
 
-    if std::io::stdout().is_terminal() {
-        tracing_subscriber::registry()
-            .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
-            .with(log_layer)
-            .with(tracing_subscriber::fmt::layer()) // Log to stdout
-            .with(kafka_layer)
-            .with(logger_otel_layer)
-            .init();
-    } else {
-        tracing_subscriber::registry()
-            .with(tracing_subscriber::EnvFilter::new(log_level.clone()))
-            .with(log_layer)
-            .with(kafka_layer)
-            .with(logger_otel_layer)
-            .init();
-    }
-
     let tracer_provider = init_otel_traces(service_name.clone());
-    global::set_tracer_provider(tracer_provider.clone());
-    global::set_text_map_propagator(opentelemetry_sdk::propagation::TraceContextPropagator::new());
+    let tracer = tracer_provider.tracer(service_name.clone());
+    let tracer_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+
+    // let sdk_tracer = tracer_provider.tracer(service_name.as_str());
+    global::set_text_map_propagator(TraceContextPropagator::new());
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracer_layer)
+        .with(log_layer)
+        .with(
+            if std::env::var("ENVIRONMENT").unwrap_or_default() != "production" {
+                Some(tracing_subscriber::fmt::layer())
+            } else {
+                None
+            },
+        )
+        .with(kafka_layer)
+        .with(logger_otel_layer)
+        .init();
 
     info!("Tracing subscriber initialized");
 
@@ -96,9 +102,16 @@ fn init_otel_traces(service_name: String) -> SdkTracerProvider {
         .build()
         .expect("Failed to create trace exporter");
 
-    SdkTracerProvider::builder()
+    let resouce = Resource::builder()
+        .with_service_name(service_name.clone())
+        .with_attribute(KeyValue::new("service.version", "1.0"))
+        .build();
+
+    let trace_provider = SdkTracerProvider::builder()
         // .with_span_processor
         .with_batch_exporter(exporter)
-        .with_resource(Resource::builder().with_service_name(service_name).build())
-        .build()
+        .with_resource(resouce)
+        .build();
+
+    trace_provider
 }

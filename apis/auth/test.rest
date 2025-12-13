@@ -118,6 +118,12 @@ Content-Type: application/json
 GET {{baseUrl}}/users?page_size=10&page=1&&order_name=first_name&order_direction=-1
 Content-Type: application/json
 
+### healthchecker
+GET {{baseUrl}}/healthchecker
+Content-Type: application/json
+X-Trace-ID: 00-4bf92f0170068a7f0d2f00f000b000aa-c8e10305886ac80f-01
+
+
 ### Finds User in id array
 GET {{baseUrl}}/users?page_size=10&page=1&id=in|{{userId}},4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json

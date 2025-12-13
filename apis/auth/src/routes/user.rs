@@ -3,6 +3,7 @@ use axum::{
     routing::{delete, get},
     Router,
 };
+use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_auth_model::{
@@ -68,6 +69,7 @@ async fn get_user(
         (status = 200, description = "Filtered user data", body = QueryResultResponse<UserData>),       
     )
 )]
+#[instrument(level = Level::INFO, skip_all)]
 async fn filter_users(
     state: State<AppState<AuthCacheState>>,
     query_pagination: Query<Pagination>,

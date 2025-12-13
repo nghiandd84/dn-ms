@@ -3,11 +3,13 @@ use std::sync::Arc;
 use axum::{
     body::to_bytes,
     extract::Request,
-    http::{Method, Uri},
+    http::{HeaderValue, Method, Uri},
     middleware::Next,
     response::{IntoResponse, Response},
     Json,
 };
+use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk::find_current_trace_id;
+use opentelemetry_sdk::trace;
 use serde_json::{json, to_value, Value};
 use tracing::debug;
 
@@ -15,7 +17,9 @@ use shared_shared_data_app::ctx::Ctx;
 use shared_shared_data_app::result::Result;
 use shared_shared_data_error::app::AppError;
 
-pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
+const CUSTOM_TRACE_ID_HEADER: &str = "X-Service-Trace-ID";
+
+pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Response) -> Response {
     debug!(
         "main_response_mapper: uri: {}, method: {}",
         uri, _req_method
@@ -30,7 +34,10 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
                 status_code, client_error
             );
             let client_error = to_value(client_error).ok();
-            let error_type = client_error.as_ref().and_then(|v| v.get("error_type")).cloned();
+            let error_type = client_error
+                .as_ref()
+                .and_then(|v| v.get("error_type"))
+                .cloned();
             let details = client_error.as_ref().and_then(|v| v.get("details"));
 
             let error_body = json!({
@@ -52,6 +59,17 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
                 debug!("Skipping response mapping for static files or WebSocket endpoint.");
                 return res;
             }
+            // TODO add trace id into response header
+            let trace_id_str = find_current_trace_id().unwrap_or_default();
+            debug!("Current Trace ID: {}", trace_id_str);
+            // 3. Inject the Trace ID into the response header
+            if let Ok(header_value) = HeaderValue::from_str(&trace_id_str) {
+                res.headers_mut().insert(
+                    CUSTOM_TRACE_ID_HEADER, // e.g., "X-Service-Trace-ID"
+                    header_value,
+                );
+            }
+
             let status = res.status();
             let body = to_bytes(res.into_body(), usize::MAX)
                 .await

@@ -1,17 +1,14 @@
-use axum::body::Bytes;
 use axum::routing::get;
 use axum::{middleware, Router};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use dotenv::dotenv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::env;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 use tokio::signal;
-use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer, DefaultOnRequest};
-use tower_http::LatencyUnit;
-use tracing::{Level, debug, info};
+use tracing::{debug, info};
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;
@@ -53,7 +50,8 @@ where
             let app_key = app_config.app_key.clone();
             let service_key = app_key.clone();
 
-            let (log_provider, trace_provider) =  init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
+            let (log_provider, trace_provider) =
+                init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 
@@ -128,26 +126,14 @@ where
                 producer: Arc::new(Mutex::new(HashMap::new())),
             };
 
-            let http_tracer = TraceLayer::new_for_http()
-                .on_body_chunk(|chunk: &Bytes, latency: Duration, _: &tracing::Span| {
-                    info!(size_bytes = chunk.len(), latency = ?latency, "sending body chunk")
-                })
-                .make_span_with(DefaultMakeSpan::new().include_headers(true))
-                .on_request(DefaultOnRequest::new().level(Level::INFO))
-                .on_response(DefaultOnResponse::new().include_headers(true).latency_unit(LatencyUnit::Micros));
-
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
-                // .route_layer(middleware::from_fn(mw_required_auth))
                 .merge(self.routes(&app_state))
-                .layer(http_tracer)
-                // .layer(axum_tracing_opentelemetry::opentelemetry_tracing_layer())
-                .layer(middleware::map_response(main_response_mapper))
-                .layer(middleware::from_fn(mw_ctx_resolver));
-            // .layer(middleware::from_fn_with_state(
-            //     my_app_state,
-            //     mw_ctx_resolver,
-            // ));
+                .layer(OtelAxumLayer::default()) // OtelAxumLayer: Starts the trace and extracts parent context from request headers
+                .layer(middleware::from_fn(mw_ctx_resolver))
+                .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
+                .layer(middleware::map_response(main_response_mapper));
+
             self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
@@ -162,8 +148,12 @@ where
             db_connection.close().await?;
             info!("Database connection closed");
 
-            log_provider.shutdown().expect("Shutdown log provider failed");
-            trace_provider.shutdown().expect("Shutdown trace provider failed");
+            log_provider
+                .shutdown()
+                .expect("Shutdown log provider failed");
+            trace_provider
+                .shutdown()
+                .expect("Shutdown trace provider failed");
 
             // TODO disconnect Cache
             info!("Cache connection closed");

@@ -1,7 +1,7 @@
 use axum::response::Json;
 use serde::Serialize;
 use serde_json::{json, Value};
-use tracing::instrument;
+use tracing::{event, info_span, instrument, Level};
 use utoipa::ToSchema;
 
 use shared_shared_macro::Response;
@@ -22,8 +22,11 @@ pub async fn health_checker_handler() -> Json<Value> {
     Json(json!(health))
 }
 
-#[instrument]
+#[instrument(level = "info")]
 fn get_message() -> String {
+    let span = info_span!("message_span", user_id = "Unknow",  request_id = %uuid::Uuid::new_v4());
+    let _guard = span.enter();
+    event!(Level::INFO, "something happened inside my_span");
     "Service is healthy".to_string()
 }
 
