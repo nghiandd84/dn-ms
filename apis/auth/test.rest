@@ -121,7 +121,7 @@ Content-Type: application/json
 ### healthchecker
 GET {{baseUrl}}/healthchecker
 Content-Type: application/json
-X-Trace-ID: 00-4bf92f0170068a7f0d2f00f000b000aa-c8e10305886ac80f-01
+tracestate: 00-6eac2b714dd57b47498837ce4b023876-c8e10305886ac80f-01
 
 
 ### Finds User in id array

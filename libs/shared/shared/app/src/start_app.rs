@@ -129,10 +129,10 @@ where
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
                 .merge(self.routes(&app_state))
-                .layer(OtelAxumLayer::default()) // OtelAxumLayer: Starts the trace and extracts parent context from request headers
-                .layer(middleware::from_fn(mw_ctx_resolver))
                 .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
-                .layer(middleware::map_response(main_response_mapper));
+                .layer(middleware::map_response(main_response_mapper))
+                .layer(middleware::from_fn(mw_ctx_resolver)) // Add custom context resolver middleware
+                .layer(OtelAxumLayer::default()); // OtelAxumLayer: Starts the trace and extracts parent context from request headers
 
             self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");
