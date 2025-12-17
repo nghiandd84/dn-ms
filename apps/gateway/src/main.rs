@@ -5,6 +5,7 @@ mod gateway;
 use dotenv::dotenv;
 use pingora::server::{configuration::ServerConf, Server};
 use std::sync::Arc;
+use tracing::debug;
 
 use config::{app_config::load_app_config, dn_config::DnConfig, proxy::http::Proxy};
 use gateway::{
@@ -12,14 +13,15 @@ use gateway::{
     state::{build_gateway_state, GatewayStateStore},
 };
 
+use shared_shared_app::tracing::init_tracing_log;
+
 #[async_std::main]
 async fn main() {
     // Load .env file
     dotenv().ok();
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_test_writer()
-        .init();
+    let service_key = "GATEWAY".to_string();
+    let (_log_provider, _trace_provider) =
+        init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
 
     let app_config = load_app_config();
 
@@ -27,7 +29,6 @@ async fn main() {
     let opt = dn_config.to_pingore_opt(&app_config);
     let config: ServerConf = dn_config.clone().into();
 
-    // Runtime::new().unwrap().block_on(|| {
     let mut server = Server::new_with_opt_and_conf(opt, config);
 
     server.bootstrap();
@@ -41,7 +42,7 @@ async fn main() {
         let service = build_http(gateway_state_store, Arc::new(server_conf)).await;
         server.add_service(service);
     }
-
+    debug!("Starting Gateway server...");
     server.run_forever();
-    // });
+
 }
