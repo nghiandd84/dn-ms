@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 
@@ -118,6 +119,7 @@ pub struct LoginResponse {
 }
 
 #[server]
+#[instrument]
 pub async fn login(data: FormData) -> Result<LoginResponse> {
     debug!("Received form data on server: {:?}", data);
     let login_data = features_auth_remote::AuthenticationRequestService::login_password(

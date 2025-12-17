@@ -20,6 +20,7 @@ dotenv = { workspace = true, optional = true  }
 tokio = { workspace = true , features = ["full"], optional = true}
 tower-sessions = { workspace = true , optional = true}
 time = { workspace = true , optional = true}
+tracing = { workspace = true}
 
 shared-shared-app = { workspace = true,  optional = true }
 

@@ -65,13 +65,6 @@ pub fn init_tracing_log(
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .with(tracer_layer)
         .with(log_layer)
-        .with(
-            if std::env::var("ENVIRONMENT").unwrap_or_default() != "production" {
-                Some(tracing_subscriber::fmt::layer())
-            } else {
-                None
-            },
-        )
         .with(kafka_layer)
         .with(logger_otel_layer)
         .init();
@@ -81,7 +74,29 @@ pub fn init_tracing_log(
     Ok((logger_otel_provider, tracer_provider))
 }
 
-fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
+pub fn init_otel_log_and_traces(
+    service_name: String,
+) -> Result<(SdkLoggerProvider, SdkTracerProvider), Box<dyn std::error::Error>> {
+    let logger_otel_provider = init_otel_logger_provider(service_name.clone());
+    // let logger_provider: &dyn opentelemetry::logs::LoggerProvider = &logger_otel_provider;
+    // let logger = logger_otel_provider.logger("my.dioxus.logging.component");
+    let logger_otel_layer = OpenTelemetryTracingBridge::new(&logger_otel_provider);
+
+    let tracer_provider = init_otel_traces(service_name.clone());
+    let tracer = tracer_provider.tracer(service_name.clone());
+    let tracer_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+    let _subscriber = tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracer_layer)
+        .with(logger_otel_layer)
+        .try_init();
+    // Set the global Tracer Provider
+    global::set_tracer_provider(tracer_provider.clone());
+    info!("Tracing subscriber initialized");
+    Ok((logger_otel_provider, tracer_provider))
+}
+
+pub fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
     let exporter = opentelemetry_otlp::LogExporter::builder()
         // .with_tonic()
         .with_http()
@@ -95,7 +110,7 @@ fn init_otel_logger_provider(service_name: String) -> SdkLoggerProvider {
     logger_provider
 }
 
-fn init_otel_traces(service_name: String) -> SdkTracerProvider {
+pub fn init_otel_traces(service_name: String) -> SdkTracerProvider {
     let exporter = SpanExporter::builder()
         .with_http()
         // .with_protocol(Protocol::HttpBinary) //can be changed to `Protocol::HttpJson` to export in JSON format

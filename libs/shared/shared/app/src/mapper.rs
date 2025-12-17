@@ -10,7 +10,7 @@ use axum::{
 };
 use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk;
 use serde_json::{json, to_value, Value};
-use tracing::debug;
+use tracing::{debug, info};
 
 use shared_shared_data_app::ctx::Ctx;
 use shared_shared_data_app::result::Result;
@@ -62,7 +62,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Respon
             // Can get current trace id if  RUST_LOG=trace is set
             let trace_id_str = tracing_opentelemetry_instrumentation_sdk::find_current_trace_id()
                 .unwrap_or_default();
-            debug!("Current Trace ID: {}", trace_id_str);
+            info!("Current Trace ID: {}", trace_id_str);
 
             // event!(Level::INFO, trace_id = ?trace_id, "Current Trace ID logged in health checker");
             // 3. Inject the Trace ID into the response header

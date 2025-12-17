@@ -71,11 +71,15 @@ fn main() {
         use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
         use features_auth_remote::AuthenticationRequestService;
-        use shared_shared_app::discovery::get_consul_client;
+        use shared_shared_app::{discovery::get_consul_client, tracing::init_otel_log_and_traces};
 
         use crate::models::state::AppState;
 
         dotenv().ok();
+        // TODO add opentelemetry to project
+        // let service_key = "AUTH_WEB_APPLICATION".to_string();
+        // let (log_provider, trace_provider) = init_otel_log_and_traces(service_key)
+        //     .expect("Failed to initialize logging and tracing");
 
         let session_store = MemoryStore::default();
         let session_layer = SessionManagerLayer::new(session_store)
