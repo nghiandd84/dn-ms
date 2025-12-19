@@ -1,4 +1,5 @@
 use http::Uri;
+use opentelemetry::trace::TraceContextExt;
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
 use pingora_proxy::Session as PSession;
 use std::mem::take;
@@ -53,6 +54,18 @@ impl<'a> Session<'a> {
         self.ctx
             .ds_res_header_buffer
             .insert(header_name, header_value);
+    }
+
+    pub fn trace_id(&self) -> String {
+        let context = self.ctx.span_context.as_ref();
+        if context.is_none() {
+            return "".to_string();
+        }
+        let context = context.unwrap().clone();
+        let span = context.span();
+        let span_context = span.span_context();
+        let trace_id = span_context.trace_id().to_string();
+        trace_id
     }
 
     async fn flush_header_to_ds(&mut self) -> PhaseResult {

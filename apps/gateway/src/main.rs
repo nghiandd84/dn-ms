@@ -3,6 +3,8 @@ mod error;
 mod gateway;
 
 use dotenv::dotenv;
+use opentelemetry::global;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use pingora::server::{configuration::ServerConf, Server};
 use std::sync::Arc;
 use tracing::debug;
@@ -22,6 +24,7 @@ async fn main() {
     let service_key = "GATEWAY".to_string();
     let (_log_provider, _trace_provider) =
         init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
+    global::set_text_map_propagator(TraceContextPropagator::new());
 
     let app_config = load_app_config();
 
@@ -44,5 +47,4 @@ async fn main() {
     }
     debug!("Starting Gateway server...");
     server.run_forever();
-
 }

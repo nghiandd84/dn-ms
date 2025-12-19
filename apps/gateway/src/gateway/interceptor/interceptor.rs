@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use tracing::debug;
 
 use crate::{
     config::{proxy::http::Session, source_config::InterceptorConfig},
@@ -79,8 +80,21 @@ async fn execute_interceptor<'a>(
         }
         m if m == Phase::RequestFilter.mask() => {
             // handle RequestFilter phase
+            debug!(
+                "Executing RequestFilter for interceptor: {:?}",
+                interceptor.interceptor_type()
+            );
             interceptor.request_filter(session).await
         }
+        m if m == Phase::PostUpstreamResponse.mask() => {
+            // handle RequestFilter phase
+            debug!(
+                "Executing PostUpstreamResponse for interceptor: {:?}",
+                interceptor.interceptor_type()
+            );
+            interceptor.post_upstream_response(session).await
+        }
+        
         _ => Ok(true),
     }
 }

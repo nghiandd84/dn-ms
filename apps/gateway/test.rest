@@ -4,8 +4,18 @@
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 
+### 
+
 GET {{baseUrl}}/api/bakery/bakeries
 Content-Type: application/json
+
+###
+tracestate: congo=t61rcWkgMzE,rojo=00f067aa0ba902b7
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4731-00f067aa0ba902b1-01
+
+###
+
+
 
 ###
 GET {{baseUrl}}/api/bakery/bakeries/1?param_1=one

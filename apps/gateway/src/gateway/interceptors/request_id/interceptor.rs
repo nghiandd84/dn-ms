@@ -3,7 +3,6 @@ use tracing::debug;
 
 use crate::{
     config::proxy::http::Session,
-    error::GatewayResult,
     gateway::interceptor::{Interceptor, InterceptorType, Phase, PhaseMask, PhaseResult},
 };
 
@@ -25,22 +24,23 @@ impl Interceptor for RequestIdInterceptor {
     }
 
     fn phase_mask(&self) -> PhaseMask {
-        Phase::Init.mask()
+        Phase::PostUpstreamResponse.mask()
     }
 
     fn filter(&self) -> &Option<String> {
         &self.filter
     }
 
-    async fn init(&self, _session: &mut Session) -> PhaseResult {
-        let req_id = uuid::Uuid::new_v4().to_string().as_bytes().to_vec();
-        // TODO send req_id to upstream and downstream
+    async fn post_upstream_response(&self, session: &mut Session) -> PhaseResult {
+        let trace_id = session.trace_id();
         debug!(
-            "Init RequestIdInterceptor with filter {}",
-            self.filter.as_ref().unwrap()
+            "RequestIdInterceptor setting X-Request-Id header with trace_id: {}",
+            trace_id
         );
-        _session.set_ds_res_header("X-Request-Id".to_string(), req_id.clone());
-        _session.set_us_req_header("X-Request-Id".to_string(), req_id);
-        Ok(true)
+        // session.set_ds_res_header("X-Request-Id".to_string(), trace_id.into_bytes());
+        session.set_ds_res_header("X-Request-Id".to_string(), trace_id.clone().into_bytes().to_vec());
+        // session.set_us_req_header("X-Request-Id".to_string(), trace_id.into_bytes().to_vec());
+        // let _ = session.flush_header_to_ds().await;
+        Ok(false)
     }
 }

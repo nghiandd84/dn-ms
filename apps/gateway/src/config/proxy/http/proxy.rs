@@ -1,14 +1,11 @@
-use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
-
 use async_trait::async_trait;
-
 use http::{HeaderName, HeaderValue};
 use pingora::{prelude::HttpPeer, upstreams::peer::Peer, Error};
 use pingora_http::{RequestHeader, ResponseHeader};
 use pingora_proxy::{ProxyHttp, Session};
-use tracing::{debug, info_span, instrument, Span};
+use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
+use tracing::{debug, info, info_span};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
-use tracing_subscriber::field::debug;
 
 use crate::{
     config::{
@@ -77,8 +74,32 @@ impl ProxyHttp for Proxy {
     type CTX = HttpGatewayCtx;
 
     fn new_ctx(&self) -> Self::CTX {
-        debug!("Proxy new_ctx");
         HttpGatewayCtx::new()
+    }
+
+    async fn request_filter(
+        &self,
+        psession: &mut Session,
+        ctx: &mut HttpGatewayCtx,
+    ) -> Result<bool, Box<Error>> {
+        let parent_cx = global::get_text_map_propagator(|prop| {
+            let result = prop.extract(&PingoraHeaderExtractor(psession.req_header()));
+            result
+        });
+
+        let request_name = format!(
+            "request {} {}",
+            psession.req_header().method,
+            psession.req_header().uri,
+        );
+        let span = info_span!("request", otel.name = %request_name);
+        let _ = span.set_parent(parent_cx);
+        let _gaurd = span.enter();
+        ctx.span_context = Some(span.context());
+
+        // session.set_us_req_header(header_name, header_value);
+
+        Ok(false)
     }
 
     async fn early_request_filter(
@@ -88,19 +109,6 @@ impl ProxyHttp for Proxy {
     ) -> Result<(), Box<Error>> {
         debug!("early_request_filter -----------------");
 
-        let parent_cx = global::get_text_map_propagator(|prop| {
-            prop.extract(&PingoraHeaderExtractor(psession.req_header()))
-        });
-        let request_info = format!(
-            "method: {} path: {}",
-            psession.req_header().method,
-            psession.req_header().uri
-        );
-        let span = info_span!("gateway_receive", request_info = %request_info);
-        let _ = span.set_parent(parent_cx);
-        let _guard = span.enter();
-
-        let _enter = span.enter();
         let mut session = session::Session::build(Phase::Init, psession, ctx);
 
         let state = self.gateway_state_store.get_state();
@@ -122,9 +130,6 @@ impl ProxyHttp for Proxy {
         psession: &mut Session,
         ctx: &mut HttpGatewayCtx,
     ) -> Result<Box<HttpPeer>, Box<Error>> {
-        debug!("upstream_peer ------------------");
-        debug!("Current Ctx {:?}", ctx);
-
         let _session = session::Session::build(Phase::UpstreamPeerSelection, psession, ctx);
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
@@ -161,9 +166,13 @@ impl ProxyHttp for Proxy {
         upstream_response: &mut ResponseHeader,
         ctx: &mut Self::CTX,
     ) -> Result<(), Box<Error>> {
-        debug!("response_filter");
+        let filter = ctx.filter.clone().unwrap();
+        debug!("RequestFilter - Filter Name: {}", filter.name);
         let mut session = session::Session::build(Phase::PostUpstreamResponse, psession, ctx);
         session.upstream_response(upstream_response);
+        let filter_interceptors =
+            self.get_interceptors(Phase::PostUpstreamResponse, filter.name.clone());
+        let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
         let _flush = session.flush_ds_res_header().await;
         Ok(())
     }
@@ -172,18 +181,19 @@ impl ProxyHttp for Proxy {
         &self,
         _session: &mut Session,
         upstream_request: &mut RequestHeader,
-        _ctx: &mut Self::CTX,
+        ctx: &mut Self::CTX,
     ) -> Result<(), pingora_core::BError>
     where
         Self::CTX: Send + Sync,
     {
-        let mut session = session::Session::build(Phase::PreUpstreamRequest, _session, _ctx);
-        let context = Span::current().context();
-        debug!("Injecting tracing headers into upstream request with context: {:?}", context);
+        let context = ctx.span_context.as_ref().unwrap().clone();
+        debug!("Current Context: {:?}", context);
+        let mut session = session::Session::build(Phase::PreUpstreamRequest, _session, ctx);
+
         global::get_text_map_propagator(|prop| {
             prop.inject_context(&context, &mut PingoraHeaderInjector(upstream_request))
         });
-        // let context = Span::current().context();
+
         let _up = session.upstream_request(upstream_request);
         let _plush = session.flush_us_req_header();
 
@@ -199,9 +209,16 @@ use opentelemetry::{
 struct PingoraHeaderExtractor<'a>(&'a pingora_http::RequestHeader);
 impl<'a> Extractor for PingoraHeaderExtractor<'a> {
     fn get(&self, key: &str) -> Option<&str> {
-        self.0.headers.get(key).and_then(|v| v.to_str().ok())
+        let data = self.0.headers.get(key).and_then(|v| v.to_str().ok());
+        debug!(
+            "Extracting header: {} with  value {}",
+            key,
+            data.unwrap_or("Unknown")
+        );
+        data
     }
     fn keys(&self) -> Vec<&str> {
+        debug!("Getting all header keys");
         self.0.headers.iter().map(|(k, _)| k.as_str()).collect()
     }
 }

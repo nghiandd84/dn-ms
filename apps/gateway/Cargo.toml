@@ -27,6 +27,7 @@ serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 opentelemetry = { workspace = true }
+opentelemetry_sdk = { workspace = true }
 tracing = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 tracing-subscriber = { workspace = true}
