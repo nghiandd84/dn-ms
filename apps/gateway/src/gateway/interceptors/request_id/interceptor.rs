@@ -37,10 +37,10 @@ impl Interceptor for RequestIdInterceptor {
             "RequestIdInterceptor setting X-Request-Id header with trace_id: {}",
             trace_id
         );
-        // session.set_ds_res_header("X-Request-Id".to_string(), trace_id.into_bytes());
-        session.set_ds_res_header("X-Request-Id".to_string(), trace_id.clone().into_bytes().to_vec());
-        // session.set_us_req_header("X-Request-Id".to_string(), trace_id.into_bytes().to_vec());
-        // let _ = session.flush_header_to_ds().await;
+        session.set_ds_res_header(
+            "X-Request-Id".to_string(),
+            trace_id.clone().into_bytes().to_vec(),
+        );
         Ok(false)
     }
 }

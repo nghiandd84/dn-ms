@@ -82,6 +82,15 @@ impl ProxyHttp for Proxy {
         psession: &mut Session,
         ctx: &mut HttpGatewayCtx,
     ) -> Result<bool, Box<Error>> {
+        Ok(false)
+    }
+
+    async fn early_request_filter(
+        &self,
+        psession: &mut Session,
+        ctx: &mut HttpGatewayCtx,
+    ) -> Result<(), Box<Error>> {
+        debug!("early_request_filter -----------------");
         let parent_cx = global::get_text_map_propagator(|prop| {
             let result = prop.extract(&PingoraHeaderExtractor(psession.req_header()));
             result
@@ -96,18 +105,6 @@ impl ProxyHttp for Proxy {
         let _ = span.set_parent(parent_cx);
         let _gaurd = span.enter();
         ctx.span_context = Some(span.context());
-
-        // session.set_us_req_header(header_name, header_value);
-
-        Ok(false)
-    }
-
-    async fn early_request_filter(
-        &self,
-        psession: &mut Session,
-        ctx: &mut HttpGatewayCtx,
-    ) -> Result<(), Box<Error>> {
-        debug!("early_request_filter -----------------");
 
         let mut session = session::Session::build(Phase::Init, psession, ctx);
 
