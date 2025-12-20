@@ -8,7 +8,7 @@ use shared_shared_app::{
     discovery::get_consul_client,
     event_task::{
         consumer::{consumer_task, ConsumerConfig},
-        producer::{Producer, ProducerConfig},
+        producer::{Producer, ProducerConfig, ProducerMessage},
     },
     start_app::StartApp,
     state::AppState,
@@ -53,13 +53,15 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
 
         async move {
             /*
-            let producer = Producer::from_config(ProducerConfig {
+            let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
+            let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
+            let producer_config = ProducerConfig {
                 kafka_server_env: kafka_server_env.clone(),
                 kafka_topic_env: kafka_topic_env.clone(),
-            })
-            .await;
+            };
+            let producer = Producer::from_config(producer_config).await;
 
-            let topic_key = "test_topic_key".to_string();
+            let topic_key = producer.topic().to_string();
 
             app_state.set_producer(topic_key.clone(), producer);
 
@@ -68,7 +70,6 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
                 .get_producer(topic_key)
                 .expect("Producer not found")
                 .send(&ProducerMessage {
-                    topic: "test_topic".to_string(),
                     payload: "Test message".to_string(),
                     key: Some("test_key".to_string()),
                 })

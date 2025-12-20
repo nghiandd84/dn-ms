@@ -1,6 +1,6 @@
 use rdkafka::{producer::FutureProducer, util::Timeout, ClientConfig};
 use serde::Serialize;
-use tracing::{debug, error};
+use tracing::{debug, error, instrument};
 
 pub struct ProducerConfig {
     pub kafka_server_env: String,
@@ -64,6 +64,11 @@ impl Producer {
         Self { producer, topic }
     }
 
+    pub fn topic(&self) -> &str {
+        &self.topic
+    }
+
+    #[instrument(name = "send message", skip_all)]
     pub async fn send<T>(
         &self,
         message: &ProducerMessage<T>,
@@ -74,10 +79,23 @@ impl Producer {
         let payload_str = serde_json::to_string(&message.payload).map_err(|e| ProducerError {
             reason: format!("Serialization error: {}", e),
         })?;
+        let current_span = tracing::Span::current();
+        let topic = self.topic.clone();
+        debug!("Sending Kafka message: {} via topic {}", payload_str, topic);
+        current_span.record("message", &payload_str.as_str());
+        current_span.record("topic", topic.as_str());
+        let context = current_span.context();
+
+        let mut headers = OwnedHeaders::new();
+        // Inject current span context into Kafka headers
+        global::get_text_map_propagator(|propagator| {
+            propagator.inject_context(&context, &mut KafkaHeaderPropagator(&mut headers));
+        });
 
         let key = message.key.clone().unwrap_or_default();
         let record = rdkafka::producer::FutureRecord::to(&self.topic)
             .payload(&payload_str)
+            .headers(headers)
             .key(&key);
 
         match self.producer.send(record, Timeout::Never).await {
@@ -128,5 +146,24 @@ impl Producer {
 
             Ok((producer, kafka_topic))
         }
+    }
+}
+
+use opentelemetry::{
+    global,
+    propagation::{Extractor, Injector},
+};
+use rdkafka::message::{Header, Headers, OwnedHeaders};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
+
+struct KafkaHeaderPropagator<'a>(&'a mut OwnedHeaders);
+
+impl<'a> Injector for KafkaHeaderPropagator<'a> {
+    fn set(&mut self, key: &str, value: String) {
+        let headers = std::mem::take(self.0);
+        *self.0 = headers.insert(Header {
+            key,
+            value: Some(&value),
+        });
     }
 }

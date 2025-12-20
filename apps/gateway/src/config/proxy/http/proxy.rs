@@ -77,14 +77,6 @@ impl ProxyHttp for Proxy {
         HttpGatewayCtx::new()
     }
 
-    async fn request_filter(
-        &self,
-        psession: &mut Session,
-        ctx: &mut HttpGatewayCtx,
-    ) -> Result<bool, Box<Error>> {
-        Ok(false)
-    }
-
     async fn early_request_filter(
         &self,
         psession: &mut Session,
