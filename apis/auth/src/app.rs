@@ -12,7 +12,7 @@ use shared_shared_app::{
 use shared_shared_config::db::Database;
 
 use features_auth_migrations::{Migrator, MigratorTrait};
-use features_auth_model::state::AuthCacheState;
+use features_auth_model::state::{AuthAppState, AuthCacheState};
 use features_auth_stream::PRODUCER_KEY;
 
 use crate::{
@@ -30,14 +30,14 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
+impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
 
     fn custom_handler(
         &self,
-        app_state: &mut AppState<AuthCacheState>,
+        app_state: &mut AppState<AuthAppState, AuthCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async move {
             let app_key = self.config.app_key.clone();
@@ -65,7 +65,7 @@ impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
         }
     }
 
-    fn routes(&self, app_state: &AppState<AuthCacheState>) -> Router {
+    fn routes(&self, app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(auth_code_routes(app_state))
             .merge(authentication_routes(app_state))

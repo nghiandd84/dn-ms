@@ -5,7 +5,7 @@ use features_auth_model::{
         AuthLoginData, AuthLoginDataResponse, AuthLoginRequest, AuthRegisterData,
         AuthRegisterDataResponse, AuthRegisterRequest, AuthenticationCreateRequest,
     },
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
 };
 use features_auth_stream::PRODUCER_KEY;
 use shared_shared_app::state::AppState;
@@ -32,7 +32,7 @@ const TAG: &str = "request";
     )
 )]
 async fn request_code(
-    State(state): State<AppState<AuthCacheState>>,
+    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthenticationCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let request_id = AuthenticationRequestService::request(&state.conn, request.into()).await?;
@@ -52,7 +52,7 @@ async fn request_code(
     )
 )]
 async fn request_login(
-    State(state): State<AppState<AuthCacheState>>,
+    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthLoginRequest>,
 ) -> Result<ResponseJson<AuthLoginData>> {
     let login_data = AuthenticationRequestService::login(&state.conn, request).await?;
@@ -69,7 +69,7 @@ async fn request_login(
     )
 )]
 async fn request_register(
-    State(state): State<AppState<AuthCacheState>>,
+    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthRegisterRequest>,
 ) -> Result<ResponseJson<AuthRegisterData>> {
     let producer = state
@@ -80,7 +80,7 @@ async fn request_register(
     Ok(ResponseJson(register_data))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route(REQUEST_CODE, post(request_code))
         .route(REQUEST_LOGIN, post(request_login))

@@ -7,7 +7,7 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_auth_model::{
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
     user::{UserData, UserDataFilterParams, UserDataResponse},
 };
 
@@ -34,7 +34,7 @@ const TAG: &str = "user";
     )
 )]
 async fn delete_user(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     UserMutation::delete_user(&state.conn, user_id).await?;
@@ -50,7 +50,7 @@ async fn delete_user(
     )
 )]
 async fn get_user(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserData>> {
     let user_dto = UserQuery::get(&state.conn, user_id).await?;
@@ -71,7 +71,7 @@ async fn get_user(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_users(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<UserDataFilterParams>,
@@ -85,7 +85,7 @@ async fn filter_users(
 }
 
 async fn test_filters(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
 ) -> Result<ResponseJson<QueryResult<UserData>>> {
     let pagination = Pagination::default();
     let order = Order::default();
@@ -95,7 +95,7 @@ async fn test_filters(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/users/{user_id}", delete(delete_user))
         .route("/users/{user_id}", get(get_user))

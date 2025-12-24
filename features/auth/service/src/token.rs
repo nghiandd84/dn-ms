@@ -17,7 +17,7 @@ use uuid::Uuid;
 
 use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::{
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
     token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},
 };
 use shared_shared_data_app::result::Result;

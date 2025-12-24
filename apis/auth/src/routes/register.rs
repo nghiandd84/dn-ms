@@ -7,7 +7,7 @@ use shared_shared_data_app::{
 };
 use shared_shared_data_error::app::AppError;
 
-use features_auth_model::state::AuthCacheState;
+use features_auth_model::state::{AuthAppState, AuthCacheState};
 use features_auth_model::user::UserForCreateRequest;
 use features_auth_service::RegisterService;
 
@@ -21,7 +21,7 @@ use features_auth_service::RegisterService;
     )
 )]
 async fn register(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<UserForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let result = RegisterService::register(&state.conn, register_request).await;
@@ -35,7 +35,7 @@ async fn register(
     Err(AppError::Auth(err))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/register", post(register))
         .with_state(app_state.clone())

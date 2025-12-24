@@ -95,7 +95,7 @@ pingora-http = { version = "0.5.0" }
 pingora-proxy = { version = "0.5.0" }
 quote = "1.0"
 rand = "0.8.5"
-redis = { version = "^0.22", features = ["tokio-comp", "tokio-native-tls-comp"] }
+redis = { version = "0.32.7", features = ["tokio-comp", "tokio-native-tls-comp"] }
 rust_decimal = { version = "1.37.1" }
 rdkafka = { version = "0.37.0" }
 reqwest = { version = "0.12", features = ["json"] }

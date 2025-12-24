@@ -1,4 +1,4 @@
-use redis::{aio::Connection, Client};
+use redis::{Client, Connection};
 use std::env;
 
 #[derive(Clone)]
@@ -16,7 +16,7 @@ impl Cache {
     }
 
     pub async fn get_connection(&self) -> Result<Connection, String> {
-        let con = self.client.get_tokio_connection().await;
+        let con = self.client.get_connection();
 
         match con {
             Ok(con) => Ok(con),

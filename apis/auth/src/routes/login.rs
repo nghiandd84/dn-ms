@@ -5,7 +5,7 @@ use shared_shared_app::state::AppState;
 use shared_shared_data_app::{json::ResponseJson, result::Result};
 use features_auth_model::{
     login::{LoginData, LoginDataResponse, LoginRequest},
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
 };
 use features_auth_service::LoginService;
 
@@ -21,7 +21,7 @@ use features_auth_service::LoginService;
     )
 )]
 async fn login(
-    State(state): State<AppState<AuthCacheState>>,
+    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     Json(login_request): Json<LoginRequest>,
 ) -> Result<ResponseJson<LoginData>> {
     debug!("Login requet  {:?}", login_request);
@@ -37,7 +37,7 @@ async fn login(
     Ok(ResponseJson(success_data))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/login", post(login))
         .with_state(app_state.clone())

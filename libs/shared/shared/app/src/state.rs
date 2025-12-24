@@ -11,7 +11,7 @@ use shared_shared_data_cache::cache::Cache;
 
 use crate::event_task::producer::Producer;
 
-pub struct AppState<C, T = ()>
+pub struct AppState<T, C = ()>
 where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
@@ -22,7 +22,7 @@ where
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
 }
 
-impl<C, T> Clone for AppState<C, T>
+impl<T, C> Clone for AppState<T, C>
 where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
@@ -37,7 +37,7 @@ where
     }
 }
 
-impl<C, T> AppState<C, T>
+impl<T, C> AppState<T, C>
 where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,

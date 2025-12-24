@@ -121,8 +121,9 @@ where
 
         match actual_ttl {
             Some(duration) => {
+                let duration_secs = duration.as_secs();
                 let _: () =
-                    conn.set_ex(&full_key, serialized_value, duration.as_secs() as usize)?;
+                    conn.set_ex(&full_key, serialized_value, duration_secs)?;
             }
             None => {
                 let _: () = conn.set(&full_key, serialized_value)?;

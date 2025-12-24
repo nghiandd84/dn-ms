@@ -7,10 +7,10 @@ use axum::{
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::client::{
+use features_auth_model::{client::{
     ClientData, ClientDataFilterParams, ClientDataResponse, ClientForCreateRequest,
     ClientForUpdateRequest,
-};
+}, state::AuthCacheState};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -23,7 +23,7 @@ use shared_shared_data_core::{
 };
 
 use features_auth_repo::client::{ClientMutation, ClientQuery};
-use features_auth_model::state::AuthCacheState;
+use features_auth_model::state::AuthAppState;
 
 const TAG: &str = "client";
 
@@ -37,7 +37,7 @@ const TAG: &str = "client";
     )
 )]
 async fn create_client(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<ClientForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let role_id = ClientMutation::create(&state.conn, register_request.into()).await?;
@@ -61,7 +61,7 @@ async fn create_client(
     )
 )]
 async fn update_client(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(client_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ClientForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +78,7 @@ async fn update_client(
     )
 )]
 async fn delete_client(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(client_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     ClientMutation::delete(&state.conn, client_id).await?;
@@ -94,7 +94,7 @@ async fn delete_client(
     )
 )]
 async fn get_client(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(client_id): Path<Uuid>,
 ) -> Result<ResponseJson<ClientData>> {
     let scope = ClientQuery::get(&state.conn, client_id).await?;
@@ -114,7 +114,7 @@ async fn get_client(
     )
 )]
 async fn filter_clients(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ClientDataFilterParams>,
@@ -128,7 +128,7 @@ async fn filter_clients(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/clients", post(create_client))
         .route("/clients/{client_id}", patch(update_client))

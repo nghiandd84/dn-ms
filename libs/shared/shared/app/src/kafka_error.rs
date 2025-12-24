@@ -81,7 +81,8 @@ where
             let topic_clone = self.topic.clone();
             let key_clone = key;
 
-            tokio::spawn(async move {
+            // Spawn the async block to actually execute it
+            let _handler = tokio::spawn(async move {
                 let record: FutureRecord<String, String> = FutureRecord::to(&topic_clone)
                     .payload(&json_message)
                     .key(&key_clone);
@@ -97,6 +98,7 @@ where
                     }
                 }
             });
+            // handler.abort(); // We don't need to wait for it to finish
         }
     }
 }

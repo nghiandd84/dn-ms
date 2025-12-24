@@ -27,14 +27,14 @@ struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for MyApp<'a> {
+impl<'a> StartApp<Arc<RwLock<NotificationState>>, NotificationCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
 
     fn custom_handler(
         &self,
-        app_state: &mut AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
+        app_state: &mut AppState<Arc<RwLock<NotificationState>>, NotificationCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let notification_state = app_state.state.clone().unwrap();
         let app_key = self.config.app_key.clone();
@@ -52,9 +52,9 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
         );
 
         async move {
-            /*
             let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
             let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
+            /*
             let producer_config = ProducerConfig {
                 kafka_server_env: kafka_server_env.clone(),
                 kafka_topic_env: kafka_topic_env.clone(),
@@ -85,10 +85,10 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
             }
             */
 
-            let dlq_producer = Producer::from_config(ProducerConfig {
-                kafka_server_env: format!("DLQ_KAFKA_BOOTSTRAP_SERVERS"),
-                kafka_topic_env: format!("DLQ_KAFKA_TOPIC"),
-            })
+            let dlq_producer = Producer::from_config(ProducerConfig::from_env(
+                "DLQ_KAFKA_BOOTSTRAP_SERVERS".to_string(),
+                "DLQ_KAFKA_TOPIC".to_string(),
+            ))
             .await;
             tokio::spawn(async move {
                 let res =
@@ -119,7 +119,7 @@ impl<'a> StartApp<NotificationCacheState, Arc<RwLock<NotificationState>>> for My
 
     fn routes(
         &self,
-        app_state: &AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>,
+        app_state: &AppState<Arc<RwLock<NotificationState>>, NotificationCacheState>,
     ) -> Router {
         let all_routes = Router::new()
             .route("/ws", get(ws_handler))

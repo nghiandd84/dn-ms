@@ -20,16 +20,16 @@ use crate::mapper::{main_response_mapper, mw_ctx_resolver};
 use crate::state::AppState;
 use crate::tracing::init_tracing_log;
 
-pub trait StartApp<C, T = ()>
+pub trait StartApp<T, C = ()>
 where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
 {
-    fn routes(&self, app_state: &AppState<C, T>) -> Router;
+    fn routes(&self, app_state: &AppState<T, C>) -> Router;
 
     fn custom_handler(
         &self,
-        _app_state: &mut AppState<C, T>,
+        _app_state: &mut AppState<T, C>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async { Ok(()) }
     }

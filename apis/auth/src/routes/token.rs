@@ -11,7 +11,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use features_auth_model::{
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
     token::{
         TokenData, TokenDataFilterParams, TokenDataResponse, TokenForCreateRequest,
         TokenForVerifyRequest,
@@ -43,7 +43,7 @@ const TAG: &str = "token";
     )
 )]
 async fn create_token(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForCreateRequest>,
 ) -> Result<ResponseJson<AuthorizationCodeData>> {
     debug!("Create token with request: {:?}", request);
@@ -66,7 +66,7 @@ async fn create_token(
     )
 )]
 async fn verify_token(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForVerifyRequest>,
 ) -> Result<ResponseJson<AccessTokenStruct>> {
     debug!("Create token with request: {:?}", request);
@@ -85,7 +85,7 @@ async fn verify_token(
     )
 )]
 async fn get_token(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(token_id): Path<Uuid>,
 ) -> Result<ResponseJson<TokenData>> {
     let token = TokenQuery::get(&state.conn, token_id).await?;
@@ -105,7 +105,7 @@ async fn get_token(
     )
 )]
 async fn filter_tokens(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TokenDataFilterParams>,
@@ -119,7 +119,7 @@ async fn filter_tokens(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/oauth/token", post(create_token))
         .route("/tokens/{token_id}", get(get_token))

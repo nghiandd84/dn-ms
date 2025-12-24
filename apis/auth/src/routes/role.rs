@@ -19,7 +19,7 @@ use shared_shared_data_core::{
 use features_auth_entities::role::RoleForCreateDto;
 use features_auth_model::{
     role::{RoleData, RoleDataFilterParams, RoleDataResponse, RoleForCreateRequest},
-    state::AuthCacheState,
+    state::{AuthAppState, AuthCacheState},
 };
 use features_auth_repo::role::{RoleMutation, RoleQuery};
 
@@ -35,7 +35,7 @@ const TAG: &str = "role";
     )
 )]
 async fn create_role(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<RoleForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: RoleForCreateDto = register_request.into();
@@ -55,7 +55,7 @@ async fn create_role(
     )
 )]
 async fn delete_role(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     RoleMutation::delete(&state.conn, role_id).await?;
@@ -71,7 +71,7 @@ async fn delete_role(
     )
 )]
 async fn get_role(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
 ) -> Result<ResponseJson<RoleData>> {
     let role = RoleQuery::get(&state.conn, role_id).await?;
@@ -91,7 +91,7 @@ async fn get_role(
     )
 )]
 async fn filter_roles(
-    state: State<AppState<AuthCacheState>>,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<RoleDataFilterParams>,
@@ -105,7 +105,7 @@ async fn filter_roles(
     Ok(ResponseJson(result))
 }
 
-pub fn routes(app_state: &AppState<AuthCacheState>) -> Router {
+pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/roles", post(create_role))
         .route("/roles/{role_id}", delete(delete_role))

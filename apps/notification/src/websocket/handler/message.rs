@@ -29,7 +29,7 @@ static NEXT_CLIENT_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::Atomi
 #[axum::debug_handler]
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
-    State(state): State<AppState<NotificationCacheState, Arc<RwLock<NotificationState>>>>,
+    State(state): State<AppState<Arc<RwLock<NotificationState>>, NotificationCacheState>>,
 ) -> impl IntoResponse {
     let notification_state = state.state.unwrap();
     ws.on_upgrade(move |socket| handle_websocket_connection(socket, notification_state))
