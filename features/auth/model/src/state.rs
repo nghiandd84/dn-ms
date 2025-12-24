@@ -4,5 +4,13 @@ use uuid::Uuid;
 #[derive(Clone, Serialize, Deserialize)]
 pub enum AuthCacheState {
     AccessToken(Uuid),
-    RefreshToken(Uuid)
+    RefreshToken(Uuid),
 }
+
+/*
+#[derive(Clone, Serialize, Deserialize)]
+pub enum AuthCacheState {
+    AccessToken(Uuid),
+    RefreshToken(Uuid),
+}
+     */

@@ -1,9 +1,13 @@
 use axum::{extract::State, routing::post, Router};
 
 use features_auth_model::{
-    authentication::{AuthLoginData, AuthLoginDataResponse, AuthLoginRequest, AuthRegisterData, AuthRegisterDataResponse, AuthRegisterRequest, AuthenticationCreateRequest},
+    authentication::{
+        AuthLoginData, AuthLoginDataResponse, AuthLoginRequest, AuthRegisterData,
+        AuthRegisterDataResponse, AuthRegisterRequest, AuthenticationCreateRequest,
+    },
     state::AuthCacheState,
 };
+use features_auth_stream::PRODUCER_KEY;
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -55,7 +59,6 @@ async fn request_login(
     Ok(ResponseJson(login_data))
 }
 
-
 #[utoipa::path(
     post,
     request_body = AuthRegisterRequest,
@@ -69,7 +72,11 @@ async fn request_register(
     State(state): State<AppState<AuthCacheState>>,
     ValidJson(request): ValidJson<AuthRegisterRequest>,
 ) -> Result<ResponseJson<AuthRegisterData>> {
-    let register_data = AuthenticationRequestService::register(&state.conn, request).await?;
+    let producer = state
+        .get_producer(PRODUCER_KEY.to_string())
+        .expect("Producer not found");
+    let register_data =
+        AuthenticationRequestService::register(&state.conn, &producer, request).await?;
     Ok(ResponseJson(register_data))
 }
 

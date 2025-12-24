@@ -15,6 +15,7 @@ serde_json = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
+shared-shared-app = { workspace = true }
 shared-shared-auth = { workspace = true }
 shared-shared-data-app = { workspace = true }
 shared-shared-data-auth = { workspace = true }
@@ -27,3 +28,4 @@ shared-shared-macro-rule = { workspace = true }
 features-auth-entities = { workspace = true }
 features-auth-model = { workspace = true }
 features-auth-repo = { workspace = true }
+features-auth-stream = { workspace = true }

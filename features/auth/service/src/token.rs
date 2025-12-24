@@ -20,9 +20,9 @@ use features_auth_model::{
     state::AuthCacheState,
     token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},
 };
-use shared_shared_data_app::{ result::Result};
-use shared_shared_data_error::app::AppError;
+use shared_shared_data_app::result::Result;
 use shared_shared_data_cache::cache::Cache;
+use shared_shared_data_error::app::AppError;
 
 use features_auth_repo::{
     auth_code::{AuthCodeMutation, AuthCodeQuery},

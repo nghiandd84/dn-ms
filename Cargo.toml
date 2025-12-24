@@ -23,6 +23,7 @@ members = [
     "features/auth/repo", 
     "features/auth/service", 
     "features/auth/remote", 
+    "features/auth/stream", 
 
     "features/notification/model", 
     "features/notification/stream", 
@@ -143,6 +144,7 @@ features-auth-model = { path = "./features/auth/model"}
 features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
 features-auth-remote = { path = "./features/auth/remote"}
+features-auth-stream = { path = "./features/auth/stream"}
 
 # Email Template Feature
 features-email-template-entities = { path = "./features/email-template/entities"}

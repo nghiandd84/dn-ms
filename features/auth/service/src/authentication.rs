@@ -9,10 +9,9 @@ use shared_shared_data_core::{
     paging::Pagination,
 };
 use shared_shared_data_error::{app::AppError, auth::AuthError};
+use shared_shared_app::event_task::producer::Producer;
 
-use features_auth_entities::{
-    authentication::AuthenticationRequestForCreateDto, user::UserForCreateDto,
-};
+use features_auth_entities::authentication::AuthenticationRequestForCreateDto;
 use features_auth_model::{
     auth_code::AuthCodeForCreateRequest,
     authentication::{AuthLoginData, AuthLoginRequest, AuthRegisterData, AuthRegisterRequest},
@@ -24,6 +23,7 @@ use features_auth_repo::{
     role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
+
 
 use crate::RegisterService;
 
@@ -43,7 +43,6 @@ impl AuthenticationRequestService {
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
         let request_code_data = AuthenticationRequestQuery::get(db, state_id).await;
         if request_code_data.is_err() {
-            // return Err("Invalid state".to_string());
             return Err(AppError::EntityNotFound {
                 entity: "request".to_string(),
             });
@@ -80,6 +79,7 @@ impl AuthenticationRequestService {
 
     pub async fn register<'a>(
         db: &'a DbConn,
+        producer: &'a Producer,
         request: AuthRegisterRequest,
     ) -> Result<AuthRegisterData> {
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
@@ -97,7 +97,6 @@ impl AuthenticationRequestService {
             last_name: "".to_string(),
         };
 
-        debug!("Request data for code: {:?}", request_code_data);
         debug!("User data for create: {:?}", create_user_request);
 
         let client_id = request_code_data.client_id.unwrap();
@@ -153,7 +152,7 @@ impl AuthenticationRequestService {
             return Err(AppError::Auth(AuthError::UnknowRole));
         }
 
-        // Notify email verification
+        // TODO Notify user has been created
 
         let redirect_uri = request_code_data.redirect_uri.clone().unwrap_or_default();
         let auth_code_request: AuthCodeForCreateRequest = AuthCodeForCreateRequest {

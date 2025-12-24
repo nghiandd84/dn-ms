@@ -1,6 +1,6 @@
 use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use serde_json::{error, json};
+use serde_json::json;
 use std::sync::Arc;
 use tracing::{
     debug,
@@ -61,7 +61,7 @@ where
             };
             event.record(&mut visitor);
             let message = visitor.message;
-            tracing::error!("Captured error event: {}", message);
+            debug!("Captured error event: {}", message);
 
             let key = metadata.target().to_string();
             let file = metadata.file().unwrap_or("unknown");

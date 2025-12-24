@@ -41,3 +41,4 @@ features-auth-model = { workspace = true }
 features-auth-entities = { workspace = true }
 features-auth-repo = { workspace = true }
 features-auth-service = { workspace = true }
+features-auth-stream = { workspace = true }

@@ -3,11 +3,17 @@ use tracing::debug;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use shared_shared_app::{config::AppConfig, start_app::StartApp, state::AppState};
+use shared_shared_app::{
+    config::AppConfig,
+    event_task::producer::{Producer, ProducerConfig},
+    start_app::StartApp,
+    state::AppState,
+};
 use shared_shared_config::db::Database;
 
 use features_auth_migrations::{Migrator, MigratorTrait};
 use features_auth_model::state::AuthCacheState;
+use features_auth_stream::PRODUCER_KEY;
 
 use crate::{
     doc::ApiDoc,
@@ -27,6 +33,26 @@ struct MyApp<'a> {
 impl<'a> StartApp<AuthCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
+    }
+
+    fn custom_handler(
+        &self,
+        app_state: &mut AppState<AuthCacheState>,
+    ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        async move {
+            let app_key = self.config.app_key.clone();
+
+            let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
+            let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
+
+            let producer_config =
+                ProducerConfig::from_env(kafka_server_env.clone(), kafka_topic_env.clone());
+            debug!("Creating Kafka producer with config {:?}", producer_config);
+            let producer = Producer::from_config(producer_config).await;
+            app_state.set_producer(PRODUCER_KEY.to_string(), producer);
+
+            Ok(())
+        }
     }
 
     fn migrate(

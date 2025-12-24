@@ -1,10 +1,13 @@
 use futures_util::StreamExt;
+use opentelemetry::global;
+use opentelemetry::propagation::Extractor;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
-use rdkafka::message::Message;
+use rdkafka::message::{Headers, Message, OwnedHeaders};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use tracing::{debug, error};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::event_task::producer::{Producer, ProducerMessage};
 
@@ -17,17 +20,9 @@ pub struct ConsumerConfig {
 impl ConsumerConfig {
     pub fn from_env(server_env: String, topic_env: String, group: String) -> Self {
         let bootstrap_servers = std::env::var(&server_env)
-            .map_err(|_| format!("${server_env} not set").into())
-            .unwrap_or_else(|e: String| {
-                error!("{}", e);
-                "localhost:9092".to_string()
-            });
+            .expect(format!("consumer kafka server variable ${} not set", server_env).as_str());
         let consumer_topic = std::env::var(&topic_env)
-            .map_err(|_| format!("${topic_env} not set").into())
-            .unwrap_or_else(|e: String| {
-                error!("{}", e);
-                "notification_topic".to_string()
-            });
+            .expect(format!("consumer kafka topic variable ${} not set", topic_env).as_str());
 
         Self {
             server: bootstrap_servers,
@@ -76,6 +71,26 @@ where
         debug!("Received message from Kafka");
         match message {
             Ok(borrow_message) => {
+                let headers = borrow_message.headers();
+                let owned_headers: Option<OwnedHeaders> = headers.map(|h| h.detach());
+
+                match owned_headers {
+                    Some(ref owned_headers) => {
+                        debug!("Message headers: {:?}", owned_headers);
+                        // Extract context
+                        let parent_cx = global::get_text_map_propagator(|propagator| {
+                            propagator.extract(&KafkaHeaderExtractor(owned_headers))
+                        });
+                        // Create a new span that links to the extracted parent context
+                        let span = tracing::info_span!("process_kafka_message");
+                        let _result = span.set_parent(parent_cx);
+                        let _enter = span.enter();
+                    }
+                    None => {
+                        debug!("No headers found in message");
+                    }
+                }
+
                 let origin_message = match borrow_message.payload_view::<str>() {
                     Some(Ok(s)) => s,
                     Some(Err(e)) => {
@@ -160,4 +175,20 @@ fn create_dlq_payload(
     };
 
     Ok(report)
+}
+
+struct KafkaHeaderExtractor<'a>(&'a OwnedHeaders);
+
+impl<'a> Extractor for KafkaHeaderExtractor<'a> {
+    fn get(&self, key: &str) -> Option<&str> {
+        for header in self.0.iter() {
+            if header.key == key {
+                return header.value.and_then(|v| std::str::from_utf8(v).ok());
+            }
+        }
+        None
+    }
+    fn keys(&self) -> Vec<&str> {
+        self.0.iter().map(|h| h.key).collect()
+    }
 }

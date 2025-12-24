@@ -2,6 +2,7 @@ use rdkafka::{producer::FutureProducer, util::Timeout, ClientConfig};
 use serde::Serialize;
 use tracing::{debug, error, instrument};
 
+#[derive(Clone, Debug)]
 pub struct ProducerConfig {
     pub kafka_server_env: String,
     pub kafka_topic_env: String,
@@ -21,6 +22,18 @@ impl ProducerConfig {
         Self {
             kafka_server_env: kafka_server_env.to_string(),
             kafka_topic_env: kafka_topic_env.to_string(),
+        }
+    }
+    pub fn from_env(server_env: String, topic_env: String) -> Self {
+        let bootstrap_servers = std::env::var(&server_env)
+            .expect(format!("producer kafka server variable ${} not set", server_env).as_str());
+
+        let consumer_topic = std::env::var(&topic_env)
+            .expect(format!("producer kafka topic variable ${} not set", topic_env).as_str());
+
+        Self {
+            kafka_server_env: bootstrap_servers,
+            kafka_topic_env: consumer_topic,
         }
     }
 }
@@ -111,23 +124,9 @@ impl Producer {
     ) -> impl std::future::Future<Output = Result<(FutureProducer, String), Box<dyn std::error::Error>>>
     {
         async move {
-            let kafka_bootstrap_servers = std::env::var(&config.kafka_server_env)
-                .map_err(|_| format!("${} not set", config.kafka_server_env).into())
-                .unwrap_or_else(|e: String| {
-                    error!("{}", e);
-                    "localhost:9092".to_string()
-                });
-            let kafka_topic = std::env::var(&config.kafka_topic_env)
-                .map_err(|_| format!("${} not set", config.kafka_topic_env).into())
-                .unwrap_or_else(|e: String| {
-                    error!("{}", e);
-                    "notification_topic".to_string()
-                });
+            let kafka_bootstrap_servers = config.kafka_server_env;
 
-            debug!(
-                "Kafka bootstrap servers: {}, topic: {}",
-                kafka_bootstrap_servers, kafka_topic
-            );
+            let kafka_topic = config.kafka_topic_env;
 
             let producer: FutureProducer = ClientConfig::new()
                 .set("bootstrap.servers", &kafka_bootstrap_servers)
@@ -143,6 +142,11 @@ impl Producer {
                 .set("acks", "all") // Strongest durability guarantee
                 .create()
                 .expect("Producer creation error");
+
+            debug!(
+                "Connect to kafka at servers: {} - topic: {}",
+                kafka_bootstrap_servers, kafka_topic
+            );
 
             Ok((producer, kafka_topic))
         }
