@@ -1,7 +1,9 @@
+use features_auth_stream::signup::SignUpMessage;
 use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
+use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
@@ -9,7 +11,6 @@ use shared_shared_data_core::{
     paging::Pagination,
 };
 use shared_shared_data_error::{app::AppError, auth::AuthError};
-use shared_shared_app::event_task::producer::Producer;
 
 use features_auth_entities::authentication::AuthenticationRequestForCreateDto;
 use features_auth_model::{
@@ -23,7 +24,6 @@ use features_auth_repo::{
     role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
-
 
 use crate::RegisterService;
 
@@ -82,6 +82,7 @@ impl AuthenticationRequestService {
         producer: &'a Producer,
         request: AuthRegisterRequest,
     ) -> Result<AuthRegisterData> {
+        let email = request.email.clone().unwrap();
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
         let request_code_data = AuthenticationRequestQuery::get(db, state_id).await;
         if request_code_data.is_err() {
@@ -147,12 +148,21 @@ impl AuthenticationRequestService {
         if assign_role_result.is_err() {
             let error = assign_role_result.err().unwrap();
             debug!("Error assigning role to user: {:?}", error);
-            // Rollback user creation?
             UserMutation::delete_user(db, user_id).await.ok();
             return Err(AppError::Auth(AuthError::UnknowRole));
         }
-
-        // TODO Notify user has been created
+        let signup_successful_message = SignUpMessage::Success {
+            user_id,
+            email: email.clone(),
+        };
+        let message = ProducerMessage {
+            payload: serde_json::to_string(&signup_successful_message).unwrap(),
+            key: None,
+        };
+        producer.send(&message).await.map_err(|e| {
+            debug!("Error sending signup message to Kafka: {:?}", e.reason);
+            AppError::Unknown
+        })?;
 
         let redirect_uri = request_code_data.redirect_uri.clone().unwrap_or_default();
         let auth_code_request: AuthCodeForCreateRequest = AuthCodeForCreateRequest {

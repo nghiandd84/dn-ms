@@ -1,4 +1,5 @@
 use sea_orm::DbConn;
+use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use tracing::debug;
 use uuid::Uuid;
 
@@ -13,7 +14,7 @@ pub struct RegisterService {}
 impl RegisterService {
     pub async fn register<'a>(
         db: &'a DbConn,
-        register_request: UserForCreateRequest,
+        register_request: UserForCreateRequest
     ) -> Result<Uuid, AuthError> {
         let dto: UserForCreateDto = register_request.into();
         let user_id = UserMutation::create_user(db, dto).await;
@@ -24,6 +25,20 @@ impl RegisterService {
                 return Err(AuthError::ExistingUser);
             }
         };
+        let message = ProducerMessage {
+            payload: serde_json::to_string(&id).unwrap(),
+            key: None,
+        };
+        // producer.send(message)
+        //     .send_message(
+        //         "auth_user_registered",
+        //         serde_json::to_string(&id).unwrap(),
+        //     )
+        //     .await
+        //     .map_err(|e| {
+        //         debug!("Error sending message to Kafka: {:?}", e);
+        //         AuthError::UnknownProducer
+        //     })?;
 
         Ok(id)
     }

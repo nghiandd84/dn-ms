@@ -52,9 +52,9 @@ impl<'a> StartApp<Arc<RwLock<NotificationState>>, NotificationCacheState> for My
         );
 
         async move {
+            /*
             let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
             let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
-            /*
             let producer_config = ProducerConfig {
                 kafka_server_env: kafka_server_env.clone(),
                 kafka_topic_env: kafka_topic_env.clone(),
