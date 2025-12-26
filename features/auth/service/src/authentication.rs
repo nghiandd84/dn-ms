@@ -1,4 +1,4 @@
-use features_auth_stream::signup::SignUpMessage;
+use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
@@ -26,6 +26,7 @@ use features_auth_repo::{
 };
 
 use crate::RegisterService;
+use rand::{thread_rng, Rng};
 
 pub struct AuthenticationRequestService {}
 
@@ -142,6 +143,16 @@ impl AuthenticationRequestService {
         }
         let user_id = user_id.unwrap();
 
+        // Generate a 6-digit numeric active code
+        let active_code: String = thread_rng()
+            .sample_iter(&rand::distributions::Uniform::from(0..10))
+            .take(6)
+            .map(|n| n.to_string())
+            .collect();
+
+        debug!("Generated active code: {}", active_code);
+        // You can now use `active_code` as needed, e.g., save to DB or send via email
+
         // Asign default role to user
         let assign_role_result =
             RegisterService::assgin_user_to_role(db, user_id, default_role.get_id().unwrap()).await;
@@ -151,12 +162,15 @@ impl AuthenticationRequestService {
             UserMutation::delete_user(db, user_id).await.ok();
             return Err(AppError::Auth(AuthError::UnknowRole));
         }
-        let signup_successful_message = SignUpMessage::Success {
-            user_id,
-            email: email.clone(),
+        let auth_message = AuthMessage::SignUp {
+            message: SignUpMessage::Success {
+                user_id,
+                email: email.clone(),
+                active_code,
+            },
         };
         let message = ProducerMessage {
-            payload: serde_json::to_string(&signup_successful_message).unwrap(),
+            payload: serde_json::to_string(&auth_message).unwrap(),
             key: None,
         };
         producer.send(&message).await.map_err(|e| {

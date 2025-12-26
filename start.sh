@@ -12,11 +12,14 @@ RUST_LOG_DIRECTORY=/home/nghiandd/Training/dn-ms/logs
 CURRENT_DATE=$(date +%Y%m%d)
 
 export AUTH_PORT=5101
+export AUTH_NOTIFICATION_PORT=5111
 export BAKERY_PORT=5201
 export EMAIL_TEMPLATE_PORT=5301
 export NOTIFICATION_PORT=5401
-
 export NOTIFICATION_APP_PORT=4001
+export GATEWAY_PORT=6000
+# export GATEWAY_PORT=6001
+# export GATEWAY_PORT=6002
 
 echo "Kill current instances"
 
@@ -24,6 +27,12 @@ echo "Kill current instances"
 for i in {1..2}; do 
     fuser -k -15 510$i/tcp 
 done
+
+# Kill Auth Notification port
+for i in {1..2}; do 
+    fuser -k -15 511$i/tcp 
+done
+
 
 # Kill Bakery port
 for i in {1..2}; do 
@@ -46,6 +55,11 @@ for i in {1..2}; do
     fuser -k -15 400$i/tcp 
 done
 
+# Kill Gateway App
+for i in {0..2}; do 
+    fuser -k -15 600$i/tcp 
+done
+
 echo "Sucess kill all instances"
 
 rm -v -rf $RUST_LOG_DIRECTORY/*
@@ -62,6 +76,16 @@ for i in {1..2}; do
     echo "--- Auth on port $PORT ---"
     # Execute the program
     AUTH_PORT=510$i $APP_DIRECTORY/api-auth  &
+done
+sleep 1s
+
+
+echo "------------ Start Auth notification ------------"
+for i in {1..2}; do
+    PORT=511$i
+    echo "--- Auth Notification on port $PORT ---"
+    # Execute the program
+    AUTH_NOTIFICATION_PORT=511$i $APP_DIRECTORY/auth-notification  &
 done
 sleep 1s
 
@@ -101,6 +125,15 @@ for i in {1..2}; do
     # Execute the program
     NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification  &
 done
+sleep 1s
+
+
+echo "------------ Start Gateway App ------------"
+echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
+# Execute the program
+$APP_DIRECTORY/app-gateway  &
+
+
 sleep 1s
 
 

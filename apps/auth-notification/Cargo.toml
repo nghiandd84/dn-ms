@@ -1,0 +1,29 @@
+
+[package]
+name = "auth-notification"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+axum = { workspace = true, features = ["ws"] }
+config = { workspace = true }
+dotenv = { workspace = true }
+futures-util = { workspace = true }
+reqwest = {  workspace = true }
+rs-consul = { workspace = true }
+serde = {  workspace = true , features = ["derive"] }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true}
+uuid = { workspace = true }
+
+shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
+
+features-auth-remote = { workspace = true }
+features-auth-model = { workspace = true }
+features-auth-stream = { workspace = true }

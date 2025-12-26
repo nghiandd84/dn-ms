@@ -1,7 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Clone)]
-#[serde(tag = "message_type", rename_all = "snake_case")]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "signin_type", rename_all = "snake_case")]
 pub enum SignInMessage {
     Request {
         user_id: String,

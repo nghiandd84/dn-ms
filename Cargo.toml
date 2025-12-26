@@ -44,6 +44,7 @@ members = [
     "apis/bakery", 
     "apis/email-template",
     "apis/notification",
+    "apps/auth-notification",
     "apps/auth-web",
     "apps/gateway", 
     "apps/notification"

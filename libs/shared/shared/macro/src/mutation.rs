@@ -32,6 +32,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
     let create_quote = match key_type_str.as_str() {
         "Uuid" => {
             quote! {
+                #[tracing::instrument(skip(db))]
                 async fn create_uuid(db: &DbConn, model: Model) -> Result<Uuid, DbErr> {
                     let mut active_model: ActiveModel = model.into();
                     active_model.not_set(Column::Id);
@@ -49,7 +50,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             async fn create_uuid(db: &DbConn, model: Model) -> Result<Uuid, DbErr> {
                 unimplemented!("Not implemented")
             }
-
+            #[tracing::instrument(skip(db))]
             async fn create_i32(db: &DbConn, model: Model) -> Result<i32, DbErr> {
                 let mut active_model: ActiveModel = model.into();
                 active_model.not_set(Column::Id);
@@ -64,6 +65,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
     let upate_quote = match key_type_str.as_str() {
         "Uuid" => {
             quote! {
+                #[tracing::instrument(skip(db))]
                 async fn update_by_id_uuid(
                     db: &DbConn,
                     id: Uuid,
@@ -97,7 +99,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             ) -> Result<bool, DbErr> {
                 unimplemented!("Not implemented")
             }
-
+            #[tracing::instrument(skip(db))]
             async fn update_by_id_i32(
                 db: &DbConn,
                 id: i32,
@@ -119,6 +121,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
     let delete_quote = match key_type_str.as_str() {
         "Uuid" => {
             quote! {
+                #[tracing::instrument(skip(db))]
                 async fn delete_by_id_uuid(db: &DbConn, id: Uuid) -> Result<bool, DbErr> {
                     let model: ActiveModel = Entity::find_by_id(id)
                         .one(db)
@@ -140,7 +143,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             async fn delete_by_id_uuid(db: &DbConn, id: Uuid) -> Result<bool, DbErr> {
                 unimplemented!("Not implemented")
             }
-
+            #[tracing::instrument(skip(db))]
             async fn delete_by_id_i32(db: &DbConn, id: i32) -> Result<bool, DbErr> {
                 let model: ActiveModel = Entity::find_by_id(id)
                     .one(db)

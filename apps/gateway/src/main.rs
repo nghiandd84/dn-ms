@@ -19,7 +19,6 @@ use shared_shared_app::tracing::init_tracing_log;
 
 #[async_std::main]
 async fn main() {
-    // Load .env file
     dotenv().ok();
     let service_key = "GATEWAY".to_string();
     let (_log_provider, _trace_provider) =

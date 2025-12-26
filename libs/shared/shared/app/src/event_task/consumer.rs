@@ -103,6 +103,7 @@ where
                     }
                 };
 
+                debug!("Received Kafka event: {:?}", origin_message);
                 let message: M = match serde_json::from_str(origin_message) {
                     Ok(event) => event,
                     Err(e) => {
@@ -110,7 +111,7 @@ where
                         continue;
                     }
                 };
-                debug!("Received Kafka event: {:?}", origin_message);
+                debug!("Deserialized message: {:?}", message);
                 let handler = handler.clone();
                 let handler_state = state.clone();
                 let handler_origin_message = origin_message.to_string();

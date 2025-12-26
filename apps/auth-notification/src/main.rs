@@ -2,7 +2,6 @@ use crate::app::start_app;
 
 mod app;
 mod consumer;
-mod websocket;
 
 #[tokio::main]
 async fn main() {

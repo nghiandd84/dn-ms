@@ -1,0 +1,8 @@
+### Variables
+@baseUrl = http://localhost:6101
+@userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
+
+
+# Test Notification to user
+GET {{baseUrl}}/users/{{userId}}
+Content-Type: application/json

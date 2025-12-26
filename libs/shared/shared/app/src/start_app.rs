@@ -136,6 +136,7 @@ where
 
             self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");
+            println!("Binding to address: {}", addr);
             let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
             debug!("Listener created");
             axum::serve(listener, routes_all.into_make_service())

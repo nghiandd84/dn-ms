@@ -54,6 +54,7 @@ impl ActiveModelBehavior for ActiveModel {
         if insert {
             self.is_active = ActiveValue::Set(false);
             self.created_at = ActiveValue::Set(current_time);
+            self.is_active = ActiveValue::Set(false);
         }
         Ok(self)
     }
