@@ -1,6 +1,6 @@
 use rdkafka::{producer::FutureProducer, util::Timeout, ClientConfig};
 use serde::Serialize;
-use tracing::{debug, error, instrument};
+use tracing::{debug, instrument};
 
 #[derive(Clone, Debug)]
 pub struct ProducerConfig {
@@ -92,9 +92,9 @@ impl Producer {
         let payload_str = serde_json::to_string(&message.payload).map_err(|e| ProducerError {
             reason: format!("Serialization error: {}", e),
         })?;
+        let payload_as_bytes = payload_str.as_bytes();
         let current_span = tracing::Span::current();
         let topic = self.topic.clone();
-        debug!("Sending Kafka message: {} via topic {}", payload_str, topic);
         current_span.record("message", &payload_str.as_str());
         current_span.record("topic", topic.as_str());
         let context = current_span.context();
@@ -106,8 +106,9 @@ impl Producer {
         });
 
         let key = message.key.clone().unwrap_or_default();
+        debug!("Kafka message {} headers: {:?}", payload_str, headers);
         let record = rdkafka::producer::FutureRecord::to(&self.topic)
-            .payload(&payload_str)
+            .payload(payload_as_bytes)
             .headers(headers)
             .key(&key);
 

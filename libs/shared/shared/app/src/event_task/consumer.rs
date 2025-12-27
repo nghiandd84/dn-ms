@@ -102,9 +102,9 @@ where
                         continue;
                     }
                 };
-
-                debug!("Received Kafka event: {:?}", origin_message);
-                let message: M = match serde_json::from_str(origin_message) {
+                // let clean_json: String = serde_json::from_str(origin_message).unwrap();
+                // debug!("Received Kafka event: {:?}", clean_json);
+                let message: M = match serde_json::from_str(&origin_message) {
                     Ok(event) => event,
                     Err(e) => {
                         error!("Failed to deserialize message: {}", e);

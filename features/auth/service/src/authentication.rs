@@ -170,7 +170,7 @@ impl AuthenticationRequestService {
             },
         };
         let message = ProducerMessage {
-            payload: serde_json::to_string(&auth_message).unwrap(),
+            payload: auth_message,
             key: None,
         };
         producer.send(&message).await.map_err(|e| {
