@@ -1,9 +1,9 @@
 
 ### Variables
-@baseUrl = http://localhost:5101
-# @baseUrl = http://localhost:6101
+# @baseUrl = http://localhost:5101
+@baseUrl = http://localhost:6101
 @userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
-@clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
+@clientId = 5ed8e536-12ae-463d-ae9b-8c78cc5481e1
 # @authCode = 
 @AccessToken = 
 @RefreshToken = 
@@ -138,8 +138,9 @@ POST {{baseUrl}}/roles
 Content-Type: application/json
 
 {
-  "description": "Bakery Guest",
-  "name": "BAKE_GUEST"
+  "client_id": "{{clientId}}",
+  "description": "DNAPP Guest",
+  "name": "DNAPP_GUEST"
 }
 
 ### Get All Roles
@@ -153,6 +154,24 @@ Content-Type: application/json
 
 
 ### --------- CLIENT
+
+### Get Client
+POST {{baseUrl}}/clients
+Content-Type: application/json
+
+{
+  "allowed_grants": [
+    "email",
+    "profile"
+  ],
+  "client_secret": "DN-MS-Test-Secret-Code",
+  "client_key": "DNAPP",
+  "description": "DN App Description",
+  "name": "DN App",
+  "redirect_uris": [
+    "http://localhost:80801"
+  ]
+}
 
 ### Get Client
 GET {{baseUrl}}/clients/{{clientId}}

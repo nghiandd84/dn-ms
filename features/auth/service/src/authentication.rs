@@ -12,15 +12,19 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::{app::AppError, auth::AuthError};
 
-use features_auth_entities::authentication::AuthenticationRequestForCreateDto;
+use features_auth_entities::{
+    active_code::ActiveCodeForCreateDto, authentication::AuthenticationRequestForCreateDto,
+};
 use features_auth_model::{
     auth_code::AuthCodeForCreateRequest,
     authentication::{AuthLoginData, AuthLoginRequest, AuthRegisterData, AuthRegisterRequest},
     user::UserForCreateRequest,
 };
 use features_auth_repo::{
+    active_code::mutation::ActiveCodeMutation,
     auth_code::{AuthCodeMutation, AuthCodeQuery},
     authentication::{AuthenticationRequestMutation, AuthenticationRequestQuery},
+    client::ClientQuery,
     role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
@@ -102,6 +106,17 @@ impl AuthenticationRequestService {
         debug!("User data for create: {:?}", create_user_request);
 
         let client_id = request_code_data.client_id.unwrap();
+        let client = ClientQuery::get(db, client_id).await;
+        if client.is_err() {
+            debug!("Client not found for client_id {}", client_id);
+            return Err(AppError::EntityNotFound {
+                entity: "client".to_string(),
+            });
+        }
+        let client_data = client.unwrap();
+        debug!("Client data: {:?}", client_data);
+        let client_key = client_data.client_key.clone();
+
         let filters = vec![
             FilterEnum::Bool(FilterParam {
                 name: "is_default".to_string(),
@@ -151,7 +166,14 @@ impl AuthenticationRequestService {
             .collect();
 
         debug!("Generated active code: {}", active_code);
-        // You can now use `active_code` as needed, e.g., save to DB or send via email
+        let active_code_dto = ActiveCodeForCreateDto {
+            user_id: user_id,
+            code: active_code.clone(),
+        };
+        let active_code_result = ActiveCodeMutation::create(db, active_code_dto).await;
+        if active_code_result.is_err() {
+            debug!("Error creating active code for email : {:?}", email);
+        }
 
         // Asign default role to user
         let assign_role_result =
@@ -166,6 +188,7 @@ impl AuthenticationRequestService {
             message: SignUpMessage::Success {
                 user_id,
                 email: email.clone(),
+                app_key: client_key.unwrap_or_default(),
                 active_code,
             },
         };

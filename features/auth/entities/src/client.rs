@@ -9,11 +9,25 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "clients")]
 #[dto(
     name(ClientForCreate),
-    columns(client_secret, name, description, redirect_uris, allowed_grants)
+    columns(
+        client_secret,
+        client_key,
+        name,
+        description,
+        redirect_uris,
+        allowed_grants
+    )
 )]
 #[dto(
     name(ClientForUpdate),
-    columns(client_secret, name, description, redirect_uris, allowed_grants),
+    columns(
+        client_secret,
+        client_key,
+        name,
+        description,
+        redirect_uris,
+        allowed_grants
+    ),
     option
 )]
 pub struct Model {
@@ -23,6 +37,8 @@ pub struct Model {
     pub client_secret: String,
     #[sea_orm(column_type = "String(StringLen::N(250))")]
     pub name: String,
+    #[sea_orm(column_type = "String(StringLen::N(250))")]
+    pub client_key: String,
     #[sea_orm(column_type = "String(StringLen::N(250))", nullable)]
     pub description: String,
     #[sea_orm(column_type = "String(StringLen::N(512))", array)]

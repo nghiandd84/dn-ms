@@ -1,5 +1,6 @@
 pub mod auth_code;
 pub mod access;
+pub mod active_code;
 pub mod client;
 pub mod role;
 pub mod scope;

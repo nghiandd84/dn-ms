@@ -10,6 +10,7 @@ mod m20251031_create_authentication_requests;
 mod m20251127_add_client_id_into_role;
 mod m20251127_add_created_at_updated_at_to_access;
 mod m20251225_add_active_code_table;
+mod m20251227_add_user_id_to_active_code_table_and_client_key_to_client_table;
 
 pub struct Migrator;
 
@@ -27,6 +28,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20251127_add_client_id_into_role::Migration),
             Box::new(m20251127_add_created_at_updated_at_to_access::Migration),
             Box::new(m20251225_add_active_code_table::Migration),
+            Box::new(m20251227_add_user_id_to_active_code_table_and_client_key_to_client_table::Migration),
         ]
     }
 }

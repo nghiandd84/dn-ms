@@ -7,12 +7,14 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "active_codes")]
-#[dto(name(ActiveCodeForCreate), columns(code, expiration_time))]
+#[dto(name(ActiveCodeForCreate), columns(code, user_id))]
 #[dto(name(ActiveCodeForUpdate), columns(is_used), option)]
 
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
+    #[sea_orm(column_type = "Uuid")]
+    pub user_id: Uuid,
     #[sea_orm(column_type = "String(StringLen::N(250))", unique)]
     pub code: String,
     pub is_used: bool,
@@ -35,6 +37,7 @@ impl ActiveModelBehavior for ActiveModel {
         if insert {
             self.created_at = ActiveValue::Set(current_time);
             self.is_used = ActiveValue::Set(false);
+            self.expiration_time = ActiveValue::Set(current_time + chrono::Duration::minutes(10));
         }
         Ok(self)
     }

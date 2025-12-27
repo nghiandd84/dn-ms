@@ -7,6 +7,7 @@ pub enum SignUpMessage {
     Success {
         user_id: Uuid,
         email: String,
+        app_key: String,
         active_code: String,
     },
 }

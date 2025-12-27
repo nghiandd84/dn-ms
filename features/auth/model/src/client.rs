@@ -25,6 +25,13 @@ pub struct ClientForCreateRequest {
     #[validate(length(
         min = 0,
         max = 512,
+        code = "client_key",
+        message = "the length of client_key must be between 0 and 512"
+    ))]
+    pub client_key: Option<String>,
+    #[validate(length(
+        min = 0,
+        max = 512,
         code = "description",
         message = "the length of description must be between 0 and 512"
     ))]
@@ -38,6 +45,7 @@ impl Into<ClientForCreateDto> for ClientForCreateRequest {
         ClientForCreateDto {
             name: self.name,
             description: self.description.unwrap_or_default(),
+            client_key: self.client_key.unwrap_or_default(),
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
             client_secret: self.client_secret,
@@ -64,6 +72,13 @@ pub struct ClientForUpdateRequest {
     #[validate(length(
         min = 0,
         max = 512,
+        code = "client_key",
+        message = "the length of client_key must be between 0 and 512"
+    ))]
+    pub client_key: Option<String>,
+    #[validate(length(
+        min = 0,
+        max = 512,
         code = "description",
         message = "the length of description must be between 0 and 512"
     ))]
@@ -78,6 +93,7 @@ impl Into<ClientForUpdateDto> for ClientForUpdateRequest {
             description: self.description,
             name: self.name,
             client_secret: self.client_secret,
+            client_key: self.client_key,
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
         }
@@ -92,6 +108,7 @@ use shared_shared_data_core::{
 pub struct ClientData {
     pub client_secret: Option<String>,
     pub allowed_grants: Option<VecString>,
+    pub client_key: Option<String>,
     id: Option<Uuid>,
     name: Option<String>,
     description: Option<String>,
@@ -105,6 +122,7 @@ impl Into<ClientData> for ModelOptionDto {
             description: self.description,
             id: self.id,
             client_secret: self.client_secret,
+            client_key: self.client_key,
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
             ..Default::default()
