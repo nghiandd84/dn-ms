@@ -9,7 +9,6 @@ use std::env;
 use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
-use tracing_subscriber::field::debug;
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;

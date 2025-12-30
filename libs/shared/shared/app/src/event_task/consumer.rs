@@ -1,10 +1,12 @@
 use futures_util::StreamExt;
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
+use opentelemetry::trace::TraceContextExt;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::{Headers, Message, OwnedHeaders};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::future::Future;
 use tracing::{debug, error};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
@@ -42,7 +44,7 @@ pub async fn consumer_task<M, S, F, Fut>(
 where
     M: for<'de> Deserialize<'de> + std::fmt::Debug + Send + 'static,
     S: Clone + Send + 'static,
-    F: Fn(M, S) -> Fut + Send + Sync + 'static,
+    F: Fn(M, S, Option<HashMap<String, String>>) -> Fut + Send + Sync + 'static,
     Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send + 'static,
 {
     let bootstrap_server = config.server;
@@ -71,10 +73,10 @@ where
         debug!("Received message from Kafka");
         match message {
             Ok(borrow_message) => {
+                // 1. Extract tracing context from message headers
                 let headers = borrow_message.headers();
                 let owned_headers: Option<OwnedHeaders> = headers.map(|h| h.detach());
-
-                match owned_headers {
+                let trace_span = match owned_headers {
                     Some(ref owned_headers) => {
                         debug!("Message headers: {:?}", owned_headers);
                         // Extract context
@@ -84,13 +86,20 @@ where
                         // Create a new span that links to the extracted parent context
                         let span = tracing::info_span!("process_kafka_message");
                         let _result = span.set_parent(parent_cx);
-                        let _enter = span.enter();
-                        
+                        span
                     }
                     None => {
                         debug!("No headers found in message");
+                        tracing::info_span!("process_kafka_message_no_headers")
                     }
-                }
+                };
+                let _enter = trace_span.enter();
+                let trace_id = trace_span.context().span().span_context().trace_id();
+                let span_id = trace_span.context().span().span_context().span_id();
+                debug!("Processing message with trace id {} and tracing span_id {}", trace_id, span_id);
+
+                // TODO set up headers hashmap to pass to handler
+                let mut headers: HashMap<String, String> = HashMap::new();
 
                 let origin_message = match borrow_message.payload_view::<str>() {
                     Some(Ok(s)) => s,
@@ -119,7 +128,7 @@ where
                 let handler_producer = dlq_producer.clone();
                 let dlq_key_clone = dlq_key.clone();
                 tokio::spawn(async move {
-                    let result = (handler)(message, handler_state).await;
+                    let result = (handler)(message, handler_state, Some(headers)).await;
                     match result {
                         Ok(_) => {
                             debug!("Event handled successfully");

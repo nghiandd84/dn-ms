@@ -1,5 +1,5 @@
 use axum::extract::ws::Message;
-use std::sync::{Arc, RwLock};
+use std::{collections::HashMap, sync::{Arc, RwLock}};
 use tracing::{debug, error};
 
 use features_notification_model::state::NotificationState;
@@ -10,6 +10,7 @@ use crate::consumer::error::ConsumerError;
 pub async fn handle_consumer_message(
     message: NotificationMessage,
     notification_state: Arc<RwLock<NotificationState>>,
+    headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let result = match message {
         NotificationMessage::Notification { user_id, message } => {

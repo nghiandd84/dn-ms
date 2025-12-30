@@ -154,11 +154,8 @@ impl Producer {
     }
 }
 
-use opentelemetry::{
-    global,
-    propagation::{Extractor, Injector},
-};
-use rdkafka::message::{Header, Headers, OwnedHeaders};
+use opentelemetry::{global, propagation::Injector};
+use rdkafka::message::{Header, OwnedHeaders};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 struct KafkaHeaderPropagator<'a>(&'a mut OwnedHeaders);

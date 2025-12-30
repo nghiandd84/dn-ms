@@ -10,19 +10,16 @@ name = "features_email_template_remote"
 path = "src/lib.rs"
 
 [dependencies]
-sea-orm = { workspace = true, features = ["with-json"] }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true, features = ["json"] }
+reqwest-retry = { workspace = true }
+reqwest-tracing = { workspace = true, features = ["opentelemetry_0_30"] }
+rs-consul = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
-reqwest = { workspace = true }
-rs-consul = { workspace = true }
 
-shared-shared-auth = { workspace = true }
-shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
-shared-shared-data-auth = { workspace = true }
-shared-shared-data-cache = { workspace = true }
 shared-shared-macro = { workspace = true }
-shared-shared-macro-rule = { workspace = true }
 
 features-email-template-model = { workspace = true }

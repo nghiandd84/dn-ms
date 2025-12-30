@@ -31,7 +31,17 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
     }
     let remote_name_ident = syn::Ident::new(&remote_name, name.span());
     let gen = quote! {
-        static IP_PORTS: LazyLock<Mutex<shared_shared_data_core::roundrobin::RoundRobin<(String, u16)>>> = LazyLock::new(|| Mutex::new(shared_shared_data_core::roundrobin::RoundRobin::new(vec![])));
+        use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
+        use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+        use reqwest_tracing::TracingMiddleware;
+        use rs_consul::Consul;
+        use std::sync::{LazyLock, Mutex};
+        use tracing::{debug, error};
+        use std::collections::HashMap;
+
+        use shared_shared_data_core::roundrobin::RoundRobin;
+
+        static IP_PORTS: LazyLock<Mutex<RoundRobin<(String, u16)>>> = LazyLock::new(|| Mutex::new(RoundRobin::new(vec![])));
         impl #name {
             fn service_name() -> &'static str {
                 stringify!(#remote_name_ident)
@@ -57,30 +67,39 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 }
             }
 
-            #[tracing::instrument(skip(json_body, headers_hashmap))]
             async fn call_api(
                 endpoint: String,
-                method: reqwest::Method,
+                method: Method,
                 json_body: serde_json::Value,
-                headers_hashmap: std::collections::HashMap<String, String>,
+                headers_hashmap: HashMap<String, String>,
             ) -> Result<serde_json::Value, String>
             {
-                let client = reqwest::Client::new();
+                debug!("Calling API: {} with method {}", endpoint, method);
+                
+                let client: ClientWithMiddleware = ClientBuilder::new(Client::new())
+                    .with(TracingMiddleware::default())
+                    .build();
+                
+                debug!("Client built successfully");
+                // Get current span
+                let current_span = tracing::Span::current();
+                debug!("Current span: {:?}", current_span);
 
-                let (ip, port) = Self::get_instance().unwrap();
+                let (ip, port) = Self::get_instance().expect("No available service instances");
                 let http_protocol = Self::http_protocol();
                 let url = format!("{http_protocol}://{ip}:{port}{endpoint}");
+                debug!("Constructed URL: {}", url);
 
                 let res = match method {
-                    reqwest::Method::POST => {
+                    Method::POST => {
                         client
                             .post(&url)
                     }
-                    reqwest::Method::PATCH => {
+                    Method::PATCH => {
                         client
                             .patch(&url)
                     }
-                    reqwest::Method::GET => {
+                    Method::GET => {
                         client
                             .get(&url)
                     }
@@ -90,11 +109,11 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     }
                 };
 
-                let mut header_map = reqwest::header::HeaderMap::new();
+                let mut header_map = HeaderMap::new();
 
                 for (key, value) in headers_hashmap {
-                    let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes());
-                    let header_value = reqwest::header::HeaderValue::from_bytes(value.as_bytes());
+                    let header_name = HeaderName::from_bytes(key.as_bytes());
+                    let header_value = HeaderValue::from_bytes(value.as_bytes());
                     if header_name.is_err() || header_value.is_err() {
                         continue;
                     }
@@ -102,16 +121,14 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     let header_value = header_value.unwrap();
                     header_map.insert(header_name, header_value);
                 }
-                // Add traceparent into headers
-                // let traceparent = tracing::trace_span!("").context().span().id();
-                // header_map.insert("traceparent", reqwest::header::HeaderValue::from_str(&format!("{:?}", traceparent)).unwrap());
+
                 let res = res
                     .header("Content-Type", "application/json")
                     .headers(header_map)
                     .json(&json_body)
                     .send()
                     .await;
-                tracing::debug!("Called URL: {}, Body: {}", url, json_body);
+                debug!("Called URL: {}, Body: {}", url, json_body);
                 if let Err(e) = res {
                     let err_msg = format!("Failed to send request {}", e);
                     return Err(err_msg);

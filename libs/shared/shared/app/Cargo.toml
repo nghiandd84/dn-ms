@@ -24,6 +24,7 @@ opentelemetry-otlp = { workspace = true, features = ["trace", "http-proto", "grp
 opentelemetry-appender-tracing = { workspace = true }
 rdkafka = { workspace = true }
 rs-consul = { workspace = true }
+reqwest = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
 serde = { workspace = true }
 serde_json = { workspace = true }

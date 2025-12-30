@@ -1,9 +1,3 @@
-use rs_consul::Consul;
-use std::{
-    collections::HashMap,
-    sync::{LazyLock, Mutex},
-};
-use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_macro::RemoteService;

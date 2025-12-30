@@ -1,11 +1,5 @@
-use rs_consul::Consul;
 use shared_shared_data_core::paging::QueryResult;
 use shared_shared_macro::RemoteService;
-use std::{
-    collections::HashMap,
-    sync::{LazyLock, Mutex},
-};
-use tracing::{debug, error};
 
 use features_email_template_model::email_template::EmailTemplateData;
 

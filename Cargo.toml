@@ -101,6 +101,9 @@ redis = { version = "0.32.7", features = ["tokio-comp", "tokio-native-tls-comp"]
 rust_decimal = { version = "1.37.1" }
 rdkafka = { version = "0.37.0" }
 reqwest = { version = "0.12", features = ["json"] }
+reqwest-middleware = { version = "0.4"}
+reqwest-retry = { version = "0.7"}
+reqwest-tracing = { version = "0.5"}
 sea-orm = { version = "1.1.0" }
 sea-orm-migration = { version = "1.1.0" }
 serde = { version = "1.0.223", features = ["derive"] }
@@ -117,6 +120,7 @@ tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.17"}
 tracing-opentelemetry = { version = "0.32.0"}
 tracing-appender = { version = "0.2.4" }
+
 unic-langid = { version = "0.9" }
 utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }
 utoipa-axum = { version = "0.2" }

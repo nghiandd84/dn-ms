@@ -1,10 +1,4 @@
-use rs_consul::Consul;
 use shared_shared_macro::RemoteService;
-use std::{
-    collections::HashMap,
-    sync::{LazyLock, Mutex},
-};
-use tracing::debug;
 use uuid::Uuid;
 
 use features_auth_model::authentication::{AuthLoginData, AuthRegisterData};
@@ -87,7 +81,6 @@ impl AuthenticationRequestService {
         Ok(login_data)
     }
 
-
     pub async fn register_password(
         email: String,
         password: String,
@@ -114,7 +107,8 @@ impl AuthenticationRequestService {
             return Err(err_msg);
         }
         let data = res.unwrap();
-        let register_data: AuthRegisterData = serde_json::from_value(data).map_err(|e| e.to_string())?;
+        let register_data: AuthRegisterData =
+            serde_json::from_value(data).map_err(|e| e.to_string())?;
         Ok(register_data)
     }
 }

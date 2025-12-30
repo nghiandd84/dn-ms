@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use tracing::{debug, error};
 
 use features_auth_model::state::AuthAppState;
@@ -10,6 +11,7 @@ use crate::consumer::error::ConsumerError;
 pub async fn handle_consumer_message(
     message: AuthMessage,
     auth_state: AuthAppState,
+    headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let result = match message {
         AuthMessage::SignIn { message } => {
