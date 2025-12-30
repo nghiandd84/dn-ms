@@ -15,6 +15,7 @@ use shared_shared_config::db::Database;
 
 use features_auth_model::state::AuthAppState;
 use features_auth_stream::AuthMessage;
+use features_email_template_remote::EmailTemplateService;
 
 use crate::consumer::handler::handle_consumer_message;
 
@@ -104,8 +105,8 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             interval.tick().await;
             debug!("Interval task running...");
-            // let consul_client = get_consul_client().unwrap();
-            // TokenService::update_remote(&consul_client).await;
+            let consul_client = get_consul_client().unwrap();
+            EmailTemplateService::update_remote(&consul_client).await;
         }
     });
 

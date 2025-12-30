@@ -24,6 +24,13 @@ pub struct EmailTemplateForCreateRequest {
         message = "the length of description must be between 0 and 512"
     ))]
     pub description: Option<String>,
+    #[validate(length(
+        min = 2,
+        max = 128,
+        code = "key",
+        message = "the length of key must be between 2 and 128"
+    ))]
+    pub key: Option<String>,
 
     #[schema(ignore)]
     pub user_id: Option<Uuid>,
@@ -36,6 +43,7 @@ impl Into<EmailTemplateForCreateDto> for EmailTemplateForCreateRequest {
         EmailTemplateForCreateDto {
             name: self.name,
             description: self.description.unwrap_or_default(),
+            key: self.key.unwrap_or_default(),
             user_id: self.user_id.unwrap(),
             is_active: self.is_active.unwrap_or(true),
         }
@@ -58,6 +66,14 @@ pub struct EmailTemplateForUpdateRequest {
         message = "the length of description must be between 0 and 512"
     ))]
     pub description: Option<String>,
+    #[validate(length(
+        min = 2,
+        max = 128,
+        code = "key",
+        message = "the length of key must be between 2 and 128"
+    ))]
+    pub key: Option<String>,
+
     pub is_active: Option<bool>,
 }
 
@@ -66,6 +82,7 @@ impl Into<EmailTemplateForUpdateDto> for EmailTemplateForUpdateRequest {
         EmailTemplateForUpdateDto {
             name: self.name,
             description: self.description,
+            key: self.key,
             is_active: self.is_active,
         }
     }
@@ -75,11 +92,12 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
-#[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
+#[derive(Serialize, Deserialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct EmailTemplateData {
     id: Option<i32>,
     name: Option<String>,
     description: Option<String>,
+    key: Option<String>,
     is_active: Option<bool>,
     user_id: Option<Uuid>,
 }
@@ -91,6 +109,7 @@ impl Into<EmailTemplateData> for ModelOptionDto {
             description: self.description,
             id: self.id,
             is_active: self.is_active,
+            key: self.key,
             user_id: self.user_id,
             ..Default::default()
         }

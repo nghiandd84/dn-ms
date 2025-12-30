@@ -39,6 +39,7 @@ members = [
     "features/email-template/model", 
     "features/email-template/repo", 
     "features/email-template/service", 
+    "features/email-template/remote", 
 
     "apis/auth", 
     "apis/bakery", 
@@ -153,6 +154,7 @@ features-email-template-migrations = { path = "./features/email-template/migrati
 features-email-template-model = { path = "./features/email-template/model"}
 features-email-template-repo = { path = "./features/email-template/repo"}
 features-email-template-service = { path = "./features/email-template/service"}
+features-email-template-remote = { path = "./features/email-template/remote"}
 
 # Notification Feature
 features-notification-model = { path = "./features/notification/model"}

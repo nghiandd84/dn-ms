@@ -8,11 +8,11 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "email_templates")]
 #[dto(
     name(EmailTemplateForCreate),
-    columns(name, description, user_id, is_active)
+    columns(name, description, key, user_id, is_active)
 )]
 #[dto(
     name(EmailTemplateForUpdate),
-    columns(name, description, is_active),
+    columns(name, description, key, is_active),
     option
 )]
 pub struct Model {
@@ -24,6 +24,9 @@ pub struct Model {
 
     #[sea_orm(column_type = "Text", nullable)]
     pub description: String,
+
+    #[sea_orm(column_type = "Text", unique)]
+    pub key: String,
 
     #[sea_orm(default_value = true)]
     pub is_active: bool,

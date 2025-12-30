@@ -27,3 +27,5 @@ shared-shared-app = { workspace = true }
 features-auth-remote = { workspace = true }
 features-auth-model = { workspace = true }
 features-auth-stream = { workspace = true }
+
+features-email-template-remote = { workspace = true }

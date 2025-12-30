@@ -1,7 +1,9 @@
 use tracing::{debug, error};
 
 use features_auth_model::state::AuthAppState;
-use features_auth_stream::AuthMessage;
+use features_auth_stream::{signup::SignUpMessage, AuthMessage};
+
+use features_email_template_remote::EmailTemplateService;
 
 use crate::consumer::error::ConsumerError;
 
@@ -16,67 +18,43 @@ pub async fn handle_consumer_message(
         }
         AuthMessage::SignUp { message } => {
             debug!("Handling sign-up message");
-            // handle_signup_message(notification_state, message).await
+            let _ = handle_signup_message(auth_state, message).await?;
+
             Ok(())
         }
     };
     result
 }
-/*
-async fn handle_payment_message<'a>(
-    notification_state: Arc<RwLock<NotificationState>>,
-    user_id: uuid::Uuid,
-    platform: String,
-    message: String,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let client_sender = {
-        let state_read_guard = notification_state.write().unwrap();
-        let client_sender = state_read_guard.get_client_sender_by_user_id(user_id);
-        client_sender
-    };
-    if client_sender.is_none() {
-        debug!("No client sender found for user_id {:?}", user_id);
-        return Err(Box::new(ConsumerError::NotFoundClient { user_id }));
-    }
-    let client_sender = client_sender.unwrap();
-    let websocket_message = ServerResponse::Payment { platform, message };
-    if let Err(e) = client_sender.send(Message::Text(
-        serde_json::to_string(&websocket_message).unwrap().into(),
-    )) {
-        debug!("Failed to send message to user {:?}: {}", user_id, e);
-        return Err(Box::new(ConsumerError::FailedToSendMessage {
-            user_id,
-            message: e.to_string(),
-        }));
-    }
-    Ok(())
-}
 
-async fn handle_notification_message<'a>(
-    notification_state: Arc<RwLock<NotificationState>>,
-    user_id: uuid::Uuid,
-    message: String,
+async fn handle_signup_message<'a>(
+    _auth_state: AuthAppState,
+    message: SignUpMessage,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let client_sender = {
-        let state_read_guard = notification_state.write().unwrap();
-        let client_sender = state_read_guard.get_client_sender_by_user_id(user_id);
-        client_sender
-    };
-    if client_sender.is_none() {
-        debug!("No client sender found for user_id {:?}", user_id);
-        return Err(Box::new(ConsumerError::NotFoundClient { user_id }));
-    }
-    let client_sender = client_sender.unwrap();
-    let websocket_message = ServerResponse::Notification { message };
-    if let Err(e) = client_sender.send(Message::Text(
-        serde_json::to_string(&websocket_message).unwrap().into(),
-    )) {
-        error!("Failed to send message to user {:?}: {}", user_id, e);
-        return Err(Box::new(ConsumerError::FailedToSendMessage {
+    match message {
+        SignUpMessage::Success {
             user_id,
-            message: e.to_string(),
-        }));
+            email,
+            app_key,
+            active_code,
+        } => {
+            debug!(
+                "User signed up successfully: user_id={:?}, email={}, app_key={}, active_code={}",
+                user_id, email, app_key, active_code
+            );
+            let key = format!("{}_ACTIVE_CODE", app_key);
+            let email_template = EmailTemplateService::get_email_template_by_key(key).await;
+            match email_template {
+                Ok(template) => {
+                    debug!("Fetched email template: {:?}", template);
+                    // Here you can add logic to send the email using the fetched template
+                }
+                Err(e) => {
+                    error!("Failed to fetch email template: {}", e);
+                    return Err(Box::new(ConsumerError::NotFound { message: e }));
+                }
+            }
+        }
     }
+
     Ok(())
 }
- */

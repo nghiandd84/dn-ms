@@ -3,7 +3,7 @@ use utoipa::{IntoParams, ToSchema};
 
 use shared_shared_macro::ResponseGeneric;
 
-#[derive(ResponseGeneric, Serialize, Debug, Clone, ToSchema)]
+#[derive(ResponseGeneric, Serialize, Deserialize, Debug, Clone, ToSchema)]
 pub struct QueryResult<T> {
     pub total_page: u64,
     pub result: Vec<T>,

@@ -57,6 +57,7 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 }
             }
 
+            #[tracing::instrument(skip(json_body, headers_hashmap))]
             async fn call_api(
                 endpoint: String,
                 method: reqwest::Method,
@@ -101,6 +102,9 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     let header_value = header_value.unwrap();
                     header_map.insert(header_name, header_value);
                 }
+                // Add traceparent into headers
+                // let traceparent = tracing::trace_span!("").context().span().id();
+                // header_map.insert("traceparent", reqwest::header::HeaderValue::from_str(&format!("{:?}", traceparent)).unwrap());
                 let res = res
                     .header("Content-Type", "application/json")
                     .headers(header_map)

@@ -9,6 +9,7 @@ use std::env;
 use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
+use tracing_subscriber::field::debug;
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;
@@ -126,13 +127,23 @@ where
                 producer: Arc::new(Mutex::new(HashMap::new())),
             };
 
+            let axum_layer = OtelAxumLayer::default().filter(|str| {
+                let prefixs = vec!["/healthchecker", "/swagger-ui", "/api-docs"];
+                for p in prefixs {
+                    if str.starts_with(p) || str.contains(p) {
+                        return false;
+                    }
+                }
+                true
+            });
+
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
                 .merge(self.routes(&app_state))
                 .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
                 .layer(middleware::map_response(main_response_mapper))
                 .layer(middleware::from_fn(mw_ctx_resolver)) // Add custom context resolver middleware
-                .layer(OtelAxumLayer::default()); // OtelAxumLayer: Starts the trace and extracts parent context from request headers
+                .layer(axum_layer); // OtelAxumLayer: Starts the trace and extracts parent context from request headers
 
             self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");

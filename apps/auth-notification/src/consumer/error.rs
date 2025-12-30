@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum ConsumerError {
+    NotFound { message: String },
     NotFoundClient { user_id: Uuid },
     FailedToSendMessage { user_id: Uuid, message: String },
 }
@@ -10,6 +11,9 @@ pub enum ConsumerError {
 impl fmt::Display for ConsumerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            ConsumerError::NotFound { message } => {
+                write!(f, "Not found: {}", message)
+            }
             ConsumerError::NotFoundClient { user_id } => {
                 write!(f, "Client not found for user_id: {}", user_id)
             }

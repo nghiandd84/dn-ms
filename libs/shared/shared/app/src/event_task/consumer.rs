@@ -85,6 +85,7 @@ where
                         let span = tracing::info_span!("process_kafka_message");
                         let _result = span.set_parent(parent_cx);
                         let _enter = span.enter();
+                        
                     }
                     None => {
                         debug!("No headers found in message");
