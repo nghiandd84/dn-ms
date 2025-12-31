@@ -88,7 +88,7 @@ impl AuthenticationRequestService {
         request: AuthRegisterRequest,
     ) -> Result<AuthRegisterData> {
         let email = request.email.clone().unwrap();
-        let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
+        let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|_e| AppError::Unknown)?;
         let request_code_data = AuthenticationRequestQuery::get(db, state_id).await;
         if request_code_data.is_err() {
             return Err(AppError::EntityNotFound {
@@ -96,13 +96,17 @@ impl AuthenticationRequestService {
             });
         }
         let request_code_data = request_code_data.unwrap();
+        let language = request
+            .language
+            .clone()
+            .unwrap_or_else(|| "EN-US".to_string());
         let create_user_request = UserForCreateRequest {
             email: request.email.unwrap(),
             password: request.password.unwrap(),
             first_name: "".to_string(),
             last_name: "".to_string(),
+            language: language.clone(),
         };
-
         debug!("User data for create: {:?}", create_user_request);
 
         let client_id = request_code_data.client_id.unwrap();
@@ -115,8 +119,8 @@ impl AuthenticationRequestService {
         }
         let client_data = client.unwrap();
         debug!("Client data: {:?}", client_data);
-        let client_key = client_data.client_key.clone();
 
+        let client_key = client_data.client_key.clone();
         let filters = vec![
             FilterEnum::Bool(FilterParam {
                 name: "is_default".to_string(),
@@ -131,6 +135,7 @@ impl AuthenticationRequestService {
                 raw_value: client_id.to_string(),
             }),
         ];
+
         let default_roles =
             RoleQuery::search(db, &Pagination::default(), &Order::default(), &filters).await;
         if default_roles.is_err() {
@@ -190,6 +195,7 @@ impl AuthenticationRequestService {
                 email: email.clone(),
                 app_key: client_key.unwrap_or_default(),
                 active_code,
+                language_code: language.clone(),
             },
         };
         let message = ProducerMessage {

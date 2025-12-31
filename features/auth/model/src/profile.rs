@@ -20,6 +20,7 @@ pub struct UserForUpdateProfileRequest {
         message = "the length of first_name must be between 4 and 16"
     ))]
     pub last_name: Option<String>,
+    pub language: Option<String>,
 }
 
 impl Into<UserForUpdateProfileDto> for UserForUpdateProfileRequest {
@@ -27,6 +28,7 @@ impl Into<UserForUpdateProfileDto> for UserForUpdateProfileRequest {
         UserForUpdateProfileDto {
             first_name: self.first_name,
             last_name: self.last_name,
+            language: self.language,
         }
     }
 }

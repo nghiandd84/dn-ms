@@ -33,6 +33,13 @@ pub struct UserForCreateRequest {
     ))]
     pub first_name: String,
     pub last_name: String,
+    #[validate(length(
+        min = 2,
+        max = 5,
+        code = "language_length",
+        message = "the length of language must be between 2 and 5"
+    ))]
+    pub language: String,
 }
 
 impl Into<UserForCreateDto> for UserForCreateRequest {
@@ -42,6 +49,7 @@ impl Into<UserForCreateDto> for UserForCreateRequest {
             email: self.email,
             first_name: self.first_name,
             last_name: self.last_name,
+            language: self.language,
             password: password,
         }
     }
@@ -72,6 +80,7 @@ pub struct UserData {
     last_name: Option<String>,
     email: Option<String>,
     age: Option<u32>,
+    language: Option<String>,
 }
 
 impl Into<UserData> for ModelOptionDto {
@@ -81,6 +90,7 @@ impl Into<UserData> for ModelOptionDto {
             first_name: self.first_name,
             id: self.id,
             last_name: self.last_name,
+            language: self.language,
             ..Default::default()
         }
     }

@@ -113,7 +113,6 @@ impl FilterEnum {
             FilterEnum::VecString(ref mut param) => {
                 param.name = prefix.clone();
             }
-            
         }
     }
 }
@@ -126,4 +125,19 @@ pub struct FilterParam<T> {
     pub operator: FilterOperator,
 }
 
-pub type  VecString = Vec<String>;
+pub fn convert_filter_param_to_query_string<T>(filter: &FilterParam<T>) -> String {
+    let operator_str = match filter.operator {
+        FilterOperator::Equal => "eq",
+        FilterOperator::NotEqual => "ne",
+        FilterOperator::Like => "li",
+        FilterOperator::Less => "lt",
+        FilterOperator::LessEqual => "lte",
+        FilterOperator::Greater => "gt",
+        FilterOperator::GreaterEqual => "gte",
+        FilterOperator::In => "in",
+        FilterOperator::NotIn => "nin",
+    };
+    format!("{}={}|{}", filter.name, operator_str, filter.raw_value)
+}
+
+pub type VecString = Vec<String>;

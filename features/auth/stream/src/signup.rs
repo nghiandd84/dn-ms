@@ -8,6 +8,7 @@ pub enum SignUpMessage {
         user_id: Uuid,
         email: String,
         app_key: String,
+        language_code: String,
         active_code: String,
     },
 }

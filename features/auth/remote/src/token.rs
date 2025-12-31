@@ -1,3 +1,4 @@
+use serde_json::json;
 use uuid::Uuid;
 
 use shared_shared_macro::RemoteService;
@@ -9,17 +10,15 @@ pub struct TokenService {}
 
 impl TokenService {
     pub async fn validate_token(token: String, client_id: Uuid) -> Result<Uuid, String> {
-        let body = serde_json::json!({
+        let body = json!({
             "token": token,
             "client_id": client_id
         });
-        // let json_body = Some(body);
 
         let verify_endpoint = std::env::var("AUTH_ENDPOINT_VERIFY_TOKEN")
             .expect("AUTH_ENDPOINT_VERIFY_TOKEN must be set");
 
-        let res =
-            Self::call_api(verify_endpoint, reqwest::Method::POST, Some(body), HashMap::new()).await;
+        let res = Self::call_api(verify_endpoint, Method::POST, Some(body), HashMap::new()).await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             return Err(err_msg);

@@ -1,3 +1,4 @@
+use serde_json::{from_value, json};
 use shared_shared_macro::RemoteService;
 use uuid::Uuid;
 
@@ -16,7 +17,7 @@ impl AuthenticationRequestService {
         response_type: String,
         state: String,
     ) -> Result<Uuid, String> {
-        let body = serde_json::json!({
+        let body = json!({
             "client_id": client_id,
             "scopes": scope,
             "redirect_uri": redirect_uri,
@@ -26,7 +27,13 @@ impl AuthenticationRequestService {
         let auth_endpoint = std::env::var("AUTH_ENDPOINT_AUTHENTICATE_REQUEST")
             .expect("AUTH_ENDPOINT_AUTHENTICATE_REQUEST must be set");
 
-        let res = Self::call_api(auth_endpoint, reqwest::Method::POST, Some(body), HashMap::new()).await;
+        let res = Self::call_api(
+            auth_endpoint,
+            reqwest::Method::POST,
+            Some(body),
+            HashMap::new(),
+        )
+        .await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             return Err(err_msg);
@@ -57,7 +64,7 @@ impl AuthenticationRequestService {
         password: String,
         state: Uuid,
     ) -> Result<AuthLoginData, String> {
-        let body = serde_json::json!({
+        let body = json!({
             "email": email,
             "password": password,
             "state": state
@@ -78,7 +85,7 @@ impl AuthenticationRequestService {
             return Err(err_msg);
         }
         let data = res.unwrap();
-        let login_data: AuthLoginData = serde_json::from_value(data).map_err(|e| e.to_string())?;
+        let login_data: AuthLoginData = from_value(data).map_err(|e| e.to_string())?;
         Ok(login_data)
     }
 
@@ -86,18 +93,20 @@ impl AuthenticationRequestService {
         email: String,
         password: String,
         state: Uuid,
+        language: String,
     ) -> Result<AuthRegisterData, String> {
-        let body = serde_json::json!({
+        let body = json!({
             "email": email,
             "password": password,
-            "state": state
+            "state": state,
+            "language": language
         });
 
-        let login_password_endpoint = std::env::var("AUTH_ENDPOINT_REGISTER_PASSWORD")
+        let register_password_endpoint = std::env::var("AUTH_ENDPOINT_REGISTER_PASSWORD")
             .expect("AUTH_ENDPOINT_REGISTER_PASSWORD must be set");
 
         let res = Self::call_api(
-            login_password_endpoint,
+            register_password_endpoint,
             reqwest::Method::POST,
             Some(body),
             HashMap::new(),
@@ -108,8 +117,7 @@ impl AuthenticationRequestService {
             return Err(err_msg);
         }
         let data = res.unwrap();
-        let register_data: AuthRegisterData =
-            serde_json::from_value(data).map_err(|e| e.to_string())?;
+        let register_data: AuthRegisterData = from_value(data).map_err(|e| e.to_string())?;
         Ok(register_data)
     }
 }

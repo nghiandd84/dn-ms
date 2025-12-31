@@ -107,7 +107,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
-#[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
+#[derive(Serialize, Deserialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct TemplateTranslationData {
     id: Option<i32>,
     template_id: Option<i32>,

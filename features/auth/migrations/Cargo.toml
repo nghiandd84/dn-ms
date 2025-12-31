@@ -17,4 +17,6 @@ async-std = { workspace = true }
 serde_json = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
 
+shared-shared-data-core = { workspace = true }
+
 features-auth-entities = { workspace = true }

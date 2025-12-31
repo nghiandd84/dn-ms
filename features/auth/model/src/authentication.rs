@@ -116,6 +116,8 @@ pub struct AuthRegisterRequest {
     pub password: Option<String>,
     #[validate(required(code = "state_required", message = "state is required"))]
     pub state: Option<String>,
+    #[validate(required(code = "language_required", message = "language is required"))]
+    pub language: Option<String>,
 }
 
 

@@ -14,6 +14,7 @@ pub fn SignUp(state: String) -> Element {
     let link_to_login = Route::SignUp {
         state: state.clone(),
     };
+
     // link_to_signup.to_string();
     debug!("Link to login route: {:?}", link_to_login);
     let login_url = link_to_login.to_string();
@@ -24,10 +25,13 @@ pub fn SignUp(state: String) -> Element {
         onsubmit: move |ev| async move {
             debug!("Form submitted to log in with email: {} and password: {}", email, password);
             ev.prevent_default();
+            let context = use_context::<crate::models::context::Context>();
+            let language_code = context.accept_language().as_str().to_string();
             let formData = FormData {
                 email: email.to_string(),
                 password: password.to_string(),
-                state: state_signal.to_string()
+                state: state_signal.to_string(),
+                language_code
             };
             match signup(formData).await {
                 Ok(data) => {
@@ -102,6 +106,7 @@ pub struct FormData {
     email: String,
     password: String,
     state: String,
+    language_code: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -117,6 +122,7 @@ pub async fn signup(data: FormData) -> Result<SignUpResponse> {
         data.email,
         data.password,
         uuid::Uuid::parse_str(&data.state).unwrap_or_default(),
+        data.language_code,
     )
     .await;
     let register_data = match register_data {
