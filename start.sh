@@ -80,15 +80,6 @@ done
 sleep 1s
 
 
-echo "------------ Start Auth notification ------------"
-for i in {1..2}; do
-    PORT=511$i
-    echo "--- Auth Notification on port $PORT ---"
-    # Execute the program
-    AUTH_NOTIFICATION_PORT=511$i $APP_DIRECTORY/auth-notification  &
-done
-sleep 1s
-
 
 echo "------------ Start Bakery API ------------"
 for i in {1..2}; do
@@ -117,6 +108,8 @@ for i in {1..2}; do
 done
 sleep 1s
 
+# Notification must start after all APIs
+echo "------------ Start Notification After all API ------------"
 
 echo "------------ Start Notification App ------------"
 for i in {1..2}; do
@@ -124,6 +117,15 @@ for i in {1..2}; do
     echo "--- Notification App on port $PORT ---"
     # Execute the program
     NOTIFICATION_APP_PORT=400$i INSTANCE_ID=$i $APP_DIRECTORY/app-notification  &
+done
+sleep 1s
+
+echo "------------ Start Auth notification ------------"
+for i in {1..2}; do
+    PORT=511$i
+    echo "--- Auth Notification on port $PORT ---"
+    # Execute the program
+    AUTH_NOTIFICATION_PORT=511$i $APP_DIRECTORY/auth-notification  &
 done
 sleep 1s
 

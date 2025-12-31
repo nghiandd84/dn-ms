@@ -2,6 +2,7 @@ use shared_shared_data_core::paging::QueryResult;
 use shared_shared_macro::RemoteService;
 
 use features_email_template_model::email_template::EmailTemplateData;
+use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(email_template_service))]
@@ -17,7 +18,7 @@ impl EmailTemplateService {
         let res = Self::call_api(
             url,
             reqwest::Method::GET,
-            serde_json::json!({}),
+            None,
             HashMap::new(),
         )
         .await;

@@ -1,6 +1,7 @@
 use uuid::Uuid;
 
 use shared_shared_macro::RemoteService;
+use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]
@@ -12,12 +13,13 @@ impl TokenService {
             "token": token,
             "client_id": client_id
         });
+        // let json_body = Some(body);
 
         let verify_endpoint = std::env::var("AUTH_ENDPOINT_VERIFY_TOKEN")
             .expect("AUTH_ENDPOINT_VERIFY_TOKEN must be set");
 
         let res =
-            Self::call_api(verify_endpoint, reqwest::Method::POST, body, HashMap::new()).await;
+            Self::call_api(verify_endpoint, reqwest::Method::POST, Some(body), HashMap::new()).await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             return Err(err_msg);

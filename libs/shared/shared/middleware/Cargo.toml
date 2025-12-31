@@ -1,0 +1,22 @@
+[package]
+name = "shared-shared-middleware"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "shared_shared_middleware"
+path = "src/lib.rs"
+
+[dependencies]
+async-trait = { workspace = true }
+http = { workspace = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
+tracing = { workspace = true }
+tracing-opentelemetry = { workspace = true }
+opentelemetry = { workspace = true }
+
+shared-shared-macro = { workspace = true}
+

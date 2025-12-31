@@ -8,7 +8,7 @@ use shared_shared_app::{
     discovery::get_consul_client,
     event_task::{
         consumer::{consumer_task, ConsumerConfig},
-        producer::{Producer, ProducerConfig, ProducerMessage},
+        producer::{Producer, ProducerConfig},
     },
     start_app::StartApp,
     state::AppState,
@@ -52,39 +52,6 @@ impl<'a> StartApp<Arc<RwLock<NotificationState>>, NotificationCacheState> for My
         );
 
         async move {
-            /*
-            let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
-            let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
-            let producer_config = ProducerConfig {
-                kafka_server_env: kafka_server_env.clone(),
-                kafka_topic_env: kafka_topic_env.clone(),
-            };
-            let producer = Producer::from_config(producer_config).await;
-
-            let topic_key = producer.topic().to_string();
-
-            app_state.set_producer(topic_key.clone(), producer);
-
-            // Test sending a message to kafka
-            let send = app_state
-                .get_producer(topic_key)
-                .expect("Producer not found")
-                .send(&ProducerMessage {
-                    payload: "Test message".to_string(),
-                    key: Some("test_key".to_string()),
-                })
-                .await
-                .map_err(|e| {
-                    error!("Failed to send test message: {}", e.reason);
-                    e
-                });
-            if let Err(_) = send {
-                error!("Failed to send test message");
-            } else {
-                debug!("Test message sent successfully");
-            }
-            */
-
             let dlq_producer = Producer::from_config(ProducerConfig::from_env(
                 "DLQ_KAFKA_BOOTSTRAP_SERVERS".to_string(),
                 "DLQ_KAFKA_TOPIC".to_string(),

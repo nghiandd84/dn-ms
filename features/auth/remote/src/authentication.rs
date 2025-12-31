@@ -2,6 +2,7 @@ use shared_shared_macro::RemoteService;
 use uuid::Uuid;
 
 use features_auth_model::authentication::{AuthLoginData, AuthRegisterData};
+use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]
@@ -25,7 +26,7 @@ impl AuthenticationRequestService {
         let auth_endpoint = std::env::var("AUTH_ENDPOINT_AUTHENTICATE_REQUEST")
             .expect("AUTH_ENDPOINT_AUTHENTICATE_REQUEST must be set");
 
-        let res = Self::call_api(auth_endpoint, reqwest::Method::POST, body, HashMap::new()).await;
+        let res = Self::call_api(auth_endpoint, reqwest::Method::POST, Some(body), HashMap::new()).await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             return Err(err_msg);
@@ -68,7 +69,7 @@ impl AuthenticationRequestService {
         let res = Self::call_api(
             login_password_endpoint,
             reqwest::Method::POST,
-            body,
+            Some(body),
             HashMap::new(),
         )
         .await;
@@ -98,7 +99,7 @@ impl AuthenticationRequestService {
         let res = Self::call_api(
             login_password_endpoint,
             reqwest::Method::POST,
-            body,
+            Some(body),
             HashMap::new(),
         )
         .await;

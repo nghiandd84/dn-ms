@@ -33,11 +33,11 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
     let gen = quote! {
         use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
         use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-        use reqwest_tracing::TracingMiddleware;
         use rs_consul::Consul;
         use std::sync::{LazyLock, Mutex};
         use tracing::{debug, error};
         use std::collections::HashMap;
+        use serde_json::Value;
 
         use shared_shared_data_core::roundrobin::RoundRobin;
 
@@ -67,28 +67,30 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 }
             }
 
+            #[tracing::instrument(name = "call_api", skip(json_body, headers_hashmap), fields(service_name = %Self::service_name()))]
             async fn call_api(
                 endpoint: String,
                 method: Method,
-                json_body: serde_json::Value,
+                json_body: Option<Value>,
                 headers_hashmap: HashMap<String, String>,
-            ) -> Result<serde_json::Value, String>
+            ) -> Result<Value, String>
             {
                 debug!("Calling API: {} with method {}", endpoint, method);
-                
-                let client: ClientWithMiddleware = ClientBuilder::new(Client::new())
-                    .with(TracingMiddleware::default())
-                    .build();
-                
-                debug!("Client built successfully");
-                // Get current span
-                let current_span = tracing::Span::current();
-                debug!("Current span: {:?}", current_span);
 
-                let (ip, port) = Self::get_instance().expect("No available service instances");
+                let client: ClientWithMiddleware = ClientBuilder::new(Client::new())
+                    .with(RequestTracingMiddleware)
+                    .build();
+
+                let instance = Self::get_instance();
+                if instance.is_none() {
+                    let err_msg = "No available service instances".to_string();
+                    error!("{}", err_msg);
+                    return Err(err_msg);
+                }
+                let (ip, port) = instance.unwrap();
                 let http_protocol = Self::http_protocol();
                 let url = format!("{http_protocol}://{ip}:{port}{endpoint}");
-                debug!("Constructed URL: {}", url);
+                debug!("Request URL: {}", url);
 
                 let res = match method {
                     Method::POST => {
@@ -109,6 +111,8 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     }
                 };
 
+
+
                 let mut header_map = HeaderMap::new();
 
                 for (key, value) in headers_hashmap {
@@ -128,7 +132,6 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     .json(&json_body)
                     .send()
                     .await;
-                debug!("Called URL: {}, Body: {}", url, json_body);
                 if let Err(e) = res {
                     let err_msg = format!("Failed to send request {}", e);
                     return Err(err_msg);

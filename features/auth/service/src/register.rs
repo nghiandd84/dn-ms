@@ -1,5 +1,5 @@
 use sea_orm::DbConn;
-use tracing::debug;
+use tracing::{debug, error};
 use uuid::Uuid;
 
 use shared_shared_data_error::auth::AuthError;
@@ -45,6 +45,7 @@ impl RegisterService {
         let access_id = match result {
             Ok(id) => id,
             Err(e) => {
+                error!("Error assigning role to user: {:?}", e);
                 return Err(AuthError::UnknowRole);
             }
         };

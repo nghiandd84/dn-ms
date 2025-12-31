@@ -93,10 +93,6 @@ where
                         tracing::info_span!("process_kafka_message_no_headers")
                     }
                 };
-                let _enter = trace_span.enter();
-                let trace_id = trace_span.context().span().span_context().trace_id();
-                let span_id = trace_span.context().span().span_context().span_id();
-                debug!("Processing message with trace id {} and tracing span_id {}", trace_id, span_id);
 
                 // TODO set up headers hashmap to pass to handler
                 let mut headers: HashMap<String, String> = HashMap::new();
@@ -112,8 +108,6 @@ where
                         continue;
                     }
                 };
-                // let clean_json: String = serde_json::from_str(origin_message).unwrap();
-                // debug!("Received Kafka event: {:?}", clean_json);
                 let message: M = match serde_json::from_str(&origin_message) {
                     Ok(event) => event,
                     Err(e) => {
@@ -128,6 +122,8 @@ where
                 let handler_producer = dlq_producer.clone();
                 let dlq_key_clone = dlq_key.clone();
                 tokio::spawn(async move {
+                    let _enter = trace_span.enter();
+
                     let result = (handler)(message, handler_state, Some(headers)).await;
                     match result {
                         Ok(_) => {

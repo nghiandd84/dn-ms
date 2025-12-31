@@ -13,7 +13,6 @@ path = "src/lib.rs"
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true, features = ["json"] }
 reqwest-retry = { workspace = true }
-reqwest-tracing = { workspace = true, features = ["opentelemetry_0_30"] }
 rs-consul = { workspace = true }
 sea-orm = { workspace = true, features = ["with-json"] }
 serde_json = { workspace = true }
@@ -24,8 +23,8 @@ shared-shared-auth = { workspace = true }
 shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-auth = { workspace = true }
-shared-shared-data-cache = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-macro-rule = { workspace = true }
+shared-shared-middleware = { workspace = true }
 
 features-auth-model = { workspace = true }
