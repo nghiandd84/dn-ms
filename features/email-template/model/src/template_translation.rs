@@ -119,6 +119,15 @@ pub struct TemplateTranslationData {
     updated_at: Option<DateTime>,
 }
 
+impl TemplateTranslationData {
+    pub fn get_subject(&self) -> String {
+        self.subject.clone().unwrap_or_default()
+    }
+    pub fn get_body(&self) -> String {
+        self.body.clone().unwrap_or_default()
+    }
+}
+
 impl Into<TemplateTranslationData> for ModelOptionDto {
     fn into(self) -> TemplateTranslationData {
         TemplateTranslationData {

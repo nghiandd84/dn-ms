@@ -96,7 +96,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
-#[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
+#[derive(Serialize, Deserialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct TemplatePlaceholderData {
     id: Option<i32>,
     template_id: Option<i32>,
@@ -106,6 +106,15 @@ pub struct TemplatePlaceholderData {
     is_required: Option<bool>,
     created_at: Option<DateTime>,
     updated_at: Option<DateTime>,
+}
+
+impl TemplatePlaceholderData {
+    pub fn get_placeholder_key(&self) -> String {
+        self.placeholder_key.clone().unwrap_or_default()
+    }
+    pub fn get_example_value(&self) -> String {
+        self.example_value.clone().unwrap_or_default()
+    }
 }
 
 impl Into<TemplatePlaceholderData> for ModelOptionDto {

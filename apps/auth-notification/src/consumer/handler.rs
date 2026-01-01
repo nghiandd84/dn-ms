@@ -4,9 +4,12 @@ use tracing::{debug, error};
 use features_auth_model::state::AuthAppState;
 use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 
-use features_email_template_remote::{EmailTemplateService, TemplateTranslationService};
+use features_email_template_remote::{
+    EmailTemplateService, TemplatePlaceholderService, TemplateTranslationService,
+};
 
 use crate::consumer::error::ConsumerError;
+use crate::email::{send_email, SendMail};
 
 pub async fn handle_consumer_message(
     message: AuthMessage,
@@ -74,8 +77,45 @@ async fn handle_signup_message<'a>(
                 }
             };
             debug!("Fetched template translation: {:?}", translation);
+            let placeholders =
+                TemplatePlaceholderService::get_template_holder_by_template_id(template_id).await;
+            let placeholders = match placeholders {
+                Ok(placeholders) => placeholders,
+                Err(e) => {
+                    error!("Failed to fetch template placeholders: {}", e);
+                    return Err(Box::new(ConsumerError::NotFound { message: e }));
+                }
+            };
+            debug!("Fetched placeholders: {:?}", placeholders);
 
-            // let mut placeholders = HashMap::new();
+            let mut placeholder_maps: HashMap<String, String> = HashMap::new();
+            for placeholder in placeholders.iter() {
+                placeholder_maps.insert(
+                    placeholder.get_placeholder_key(),
+                    placeholder.get_example_value(),
+                );
+            }
+            placeholder_maps.insert("ACTIVE_CODE".to_string(), active_code.clone());
+            let from = client_email;
+            let to = email.clone();
+            let subject = translation.get_subject();
+            let html = translation.get_body();
+            let placeholder = Some(placeholder_maps.clone());
+
+            let send_mail = SendMail::new(from, vec![to], subject, html, placeholder);
+            debug!("SendMail struct: {:?}", send_mail);
+            let send_result = send_email(&send_mail).await;
+            match send_result {
+                Ok(_) => {
+                    debug!("Activation email sent successfully to {}", email);
+                }
+                Err(e) => {
+                    error!("Failed to send activation email to {}: {}", email, e);
+                    return Err(Box::new(ConsumerError::SendEmailError {
+                        message: e.to_string(),
+                    }));
+                }
+            }
         }
     }
 

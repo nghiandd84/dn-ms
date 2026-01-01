@@ -12,6 +12,24 @@ pub struct SendMail {
     placeholder: Option<HashMap<String, String>>,
 }
 
+impl SendMail {
+    pub fn new(
+        from: String,
+        to: Vec<String>,
+        subject: String,
+        html: String,
+        placeholder: Option<HashMap<String, String>>,
+    ) -> Self {
+        SendMail {
+            from,
+            to,
+            subject,
+            html,
+            placeholder,
+        }
+    }
+}
+
 fn create_resend_client() -> Resend {
     let api_key = std::env::var("RESEND_API_KEY").expect("RESEND_API_KEY must be set");
     Resend::new(&api_key)
@@ -27,13 +45,19 @@ pub async fn send_email(send_mail: &SendMail) -> Result<(), &'static str> {
     let html = if let Some(placeholders) = placeholder {
         let mut rendered_html = html;
         for (key, value) in placeholders {
-            let placeholder_tag = format!("{{{}}}", key);
+            let placeholder_tag = format!("{{{}}}", key).to_uppercase();
+            debug!(
+                "Replacing placeholder: {} with value: {}",
+                placeholder_tag, value
+            );
             rendered_html = rendered_html.replace(&placeholder_tag, &value);
         }
         rendered_html
     } else {
         html
     };
+
+    debug!("Final HTML content: {}", html);
 
     let email = CreateEmailBaseOptions::new(from, to, subject).with_html(html.as_str());
     let send = client.emails.send(email).await;
