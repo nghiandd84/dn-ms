@@ -22,6 +22,7 @@ pub struct ClientForCreateRequest {
         message = "the length of name must be between 2 and 128"
     ))]
     pub name: String,
+
     #[validate(length(
         min = 0,
         max = 512,
@@ -29,6 +30,15 @@ pub struct ClientForCreateRequest {
         message = "the length of client_key must be between 0 and 512"
     ))]
     pub client_key: Option<String>,
+
+    #[validate(length(
+        min = 0,
+        max = 512,
+        code = "email",
+        message = "the length of email must be between 0 and 512"
+    ))]
+    pub email: Option<String>,
+
     #[validate(length(
         min = 0,
         max = 512,
@@ -46,6 +56,7 @@ impl Into<ClientForCreateDto> for ClientForCreateRequest {
             name: self.name,
             description: self.description.unwrap_or_default(),
             client_key: self.client_key.unwrap_or_default(),
+            email: self.email.unwrap_or_default(),
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
             client_secret: self.client_secret,
@@ -76,6 +87,15 @@ pub struct ClientForUpdateRequest {
         message = "the length of client_key must be between 0 and 512"
     ))]
     pub client_key: Option<String>,
+
+    #[validate(length(
+        min = 0,
+        max = 512,
+        code = "email",
+        message = "the length of email must be between 0 and 512"
+    ))]
+    pub email: Option<String>,
+
     #[validate(length(
         min = 0,
         max = 512,
@@ -94,6 +114,7 @@ impl Into<ClientForUpdateDto> for ClientForUpdateRequest {
             name: self.name,
             client_secret: self.client_secret,
             client_key: self.client_key,
+            email: self.email,
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
         }
@@ -113,6 +134,13 @@ pub struct ClientData {
     name: Option<String>,
     description: Option<String>,
     redirect_uris: Option<VecString>,
+    email: Option<String>,
+}
+
+impl ClientData {
+    pub fn get_email(&self) -> Option<String> {
+        self.email.clone()
+    }
 }
 
 impl Into<ClientData> for ModelOptionDto {
@@ -123,6 +151,7 @@ impl Into<ClientData> for ModelOptionDto {
             id: self.id,
             client_secret: self.client_secret,
             client_key: self.client_key,
+            email: self.email,
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
             ..Default::default()

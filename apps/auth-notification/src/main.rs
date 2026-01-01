@@ -2,6 +2,7 @@ use crate::app::start_app;
 
 mod app;
 mod consumer;
+mod email;
 
 #[tokio::main]
 async fn main() {

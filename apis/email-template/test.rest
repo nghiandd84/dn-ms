@@ -65,6 +65,10 @@ Content-Type: application/json
 GET {{baseUrl}}/template-translations?body=li|Body&template_id=eq|1
 Content-Type: application/json
 
+### Filter Template Translation 
+GET {{baseUrl}}/template-translations?template_id=eq|1&language_code=eq|en-US
+Content-Type: application/json
+
 
 ### Update Template Translation 
 PATCH {{baseUrl}}/template-translations/{{tempalateTranslationId}}

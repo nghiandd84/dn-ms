@@ -196,6 +196,7 @@ impl AuthenticationRequestService {
                 app_key: client_key.unwrap_or_default(),
                 active_code,
                 language_code: language.clone(),
+                client_email: client_data.get_email().unwrap_or_default(),
             },
         };
         let message = ProducerMessage {

@@ -102,6 +102,13 @@ pub struct EmailTemplateData {
     user_id: Option<Uuid>,
 }
 
+impl EmailTemplateData {
+    pub fn get_id(&self) -> Option<i32> {
+        self.id
+    }
+        
+}
+
 impl Into<EmailTemplateData> for ModelOptionDto {
     fn into(self) -> EmailTemplateData {
         EmailTemplateData {

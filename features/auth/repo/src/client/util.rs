@@ -8,6 +8,8 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.id, model_option.id);
     set_if_some!(active_model.name, model_option.name);
     set_if_some!(active_model.description, model_option.description);
+    set_if_some!(active_model.email, model_option.email);
+    set_if_some!(active_model.client_key, model_option.client_key);
     set_if_some!(active_model.client_secret, model_option.client_secret);
     set_if_some!(active_model.allowed_grants, model_option.allowed_grants);
     set_if_some!(active_model.redirect_uris, model_option.redirect_uris);

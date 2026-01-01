@@ -13,6 +13,7 @@ use shared_shared_macro::Dto;
         client_secret,
         client_key,
         name,
+        email,
         description,
         redirect_uris,
         allowed_grants
@@ -24,6 +25,7 @@ use shared_shared_macro::Dto;
         client_secret,
         client_key,
         name,
+        email,
         description,
         redirect_uris,
         allowed_grants
@@ -39,6 +41,8 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "String(StringLen::N(250))")]
     pub client_key: String,
+    #[sea_orm(column_type = "String(StringLen::N(250))")]
+    pub email: String,
     #[sea_orm(column_type = "String(StringLen::N(250))", nullable)]
     pub description: String,
     #[sea_orm(column_type = "String(StringLen::N(512))", array)]

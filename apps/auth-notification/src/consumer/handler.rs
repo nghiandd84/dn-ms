@@ -4,7 +4,7 @@ use tracing::{debug, error};
 use features_auth_model::state::AuthAppState;
 use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 
-use features_email_template_remote::EmailTemplateService;
+use features_email_template_remote::{EmailTemplateService, TemplateTranslationService};
 
 use crate::consumer::error::ConsumerError;
 
@@ -38,7 +38,8 @@ async fn handle_signup_message<'a>(
             email,
             app_key,
             active_code,
-            language_code
+            language_code,
+            client_email,
         } => {
             debug!(
                 "User signed up successfully: user_id={:?}, email={}, app_key={}, active_code={}, language_code={}",
@@ -49,7 +50,6 @@ async fn handle_signup_message<'a>(
             let template = match email_template {
                 Ok(template) => {
                     debug!("Fetched email template: {:?}", template);
-                    // Here you can add logic to send the email using the fetched template
                     template
                 }
                 Err(e) => {
@@ -57,7 +57,25 @@ async fn handle_signup_message<'a>(
                     return Err(Box::new(ConsumerError::NotFound { message: e }));
                 }
             };
+            let template_id = template.get_id().ok_or_else(|| ConsumerError::NotFound {
+                message: "Email template ID".to_string(),
+            })?;
+            debug!("Using email template ID: {}", template_id);
+            let translation = TemplateTranslationService::get_template_translations(
+                template_id,
+                language_code.clone(),
+            )
+            .await;
+            let translation = match translation {
+                Ok(translation) => translation,
+                Err(e) => {
+                    error!("Failed to fetch template translation: {}", e);
+                    return Err(Box::new(ConsumerError::NotFound { message: e }));
+                }
+            };
+            debug!("Fetched template translation: {:?}", translation);
 
+            // let mut placeholders = HashMap::new();
         }
     }
 
