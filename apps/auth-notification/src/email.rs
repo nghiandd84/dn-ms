@@ -1,10 +1,9 @@
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{message::Mailbox, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
-use tracing_subscriber::field::debug;
 
 use std::collections::HashMap;
 use std::str::FromStr;
-use tracing::{debug, error};
+use tracing::{debug, error, instrument};
 
 #[derive(Debug)]
 pub struct SendMail {
@@ -33,6 +32,7 @@ impl SendMail {
     }
 }
 
+#[instrument(name = "send_email")]
 pub async fn send_email(send_mail: &SendMail) -> Result<(), &'static str> {
     let smtp_server = std::env::var("SMTP_SERVER_NAME").expect("SMTP_SERVER_NAME must be set");
     let smtp_port = std::env::var("SMTP_SERVER_PORT").expect("SMTP_SERVER_PORT must be set");
