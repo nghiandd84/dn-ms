@@ -102,7 +102,7 @@ async fn handle_signup_message<'a>(
             let html = translation.get_body();
             let placeholder = Some(placeholder_maps.clone());
 
-            let send_mail = SendMail::new(from, vec![to], subject, html, placeholder);
+            let send_mail = SendMail::new(from, to, subject, html, placeholder);
             debug!("SendMail struct: {:?}", send_mail);
             let send_result = send_email(&send_mail).await;
             match send_result {
