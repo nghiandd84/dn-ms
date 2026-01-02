@@ -13,7 +13,7 @@ path = "src/lib.rs"
 chrono = { workspace = true }
 serde_json = { workspace = true }
 validator = { version = "0.20.0", features = ["derive"] }
-utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+utoipa = { workspace = true, features = ["chrono", "axum_extras", "uuid"] }
 serde = { workspace = true }
 uuid = { workspace = true }
 tracing = { workspace = true }

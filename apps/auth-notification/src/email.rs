@@ -89,7 +89,7 @@ pub async fn send_email(send_mail: &SendMail) -> Result<(), &'static str> {
         }
         Err(err) => {
             error!("Failed to send email: {:?}", err);
-            return Err("Failed to send email");
+            // return Err("Failed to send email");
         }
     };
     Ok(())

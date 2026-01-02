@@ -31,6 +31,8 @@ pub async fn handle_consumer_message(
     result
 }
 
+// Needs to be traced separately due to async context
+#[tracing::instrument(name = "handle_signup_message", skip(_auth_state, message))]
 async fn handle_signup_message<'a>(
     _auth_state: AuthAppState,
     message: SignUpMessage,
