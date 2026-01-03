@@ -13,7 +13,7 @@ path = "src/lib.rs"
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true, features = ["json"] }
 reqwest-retry = { workspace = true }
-rs-consul = { workspace = true }
+dn-consul = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }

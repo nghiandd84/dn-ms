@@ -1,10 +1,10 @@
-use rs_consul::{
-    Config, Consul, DeregisterEntityPayload, RegisterEntityCheck, RegisterEntityPayload,
-    RegisterEntityService,
+use dn_consul::{
+    Config, Consul, ConsulError, DeregisterEntityPayload, GetServiceNodesRequest,
+    RegisterEntityCheck, RegisterEntityPayload, RegisterEntityService,
 };
 
 use std::collections::HashMap;
-use tracing::info;
+use tracing::{debug, info};
 
 static NODE_ID: &str = "dn-ms";
 
@@ -16,6 +16,34 @@ pub fn get_consul_client() -> Result<Consul, Box<dyn std::error::Error>> {
     info!("Consul client initialized successfully",);
 
     Ok(consul)
+}
+
+pub async fn get_service_instances(
+    consul: &Consul,
+    service_name: &str,
+) -> Result<Vec<(String, u16)>, ConsulError> {
+    let request = GetServiceNodesRequest {
+        service: service_name,
+        ..Default::default()
+    };
+    // consul.get_service_nodes(request, query_opts)
+    let data = consul.get_service_nodes(request, None).await;
+    let data = match data {
+        Ok(d) => d,
+        Err(e) => {
+            debug!(
+                "Failed to get service nodes for {}: {:?}",
+                service_name, e
+            );
+            return Err(e);
+        }
+    };
+    debug!("Service instances for {}: {:?}", service_name, data);
+
+    let instances = consul
+        .get_service_addresses_and_ports(service_name, None)
+        .await?;
+    Ok(instances)
 }
 
 pub async fn register_service(
@@ -50,6 +78,12 @@ pub async fn register_service(
         Definition: definition,
     };
 
+    let mut metadata: HashMap<String, String> = HashMap::new();
+    let tenant = std::env::var("TENANT");
+    if let Ok(tenant) = tenant {
+        metadata.insert("tenant".to_string(), tenant);
+    }
+
     let payload = RegisterEntityPayload {
         ID: None,
         Node: NODE_ID.to_string(),
@@ -62,7 +96,7 @@ pub async fn register_service(
             Service: service_name.to_string(),
             Tags: vec![service_name.to_string(), NODE_ID.to_string()],
             TaggedAddresses: Default::default(),
-            Meta: Default::default(),
+            Meta: metadata,
             Port: Some(service_port),
             Namespace: None,
         }),

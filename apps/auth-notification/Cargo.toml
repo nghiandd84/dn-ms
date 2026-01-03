@@ -13,7 +13,7 @@ dotenv = { workspace = true }
 futures-util = { workspace = true }
 lettre = {  workspace = true, features = ["builder","tokio1-native-tls", "hostname"]  }
 reqwest = {  workspace = true }
-rs-consul = { workspace = true }
+dn-consul = { workspace = true }
 serde = {  workspace = true , features = ["derive"] }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }

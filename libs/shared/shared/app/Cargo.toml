@@ -23,7 +23,7 @@ opentelemetry-stdout = { workspace = true, features = ["trace"] }
 opentelemetry-otlp = { workspace = true, features = ["trace", "http-proto", "grpc-tonic"] }
 opentelemetry-appender-tracing = { workspace = true }
 rdkafka = { workspace = true }
-rs-consul = { workspace = true }
+dn-consul = { workspace = true }
 reqwest = { workspace = true }
 sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
 serde = { workspace = true }

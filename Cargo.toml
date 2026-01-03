@@ -3,6 +3,9 @@ resolver = "2"
 autobins = false
 rust-version = "1.85.0"
 members = [
+    # Tools
+    "libs/tools/dn-consul",
+
     "libs/shared/shared/data/app",
     "libs/shared/shared/data/auth",
     "libs/shared/shared/data/cache",
@@ -73,7 +76,6 @@ bytes = "1.0"
 chrono = { version = "0.4.39", features = ["serde"] }
 clap = { version = "3.2.25", features = ["derive"] }
 config = { version = "0.15.11"}
-rs-consul = { version = "0.12.0"}
 local-ip-address  = { version = "0.6.5"}
 crossbeam-epoch = "0.9.18"
 dashmap = "6.1.0"
@@ -171,6 +173,9 @@ features-bakery-entities = { path = "./features/bakery/entities"}
 features-bakery-migrations = { path = "./features/bakery/migrations"}
 features-bakery-model = { path = "./features/bakery/model"}
 features-bakery-service = { path = "./features/bakery/service"}
+
+# Tools
+dn-consul = { path = "./libs/tools/dn-consul"}
 
 [profile]
 

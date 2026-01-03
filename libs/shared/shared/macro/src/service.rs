@@ -33,7 +33,7 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
     let gen = quote! {
         use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
         use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-        use rs_consul::Consul;
+        use dn_consul::{Consul, GetServiceNodesRequest};
         use std::sync::{LazyLock, Mutex};
         use tracing::{debug, error};
         use std::collections::HashMap;
@@ -55,6 +55,22 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
             }
 
             async fn get_ip_ports<'a>(consul: &'a Consul) -> Vec<(String, u16)> {
+                let request = GetServiceNodesRequest {
+                    service: Self::service_name(),
+                    ..Default::default()
+                };
+                let data = consul.get_service_nodes(request, None).await;
+                if let Err(e) = data {
+                    debug!(
+                        "Failed to get service nodes for {}: {:?}",
+                        Self::service_name(), e
+                    );
+                    return vec![];
+                }
+                let data = data.unwrap();
+                debug!("Service instances for {}: {:?}", Self::service_name(), data);
+
+                
                 let ip_ports = consul.get_service_addresses_and_ports(Self::service_name(), None);
                 ip_ports.await.unwrap_or_default()
             }

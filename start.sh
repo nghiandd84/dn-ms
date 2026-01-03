@@ -95,7 +95,7 @@ for i in {1..2}; do
     PORT=530$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
-    EMAIL_TEMPLATE_PORT=530$i $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=530$i TENANT=TENANT_${i} $APP_DIRECTORY/api-email-template  &
 done
 sleep 1s
 
