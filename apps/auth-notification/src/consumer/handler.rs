@@ -3,7 +3,6 @@ use tracing::{debug, error};
 
 use features_auth_model::state::AuthAppState;
 use features_auth_stream::{signup::SignUpMessage, AuthMessage};
-
 use features_email_template_remote::{
     EmailTemplateService, TemplatePlaceholderService, TemplateTranslationService,
 };
@@ -14,7 +13,7 @@ use crate::email::{send_email, SendMail};
 pub async fn handle_consumer_message(
     message: AuthMessage,
     auth_state: AuthAppState,
-    headers: Option<HashMap<String, String>>,
+    _headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let result = match message {
         AuthMessage::SignIn { message } => {

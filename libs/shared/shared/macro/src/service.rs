@@ -31,13 +31,14 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
     }
     let remote_name_ident = syn::Ident::new(&remote_name, name.span());
     let gen = quote! {
-        use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
-        use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
         use dn_consul::{Consul, GetServiceNodesRequest};
-         use std::sync::{Arc, LazyLock, RwLock, Mutex};
-        use tracing::{debug, error};
-        use std::collections::HashMap;
+        use opentelemetry::{baggage::BaggageExt, Context};
+        use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+        use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
         use serde_json::Value;
+        use std::collections::HashMap;
+        use std::sync::{Arc, LazyLock, RwLock, Mutex};
+        use tracing::{debug, error};
 
         use shared_shared_data_core::roundrobin::RoundRobin;
 
@@ -114,10 +115,14 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     .with(RequestTracingMiddleware)
                     .build();
 
-                // TODO: Get tenant from Opentelemetry baggage
-                let tenant = "DEFAULT";
-                
-                let instance = Self::get_instance(tenant);
+                let tenant = Context::current()
+                    .baggage()
+                    .get("tenant_id")
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "DEFAULT".to_string());
+                debug!("Extracted tenant_id from baggage: {}", tenant);
+
+                let instance = Self::get_instance(tenant.as_str());
                 if instance.is_none() {
                     let err_msg = "No available service instances".to_string();
                     error!("{}", err_msg);

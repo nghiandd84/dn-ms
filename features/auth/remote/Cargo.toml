@@ -10,10 +10,11 @@ name = "features_auth_remote"
 path = "src/lib.rs"
 
 [dependencies]
+dn-consul = { workspace = true }
+opentelemetry = { workspace = true }
 reqwest = { workspace = true }
 reqwest-middleware = { workspace = true, features = ["json"] }
 reqwest-retry = { workspace = true }
-dn-consul = { workspace = true }
 sea-orm = { workspace = true, features = ["with-json"] }
 serde_json = { workspace = true }
 tracing = { workspace = true }
