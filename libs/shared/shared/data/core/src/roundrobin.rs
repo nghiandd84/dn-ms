@@ -1,5 +1,6 @@
 /// A struct to manage the round-robin state.
 /// It is now generic over the type `T`.
+#[derive(Debug, Clone)]
 pub struct RoundRobin<T> {
     values: Vec<T>,
     current_index: usize,

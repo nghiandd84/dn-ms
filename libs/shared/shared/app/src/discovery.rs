@@ -1,10 +1,9 @@
 use dn_consul::{
-    Config, Consul, ConsulError, DeregisterEntityPayload, GetServiceNodesRequest,
-    RegisterEntityCheck, RegisterEntityPayload, RegisterEntityService,
+    Config, Consul, DeregisterEntityPayload, RegisterEntityCheck, RegisterEntityPayload,
+    RegisterEntityService,
 };
-
+use tracing::info;
 use std::collections::HashMap;
-use tracing::{debug, info};
 
 static NODE_ID: &str = "dn-ms";
 
@@ -16,34 +15,6 @@ pub fn get_consul_client() -> Result<Consul, Box<dyn std::error::Error>> {
     info!("Consul client initialized successfully",);
 
     Ok(consul)
-}
-
-pub async fn get_service_instances(
-    consul: &Consul,
-    service_name: &str,
-) -> Result<Vec<(String, u16)>, ConsulError> {
-    let request = GetServiceNodesRequest {
-        service: service_name,
-        ..Default::default()
-    };
-    // consul.get_service_nodes(request, query_opts)
-    let data = consul.get_service_nodes(request, None).await;
-    let data = match data {
-        Ok(d) => d,
-        Err(e) => {
-            debug!(
-                "Failed to get service nodes for {}: {:?}",
-                service_name, e
-            );
-            return Err(e);
-        }
-    };
-    debug!("Service instances for {}: {:?}", service_name, data);
-
-    let instances = consul
-        .get_service_addresses_and_ports(service_name, None)
-        .await?;
-    Ok(instances)
 }
 
 pub async fn register_service(
@@ -79,10 +50,8 @@ pub async fn register_service(
     };
 
     let mut metadata: HashMap<String, String> = HashMap::new();
-    let tenant = std::env::var("TENANT");
-    if let Ok(tenant) = tenant {
-        metadata.insert("tenant".to_string(), tenant);
-    }
+    let tenant = std::env::var("TENANT").unwrap_or("DEFAULT".to_uppercase());
+    metadata.insert("tenant".to_string(), tenant);
 
     let payload = RegisterEntityPayload {
         ID: None,

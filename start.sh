@@ -44,6 +44,9 @@ done
 for i in {1..2}; do 
     fuser -k -15 530$i/tcp 
 done
+fuser -k -15 5306/tcp 
+fuser -k -15 5307/tcp 
+fuser -k -15 5308/tcp 
 
 # Kill Notification port
 for i in {1..2}; do 
@@ -97,6 +100,11 @@ for i in {1..2}; do
     # Execute the program
     EMAIL_TEMPLATE_PORT=530$i TENANT=TENANT_${i} $APP_DIRECTORY/api-email-template  &
 done
+# Tenant DEFAULT
+    EMAIL_TEMPLATE_PORT=5306 TENANT=TENANT_1 $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=5307 TENANT=TENANT_2 $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=5308 TENANT=DEFAULT $APP_DIRECTORY/api-email-template  &
+
 sleep 1s
 
 echo "------------ Start Notification API ------------"

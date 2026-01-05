@@ -34,14 +34,18 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
         use reqwest::{Client, Method, header::{HeaderName, HeaderValue, HeaderMap}};
         use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
         use dn_consul::{Consul, GetServiceNodesRequest};
-        use std::sync::{LazyLock, Mutex};
+         use std::sync::{Arc, LazyLock, RwLock, Mutex};
         use tracing::{debug, error};
         use std::collections::HashMap;
         use serde_json::Value;
 
         use shared_shared_data_core::roundrobin::RoundRobin;
 
-        static IP_PORTS: LazyLock<Mutex<RoundRobin<(String, u16)>>> = LazyLock::new(|| Mutex::new(RoundRobin::new(vec![])));
+        type Host = (String, u16);
+
+        // The Global Routing Table
+        static TENANT_ROUTING_TABLE: LazyLock<RwLock<HashMap<String, Mutex<RoundRobin<Host>>>>> =  LazyLock::new(|| RwLock::new(HashMap::new()));
+
         impl #name {
             fn service_name() -> &'static str {
                 stringify!(#remote_name_ident)
@@ -54,7 +58,8 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 }
             }
 
-            async fn get_ip_ports<'a>(consul: &'a Consul) -> Vec<(String, u16)> {
+            pub async fn update_remote(consul: &Consul) {
+
                 let request = GetServiceNodesRequest {
                     service: Self::service_name(),
                     ..Default::default()
@@ -65,22 +70,34 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                         "Failed to get service nodes for {}: {:?}",
                         Self::service_name(), e
                     );
-                    return vec![];
+                    return ();
                 }
                 let data = data.unwrap();
-                debug!("Service instances for {}: {:?}", Self::service_name(), data);
-
-                
-                let ip_ports = consul.get_service_addresses_and_ports(Self::service_name(), None);
-                ip_ports.await.unwrap_or_default()
-            }
-
-            pub async fn update_remote(consul: &Consul) {
-                let ip_ports: Vec<(String, u16)> = Self::get_ip_ports(consul).await;
-                debug!("Discovered auth service instances: {:?}", ip_ports);
-                if let Ok(mut rr) = IP_PORTS.lock() {
-                    rr.replace_values(ip_ports);
+                let instances: Vec<(String, u16, String)> = data.response.iter()
+                .map(|service| {
+                    let address = service.service.address.clone();
+                    let address = if address.is_empty() {
+                        service.node.address.clone()
+                    } else {
+                        address
+                    };
+                    let port = service.service.port;
+                    let tenant = service.service.meta.get("tenant").cloned().unwrap_or("DEFAULT".to_string());
+                    (address, port, tenant)
+                })
+                .collect();
+                let mut grouped: HashMap<String, Vec<Host>> = HashMap::new();
+                for (ip, port, tenant) in instances {
+                    let entry = grouped.entry(tenant).or_insert_with(Vec::new);
+                    entry.push((ip, port));
                 }
+                if let Ok(mut table) = TENANT_ROUTING_TABLE.write() {
+                    for (tenant, hosts) in grouped {
+                        table.insert(tenant, Mutex::new(RoundRobin::new(hosts)));
+                    }
+                }
+                debug!("Discovered table: {:?}", TENANT_ROUTING_TABLE);
+
             }
 
             #[tracing::instrument(name = "call_api", skip(json_body, headers_hashmap), fields(service_name = %Self::service_name()))]
@@ -97,7 +114,10 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                     .with(RequestTracingMiddleware)
                     .build();
 
-                let instance = Self::get_instance();
+                // TODO: Get tenant from Opentelemetry baggage
+                let tenant = "DEFAULT";
+                
+                let instance = Self::get_instance(tenant);
                 if instance.is_none() {
                     let err_msg = "No available service instances".to_string();
                     error!("{}", err_msg);
@@ -173,13 +193,16 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 Ok(data)
             }
 
-            fn get_instance() -> Option<(String, u16)> {
-                if let Ok(mut rr) = IP_PORTS.lock() {
-                    let result = rr.next_value();
-                    Some(result.clone())
-                } else {
-                    None
+            fn get_instance(tenant_id: &str) -> Option<Host> {
+                if let Ok(routing_table) = TENANT_ROUTING_TABLE.read() {
+                    if let Some(rr_mutex) = routing_table.get(tenant_id) {
+                        if let Ok(mut rr) = rr_mutex.lock() {
+                            let result = rr.next_value();
+                            return Some(result.clone());
+                        }
+                    }
                 }
+                None
             }
         }
     };
