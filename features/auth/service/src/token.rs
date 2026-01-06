@@ -1,6 +1,8 @@
-use std::time::Duration;
-
 use sea_orm::DbConn;
+use std::time::Duration;
+use tracing::{debug, error, info};
+use uuid::Uuid;
+
 use shared_shared_auth::{
     claim::{AccessTokenStruct, UserAccessData},
     data::AuthorizationCodeData,
@@ -12,12 +14,10 @@ use shared_shared_auth::{
 };
 
 use shared_shared_data_error::auth::TokenError;
-use tracing::{debug, error, info};
-use uuid::Uuid;
 
 use features_auth_entities::token::{TokenForCreateDto, TokenForUpdateDto};
 use features_auth_model::{
-    state::{AuthAppState, AuthCacheState},
+    state::AuthCacheState,
     token::{GrantType, TokenForCreateRequest, TokenForVerifyRequest},
 };
 use shared_shared_data_app::result::Result;
@@ -89,7 +89,12 @@ impl TokenService {
                     accesses,
                     scopes,
                 )
-                .await?;
+                .await;
+                if authorization_code_data.is_err() {
+                    error!("Error creating authorization data for user_id: {}", user_id);
+                    return Err(authorization_code_data.err().unwrap());
+                }
+                let authorization_code_data = authorization_code_data.unwrap();
 
                 authorization_data = authorization_code_data;
                 debug!("Access token is created successfully");
@@ -147,8 +152,14 @@ pub async fn create_new_token_authorization_data<'a>(
     accesses: Vec<UserAccessData>,
     scopes: Vec<String>,
 ) -> Result<AuthorizationCodeData> {
-    let (access_token, jti) = create_access_token(user_id, client_secret, accesses)
-        .map_err(|error| AppError::Token(error))?;
+    let access_token = create_access_token(user_id, client_secret, accesses)
+        .map_err(|error| AppError::Token(error));
+    if access_token.is_err() {
+        debug!("Error creating access token for user_id: {}", user_id);
+        return Err(access_token.err().unwrap());
+    }
+    let (access_token, jti) = access_token.unwrap();
+    debug!("Access token created for user_id: {}", user_id);
 
     let mut dto: TokenForCreateDto = TokenForCreateDto::default();
 
@@ -157,22 +168,39 @@ pub async fn create_new_token_authorization_data<'a>(
     dto.access_token = access_token.clone();
     dto.scopes = scopes.clone();
     let token_id = TokenMutation::create(db, dto).await?;
+    debug!("Token created with id: {}", token_id);
 
-    cache
-        .insert(
-            get_access_token_cache_key(user_id),
-            AuthCacheState::AccessToken(jti),
-            Some(Duration::from_secs(TOKEN_EXPIRATION as u64)),
-        )
-        .unwrap();
-    let (refresh_token, jti) = create_refresh_token(user_id, client_secret, token_id)
-        .map_err(|error| AppError::Token(error))?;
+    let insert_cache = cache.insert(
+        get_access_token_cache_key(user_id),
+        AuthCacheState::AccessToken(jti),
+        Some(Duration::from_secs(TOKEN_EXPIRATION as u64)),
+    );
+    match insert_cache {
+        Ok(_) => {
+            debug!("Access token cache inserted for user_id: {}", user_id);
+        }
+        Err(e) => {
+            error!(
+                "Error inserting access token cache for user_id: {}: {}",
+                user_id, e
+            );
+        }
+    }
+
+    let refresh_token = create_refresh_token(user_id, client_secret, token_id)
+        .map_err(|error| AppError::Token(error));
+    if refresh_token.is_err() {
+        debug!("Error creating refresh token for user_id: {}", user_id);
+        return Err(refresh_token.err().unwrap());
+    }
+    let (refresh_token, jti) = refresh_token.unwrap();
 
     let token_for_update = TokenForUpdateDto {
         access_token: None,
         refresh_token: Some(refresh_token.clone()),
     };
     TokenMutation::update(db, token_id, token_for_update).await?;
+    debug!("Token updated with refresh token for id: {}", token_id);
 
     cache
         .insert(

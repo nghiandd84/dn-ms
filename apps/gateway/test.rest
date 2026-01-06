@@ -25,3 +25,13 @@ Content-Type: application/json
 GET {{baseUrl}}/api/bakery/bakeries/2
 Content-Type: application/json
 
+# AUTH
+### Generate token
+POST {{baseUrl}}/api/auth/oauth/token
+Content-Type: application/json
+
+{
+    "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
+    "grant_type":"authorization_code",
+    "code":"VE50lzROT7ldZDqHgbvukghQqCnWIQ6xSybkrmJlj2m6CXF3ni7k3tLMix2TkNzq"
+}

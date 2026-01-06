@@ -1,8 +1,8 @@
-use std::str::FromStr;
+use std::{f32::consts::E, str::FromStr};
 
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use tracing::debug;
+use tracing::{debug, error};
 use uuid::Uuid;
 
 use crate::claim::{AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct, UserAccessData};
@@ -45,8 +45,8 @@ pub fn create_access_token(
         &claims,
         &EncodingKey::from_secret(client_secret.as_ref()),
     )
-    .map_err(|error| {
-        debug!("Failed to create token: {}", error);
+    .map_err(|e| {
+        error!("Failed to create token: {}", e);
         TokenError::CanNotCreateToken
     })?;
     Ok((access_token, jti))
@@ -75,8 +75,8 @@ pub fn create_refresh_token(
         &claims,
         &EncodingKey::from_secret(client_secret.as_ref()),
     )
-    .map_err(|error| {
-        debug!("Failed to create refresh token: {}", error);
+    .map_err(|e| {
+        error!("Failed to create refresh token: {}", e);
         TokenError::CanNotCreateToken
     })?;
 
@@ -96,8 +96,8 @@ pub fn decode_access_token(
         &validation,
     )
     .map(|data| data.claims.dn_data)
-    .map_err(|error| {
-        debug!("Failed to decode refresh token: {}", error);
+    .map_err(|e| {
+        error!("Failed to decode refresh token: {}", e);
         TokenError::InvalidToken
     })?;
 
@@ -119,8 +119,8 @@ pub fn decode_refresh_token(
         &DecodingKey::from_secret(client_secret.as_ref()),
         &validation,
     )
-    .map_err(|error| {
-        debug!("Failed to decode refresh token: {}", error);
+    .map_err(|e| {
+        error!("Failed to decode refresh token: {}", e);
         TokenError::InvalidToken
     })?;
     let jti = Uuid::from_str(data.claims.jti.as_str()).unwrap();
