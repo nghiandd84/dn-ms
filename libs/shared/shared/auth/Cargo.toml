@@ -12,7 +12,7 @@ path = "src/lib.rs"
 [dependencies]
 
 chrono = { workspace = true }
-jsonwebtoken = { workspace = true }
+jsonwebtoken = { workspace = true, features = ["rust_crypto"] }
 serde = { workspace = true }
 tracing = { workspace = true }
 utoipa = { workspace = true }

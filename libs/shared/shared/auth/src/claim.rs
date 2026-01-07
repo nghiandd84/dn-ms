@@ -22,13 +22,16 @@ pub enum ClaimSubject {
 #[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema, Response)]
 pub struct AccessTokenStruct {
     pub user_id: Uuid,
+    pub client_id: Uuid,
     pub accesses: Vec<UserAccessData>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RefreshTokenStruct {
     pub user_id: Uuid,
+    pub client_id: Uuid,
     pub token_id: Uuid,
+
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]

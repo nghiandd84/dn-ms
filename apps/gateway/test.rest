@@ -4,7 +4,7 @@
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 
-@acessToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJhY2Nlc3NlcyI6W3sicm9sZV9uYW1lIjoiRE5BUFBfR1VFU1QiLCJrZXkiOiJhY2Nlc3Nfa2V5In1dfSwiZXhwIjoxNzY3ODU5ODAzLCJpYXQiOjE3Njc3NzM0MDMsImp0aSI6ImY2MjVkZWZkLTZhNDEtNGNjMC1hMjQ0LTdjNTIzMjg0ODliNCJ9.lmeHjTnHe83MrRA4wVyj0lL3MqvsbGyY76C8C1IFOuE
+@acessToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJhY2Nlc3NlcyI6W3sicm9sZV9uYW1lIjoiRE5BUFBfR1VFU1QiLCJrZXkiOiJhY2Nlc3Nfa2V5In1dfSwiZXhwIjoxNzY3ODczNTQ0LCJpYXQiOjE3Njc3ODcxNDQsImp0aSI6ImZlODI0ZWJjLTFkYWItNDA3MS1iODUxLTg1MWY1YWExZjQwMiJ9.Jl1cLmP4D__x8tATCJcq2nzZGrMKqeGZ3__BI_ewatQ
 
 ### 
 
@@ -37,9 +37,9 @@ Content-Type: application/json
 {
     "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
     "grant_type":"authorization_code",
-    "code":"t6Ovvp4ZtH9b619DrrAti0xDIHwbd6dzKV9LfezX7AgxZNCcDu21IArvirSqzKO5"
+    "code":"Rk2uhcPWK8slHdV7DYMhHoLuS5ZjWYCaEWPBCDQwsd5RwxK41HgXRqcl7VmAG1pn"
 }
-@AccessToken = {{generateRequest.response.body.data.access_token}}
+
 
 
 
@@ -48,7 +48,6 @@ POST {{baseUrl}}/api/auth/tokens/verify
 Content-Type: application/json
 
 {
-    "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
     "token": "{{acessToken}}"
 }
 

@@ -17,7 +17,6 @@ async-trait = { workspace = true }
 chrono = { version = "0.4.39", features = ["serde"] }
 dotenv = { workspace = true }
 futures-util = { workspace = true }
-jsonwebtoken = { workspace = true }
 tracing = { workspace = true }
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = { workspace = true }

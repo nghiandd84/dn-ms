@@ -135,7 +135,7 @@ impl ProxyHttp for Proxy {
                     "Successfully executed request_filter interceptors with result {}",
                     success
                 );
-                return Ok(!success);
+                return Ok(success);
             }
             Err(e) => {
                 error!("Error executing request_filter interceptors: {:?}", e);

@@ -20,9 +20,7 @@ pub struct TokenForCreateRequest {
 #[derive(Clone, Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct TokenForVerifyRequest {
     #[validate(required(code = "token_required", message = "token is required"))]
-    pub token: Option<String>,
-    #[validate(required(code = "client_id_required", message = "client id is required"))]
-    pub client_id: Option<Uuid>,
+    pub token: Option<String>
 }
 
 #[derive(Deserialize, Serialize, Debug, ToSchema, Clone)]

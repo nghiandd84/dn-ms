@@ -46,6 +46,6 @@ impl Interceptor for RateLimiterInterceptor {
             self.filter
         );
         // TODO Implement rate limiter
-        Ok(true)
+        Ok(false)
     }
 }

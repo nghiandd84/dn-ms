@@ -8,8 +8,8 @@ use shared_shared_auth::{
     data::AuthorizationCodeData,
     token::{
         create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
-        get_access_token_cache_key, get_refresh_token_cache_key, REFRESH_TOKEN_EXPIRATION,
-        TOKEN_EXPIRATION, TOKEN_TYPE,
+        get_access_token_cache_key, get_refresh_token_cache_key, insecured_decode_access_token,
+        REFRESH_TOKEN_EXPIRATION, TOKEN_EXPIRATION, TOKEN_TYPE,
     },
 };
 
@@ -125,11 +125,11 @@ impl TokenService {
         db: &DbConn,
         token_request: &TokenForVerifyRequest,
     ) -> Result<AccessTokenStruct> {
-        let client_id = token_request.client_id.unwrap_or_default();
         let token = token_request.token.clone().unwrap_or_default();
-        let client = ClientQuery::get(db, client_id).await;
+        let access_token = insecured_decode_access_token(token.as_str());
+        let access_token = access_token.unwrap();
+        let client = ClientQuery::get(db, access_token.client_id).await;
         if client.is_err() {
-            // error!("Error fetching client with id : {:?}", client_id);
             return Err(AppError::EntityNotFound {
                 entity: "Client".to_string(),
             });
@@ -152,7 +152,7 @@ pub async fn create_new_token_authorization_data<'a>(
     accesses: Vec<UserAccessData>,
     scopes: Vec<String>,
 ) -> Result<AuthorizationCodeData> {
-    let access_token = create_access_token(user_id, client_secret, accesses)
+    let access_token = create_access_token(user_id, client_id, client_secret, accesses)
         .map_err(|error| AppError::Token(error));
     if access_token.is_err() {
         debug!("Error creating access token for user_id: {}", user_id);
@@ -187,7 +187,7 @@ pub async fn create_new_token_authorization_data<'a>(
         }
     }
 
-    let refresh_token = create_refresh_token(user_id, client_secret, token_id)
+    let refresh_token = create_refresh_token(user_id, client_id, client_secret, token_id)
         .map_err(|error| AppError::Token(error));
     if refresh_token.is_err() {
         debug!("Error creating refresh token for user_id: {}", user_id);
@@ -231,6 +231,7 @@ pub async fn create_refresh_token_authorization_data<'a>(
         decode_refresh_token(old_refresh_token, client_secret).unwrap();
     let user_id = refresh_data.user_id;
     let token_id = refresh_data.token_id;
+    let client_id = refresh_data.client_id;
 
     let cache_key = get_refresh_token_cache_key(user_id);
     let refresh_token_cache_data = cache.get(&cache_key).unwrap();
@@ -245,7 +246,7 @@ pub async fn create_refresh_token_authorization_data<'a>(
     }
 
     let accesses = UserQuery::get_access_data_by_user_id(db, user_id).await?;
-    let (access_token, jti) = create_access_token(user_id, client_secret, accesses)
+    let (access_token, jti) = create_access_token(user_id, client_id, client_secret, accesses)
         .map_err(|error| AppError::Token(error))?;
     cache
         .insert(
@@ -255,7 +256,7 @@ pub async fn create_refresh_token_authorization_data<'a>(
         )
         .unwrap();
 
-    let (refresh_token, jti) = create_refresh_token(user_id, client_secret, token_id)
+    let (refresh_token, jti) = create_refresh_token(user_id, client_id, client_secret, token_id)
         .map_err(|error| AppError::Token(error))?;
     let token_for_update = TokenForUpdateDto {
         access_token: Some(access_token.clone()),

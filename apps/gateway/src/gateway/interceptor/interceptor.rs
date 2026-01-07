@@ -18,7 +18,7 @@ pub type PhaseResult = GatewayResult<bool>;
 pub trait Interceptor: Send + Sync {
     fn interceptor_type(&self) -> InterceptorType;
     fn phase_mask(&self) -> PhaseMask {
-        0
+        Phase::Init.mask()
     }
 
     fn _init(&mut self, _interceptor_config: &InterceptorConfig) -> GatewayResult<()> {
@@ -65,7 +65,7 @@ pub async fn execute_interceptors<'a>(
     for interceptor in interceptors.iter() {
         let _execute = execute_interceptor(interceptor, session).await;
     }
-    Ok(true)
+    Ok(false)
 }
 async fn execute_interceptor<'a>(
     interceptor: &Arc<dyn Interceptor>,

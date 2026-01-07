@@ -37,10 +37,10 @@ impl Interceptor for TokenAuthInterceptor {
         if token.is_none() {
             debug!("No Authorization header found");
             // Here you might want to set an error response in the session
-            return Ok(false);
+            return Ok(true);
         }
         let token = token.unwrap();
         debug!("Extracted token: {:?}", token);
-        Ok(true)
+        Ok(false)
     }
 }

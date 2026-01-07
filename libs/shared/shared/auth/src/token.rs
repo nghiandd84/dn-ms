@@ -1,7 +1,9 @@
-use std::{f32::consts::E, str::FromStr};
-
 use chrono::{Duration, Utc};
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{
+    dangerous::insecure_decode, decode, encode, Algorithm, DecodingKey, EncodingKey, Header,
+    Validation,
+};
+use std::str::FromStr;
 use tracing::{debug, error};
 use uuid::Uuid;
 
@@ -23,6 +25,7 @@ pub fn get_refresh_token_cache_key(user_id: Uuid) -> String {
 
 pub fn create_access_token(
     user_id: Uuid,
+    client_id: Uuid,
     client_secret: &str,
     accesses: Vec<UserAccessData>,
 ) -> Result<(String, Uuid), TokenError> {
@@ -32,7 +35,11 @@ pub fn create_access_token(
     let expiration = now + Duration::seconds(TOKEN_EXPIRATION);
 
     let claims = Claims {
-        dn_data: ClaimSubject::AccessToken(AccessTokenStruct { user_id, accesses }),
+        dn_data: ClaimSubject::AccessToken(AccessTokenStruct {
+            user_id,
+            client_id,
+            accesses,
+        }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
         jti: jti.clone().to_string(),
@@ -54,6 +61,7 @@ pub fn create_access_token(
 
 pub fn create_refresh_token(
     user_id: Uuid,
+    client_id: Uuid,
     client_secret: &str,
     token_id: Uuid,
 ) -> Result<(String, Uuid), TokenError> {
@@ -62,7 +70,11 @@ pub fn create_refresh_token(
     // Refresh token valid for 30 days
     let expiration = now + Duration::seconds(REFRESH_TOKEN_EXPIRATION);
     let claims = Claims {
-        dn_data: ClaimSubject::RefreshToken(RefreshTokenStruct { user_id, token_id }),
+        dn_data: ClaimSubject::RefreshToken(RefreshTokenStruct {
+            user_id,
+            client_id,
+            token_id,
+        }),
         exp: expiration.timestamp() as u64,
         iat: now.timestamp() as u64,
         jti: jti.to_string(),
@@ -81,6 +93,22 @@ pub fn create_refresh_token(
     })?;
 
     Ok((refresh_token, jti))
+}
+
+pub fn insecured_decode_access_token(token: &str) -> Result<AccessTokenStruct, TokenError> {
+    let claims = match insecure_decode::<Claims>(token) {
+        Ok(data) => data.claims.dn_data,
+        Err(err) => {
+            error!("Error decoding token: {:?}", err);
+            return Err(TokenError::InvalidToken);
+        }
+    };
+
+    let result = match claims {
+        ClaimSubject::AccessToken(token_data) => Ok(token_data),
+        _ => Err(TokenError::InvalidToken),
+    };
+    result
 }
 
 pub fn decode_access_token(
