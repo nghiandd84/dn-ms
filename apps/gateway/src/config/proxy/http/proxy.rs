@@ -4,7 +4,7 @@ use pingora::{prelude::HttpPeer, upstreams::peer::Peer, Error};
 use pingora_http::{RequestHeader, ResponseHeader};
 use pingora_proxy::{ProxyHttp, Session};
 use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
-use tracing::{debug, info, info_span};
+use tracing::{debug, error, info_span};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::{
@@ -53,13 +53,14 @@ impl Proxy {
             .insterceptors
             .iter()
             .filter(|interceptor| {
+                let interceptor_name = format!("{:?}", interceptor.interceptor_type());
                 let is_match_phase = interceptor.phase_mask() & phase.mask() != 0;
                 let default_filter = String::from("");
                 let interceptor_filter = interceptor.filter().as_ref().unwrap_or(&default_filter);
                 let is_match_filter = *interceptor_filter == filter_name;
                 debug!(
-                    "get_interceptors filter_name: {} is_match_phase: {} is_match_filter: {}",
-                    filter_name, is_match_phase, is_match_filter
+                    "get_interceptors filter_name: {} interceptor_name {} is_match_phase: {} is_match_filter: {}",
+                    filter_name, interceptor_name, is_match_phase, is_match_filter
                 );
                 is_match_phase && is_match_filter
             })
@@ -114,6 +115,35 @@ impl ProxyHttp for Proxy {
         Ok(())
     }
 
+    async fn request_filter(
+        &self,
+        _session: &mut Session,
+        ctx: &mut Self::CTX,
+    ) -> Result<bool, Box<Error>> {
+        let filter = ctx.filter.clone().unwrap();
+        debug!("request_filter - Filter Name: {}", filter.name);
+        let mut session = session::Session::build(Phase::RequestFilter, _session, ctx);
+        let filter_interceptors = self.get_interceptors(Phase::RequestFilter, filter.name.clone());
+        debug!(
+            "Executing request_filter interceptors with length {}",
+            filter_interceptors.len()
+        );
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        match invalid_execute {
+            Ok(success) => {
+                debug!(
+                    "Successfully executed request_filter interceptors with result {}",
+                    success
+                );
+                return Ok(!success);
+            }
+            Err(e) => {
+                error!("Error executing request_filter interceptors: {:?}", e);
+                return Ok(true);
+            }
+        }
+    }
+
     async fn upstream_peer(
         &self,
         psession: &mut Session,
@@ -156,7 +186,7 @@ impl ProxyHttp for Proxy {
         ctx: &mut Self::CTX,
     ) -> Result<(), Box<Error>> {
         let filter = ctx.filter.clone().unwrap();
-        debug!("RequestFilter - Filter Name: {}", filter.name);
+        debug!("response_filter - Filter Name: {}", filter.name);
         let mut session = session::Session::build(Phase::PostUpstreamResponse, psession, ctx);
         session.upstream_response(upstream_response);
         let filter_interceptors =

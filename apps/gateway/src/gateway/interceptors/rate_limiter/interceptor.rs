@@ -42,10 +42,10 @@ impl Interceptor for RateLimiterInterceptor {
 
     async fn request_filter(&self, _session: &mut Session) -> PhaseResult {
         debug!(
-            "Request RateLimiterInterceptor with filter {}",
-            self.filter.as_ref().unwrap()
+            "Request RateLimiterInterceptor with filter {:?}",
+            self.filter
         );
         // TODO Implement rate limiter
-        Ok(false)
+        Ok(true)
     }
 }

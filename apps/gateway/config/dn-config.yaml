@@ -83,6 +83,10 @@ gateways:
         type: request_id
         enabled: true
         filter: bakery_router_filter
+      - name: bakery_token_auth
+        type: token_auth
+        enabled: true
+        filter: bakery_router_filter
       - name: auth_request_id
         type: request_id
         enabled: true

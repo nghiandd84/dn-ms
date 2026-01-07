@@ -41,6 +41,6 @@ impl Interceptor for RequestIdInterceptor {
             "X-Request-Id".to_string(),
             trace_id.clone().into_bytes().to_vec(),
         );
-        Ok(false)
+        Ok(true)
     }
 }

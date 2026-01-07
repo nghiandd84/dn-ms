@@ -56,6 +56,20 @@ impl<'a> Session<'a> {
             .insert(header_name, header_value);
     }
 
+    pub fn ds_req_header(&self, header_name: &str) -> Option<String> {
+        let header_value = self
+            .psession
+            .as_downstream()
+            .req_header()
+            .headers
+            .get(header_name);
+
+        match header_value {
+            Some(value) => Some(String::from_utf8(value.as_bytes().to_vec()).unwrap()),
+            None => None,
+        }
+    }
+
     pub fn trace_id(&self) -> String {
         let context = self.ctx.span_context.as_ref();
         if context.is_none() {

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub enum InterceptorType {
     RequestId,
     RateLimiter,
+    TokenAuth
 }
 
 impl InterceptorType {
@@ -12,6 +13,7 @@ impl InterceptorType {
         match self {
             InterceptorType::RequestId => "request_id",
             InterceptorType::RateLimiter => "rate_limiter",
+            InterceptorType::TokenAuth => "token_auth",
         }
     }
 }

@@ -7,6 +7,7 @@ use crate::{
         interceptor::{Interceptor, InterceptorType},
         interceptors::{
             rate_limiter::RateLimiterInterceptorBuilder, request_id::RequestIdInterceptorBuilder,
+            token_auth::TokenAuthInterceptorBuilder,
         },
     },
 };
@@ -33,6 +34,10 @@ impl InterceptorBuilderRegistry {
         registry.insert(
             InterceptorType::RateLimiter,
             Arc::new(RateLimiterInterceptorBuilder::default()),
+        );
+        registry.insert(
+            InterceptorType::TokenAuth,
+            Arc::new(TokenAuthInterceptorBuilder::default()),
         );
 
         Self { registry }
