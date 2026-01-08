@@ -6,9 +6,12 @@ use crate::{
     gateway::interceptor::{Interceptor, InterceptorType, Phase, PhaseMask, PhaseResult},
 };
 
+use features_auth_remote::TokenService;
+
 #[derive(Debug)]
 pub struct TokenAuthConfig {
-    pub verify_endpoint: String,
+    pub verify_endpoint: Option<String>,
+    pub use_auth_service: bool,
 }
 
 #[derive(Debug)]
@@ -40,6 +43,7 @@ impl Interceptor for TokenAuthInterceptor {
         &self.filter
     }
 
+    #[tracing::instrument(name = "TokenAuthInterceptor::request_filter", skip(self, session))]
     async fn request_filter(&self, session: &mut Session) -> PhaseResult {
         // TODO extract token from request headers and validate
         let token = session.ds_req_header("Authorization");
@@ -54,8 +58,24 @@ impl Interceptor for TokenAuthInterceptor {
             "TokenAuthInterceptor with filter {:?} and config {:?}",
             self.filter, self.token_auth_config
         );
+        let is_use_auth_service = self.token_auth_config.use_auth_service;
+        if is_use_auth_service {
+            debug!("Using auth service to verify token");
+            let verify_data = TokenService::validate_token(token).await;
+            match verify_data {
+                Ok(valid) => {
+                    debug!("Token is valid: {:?}", valid);
+                    // You can set user info in session here if needed
+                    return Ok(false);
+                }
+                Err(e) => {
+                    debug!("Token validation failed: {:?}", e);
+                    return Ok(true);
+                }
+            }
+        }
+
         // TODO Call verify_endpoint to validate the token
         Ok(false)
     }
-
 }

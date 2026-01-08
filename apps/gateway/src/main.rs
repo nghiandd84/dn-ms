@@ -1,12 +1,16 @@
 mod config;
 mod error;
 mod gateway;
+mod poller;
 
 use dotenv::dotenv;
 use opentelemetry::global;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use pingora::server::{configuration::ServerConf, Server};
-use std::sync::Arc;
+use pingora::{
+    prelude::background_service,
+    server::{configuration::ServerConf, Server},
+};
+use std::{sync::Arc, time::Duration};
 use tracing::debug;
 
 use shared_shared_app::{discovery::get_consul_client, tracing::init_tracing_log};
@@ -18,6 +22,8 @@ use gateway::{
     build_http,
     state::{build_gateway_state, GatewayStateStore},
 };
+
+use crate::poller::ApiPoller;
 
 #[async_std::main]
 async fn main() {
@@ -46,6 +52,14 @@ async fn main() {
         let service = build_http(gateway_state_store, Arc::new(server_conf)).await;
         server.add_service(service);
     }
+    // Create your background API poller
+    let poller = ApiPoller {
+        interval_duration: Duration::from_secs(60), // Call every 60 seconds
+    };
+    // Wrap it in Pingora's background service helper
+    let background_task = background_service("API Poller", poller);
+    server.add_service(background_task);
+
     debug!("Starting Gateway server...");
     server.run_forever();
 }
