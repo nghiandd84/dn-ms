@@ -1,4 +1,4 @@
-use serde_json::json;
+use serde_json::{de, json};
 use uuid::Uuid;
 
 use shared_shared_macro::RemoteService;
@@ -9,10 +9,9 @@ use shared_shared_middleware::RequestTracingMiddleware;
 pub struct TokenService {}
 
 impl TokenService {
-    pub async fn validate_token(token: String, client_id: Uuid) -> Result<Uuid, String> {
+    pub async fn validate_token(token: String) -> Result<Uuid, String> {
         let body = json!({
-            "token": token,
-            "client_id": client_id
+            "token": token
         });
 
         let verify_endpoint = std::env::var("AUTH_ENDPOINT_VERIFY_TOKEN")
@@ -24,6 +23,7 @@ impl TokenService {
             return Err(err_msg);
         }
         let data = res.unwrap();
+        debug!("Token validation response: {:?}", data);
 
         if data.get("user_id").is_none() {
             let err_msg = "Response body does not contain user_id".to_string();

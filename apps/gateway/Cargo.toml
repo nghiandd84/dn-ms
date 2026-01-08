@@ -38,4 +38,6 @@ dotenv = { workspace = true }
 
 shared-shared-app = { workspace = true }
 
+features-auth-remote = { workspace = true }
+
 # Build from gateway Dakia at https://github.com/ats1999/dakia

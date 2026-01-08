@@ -86,6 +86,8 @@ gateways:
       - name: bakery_token_auth
         type: token_auth
         enabled: true
+        config:
+          verify_endpoint: http://localhost:6001/api/auth/tokens/verify
         filter: bakery_router_filter
       - name: auth_request_id
         type: request_id

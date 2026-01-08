@@ -7,13 +7,22 @@ use crate::{
 };
 
 #[derive(Debug)]
+pub struct TokenAuthConfig {
+    pub verify_endpoint: String,
+}
+
+#[derive(Debug)]
 pub struct TokenAuthInterceptor {
     filter: Option<String>,
+    token_auth_config: TokenAuthConfig,
 }
 
 impl TokenAuthInterceptor {
-    pub fn build(filter: Option<String>) -> Self {
-        Self { filter }
+    pub fn build(token_auth_config: TokenAuthConfig, filter: Option<String>) -> Self {
+        Self {
+            filter,
+            token_auth_config,
+        }
     }
 }
 
@@ -41,6 +50,12 @@ impl Interceptor for TokenAuthInterceptor {
         }
         let token = token.unwrap();
         debug!("Extracted token: {:?}", token);
+        debug!(
+            "TokenAuthInterceptor with filter {:?} and config {:?}",
+            self.filter, self.token_auth_config
+        );
+        // TODO Call verify_endpoint to validate the token
         Ok(false)
     }
+
 }

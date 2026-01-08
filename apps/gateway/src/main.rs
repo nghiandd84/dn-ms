@@ -9,13 +9,15 @@ use pingora::server::{configuration::ServerConf, Server};
 use std::sync::Arc;
 use tracing::debug;
 
+use shared_shared_app::{discovery::get_consul_client, tracing::init_tracing_log};
+
+use features_auth_remote::TokenService;
+
 use config::{app_config::load_app_config, dn_config::DnConfig, proxy::http::Proxy};
 use gateway::{
     build_http,
     state::{build_gateway_state, GatewayStateStore},
 };
-
-use shared_shared_app::tracing::init_tracing_log;
 
 #[async_std::main]
 async fn main() {

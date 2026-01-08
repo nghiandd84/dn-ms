@@ -11,12 +11,12 @@ use features_notification_stream::websocket::{Auth, ServerResponse};
 pub async fn handle_authenticate<'a>(
     token: String,
     websocket_id: usize,
-    client_id: Uuid,
+    _client_id: Uuid,
     notification_state: &'a Arc<RwLock<NotificationState>>,
     tx: &'a mpsc::UnboundedSender<Message>,
 ) {
     // let validate_token = TokenService::validate_token(token, client_id).await;
-    let validate_token = TokenService::validate_token(token, client_id).await;
+    let validate_token = TokenService::validate_token(token).await;
 
     if validate_token.is_err() {
         send_failure_message(tx, validate_token.err().unwrap());

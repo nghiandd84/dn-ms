@@ -37,8 +37,16 @@ impl DnConfig {
         let raw_config = fs::read_to_string(&config_path).unwrap();
         let config = Config::builder()
             .add_source(File::from_str(raw_config.as_str(), FileFormat::Yaml))
-            .build()
-            .unwrap();
+            .build();
+        let config = match config {
+            Ok(c) => c,
+            Err(e) => {
+                panic!(
+                    "Failed to load config from path {:?}, error: {}",
+                    config_path, e
+                );
+            }
+        };
         let mut dn_config: DnConfig = config.try_deserialize().unwrap();
         dn_config.version = 0;
         dn_config.dp = app_config.dp.clone();

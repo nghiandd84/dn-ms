@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use tracing::debug;
-
 use crate::{
     config::source_config::InterceptorConfig,
     error::GatewayResult,
@@ -21,7 +19,6 @@ impl Default for RequestIdInterceptorBuilder {
 
 impl InterceptorBuilder for RequestIdInterceptorBuilder {
     fn build(&self, interceptor_config: InterceptorConfig) -> GatewayResult<Arc<dyn Interceptor>> {
-        debug!("RequestIdInterceptorBuilder");
         let interceptor = RequestIdInterceptor::build(interceptor_config.filter);
         Ok(Arc::new(interceptor))
     }
