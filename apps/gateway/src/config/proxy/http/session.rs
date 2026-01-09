@@ -1,8 +1,8 @@
-use http::Uri;
-use opentelemetry::trace::TraceContextExt;
+use http::{HeaderName, Uri};
+use opentelemetry::{trace::TraceContextExt, Context};
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
 use pingora_proxy::Session as PSession;
-use std::mem::take;
+use std::{mem::take, str::FromStr};
 use tracing::debug;
 
 use crate::{
@@ -70,7 +70,7 @@ impl<'a> Session<'a> {
         }
     }
 
-    pub fn trace_id(&self) -> String {
+    pub fn get_trace_id(&self) -> String {
         let context = self.ctx.span_context.as_ref();
         if context.is_none() {
             return "".to_string();
@@ -80,6 +80,14 @@ impl<'a> Session<'a> {
         let span_context = span.span_context();
         let trace_id = span_context.trace_id().to_string();
         trace_id
+    }
+
+    pub fn set_span_context(&mut self, context: Context) {
+        self.ctx.span_context = Some(context);
+    }
+
+    pub fn get_span_context(&self) -> &Option<Context> {
+        &self.ctx.span_context
     }
 
     async fn flush_header_to_ds(&mut self) -> PhaseResult {
@@ -99,17 +107,6 @@ impl<'a> Session<'a> {
                 "Something went wrong! Upstream headers are not present",
             ))),
         }
-
-        // let headers = take(&mut self.ctx.ds_res_header_buffer);
-        // for (header_name, header_value) in headers.into_iter() {
-        //     header.insert_header(header_name, header_value)?;
-        // }
-
-        // self.psession
-        //     .write_response_header(Box::new(header), false)
-        //     .await?;
-
-        // Ok(true)
     }
 
     pub fn flush_us_req_header(&mut self) -> PhaseResult {
@@ -177,15 +174,6 @@ impl<'a> Session<'a> {
         let uri = new_path_str.parse::<Uri>().unwrap();
         self.psession.req_header_mut().set_uri(uri);
     }
-
-    // pub fn flush_timeout(&mut self, filter: &Filter) -> () {
-    //     if let Some(timeout) = filter.timeout {
-    //         // self.upstream_request.
-    //         // self.psession.set_pro(Duration::from_secs(timeout));
-
-    //         // self.psession.set_timeout(timeout);
-    //     }
-    // }
 
     fn path_and_query(&self) -> &str {
         let path_and_query = self

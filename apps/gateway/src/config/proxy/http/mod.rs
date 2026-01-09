@@ -3,6 +3,7 @@ mod helpers;
 mod proxy;
 mod session;
 mod load_balancer;
+mod tracing;
 
 use std::collections::HashMap;
 

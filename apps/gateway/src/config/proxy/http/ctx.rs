@@ -37,6 +37,13 @@ impl HttpGatewayCtx {
     pub fn get_filter(&self) -> Option<&Filter> {
         self.filter.as_ref()
     }
+    pub fn set_span_context(&mut self, span_context: Context) {
+        self.span_context = Some(span_context);
+    }
+
+    pub fn get_span_context(&self) -> Option<&Context> {
+        self.span_context.as_ref()
+    }
 }
 
 // Header

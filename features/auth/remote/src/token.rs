@@ -1,6 +1,6 @@
-use serde_json::{de, json};
-use uuid::Uuid;
+use serde_json::json;
 
+use shared_shared_auth::claim::{AccessTokenStruct, ClaimSubject};
 use shared_shared_macro::RemoteService;
 use shared_shared_middleware::RequestTracingMiddleware;
 
@@ -9,7 +9,7 @@ use shared_shared_middleware::RequestTracingMiddleware;
 pub struct TokenService {}
 
 impl TokenService {
-    pub async fn validate_token(token: String) -> Result<Uuid, String> {
+    pub async fn validate_token(token: String) -> Result<AccessTokenStruct, String> {
         let body = json!({
             "token": token
         });
@@ -24,23 +24,29 @@ impl TokenService {
         }
         let data = res.unwrap();
         debug!("Token validation response: {:?}", data);
-
-        if data.get("user_id").is_none() {
-            let err_msg = "Response body does not contain user_id".to_string();
+        let claim_subject = serde_json::from_value::<ClaimSubject>(data.clone());
+        if claim_subject.is_err() {
+            let err_msg = format!(
+                "Failed to parse claim subject: {}",
+                claim_subject.err().unwrap()
+            );
             return Err(err_msg);
         }
-        let user_id = data.get("user_id").unwrap().as_str();
-        if user_id.is_none() {
-            let err_msg = "user_id is not a string".to_string();
-            return Err(err_msg);
-        }
-        let user_id = user_id.unwrap();
-        let user_id = Uuid::parse_str(user_id);
-        if user_id.is_err() {
-            let err_msg = format!("Failed to parse user_id: {}", user_id.err().unwrap());
-            return Err(err_msg);
-        }
-        let user_id = user_id.unwrap();
-        Ok(user_id)
+        let claim_subject = claim_subject.unwrap();
+        debug!("Parsed claim subject: {:?}", claim_subject);
+        let access_token = match claim_subject {
+            ClaimSubject::AccessToken(access_token) => {
+                debug!(
+                    "Access token is valid for user_id: {}",
+                    access_token.user_id
+                );
+                access_token
+            }
+            _ => {
+                debug!("Claim subject is not an access token");
+                return Err("Invalid token or claim subject".to_string());
+            }
+        };
+        Ok(access_token)
     }
 }

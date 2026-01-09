@@ -13,9 +13,7 @@ use pingora::{
 use std::{sync::Arc, time::Duration};
 use tracing::debug;
 
-use shared_shared_app::{discovery::get_consul_client, tracing::init_tracing_log};
-
-use features_auth_remote::TokenService;
+use shared_shared_app::tracing::init_tracing_log;
 
 use config::{app_config::load_app_config, dn_config::DnConfig, proxy::http::Proxy};
 use gateway::{

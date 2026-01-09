@@ -36,7 +36,6 @@ impl BackgroundService for ApiPoller {
 
 impl ApiPoller {
     async fn call_external_api(&self) {
-        // Your logic to call an API (e.g., using reqwest or Pingora's internal HTTP client)
         debug!("Calling API to refresh data...");
         let consul_client = get_consul_client().unwrap();
         TokenService::update_remote(&consul_client).await;

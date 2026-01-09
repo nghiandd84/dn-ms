@@ -32,7 +32,7 @@ impl Interceptor for RequestIdInterceptor {
     }
 
     async fn post_upstream_response(&self, session: &mut Session) -> PhaseResult {
-        let trace_id = session.trace_id();
+        let trace_id = session.get_trace_id();
         debug!(
             "RequestIdInterceptor setting X-Request-Id header with trace_id: {}",
             trace_id

@@ -1,15 +1,20 @@
 use async_trait::async_trait;
-use http::{HeaderName, HeaderValue};
+use opentelemetry::propagation::TextMapPropagator;
+use opentelemetry::{baggage::BaggageExt, global};
+use opentelemetry_sdk::propagation::BaggagePropagator;
 use pingora::{prelude::HttpPeer, upstreams::peer::Peer, Error};
 use pingora_http::{RequestHeader, ResponseHeader};
 use pingora_proxy::{ProxyHttp, Session};
-use std::{collections::HashMap, str::FromStr, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tracing::{debug, error, info_span};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::{
     config::{
-        proxy::http::session,
+        proxy::http::{
+            session,
+            tracing::{PingoraHeaderExtractor, PingoraHeaderInjector},
+        },
         source_config::{find_filter_config, find_router_config},
     },
     gateway::{
@@ -97,7 +102,7 @@ impl ProxyHttp for Proxy {
         let span = info_span!("request", otel.name = %request_name);
         let _ = span.set_parent(parent_cx);
         let _gaurd = span.enter();
-        ctx.span_context = Some(span.context());
+        ctx.set_span_context(span.context());
 
         let mut session = session::Session::build(Phase::Init, psession, ctx);
 
@@ -205,50 +210,35 @@ impl ProxyHttp for Proxy {
     where
         Self::CTX: Send + Sync,
     {
-        let context = ctx.span_context.as_ref().unwrap().clone();
-        debug!("Current Context: {:?}", context);
         let mut session = session::Session::build(Phase::PreUpstreamRequest, _session, ctx);
+        let context = session.get_span_context();
+        let context = context.clone().unwrap();
+        debug!("Current Context: {:?}", context);
+        let baggage = context.baggage();
+        debug!("Baggage data {:?}", baggage);
 
         global::get_text_map_propagator(|prop| {
             prop.inject_context(&context, &mut PingoraHeaderInjector(upstream_request))
         });
+        let propagator = BaggagePropagator::new();
+        let mut fields = HashMap::new();
+
+        propagator.inject_context(&context, &mut fields);
+        if let Some(baggage_value) = fields.get("baggage") {
+            upstream_request
+                .insert_header("baggage", baggage_value)
+                .map_err(|e| {
+                    pingora_core::Error::because(
+                        pingora_core::ErrorType::HTTPStatus(500),
+                        "Failed to inject baggage header",
+                        e,
+                    )
+                })?;
+        }
 
         let _up = session.upstream_request(upstream_request);
         let _plush = session.flush_us_req_header();
 
         Ok(())
-    }
-}
-
-use opentelemetry::{
-    global,
-    propagation::{Extractor, Injector},
-};
-// Helper for Extraction (Reading incoming headers)
-struct PingoraHeaderExtractor<'a>(&'a pingora_http::RequestHeader);
-impl<'a> Extractor for PingoraHeaderExtractor<'a> {
-    fn get(&self, key: &str) -> Option<&str> {
-        let data = self.0.headers.get(key).and_then(|v| v.to_str().ok());
-        debug!(
-            "Extracting header: {} with  value {}",
-            key,
-            data.unwrap_or("Unknown")
-        );
-        data
-    }
-    fn keys(&self) -> Vec<&str> {
-        debug!("Getting all header keys");
-        self.0.headers.iter().map(|(k, _)| k.as_str()).collect()
-    }
-}
-
-// Helper for Injection (Writing outgoing headers)
-struct PingoraHeaderInjector<'a>(&'a mut pingora_http::RequestHeader);
-impl<'a> Injector for PingoraHeaderInjector<'a> {
-    fn set(&mut self, key: &str, value: String) {
-        debug!("Injecting header: {}: {}", key, value);
-        let header_value = HeaderValue::from_str(&value).unwrap();
-        let header_name = HeaderName::from_str(key).unwrap();
-        let _ = self.0.insert_header(header_name, header_value);
     }
 }
