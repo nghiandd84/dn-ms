@@ -11,6 +11,8 @@ path = "src/lib.rs"
 
 [dependencies]
 
+async-trait = { workspace = true }
+axum = { workspace = true }
 chrono = { workspace = true }
 jsonwebtoken = { workspace = true, features = ["rust_crypto"] }
 serde = { workspace = true }

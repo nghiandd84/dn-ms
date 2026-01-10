@@ -1,5 +1,6 @@
 
-@baseUrl = http://localhost:5201
+# @baseUrl = http://localhost:5201
+@baseUrl = http://localhost:6101
 ### healthchecker
 GET {{baseUrl}}/healthchecker
 
@@ -27,6 +28,10 @@ Content-Type: application/json
 ### Delete Baker by Id
 DELETE {{baseUrl}}/bakers/5
 Content-Type: application/json
+baggage: accesses=BAKERY_SUPPORT*A_ACCESS_KEY|EMAIL_NOTIFICATION_SALE*B_ACCESS_KEY,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7
+
+# baggage: accesses=BAKERY_SUPPORT*A_ACCESS_KEY|EMAIL_NOTIFICATION_SALE*B_ACCESS_KEY,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7
+#baggage: accesses=DNAPP_GUEST*access_key,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7,client_id=5ed8e536-12ae-463d-ae9b-8c78cc5481e1
 
 
 ### Get Baker by Id

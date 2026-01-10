@@ -77,6 +77,7 @@ impl Interceptor for TokenAuthInterceptor {
             let mut baggage = Baggage::new();
             let _ = baggage.insert("user_id", access_token.user_id.to_string());
             let _ = baggage.insert("client_id", access_token.client_id.to_string());
+            let _ = baggage.insert("accesses", access_token.access_to_string());
             let updated_span_context = span_context.with_baggage(baggage);
             session.set_us_req_header("Authorization".to_string(), vec![]);
             session.set_span_context(updated_span_context.clone());

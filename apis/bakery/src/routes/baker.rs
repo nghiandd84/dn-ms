@@ -15,6 +15,7 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+use shared_shared_auth::permission::{Auth, RequireDelete};
 
 use features_bakery_entities::baker::BakerForCreateDto;
 use features_bakery_model::{baker::{
@@ -58,6 +59,7 @@ async fn create(
 )]
 async fn delete_by_id(
     state: State<AppState<BakeryCacheState>>,
+    auth: Auth<RequireDelete>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
     BakerMutation::delete(&state.conn, baker_id).await?;

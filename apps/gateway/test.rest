@@ -23,8 +23,14 @@ traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4731-00f067aa0ba902b1-01
 GET {{baseUrl}}/api/bakery/bakeries/1?param_1=one
 Content-Type: application/json
 
-###
+### Get
 GET {{baseUrl}}/api/bakery/bakeries/2
+Content-Type: application/json
+Authorization: Bearer {{acessToken}}
+
+
+### Delete
+DELETE  {{baseUrl}}/api/bakery/bakers/6
 Content-Type: application/json
 Authorization: Bearer {{acessToken}}
 

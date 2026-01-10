@@ -26,16 +26,36 @@ pub struct AccessTokenStruct {
     pub accesses: Vec<UserAccessData>,
 }
 
+impl AccessTokenStruct {
+    pub fn access_to_string(&self) -> String {
+        let access_str = self
+            .accesses
+            .iter()
+            .map(|access| access.to_string())
+            .collect::<Vec<_>>()
+            .join("|");
+        access_str
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RefreshTokenStruct {
     pub user_id: Uuid,
     pub client_id: Uuid,
     pub token_id: Uuid,
-
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct UserAccessData {
     pub role_name: String,
     pub key: Option<String>, // Optional: Access key
+}
+
+impl ToString for UserAccessData {
+    fn to_string(&self) -> String {
+        match &self.key {
+            Some(key) => format!("{}*{}", self.role_name, key),
+            None => format!("{}*", self.role_name),
+        }
+    }
 }

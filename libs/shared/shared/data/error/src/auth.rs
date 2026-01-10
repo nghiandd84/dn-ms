@@ -24,6 +24,8 @@ pub enum AuthError {
     ExistingUser,
     #[error("Unknow role")]
     UnknowRole,
+    #[error("Insufficient permission")]
+    InsufficientPermission,
     #[error("Unknow error")]
     Unknow,
 }
@@ -34,6 +36,7 @@ impl AuthError {
             AuthError::NotFoundUser => StatusCode::NOT_FOUND,
             AuthError::UnknowRole => StatusCode::NOT_FOUND,
             AuthError::WrongPassword => StatusCode::UNAUTHORIZED,
+            AuthError::InsufficientPermission => StatusCode::FORBIDDEN,
             AuthError::ExistingUser => StatusCode::CONFLICT,
             AuthError::Unknow => StatusCode::INTERNAL_SERVER_ERROR,
         }
