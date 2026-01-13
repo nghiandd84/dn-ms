@@ -124,6 +124,7 @@ where
                 cache,
                 state,
                 producer: Arc::new(Mutex::new(HashMap::new())),
+                permissions_map: Arc::new(Mutex::new(HashMap::new())),
             };
 
             let axum_layer = OtelAxumLayer::default().filter(|str| {

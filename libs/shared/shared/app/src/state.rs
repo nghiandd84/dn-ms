@@ -20,6 +20,7 @@ where
     pub cache: Cache<String, C>,
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
+    pub permissions_map: Arc<Mutex<HashMap<String, u32>>>,
 }
 
 impl<T, C> Clone for AppState<T, C>
@@ -33,6 +34,7 @@ where
             cache: self.cache.clone(),
             state: self.state.clone(),
             producer: self.producer.clone(),
+            permissions_map: self.permissions_map.clone()
         }
     }
 }
@@ -48,6 +50,8 @@ where
             cache,
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),
+            permissions_map: Arc::new(Mutex::new(HashMap::new())),
+
         }
     }
 

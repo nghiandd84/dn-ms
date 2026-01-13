@@ -3,48 +3,18 @@ use shared_shared_data_error::{app::AppError, auth::AuthError};
 use std::marker::PhantomData;
 use tracing::{debug, error};
 
-const READ: u32 = 1 << 0; // 1
-const CREATE: u32 = 1 << 1; // 2
-const UPDATE: u32 = 1 << 2; // 4
-const DELETE: u32 = 1 << 3; // 8
-const ADMIN: u32 = 1 << 4; // 16 (The "Super User" bit)
+use crate::ResourcePermission;
 
-pub trait BitmaskRequirement {
-    const REQUIRED_BIT: u32;
-}
+pub const READ: u32 = 1 << 0; // 1
+pub const CREATE: u32 = 1 << 1; // 2
+pub const UPDATE: u32 = 1 << 2; // 4
+pub const DELETE: u32 = 1 << 3; // 8
+pub const ADMIN: u32 = 1 << 4; // 16 (The "Super User" bit)
 
-pub struct RequireRead;
-impl BitmaskRequirement for RequireRead {
-    const REQUIRED_BIT: u32 = READ;
-}
 
-pub struct RequireCreate;
-impl BitmaskRequirement for RequireCreate {
-    const REQUIRED_BIT: u32 = CREATE;
-}
 
-pub struct RequireUpdate;
-impl BitmaskRequirement for RequireUpdate {
-    const REQUIRED_BIT: u32 = UPDATE;
-}
 
-pub struct RequireDelete;
-impl BitmaskRequirement for RequireDelete {
-    const REQUIRED_BIT: u32 = DELETE;
-}
-
-// Requirement: Must have both READ and WRITE bits
-pub struct RequireReadUpdate;
-impl BitmaskRequirement for RequireReadUpdate {
-    const REQUIRED_BIT: u32 = READ | UPDATE;
-}
-
-pub struct RequireAdmin;
-impl BitmaskRequirement for RequireAdmin {
-    const REQUIRED_BIT: u32 = ADMIN;
-}
-
-pub struct Auth<R: BitmaskRequirement> {
+pub struct Auth<R: ResourcePermission> {
     pub mask: u32,
     phantom_r: PhantomData<R>,
 }
@@ -52,7 +22,8 @@ pub struct Auth<R: BitmaskRequirement> {
 impl<S, R> FromRequestParts<S> for Auth<R>
 where
     S: Send + Sync,
-    R: BitmaskRequirement,
+    S: Send + Sync,
+    R: ResourcePermission,
 {
     type Rejection = AppError;
 
@@ -85,10 +56,10 @@ where
         let user_mask = u32::from_str_radix(key_str.trim_start_matches("0x"), 16)
             .map_err(|_| AppError::Auth(AuthError::InsufficientPermission))?;
         debug!("User mask {}", user_mask);
-        // 3. Bitwise  check
+        // 3. Check against Resource Requirement
         let is_admin = (user_mask & ADMIN) == ADMIN;
-        let has_required = (user_mask & R::REQUIRED_BIT) == R::REQUIRED_BIT;
-        if is_admin || has_required {
+        let has_perm = (user_mask & R::BIT) == R::BIT;
+        if is_admin || has_perm {
             Ok(Auth {
                 mask: user_mask,
                 phantom_r: PhantomData,

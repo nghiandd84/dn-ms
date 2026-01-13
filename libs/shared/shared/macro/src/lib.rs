@@ -4,6 +4,7 @@ mod builder;
 mod dto;
 mod filter;
 mod mutation;
+mod permission;
 mod proc_example;
 mod query;
 mod response;
@@ -62,4 +63,16 @@ pub fn response_json_generic(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Dto, attributes(dto))]
 pub fn derive_dto(input: TokenStream) -> TokenStream {
     dto::derive_dto(input)
+}
+
+macro_rules! define_resource_perms {
+    ($($struct_name:ident => ($bit:expr, $resource:expr)),*) => {
+        $(
+            pub struct $struct_name;
+            impl ResourcePermission for $struct_name {
+                const BIT: u32 = $bit;
+                const RESOURCE: &'static str = $resource;
+            }
+        )*
+    };
 }
