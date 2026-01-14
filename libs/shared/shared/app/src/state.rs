@@ -7,6 +7,7 @@ use sea_orm_migration::sea_orm::DatabaseConnection;
 use serde::{de::DeserializeOwned, Serialize};
 use tracing::error;
 
+use shared_shared_auth::permission::StatePermission;
 use shared_shared_data_cache::cache::Cache;
 
 use crate::event_task::producer::Producer;
@@ -20,7 +21,7 @@ where
     pub cache: Cache<String, C>,
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
-    pub permissions_map: Arc<Mutex<HashMap<String, u32>>>,
+    pub permissions_map: Arc<Mutex<HashMap<String, Vec<(String, u32)>>>>,
 }
 
 impl<T, C> Clone for AppState<T, C>
@@ -34,7 +35,32 @@ where
             cache: self.cache.clone(),
             state: self.state.clone(),
             producer: self.producer.clone(),
-            permissions_map: self.permissions_map.clone()
+            permissions_map: self.permissions_map.clone(),
+        }
+    }
+}
+
+impl<T, C> StatePermission for AppState<T, C>
+where
+    C: Clone + Serialize + DeserializeOwned,
+    T: Clone,
+{
+    fn get_permission_map(&self, role_name: String, resource_name: String) -> u32 {
+        let permission_map = self.permissions_map.clone();
+        let permission = match permission_map.lock() {
+            Ok(guard) => guard.get(&role_name).cloned(),
+            Err(_err) => None,
+        };
+        match permission {
+            Some(perms) => {
+                let perm = perms
+                    .into_iter()
+                    .find(|(res, _)| res == &resource_name)
+                    .map(|(_, p)| p)
+                    .unwrap_or(0);
+                perm
+            }
+            None => 0,
         }
     }
 }
@@ -51,7 +77,6 @@ where
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),
             permissions_map: Arc::new(Mutex::new(HashMap::new())),
-
         }
     }
 

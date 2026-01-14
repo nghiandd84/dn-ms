@@ -8,7 +8,7 @@ use shared_shared_auth::{
 
 // BAKER Permission
 define_resource_perms! {
-    CanDeleteBaker  => (DELETE, "BAKER"),
-    CanUpdateBaker  => (UPDATE, "BAKER"),
-    CanReadBaker => (READ, "BAKER")
+    CanDeleteBaker  => (DELETE, "BAKERY_BAKER"),
+    CanUpdateBaker  => (UPDATE, "BAKERY_BAKER"),
+    CanReadBaker => (READ, "BAKERY_BAKER")
 }

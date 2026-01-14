@@ -27,6 +27,14 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::access::Entity")]
     Access,
+    // #[sea_orm(
+    //     belongs_to = "super::role_permission::Entity",
+    //     from = "Column::Id",
+    //     to = "super::role_permission::Column::RoleId",
+    //     on_update = "Cascade",
+    //     on_delete = "SetNull"
+    // )]
+    // RolePermissions,
 }
 
 impl Related<super::access::Entity> for Entity {
@@ -34,6 +42,8 @@ impl Related<super::access::Entity> for Entity {
         Relation::Access.def()
     }
 }
+
+
 
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {

@@ -12,7 +12,7 @@ impl MigrationName for Migration {
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager
+        let _create_permission = manager
             .create_table(
                 Table::create()
                     .table(role::Entity)
@@ -49,7 +49,48 @@ impl MigrationTrait for Migration {
                     )
                     .to_owned(),
             )
-            .await
+            .await;
+
+        let _create_role_permision = manager
+            .create_table(
+                Table::create()
+                    .table(role::Entity)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(role::Column::Id)
+                            .uuid()
+                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .not_null()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(role::Column::Name)
+                            .string()
+                            .string_len(50)
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(role::Column::Description)
+                            .string()
+                            .string_len(250)
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(role::Column::CreatedAt)
+                            .timestamp()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(role::Column::UpdatedAt)
+                            .timestamp()
+                            .not_null(),
+                    )
+                    .to_owned(),
+            )
+            .await;
+
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {

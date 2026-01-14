@@ -11,23 +11,23 @@ pub const UPDATE: u32 = 1 << 2; // 4
 pub const DELETE: u32 = 1 << 3; // 8
 pub const ADMIN: u32 = 1 << 4; // 16 (The "Super User" bit)
 
-
-
-
 pub struct Auth<R: ResourcePermission> {
     pub mask: u32,
     phantom_r: PhantomData<R>,
 }
 
+pub trait StatePermission {
+    fn get_permission_map(&self, role_name: String, resource_name: String) -> u32;
+}
+
 impl<S, R> FromRequestParts<S> for Auth<R>
 where
-    S: Send + Sync,
-    S: Send + Sync,
+    S: Send + Sync + StatePermission,
     R: ResourcePermission,
 {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let baggage = parts
             .headers
             .get("baggage")
@@ -48,8 +48,8 @@ where
             })
             .and_then(|val| val.split('*').nth(1))
             .ok_or(AppError::Auth(AuthError::InsufficientPermission))?;
-
         debug!("key {}", key_str);
+        let permission_map = state.get_permission_map(key_str.to_string(), R::RESOURCE.to_string());
 
         // 2. Parse the key as a Hex or Decimal number
         // Example: if key is "0x0F", parse it as hex

@@ -3,6 +3,8 @@ pub mod access;
 pub mod active_code;
 pub mod client;
 pub mod role;
+pub mod permission;
+pub mod role_permission;
 pub mod scope;
 pub mod token;
 pub mod user;

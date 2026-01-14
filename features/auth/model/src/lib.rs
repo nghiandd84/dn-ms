@@ -5,6 +5,8 @@ pub mod client;
 pub mod login;
 pub mod profile;
 pub mod role;
+pub mod role_permission;
+pub mod permission;
 pub mod scope;
 pub mod state;
 pub mod token;
