@@ -14,7 +14,7 @@ pub struct Model {
     #[sea_orm(column_type = "String(StringLen::N(1204))", unique)]
     pub resource: String,
     pub description: Option<String>,
-    pub mask: u32,
+    pub mask: i32,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

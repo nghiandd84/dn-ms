@@ -21,6 +21,7 @@ impl PermissionMutation {
         db: &'a DbConn,
         data: PermissionForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
+        debug!("Create permission {:?}", data);
         PermissionMutationManager::create_uuid(db, data.into())
     }
 

@@ -40,6 +40,11 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
+                        ColumnDef::new(permission::Column::Mask)
+                            .integer()
+                            .default(0i32),
+                    )
+                    .col(
                         ColumnDef::new(permission::Column::CreatedAt)
                             .timestamp()
                             .not_null(),

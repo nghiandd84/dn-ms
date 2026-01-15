@@ -28,6 +28,7 @@ use shared_shared_data_core::{
 };
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct RolePermissionData {
+    pub id: Option<Uuid>,
     pub role_id: Option<Uuid>,
     pub permission_id: Option<Uuid>,
 }
@@ -37,6 +38,7 @@ impl Into<RolePermissionData> for ModelOptionDto {
         RolePermissionData {
             role_id: self.role_id,
             permission_id: self.permission_id,
+            id: self.id,
             ..Default::default()
         }
     }

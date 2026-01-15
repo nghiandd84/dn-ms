@@ -16,8 +16,6 @@ use shared_shared_data_app::ctx::Ctx;
 use shared_shared_data_app::result::Result;
 use shared_shared_data_error::app::AppError;
 
-const CUSTOM_TRACE_ID_HEADER: &str = "X-Service-Trace-ID";
-
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Response) -> Response {
     debug!(
         "main_response_mapper: uri: {}, method: {}",
@@ -64,14 +62,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Respon
                 .unwrap_or_default();
             info!("Current Trace ID: {}", trace_id_str);
 
-            // event!(Level::INFO, trace_id = ?trace_id, "Current Trace ID logged in health checker");
-            // 3. Inject the Trace ID into the response header
-            if let Ok(header_value) = HeaderValue::from_str(&trace_id_str) {
-                res.headers_mut().insert(
-                    CUSTOM_TRACE_ID_HEADER, // e.g., "X-Service-Trace-ID"
-                    header_value,
-                );
-            }
+         
 
             let status = res.status();
             let body = to_bytes(res.into_body(), usize::MAX)

@@ -16,7 +16,7 @@ pub struct PermissionForCreateRequest {
     ))]
     pub resource: String,
     pub description: Option<String>,
-    pub mask: Option<u32>,
+    pub mask: Option<i32>,
 }
 
 impl Into<PermissionForCreateDto> for PermissionForCreateRequest {
@@ -36,7 +36,7 @@ use shared_shared_data_core::{
 pub struct PermissionData {
     pub resource: Option<String>,
     pub description: Option<String>,
-    pub mask: Option<u32>,
+    pub mask: Option<i32>,
     pub id: Option<Uuid>,
 }
 

@@ -24,6 +24,36 @@ impl RolePermissionMutation {
         RolePermissionMutationManager::create_uuid(db, data.into())
     }
 
+    pub async fn assign_permissions<'a>(
+        db: &'a DbConn,
+        role_id: Uuid,
+        permission_ids: Vec<Uuid>,
+    ) -> Result<bool, DbErr> {
+        debug!(
+            "Assign permissions {:?} to role {:?}",
+            permission_ids, role_id
+        );
+        for permission_id in &permission_ids {
+            let create_request = RolePermissionForCreateDto {
+                role_id,
+                permission_id: *permission_id,
+            };
+            let insert =
+                RolePermissionMutationManager::create_uuid(db, create_request.into()).await;
+            if insert.is_err() {
+                debug!(
+                    "Failed to assign permission {:?} to role {:?}: {:?}",
+                    permission_id,
+                    role_id,
+                    insert.err()
+                );
+            }
+        }
+        Ok(true)
+    }
+
+    
+
     pub fn delete<'a>(
         db: &'a DbConn,
         id: Uuid,
