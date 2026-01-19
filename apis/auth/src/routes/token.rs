@@ -5,7 +5,7 @@ use axum::{
 };
 use shared_shared_auth::{
     claim::{AccessTokenStruct, AccessTokenStructResponse},
-    data::AuthorizationCodeData,
+    data::{AuthorizationCodeData, AuthorizationCodeDataResponse},
 };
 use tracing::debug;
 use uuid::Uuid;
@@ -36,10 +36,10 @@ const TAG: &str = "token";
 #[utoipa::path(
     post,
     request_body = TokenForCreateRequest,
-    path = "/oauth/token",
+    path = "/tokens/oauth",
     tag = TAG,
     responses(
-        (status = 200, description = "Token is created", body = OkUuidResponse),       
+        (status = 200, description = "Token is created", body = AuthorizationCodeDataResponse),       
     )
 )]
 async fn create_token(
@@ -121,7 +121,7 @@ async fn filter_tokens(
 
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
-        .route("/oauth/token", post(create_token))
+        .route("/tokens/oauth", post(create_token))
         .route("/tokens/{token_id}", get(get_token))
         .route("/tokens/verify", post(verify_token))
         .route("/tokens", get(filter_tokens))

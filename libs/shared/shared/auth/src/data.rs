@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use utoipa::ToSchema;
+use shared_shared_macro::Response;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, ToSchema, Response)]
 pub struct AuthorizationCodeData {
     pub token_type: String,
     pub access_token: String,

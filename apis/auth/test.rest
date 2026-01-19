@@ -189,7 +189,7 @@ Content-Type: application/json
 
 ### Create new token
 # @name tokenRequest
-POST {{baseUrl}}/oauth/token
+POST {{baseUrl}}/tokens/oauth
 Content-Type: application/json
 
 {   
@@ -204,7 +204,7 @@ Content-Type: application/json
 
 ### Create new token from refresh token
 # @name refreshRequest
-POST {{baseUrl}}/oauth/token
+POST {{baseUrl}}/tokens/oauth
 Content-Type: application/json
 
 {   

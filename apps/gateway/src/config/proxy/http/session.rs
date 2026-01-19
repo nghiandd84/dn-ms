@@ -41,6 +41,20 @@ impl<'a> Session<'a> {
     pub fn upstream_response(&mut self, upstream_response: &'a mut PResponseHeader) {
         self.upstream_response = Some(upstream_response);
     }
+
+    pub fn get_req_header(&self, header_name: &str) -> Option<String> {
+        let header_value = self
+            .psession
+            .as_downstream()
+            .req_header()
+            .headers
+            .get(header_name);
+
+        match header_value {
+            Some(value) => Some(String::from_utf8(value.as_bytes().to_vec()).unwrap()),
+            None => None,
+        }
+    }
 }
 
 impl<'a> Session<'a> {
@@ -103,9 +117,9 @@ impl<'a> Session<'a> {
                 }
                 Ok(true)
             }
-            None => Err(Box::new(Error::from_str(
+            None => Err(Error::from_str(
                 "Something went wrong! Upstream headers are not present",
-            ))),
+            )),
         }
     }
 
@@ -119,9 +133,9 @@ impl<'a> Session<'a> {
                 }
                 Ok(true)
             }
-            None => Err(Box::new(Error::from_str(
+            None => Err(Error::from_str(
                 "Something went wrong! Upstream headers are not present",
-            ))),
+            )),
         }
     }
 

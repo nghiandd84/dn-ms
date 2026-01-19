@@ -112,12 +112,28 @@ impl ProxyHttp for Proxy {
             .expect(format!("Not found filter for path {}", session.ds_req_path()).as_str());
         let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
 
-        let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        // let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
 
-        session.flush_path_and_query(&filter);
-        ctx.set_filter(filter);
-
-        Ok(())
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        match invalid_execute {
+            Ok(success) => {
+                debug!(
+                    "Successfully executed early_request_filter interceptors with result {}",
+                    success
+                );
+                if success {
+                    let err = Error::new_str("Terminated by early_request_filter interceptor");
+                    return Err(err.into());
+                }
+                session.flush_path_and_query(&filter);
+                ctx.set_filter(filter);
+                return Ok(());
+            }
+            Err(e) => {
+                error!("Error executing early_request_filter interceptors: {:?}", e);
+                return Err(Error::new_str("Error in early_request_filter interceptor"));
+            }
+        }
     }
 
     async fn request_filter(
@@ -140,11 +156,15 @@ impl ProxyHttp for Proxy {
                     "Successfully executed request_filter interceptors with result {}",
                     success
                 );
-                return Ok(success);
+                if success {
+                    let err = Error::new_str("Terminated by request_filter interceptor");
+                    return Err(err.into());
+                }
+                return Ok(false);
             }
             Err(e) => {
                 error!("Error executing request_filter interceptors: {:?}", e);
-                return Ok(true);
+                return Err(Error::new_str("Error in request_filter interceptor"));
             }
         }
     }
@@ -196,7 +216,24 @@ impl ProxyHttp for Proxy {
         session.upstream_response(upstream_response);
         let filter_interceptors =
             self.get_interceptors(Phase::PostUpstreamResponse, filter.name.clone());
-        let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        match invalid_execute {
+            Ok(success) => {
+                debug!(
+                    "Successfully executed response_filter interceptors with result {}",
+                    success
+                );
+                if success {
+                    let err = Error::new_str("Terminated by response_filter interceptor");
+                    return Err(err.into());
+                }
+            }
+            Err(e) => {
+                error!("Error executing response_filter interceptors: {:?}", e);
+                let error = Error::new_str("Error in response_filter interceptor");
+                return Err(error);
+            }
+        }
         let _flush = session.flush_ds_res_header().await;
         Ok(())
     }

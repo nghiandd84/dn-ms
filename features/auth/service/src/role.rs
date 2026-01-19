@@ -4,6 +4,7 @@ use shared_shared_data_core::{
     order::Order,
     paging::Pagination,
 };
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_app::result::Result;
@@ -46,19 +47,27 @@ impl RoleService {
         role_id: Uuid,
         permission_ids: Vec<Uuid>,
     ) -> Result<bool> {
-        let param: FilterParam<String> = FilterParam {
+        let param: FilterParam<Uuid> = FilterParam {
             name: "role_id".to_string(),
             operator: FilterOperator::Equal,
-            value: Some(role_id.clone().to_string()),
+            value: Some(role_id.clone()),
             raw_value: role_id.to_string(),
         };
-        let email_filter = FilterEnum::String(param);
+        let email_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![email_filter];
         let pagination = Pagination::new(1, 200);
         let order = Order::default();
         let search = RolePermissionQuery::search(db, &pagination, &order, &filters).await?;
         for dto in search.result {
+            debug!(
+                "Current permission id {:?} and unassign permission {:?}",
+                dto.permission_id, permission_ids
+            );
             if permission_ids.contains(&dto.permission_id.unwrap()) {
+                debug!(
+                    "Unassign permission id {:?} from role id {:?}",
+                    dto.permission_id, role_id
+                );
                 let _ = RolePermissionMutation::delete(db, dto.id.unwrap()).await?;
             }
         }

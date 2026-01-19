@@ -5,7 +5,7 @@ use crate::{
     error::GatewayResult,
     gateway::{
         interceptor::Interceptor, interceptor_builder::InterceptorBuilder,
-        interceptors::request_id::interceptor::RequestIdInterceptor,
+        interceptors::request_id::interceptor::CorsInterceptor,
     },
 };
 
@@ -19,7 +19,7 @@ impl Default for RequestIdInterceptorBuilder {
 
 impl InterceptorBuilder for RequestIdInterceptorBuilder {
     fn build(&self, interceptor_config: InterceptorConfig) -> GatewayResult<Arc<dyn Interceptor>> {
-        let interceptor = RequestIdInterceptor::build(interceptor_config.filter);
+        let interceptor = CorsInterceptor::build(interceptor_config.filter);
         Ok(Arc::new(interceptor))
     }
 }

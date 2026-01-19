@@ -86,14 +86,21 @@ gateways:
       - name: bakery_token_auth
         type: token_auth
         enabled: true
+        filter: bakery_router_filter
         config:
           # verify_endpoint: http://localhost:6001/api/auth/tokens/verify
           use_auth_service: true
-        filter: bakery_router_filter
       - name: auth_request_id
         type: request_id
         enabled: true
         filter: auth_router_filter
+      - name: bakery_cors
+        type: cors
+        enabled: true
+        filter: bakery_router_filter  
+        # filter: auth_router_filter  
+        config:
+          allowed_domains: mydomain.com,testdomain.com
       - name: bakery_rate_limiter
         type: rate_limiter
         enabled: true

@@ -7,18 +7,18 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct RequestIdInterceptor {
+pub struct CorsInterceptor {
     filter: Option<String>,
 }
 
-impl RequestIdInterceptor {
+impl CorsInterceptor {
     pub fn build(filter: Option<String>) -> Self {
         Self { filter }
     }
 }
 
 #[async_trait]
-impl Interceptor for RequestIdInterceptor {
+impl Interceptor for CorsInterceptor {
     fn interceptor_type(&self) -> InterceptorType {
         InterceptorType::RequestId
     }

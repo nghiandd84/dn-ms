@@ -34,6 +34,8 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::role::delete_role,
         crate::routes::role::filter_roles,
         crate::routes::role::get_role,
+        crate::routes::role::assign_permissions,
+        crate::routes::role::unassign_permissions,
         crate::routes::scope::create_scope,
         crate::routes::scope::delete_scope,
         crate::routes::scope::filter_scopes,

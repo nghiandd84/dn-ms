@@ -18,10 +18,14 @@ use shared_shared_data_core::{
 
 use features_auth_entities::role::RoleForCreateDto;
 use features_auth_model::{
-    role::{RoleData, RoleDataFilterParams, RoleDataResponse, RoleForCreateRequest},
+    role::{
+        AssignPermissionToRoleRequest, RoleData, RoleDataFilterParams, RoleDataResponse,
+        RoleForCreateRequest,
+    },
     state::{AuthAppState, AuthCacheState},
 };
 use features_auth_repo::role::{RoleMutation, RoleQuery};
+use features_auth_service::RoleService;
 
 const TAG: &str = "role";
 
@@ -105,10 +109,62 @@ async fn filter_roles(
     Ok(ResponseJson(result))
 }
 
+#[utoipa::path(
+    post,
+    request_body = AssignPermissionToRoleRequest,
+    path = "/roles/{role_id}/assign-permissions",
+    tag = TAG,
+    responses(
+        (status = 200, description = "Permission was assigned", body = OkUuidResponse),       
+    )
+)]
+async fn assign_permissions(
+    state: State<AppState<AuthAppState, AuthCacheState>>,
+    Path(role_id): Path<Uuid>,
+    ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    let assign =
+        RoleService::assign_permissions(&state.conn, role_id, request.permission_ids).await?;
+    Ok(ResponseJson(OkUuid {
+        ok: assign,
+        id: None,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    request_body = AssignPermissionToRoleRequest,
+    path = "/roles/{role_id}/unassign-permissions",
+    tag = TAG,
+    responses(
+        (status = 200, description = "Permission was assigned", body = OkUuidResponse),       
+    )
+)]
+async fn unassign_permissions(
+    state: State<AppState<AuthAppState, AuthCacheState>>,
+    Path(role_id): Path<Uuid>,
+    ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    let assign =
+        RoleService::unassign_permissions(&state.conn, role_id, request.permission_ids).await?;
+    Ok(ResponseJson(OkUuid {
+        ok: assign,
+        id: None,
+    }))
+}
+
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/roles", post(create_role))
         .route("/roles/{role_id}", delete(delete_role))
+        .route(
+            "/roles/{role_id}/assign-permissions",
+            post(assign_permissions),
+        )
+        .route(
+            "/roles/{role_id}/unassign-permissions",
+            post(unassign_permissions),
+        )
         .route("/roles/{role_id}", get(get_role))
         .route("/roles", get(filter_roles))
         .with_state(app_state.clone())

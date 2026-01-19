@@ -22,10 +22,7 @@ pub struct RoleForCreateRequest {
     ))]
     pub description: String,
 
-    #[validate(required(
-        code = "client_id_required",
-        message = "client_id is required"
-    ))]
+    #[validate(required(code = "client_id_required", message = "client_id is required"))]
     pub client_id: Option<Uuid>,
 }
 
@@ -37,6 +34,11 @@ impl Into<RoleForCreateDto> for RoleForCreateRequest {
             client_id: self.client_id.unwrap_or_default(),
         }
     }
+}
+
+#[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct AssignPermissionToRoleRequest {
+    pub permission_ids: Vec<Uuid>,
 }
 
 use shared_shared_data_core::{

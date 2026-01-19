@@ -63,7 +63,19 @@ pub async fn execute_interceptors<'a>(
     session: &mut Session<'a>,
 ) -> PhaseResult {
     for interceptor in interceptors.iter() {
-        let _execute = execute_interceptor(interceptor, session).await;
+        let execute = execute_interceptor(interceptor, session).await;
+        match execute {
+            Ok(exec) => {
+                if exec {
+                    debug!(
+                        "Interceptor {:?} short-circuited the processing.",
+                        interceptor.interceptor_type()
+                    );
+                    return Ok(true);
+                }
+            }
+            Err(e) => return Err(e),
+        }
     }
     Ok(false)
 }
@@ -94,7 +106,7 @@ async fn execute_interceptor<'a>(
             );
             interceptor.post_upstream_response(session).await
         }
-        
+
         _ => Ok(true),
     }
 }

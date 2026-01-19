@@ -4,8 +4,8 @@
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
 
-@acessToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJhY2Nlc3NlcyI6W3sicm9sZV9uYW1lIjoiRE5BUFBfR1VFU1QiLCJrZXkiOiJhY2Nlc3Nfa2V5In1dfSwiZXhwIjoxNzY4MDM2Njg2LCJpYXQiOjE3Njc5NTAyODYsImp0aSI6ImZlNzQ2YjNkLWJlZmYtNDJhYS1iMmI0LWI3MjdkNDE1MjJhOCJ9.8COu6UqkgYRuqy_MI5R94nyOkfKyD7jhpe2rQdrfatk
-@refreshToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJ0b2tlbl9pZCI6ImVhYzgxY2M4LTkxMjYtNDM4MC1iODY2LTBlNTFhMDJjZmVhZSJ9LCJleHAiOjE3NzA1NDIyODYsImlhdCI6MTc2Nzk1MDI4NiwianRpIjoiZmFmZWEzZWQtODI4My00YTZhLTg5NDgtMTNjNmI1MTFlOTQ2In0.DM-D4UXluC12W3xz65L-Ky35sUKue9xEmeWVvmjGMeQ
+@acessToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJhY2Nlc3NlcyI6W3sicm9sZV9uYW1lIjoiRE5BUFBfR1VFU1QiLCJrZXkiOiJhY2Nlc3Nfa2V5In1dfSwiZXhwIjoxNzY4OTA3NDAzLCJpYXQiOjE3Njg4MjEwMDMsImp0aSI6ImVjODY4YWMyLTcyMjAtNGE2Zi05M2IwLWIxZDM0OTFjMjJjOCJ9.7eVObqDx5-n0l4ztIN_JhSzoYB01mf0nkrhh49g2pvM
+@refreshToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJ0b2tlbl9pZCI6IjY5OTJjMzQ0LTE4Y2MtNGYxOS1iZjI3LTljOGE0NDkwOWQ1MiJ9LCJleHAiOjE3NzE0MTMwMDMsImlhdCI6MTc2ODgyMTAwMywianRpIjoiMGZiMDNmYjctNzM1MS00YjRjLWEyMzMtMjA3MjFiZWI4ZWIwIn0.GMGGS9fP3y9zYVEo1_P7InHGkL_7e1E7exzu_LmqB1Y
 ### 
 
 GET {{baseUrl}}/api/bakery/bakeries
@@ -22,10 +22,12 @@ traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4731-00f067aa0ba902b1-01
 ###
 GET {{baseUrl}}/api/bakery/bakeries/1?param_1=one
 Content-Type: application/json
+Origin: https://mydomain.com
 
 ### Get
 GET {{baseUrl}}/api/bakery/bakeries/2
 Content-Type: application/json
+Origin: https://mydomain.com
 Authorization: Bearer {{acessToken}}
 
 
@@ -37,13 +39,13 @@ Authorization: Bearer {{acessToken}}
 # AUTH
 ### Generate token
 # @name generateRequest
-POST {{baseUrl}}/api/auth/oauth/token
+POST {{baseUrl}}/api/auth/tokens/oauth
 Content-Type: application/json
 
 {
     "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
     "grant_type":"authorization_code",
-    "code":"AJMFTRdK4VU5ihg2yIVvjT7MrucMPqUmFRihJDF8EKfTaqPIXicUs5Hg9gDCXyuy"
+    "code":"jI5zNNs44SsBwsSsMKLsgEhqpvze7jtyLxV1WkQWPPB4doHquvPOdAnR1ghKqm51"
 }
 
 

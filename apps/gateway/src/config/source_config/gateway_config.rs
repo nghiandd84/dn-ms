@@ -8,7 +8,7 @@ use super::{
 
 use crate::{
     config::source_config::InterceptorConfig,
-    error::{Error as DnError, GatewayResult},
+    error::{Error, GatewayResult},
 };
 
 // super::filter::PathFilter;
@@ -42,7 +42,7 @@ pub fn find_filter_config<'a>(
         }
     });
     if filter.is_none() {
-        return Err(Box::new(DnError::from_str("Not found filter")));
+        return Err(Error::from_str("Not found filter"));
     }
     debug!("Found filter for path {}: {:?}", path, filter);
     let filter = filter.unwrap();
@@ -65,7 +65,7 @@ pub fn find_router_config<'a>(
         }
     }
 
-    Err(Box::new(DnError::from_str("Not found router")))
+    Err(Error::from_str("Not found router"))
 }
 
 pub fn find_interceptors_config<'a>(
