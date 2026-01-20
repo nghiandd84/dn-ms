@@ -37,15 +37,16 @@ Content-Type: application/json
 Authorization: Bearer {{acessToken}}
 
 # AUTH
-### Generate token
+### Generate token http://localhost:6001/api/auth/tokens/oauth
 # @name generateRequest
 POST {{baseUrl}}/api/auth/tokens/oauth
 Content-Type: application/json
+Origin: http://localhost1:4200
 
 {
     "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
     "grant_type":"authorization_code",
-    "code":"jI5zNNs44SsBwsSsMKLsgEhqpvze7jtyLxV1WkQWPPB4doHquvPOdAnR1ghKqm51"
+    "code":"71PKnyOhGvtjB5LxhfqOahkNyoCg5H7gE5uZGxHYnLUojGvuzWvUSbdDoQa0dHCP"
 }
 
 

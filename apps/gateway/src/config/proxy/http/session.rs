@@ -1,4 +1,4 @@
-use http::{HeaderName, Uri};
+use http::Uri;
 use opentelemetry::{trace::TraceContextExt, Context};
 use pingora_http::{RequestHeader as PRequestHeader, ResponseHeader as PResponseHeader};
 use pingora_proxy::Session as PSession;
@@ -32,6 +32,10 @@ impl<'a> Session<'a> {
             upstream_response: None,
             ds_header_flushed: false,
         }
+    }
+
+    pub fn get_psession(&mut self) -> &mut PSession {
+        self.psession
     }
 
     pub fn upstream_request(&mut self, upstream_request: &'a mut PRequestHeader) {

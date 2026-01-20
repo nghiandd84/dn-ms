@@ -79,6 +79,7 @@ gateways:
             weight: 1
     
     interceptors:
+      # Bakery
       - name: bakery_request_id
         type: request_id
         enabled: true
@@ -90,15 +91,10 @@ gateways:
         config:
           # verify_endpoint: http://localhost:6001/api/auth/tokens/verify
           use_auth_service: true
-      - name: auth_request_id
-        type: request_id
-        enabled: true
-        filter: auth_router_filter
       - name: bakery_cors
         type: cors
         enabled: true
-        filter: bakery_router_filter  
-        # filter: auth_router_filter  
+        filter: bakery_router_filter
         config:
           allowed_domains: mydomain.com,testdomain.com
       - name: bakery_rate_limiter
@@ -110,6 +106,17 @@ gateways:
           capacity: 5
           refill_rate: 2
           refill_interval: 10
+      # Auth
+      - name: auth_request_id
+        type: request_id
+        enabled: true
+        filter: auth_router_filter
+      - name: auth_cors
+        type: cors
+        enabled: true
+        filter: auth_router_filter
+        config:
+          allowed_domains: localhost
       - name: auth_rate_limiter
         type: rate_limiter
         enabled: true

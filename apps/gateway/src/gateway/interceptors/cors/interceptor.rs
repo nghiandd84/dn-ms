@@ -1,4 +1,6 @@
 use async_trait::async_trait;
+use http::{HeaderName, Method, StatusCode};
+use pingora_http::ResponseHeader;
 use tracing::debug;
 use url::Url;
 
@@ -18,15 +20,10 @@ impl CorsInterceptor {
         Self { filter, domains }
     }
 
-    fn extract_domain(url: Option<String>) -> Result<String, String> {
-        match url {
-            None => Err("URL is None".to_string()),
-            Some(url) => {
-                let parsed_url = Url::parse(&url).expect("Failed to parse URL");
-                let host = parsed_url.host_str().expect("URL has no host");
-                Ok(host.to_string())
-            }
-        }
+    fn extract_domain(url: String) -> Result<String, String> {
+        let parsed_url = Url::parse(&url).expect("Failed to parse URL");
+        let host = parsed_url.host_str().expect("URL has no host");
+        Ok(host.to_string())
     }
 }
 
@@ -37,17 +34,22 @@ impl Interceptor for CorsInterceptor {
     }
 
     fn phase_mask(&self) -> PhaseMask {
-        Phase::PostUpstreamResponse.mask()
+        Phase::RequestFilter.mask()
     }
 
     fn filter(&self) -> &Option<String> {
         &self.filter
     }
 
-    async fn post_upstream_response(&self, session: &mut Session) -> PhaseResult {
+    async fn request_filter(&self, session: &mut Session) -> PhaseResult {
         let origin = session.get_req_header("Origin");
+        if origin.is_none() {
+            debug!("CorsInterceptor: No Origin header present");
+            return Ok(true);
+        }
+        let origin = origin.unwrap();
         debug!("CorsInterceptor Origin header: {:?}", origin);
-        let origin_domain = match Self::extract_domain(origin) {
+        let origin_domain = match Self::extract_domain(origin.clone()) {
             Ok(domain) => domain,
             Err(_) => {
                 debug!("CorsInterceptor: No valid Origin header found");
@@ -61,17 +63,44 @@ impl Interceptor for CorsInterceptor {
             );
             return Ok(true);
         }
+        let psession = session.get_psession();
+        let header = psession.req_header();
+        // Check prelight request
+        if header.method == Method::OPTIONS {
+            debug!("CorsInterceptor: Handling preflight OPTIONS request");
+            let mut cors_resp = ResponseHeader::build(StatusCode::NO_CONTENT, None).unwrap();
+
+            let _ = cors_resp.insert_header(
+                "Access-Control-Allow-Methods",
+                "POST, GET, OPTIONS, PUT, DELETE",
+            );
+            let _ = cors_resp.insert_header("Access-Control-Allow-Headers", "*");
+            let _ = cors_resp.insert_header("Access-Control-Allow-Credentials", "true");
+            let _ = cors_resp.insert_header("Access-Control-Allow-Origin", origin);
+            psession.set_keepalive(None);
+            let _ = psession
+                .write_response_header(Box::new(cors_resp), true)
+                .await;
+            return Ok(true);
+        }
         session.set_ds_res_header(
             "Access-Control-Allow-Origin".to_string(),
-            origin_domain.into_bytes().to_vec(),
+            origin.into_bytes().to_vec(),
         );
         session.set_ds_res_header(
             "Access-Control-Allow-Methods".to_string(),
-            "*".to_string().into_bytes().to_vec(),
+            "GET, POST, PUT, DELETE, OPTIONS"
+                .to_string()
+                .into_bytes()
+                .to_vec(),
         );
         session.set_ds_res_header(
             "Access-Control-Allow-Headers".to_string(),
             "*".to_string().into_bytes().to_vec(),
+        );
+        session.set_ds_res_header(
+            "Access-Control-Allow-Credentials".to_string(),
+            "true".to_string().into_bytes().to_vec(),
         );
         Ok(false)
     }
