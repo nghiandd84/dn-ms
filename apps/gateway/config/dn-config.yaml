@@ -117,6 +117,12 @@ gateways:
         filter: auth_router_filter
         config:
           allowed_domains: localhost
+      - name: auth_token_auth
+        type: token_auth
+        enabled: true
+        filter: auth_router_filter
+        config:
+          use_auth_service: true
       - name: auth_rate_limiter
         type: rate_limiter
         enabled: true

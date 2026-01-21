@@ -47,6 +47,12 @@ impl Interceptor for TokenAuthInterceptor {
     }
 
     async fn request_filter(&self, session: &mut Session) -> PhaseResult {
+        let request_path = session.ds_req_path();
+        debug!("Request path: {}", request_path);
+        if request_path.starts_with("/public/") {
+            debug!("Public path, skipping token auth");
+            return Ok(false);
+        }
         let token = session.ds_req_header("Authorization");
         if token.is_none() {
             debug!("No Authorization header found");

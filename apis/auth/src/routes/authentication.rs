@@ -16,9 +16,9 @@ use shared_shared_data_app::{
 
 use features_auth_service::AuthenticationRequestService;
 
-const REQUEST_CODE: &str = "/requests/code";
-const REQUEST_LOGIN: &str = "/requests/login";
-const REQUEST_REGISTER: &str = "/requests/register";
+const REQUEST_CODE: &str = "/public/requests/code";
+const REQUEST_LOGIN: &str = "/public/requests/login";
+const REQUEST_REGISTER: &str = "/public/requests/register";
 
 const TAG: &str = "request";
 

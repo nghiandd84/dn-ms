@@ -35,7 +35,7 @@ Content-Type: application/json
 
 ### Request Authentication
 # @name authenticationRequest
-POST {{baseUrl}}/requests/code
+POST {{baseUrl}}/public/requests/code
 Content-Type: application/json
 
 {

@@ -36,7 +36,7 @@ const TAG: &str = "token";
 #[utoipa::path(
     post,
     request_body = TokenForCreateRequest,
-    path = "/tokens/oauth",
+    path = "/public/tokens/oauth",
     tag = TAG,
     responses(
         (status = 200, description = "Token is created", body = AuthorizationCodeDataResponse),       
@@ -59,17 +59,17 @@ async fn create_token(
 #[utoipa::path(
     post,
     request_body = TokenForVerifyRequest,
-    path = "/tokens/verify",
+    path = "/public/tokens/verify",
     tag = TAG,
     responses(
-        (status = 200, description = "Token is created", body = AccessTokenStructResponse),       
+        (status = 200, description = "Token is verified", body = AccessTokenStructResponse),       
     )
 )]
 async fn verify_token(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForVerifyRequest>,
 ) -> Result<ResponseJson<AccessTokenStruct>> {
-    debug!("Create token with request: {:?}", request);
+    debug!("Verify token with request: {:?}", request);
     // Create Logic Service to convert request to DTO
     let access_token_struct = TokenService::verify_token(&state.conn, &request).await?;
 
@@ -121,9 +121,9 @@ async fn filter_tokens(
 
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
-        .route("/tokens/oauth", post(create_token))
+        .route("/public/tokens/oauth", post(create_token))
+        .route("/public/tokens/verify", post(verify_token))
         .route("/tokens/{token_id}", get(get_token))
-        .route("/tokens/verify", post(verify_token))
         .route("/tokens", get(filter_tokens))
         .with_state(app_state.clone())
 }
