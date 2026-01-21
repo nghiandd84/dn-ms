@@ -4,15 +4,15 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use features_auth_entities::permission::{ModelOptionDto, PermissionForCreateDto};
+use features_auth_entities::permission::{ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct PermissionForCreateRequest {
     #[validate(length(
-        min = 10,
+        min = 5,
         max = 1024,
-        code = "resource",
-        message = "the length of resource must be between 10 and 1024"
+        code = "resource_lenght",
+        message = "the length of resource must be between 5 and 1024"
     ))]
     pub resource: String,
     pub description: Option<String>,
@@ -28,6 +28,31 @@ impl Into<PermissionForCreateDto> for PermissionForCreateRequest {
         }
     }
 }
+
+
+#[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct PermissionForUpdateRequest {
+    #[validate(length(
+        min = 5,
+        max = 1024,
+        code = "resource_lenght",
+        message = "the length of resource must be between 5 and 1024"
+    ))]
+    pub resource: String,
+    pub description: Option<String>,
+    pub mask: Option<i32>,
+}
+
+impl Into<PermissionForCreateRequestDto> for PermissionForUpdateRequest {
+    fn into(self) -> PermissionForCreateRequestDto {
+        PermissionForCreateRequestDto {
+            resource: self.resource,
+            description: self.description,
+            mask: self.mask.unwrap_or(0), // Default mask value
+        }
+    }
+}
+
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,

@@ -72,7 +72,7 @@ impl Interceptor for CorsInterceptor {
 
             let _ = cors_resp.insert_header(
                 "Access-Control-Allow-Methods",
-                "POST, GET, OPTIONS, PUT, DELETE",
+                "POST, GET, OPTIONS, PUT, DELETE, PATCH",
             );
             let _ = cors_resp.insert_header("Access-Control-Allow-Headers", "*");
             let _ = cors_resp.insert_header("Access-Control-Allow-Credentials", "true");

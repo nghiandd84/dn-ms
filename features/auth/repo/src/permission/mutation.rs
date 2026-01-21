@@ -6,6 +6,7 @@ use shared_shared_macro::Mutation;
 
 use features_auth_entities::permission::{
     ActiveModel, Column, Entity, Model, ModelOptionDto, PermissionForCreateDto,
+    PermissionForCreateRequestDto,
 };
 
 use crate::permission::util::assign;
@@ -23,6 +24,15 @@ impl PermissionMutation {
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
         debug!("Create permission {:?}", data);
         PermissionMutationManager::create_uuid(db, data.into())
+    }
+
+    pub fn update<'a>(
+        db: &'a DbConn,
+        id: Uuid,
+        data: PermissionForCreateRequestDto,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        debug!("Update  permission {:?}", data);
+        PermissionMutationManager::update_by_id_uuid(db, id, data.into())
     }
 
     pub fn delete<'a>(

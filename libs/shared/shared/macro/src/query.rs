@@ -341,7 +341,10 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 filter: &Vec<FilterEnum>,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
                 let page_size = pagination.page_size.unwrap_or(1);
-                let page = pagination.page.unwrap_or(1);
+                let mut page = pagination.page.unwrap_or(1);
+                if page <= 0 {
+                    page = 1;
+                }
                 let paginator = Self::build_query(order, filter).paginate(db, page_size);
                 let num_pages = paginator.num_pages().await?;
                 let result = paginator.fetch_page(page - 1).await?;

@@ -1,7 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
-    routing::{delete, get, post},
-    Router,
+    Router, extract::{Path, Query, State}, routing::{delete, get, patch, post}
 };
 use tracing::debug;
 use uuid::Uuid;
@@ -20,7 +18,7 @@ use features_auth_entities::permission::PermissionForCreateDto;
 use features_auth_model::{
     permission::{
         PermissionData, PermissionDataFilterParams, PermissionDataResponse,
-        PermissionForCreateRequest,
+        PermissionForCreateRequest, PermissionForUpdateRequest
     },
     state::{AuthAppState, AuthCacheState},
 };
@@ -48,6 +46,30 @@ async fn create_permission(
         ok: true,
         id: Some(permission_id),
     }))
+}
+
+
+
+#[utoipa::path(
+    patch,
+    request_body = PermissionForUpdateRequest,
+    params  (
+        ("permission_id" = String, Path, description = "Permission Id"),
+    ),
+    path = "/permissions/{permission_id}",
+    tag = TAG,
+    description = "Change Permission Data",
+    responses(
+        (status = 200, description= "Permission was updated", body= OkUuidResponse),       
+    )
+)]
+async fn update_permission(
+    state: State<AppState<AuthAppState, AuthCacheState>>,
+    Path(permission_id): Path<Uuid>,
+    ValidJson(scope_request): ValidJson<PermissionForUpdateRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    PermissionMutation::update(&state.conn, permission_id, scope_request.into()).await?;
+    Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
 #[utoipa::path(
@@ -112,6 +134,7 @@ async fn filter_permissions(
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/permissions", post(create_permission))
+        .route("/permissions/{permission_id}", patch(update_permission))
         .route("/permissions/{permission_id}", delete(delete_permission))
         .route("/permissions/{permission_id}", get(get_permission))
         .route("/permissions", get(filter_permissions))

@@ -18,6 +18,7 @@ use shared_shared_data_core::{
 
 use features_auth_entities::role::RoleForCreateDto;
 use features_auth_model::{
+    permission::PermissionData,
     role::{
         AssignPermissionToRoleRequest, RoleData, RoleDataFilterParams, RoleDataResponse,
         RoleForCreateRequest,
@@ -25,7 +26,7 @@ use features_auth_model::{
     state::{AuthAppState, AuthCacheState},
 };
 use features_auth_repo::role::{RoleMutation, RoleQuery};
-use features_auth_service::RoleService;
+use features_auth_service::{PermissionService, RoleService};
 
 const TAG: &str = "role";
 
@@ -80,6 +81,23 @@ async fn get_role(
 ) -> Result<ResponseJson<RoleData>> {
     let role = RoleQuery::get(&state.conn, role_id).await?;
     Ok(ResponseJson(role))
+}
+
+#[utoipa::path(
+    get,
+    path = "/roles/{role_id}/permissions",
+    tag = TAG,
+    responses(
+        (status = 200, description = "Permission Data", body = QueryResultResponse<PermissionData>),       
+    )
+)]
+async fn get_permission_by_role(
+    state: State<AppState<AuthAppState, AuthCacheState>>,
+    Path(role_id): Path<Uuid>,
+) -> Result<ResponseJson<QueryResult<PermissionData>>> {
+    let pagination = Pagination::new(1, 200);
+    let permissions = PermissionService::search_by_role(&state.conn, role_id, &pagination).await?;
+    Ok(ResponseJson(permissions))
 }
 
 #[utoipa::path(
@@ -157,6 +175,7 @@ pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/roles", post(create_role))
         .route("/roles/{role_id}", delete(delete_role))
+        .route("/roles/{role_id}/permissions", get(get_permission_by_role))
         .route(
             "/roles/{role_id}/assign-permissions",
             post(assign_permissions),

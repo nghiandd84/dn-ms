@@ -8,6 +8,7 @@ use shared_shared_macro::Dto;
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "permissions")]
 #[dto(name(PermissionForCreate), columns(resource, mask, description))]
+#[dto(name(PermissionForCreateRequest), columns(resource, mask, description))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,

@@ -8,5 +8,6 @@ mod permission;
 pub use authentication::AuthenticationRequestService;
 pub use login::LoginService;
 pub use register::RegisterService;
+pub use permission::PermissionService;
 pub use token::TokenService;
 pub use role::RoleService;
