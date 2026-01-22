@@ -1,12 +1,10 @@
-use std::str::FromStr;
-
-use features_auth_entities::role;
 use sea_orm::DbConn;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_app::result::Result;
@@ -14,7 +12,10 @@ use shared_shared_data_app::result::Result;
 use features_auth_model::permission::{
     PermissionData, PermissionForCreateRequest, PermissionForUpdateRequest,
 };
-use features_auth_repo::permission::{PermissionMutation, PermissionQuery};
+use features_auth_repo::{
+    permission::{PermissionMutation, PermissionQuery},
+    role_permission::RolePermissionQuery,
+};
 
 pub struct PermissionService {}
 
@@ -55,7 +56,35 @@ impl PermissionService {
         };
         let role_filter = FilterEnum::Uuid(role_filter_param);
         let filters = vec![role_filter];
-        let result = PermissionQuery::search(db, pagination, &order, &filters).await?;
+        let role_permissions =
+            RolePermissionQuery::search(db, pagination, &order, &filters).await?;
+        let permission_ids: Vec<Uuid> = role_permissions
+            .result
+            .into_iter()
+            .map(|rp| rp.permission_id.unwrap())
+            .collect();
+        if (permission_ids.is_empty()) {
+            return Ok(QueryResult {
+                total_page: 0,
+                result: vec![],
+            });
+        }
+        let permission_ids_str = permission_ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<String>>()
+            .join(",");
+        debug!("Permission IDs: {}", permission_ids_str);
+        let permission_filter_param = FilterParam::<Uuid> {
+            name: "id".to_string(),
+            value: None,
+            raw_value: permission_ids_str,
+            operator: FilterOperator::In,
+        };
+        let permission_filter = FilterEnum::Uuid(permission_filter_param);
+        let permission_filters = vec![permission_filter];
+
+        let result = PermissionQuery::search(db, pagination, &order, &permission_filters).await?;
         Ok(result)
     }
 

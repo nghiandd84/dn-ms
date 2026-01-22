@@ -51,6 +51,34 @@ where
     Ok(Some(result))
 }
 
+
+// VecUuid
+pub fn default_none_vecuuid() -> Option<FilterParam<Vec<Uuid>>> {
+    None
+}
+
+pub fn deserialize_filter_from_vecuuid<'de, D>(
+    deserializer: D,
+) -> Result<Option<FilterParam<Vec<Uuid>>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+
+    let r = parse_filter_param::<String, _>(&value, "".to_owned(), |s| {
+        format!("\"{}\"", s.to_string())
+    })
+    .unwrap()
+    .unwrap();
+    let result: FilterParam<Vec<Uuid>> = FilterParam {
+        name: r.name,
+        operator: r.operator,
+        value: Some(value.split(',').map(|s| Uuid::parse_str(s.trim()).unwrap()).collect()),
+        raw_value: r.raw_value,
+    };
+    Ok(Some(result))
+}
+
 // I32
 pub fn default_none_i32() -> Option<FilterParam<i32>> {
     None
