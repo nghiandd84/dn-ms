@@ -103,8 +103,6 @@ impl AuthenticationRequestService {
         let create_user_request = UserForCreateRequest {
             email: request.email.unwrap(),
             password: request.password.unwrap(),
-            first_name: "".to_string(),
-            last_name: "".to_string(),
             language: language.clone(),
         };
         debug!("User data for create: {:?}", create_user_request);

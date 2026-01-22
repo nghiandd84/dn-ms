@@ -7,11 +7,10 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "users")]
-#[dto(name(UserForCreate), columns(email, first_name, last_name, language, password))]
-#[dto(name(UserForUpdateProfile), columns(first_name, last_name, language), option)]
+#[dto(name(UserForCreate), columns(email, language, password))]
 #[dto(
-    name(UserForUpdateProfileOption),
-    columns(id, first_name, last_name, language),
+    name(UserForUpdate),
+    columns(email, language, password, confirmed, two_factor_enabled, is_active),
     option
 )]
 pub struct Model {
@@ -21,11 +20,6 @@ pub struct Model {
     pub email: String,
     #[sea_orm(column_type = "String(StringLen::N(5))", unique)]
     pub language: String,
-    // TODO Move first_name and last_name to profile table
-    #[sea_orm(column_type = "String(StringLen::N(50))")]
-    pub first_name: String,
-    #[sea_orm(column_type = "String(StringLen::N(50))")]
-    pub last_name: String,
     #[sea_orm(default_value = false)]
     pub confirmed: bool,
     #[sea_orm(default_value = false)]

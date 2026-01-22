@@ -25,14 +25,7 @@ pub struct UserForCreateRequest {
         message = "the length of email must be between 10 and 128"
     ))]
     pub password: String,
-    #[validate(length(
-        min = 4,
-        max = 16,
-        code = "firstname_length",
-        message = "the length of first_name must be between 4 and 16"
-    ))]
-    pub first_name: String,
-    pub last_name: String,
+
     #[validate(length(
         min = 2,
         max = 5,
@@ -47,8 +40,7 @@ impl Into<UserForCreateDto> for UserForCreateRequest {
         let password = hash(self.password).unwrap_or_default();
         UserForCreateDto {
             email: self.email,
-            first_name: self.first_name,
-            last_name: self.last_name,
+
             language: self.language,
             password: password,
         }
@@ -87,9 +79,7 @@ impl Into<UserData> for ModelOptionDto {
     fn into(self) -> UserData {
         UserData {
             email: self.email,
-            first_name: self.first_name,
             id: self.id,
-            last_name: self.last_name,
             language: self.language,
             ..Default::default()
         }

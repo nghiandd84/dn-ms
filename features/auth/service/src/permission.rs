@@ -63,7 +63,7 @@ impl PermissionService {
             .into_iter()
             .map(|rp| rp.permission_id.unwrap())
             .collect();
-        if (permission_ids.is_empty()) {
+        if permission_ids.is_empty() {
             return Ok(QueryResult {
                 total_page: 0,
                 result: vec![],

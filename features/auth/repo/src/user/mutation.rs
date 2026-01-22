@@ -4,7 +4,7 @@ use uuid::Uuid;
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::user::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto, UserForUpdateProfileDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto,
 };
 
 use crate::user::util::assign;
@@ -21,14 +21,6 @@ impl UserMutation {
         data: UserForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
         (&UserMutationManager::create_uuid)(db, data.into())
-    }
-
-    pub fn update_profile<'a>(
-        db: &'a DbConn,
-        user_id: Uuid,
-        data: UserForUpdateProfileDto,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        UserMutationManager::update_by_id_uuid(db, user_id, data.into())
     }
 
     pub fn delete_user<'a>(

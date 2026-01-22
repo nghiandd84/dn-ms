@@ -3,7 +3,6 @@ pub mod authentication;
 pub mod client;
 pub mod login;
 pub mod permission;
-pub mod profile;
 pub mod register;
 pub mod role;
 pub mod scope;

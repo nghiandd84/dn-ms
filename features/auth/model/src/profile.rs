@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
-use features_auth_entities::user::UserForUpdateProfileDto;
+// use features_auth_entities::user::UserForUpdateProfileDto;
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct UserForUpdateProfileRequest {
@@ -23,12 +23,12 @@ pub struct UserForUpdateProfileRequest {
     pub language: Option<String>,
 }
 
-impl Into<UserForUpdateProfileDto> for UserForUpdateProfileRequest {
-    fn into(self) -> UserForUpdateProfileDto {
-        UserForUpdateProfileDto {
-            first_name: self.first_name,
-            last_name: self.last_name,
-            language: self.language,
-        }
-    }
-}
+// impl Into<UserForUpdateProfileDto> for UserForUpdateProfileRequest {
+//     fn into(self) -> UserForUpdateProfileDto {
+//         UserForUpdateProfileDto {
+//             first_name: self.first_name,
+//             last_name: self.last_name,
+//             language: self.language,
+//         }
+//     }
+// }
