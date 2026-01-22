@@ -68,8 +68,6 @@ use shared_shared_data_core::{
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct UserData {
     pub id: Option<Uuid>,
-    first_name: Option<String>,
-    last_name: Option<String>,
     email: Option<String>,
     age: Option<u32>,
     language: Option<String>,
