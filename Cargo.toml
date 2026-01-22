@@ -29,6 +29,12 @@ members = [
     "features/auth/remote", 
     "features/auth/stream", 
 
+    "features/profiles/entities", 
+    "features/profiles/migrations", 
+    "features/profiles/model", 
+    "features/profiles/repo", 
+    "features/profiles/service", 
+
     "features/notification/model", 
     "features/notification/stream", 
 
@@ -155,6 +161,13 @@ features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
 features-auth-remote = { path = "./features/auth/remote"}
 features-auth-stream = { path = "./features/auth/stream"}
+
+# Profile Feature
+features-profiles-entities = { path = "./features/profiles/entities"}
+features-profiles-migrations = { path = "./features/profiles/migrations"}
+features-profiles-model = { path = "./features/profiles/model"}
+features-profiles-repo = { path = "./features/profiles/repo"}
+features-profiles-service = { path = "./features/profiles/service"}
 
 # Email Template Feature
 features-email-template-entities = { path = "./features/email-template/entities"}

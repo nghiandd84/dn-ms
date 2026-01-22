@@ -24,6 +24,8 @@ pub enum AppError {
     JsonRejection,
     #[error("Unknown error")]
     Unknown,
+    #[error("Internal error {0}")]
+    Internal(String),
     #[error("Validation error: {0}")]
     Validation(validator::ValidationErrors),
 }
