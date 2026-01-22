@@ -7,8 +7,8 @@ use shared_shared_macro::Dto;
 
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "roles")]
-#[dto(name(RoleForCreate), columns(name, description, client_id))]
-#[dto(name(RoleForUpdate), columns(name, description), option)]
+#[dto(name(RoleForCreate), columns(name, description, client_id, is_default))]
+#[dto(name(RoleForUpdate), columns(name, description, client_id, is_default), option)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
@@ -27,14 +27,6 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::access::Entity")]
     Access,
-    // #[sea_orm(
-    //     belongs_to = "super::role_permission::Entity",
-    //     from = "Column::Id",
-    //     to = "super::role_permission::Column::RoleId",
-    //     on_update = "Cascade",
-    //     on_delete = "SetNull"
-    // )]
-    // RolePermissions,
 }
 
 impl Related<super::access::Entity> for Entity {

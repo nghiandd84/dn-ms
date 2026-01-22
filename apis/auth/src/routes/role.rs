@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use tracing::debug;
@@ -21,7 +21,7 @@ use features_auth_model::{
     permission::PermissionData,
     role::{
         AssignPermissionToRoleRequest, RoleData, RoleDataFilterParams, RoleDataResponse,
-        RoleForCreateRequest,
+        RoleForCreateRequest, RoleForUpdateRequest,
     },
     state::{AuthAppState, AuthCacheState},
 };
@@ -47,6 +47,31 @@ async fn create_role(
     let role_id = RoleMutation::create(&state.conn, dto).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
+        id: Some(role_id),
+    }))
+}
+
+#[utoipa::path(
+    post,
+    request_body = RoleForUpdateRequest,
+    params  (
+        ("role_id" = String, Path, description = "Role Id"),
+    ),
+    path = "/roles/{role_id}",
+    tag = TAG,
+    description = "Change Role Data",
+    responses(
+        (status = 200, description = "Role is created", body = OkUuidResponse),       
+    )
+)]
+async fn update_role(
+    state: State<AppState<AuthAppState, AuthCacheState>>,
+    Path(role_id): Path<Uuid>,
+    ValidJson(register_request): ValidJson<RoleForUpdateRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    let success = RoleMutation::update(&state.conn, role_id, register_request.into()).await?;
+    Ok(ResponseJson(OkUuid {
+        ok: success,
         id: Some(role_id),
     }))
 }
@@ -174,6 +199,7 @@ async fn unassign_permissions(
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/roles", post(create_role))
+        .route("/roles/{role_id}", patch(update_role))
         .route("/roles/{role_id}", delete(delete_role))
         .route("/roles/{role_id}/permissions", get(get_permission_by_role))
         .route(
