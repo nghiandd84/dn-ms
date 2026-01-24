@@ -52,6 +52,7 @@ members = [
     "features/email-template/remote", 
 
     "apis/auth", 
+    "apis/profile", 
     "apis/bakery", 
     "apis/email-template",
     "apis/notification",
