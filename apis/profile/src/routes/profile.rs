@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
-    routing::{delete, get, post, put},
+    routing::{delete, get, patch, post},
     Json, Router,
 };
 use tracing::{instrument, Level};
@@ -8,11 +8,12 @@ use uuid::Uuid;
 
 use features_profiles_model::{
     state::{ProfileAppState, ProfileCacheState},
-    ProfileData, ProfileForCreateRequest, ProfileForUpdateRequest,
+    ProfileData, ProfileDataFilterParams, ProfileForCreateRequest, ProfileForUpdateRequest,
 };
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::ResponseJson,
     result::{OkUuid, OkUuidResponse, Result},
 };
@@ -95,17 +96,17 @@ async fn filter_profiles(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
+    filter_params: FilterParams<ProfileDataFilterParams>,
 ) -> Result<ResponseJson<QueryResult<ProfileData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![];
-
+    let filters = filter_params.0.all_filters();
     let result = ProfileService::get_profiles(&state.conn, pagination, order, filters).await?;
     Ok(ResponseJson(result))
 }
 
 #[utoipa::path(
-    put,
+    patch,
     path = "/profiles/{profile_id}",
     tag = TAG,
     request_body = ProfileForUpdateRequest,
@@ -150,7 +151,7 @@ pub fn routes(app_state: &AppState<ProfileAppState, ProfileCacheState>) -> Route
         .route("/profiles", get(filter_profiles))
         .route("/profiles/{profile_id}", get(get_profile))
         .route("/profiles/user/{user_id}", get(get_profile_by_user_id))
-        .route("/profiles/{profile_id}", put(update_profile))
+        .route("/profiles/{profile_id}", patch(update_profile))
         .route("/profiles/{profile_id}", delete(delete_profile))
         .with_state(app_state.clone())
 }

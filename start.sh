@@ -53,6 +53,12 @@ for i in {1..2}; do
     fuser -k -15 540$i/tcp 
 done
 
+
+# Kill Profile port
+for i in {1..2}; do 
+    fuser -k -15 550$i/tcp 
+done
+
 # Kill Notification App port
 for i in {1..2}; do 
     fuser -k -15 400$i/tcp 
@@ -86,8 +92,6 @@ for i in {1..2}; do
     AUTH_PORT=510$i $APP_DIRECTORY/api-auth  &
 done
 sleep 1s
-
-
 
 echo "------------ Start Bakery API ------------"
 for i in {1..2}; do
@@ -139,6 +143,16 @@ for i in {1..2}; do
     echo "--- Auth Notification on port $PORT ---"
     # Execute the program
     AUTH_NOTIFICATION_PORT=511$i $APP_DIRECTORY/auth-notification  &
+done
+sleep 1s
+
+
+echo "------------ Start Profile API ------------"
+for i in {1..2}; do
+    PORT=550$i
+    echo "--- Profile on port $PORT ---"
+    # Execute the program
+    PROFILE_PORT=550$i $APP_DIRECTORY/api-profile  &
 done
 sleep 1s
 

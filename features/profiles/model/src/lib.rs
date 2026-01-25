@@ -4,6 +4,6 @@ pub mod user_preference;
 pub mod state;
 
 
-pub use profile::{ProfileForCreateRequest, ProfileForUpdateRequest, ProfileData};
-pub use social_link::{SocialLinkForCreateRequest, SocialLinkForUpdateRequest, SocialLinkData};
-pub use user_preference::{UserPreferenceForCreateRequest, UserPreferenceForUpdateRequest, UserPreferenceData};
+pub use profile::{ProfileForCreateRequest, ProfileForUpdateRequest, ProfileData, ProfileDataFilterParams};
+pub use social_link::{SocialLinkForCreateRequest, SocialLinkForUpdateRequest, SocialLinkData, SocialLinkDataFilterParams};
+pub use user_preference::{UserPreferenceForCreateRequest, UserPreferenceForUpdateRequest, UserPreferenceData, UserPreferenceDataFilterParams};

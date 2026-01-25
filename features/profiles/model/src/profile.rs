@@ -113,7 +113,7 @@ impl Into<ProfileForUpdateDto> for ProfileForUpdateRequest {
 }
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterParam, VecString},
+    filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
 

@@ -60,7 +60,7 @@ Origin: http://localhost1:4200
 
 
 
-### Verify tokein
+### Verify token
 POST {{baseUrl}}/api/auth/tokens/verify
 Content-Type: application/json
 
@@ -68,3 +68,7 @@ Content-Type: application/json
     "token": "{{acessToken}}"
 }
 
+### Profile
+
+GET {{baseUrl}}/api/profile/profiles?page=1&page_size=15&first_name=like|NGHIA
+Content-Type: application/json

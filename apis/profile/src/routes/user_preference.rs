@@ -1,17 +1,19 @@
 use axum::{
     extract::{Path, Query, State},
-    routing::{delete, get, post, put},
+    routing::{delete, get, patch, post},
     Json, Router,
 };
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_profiles_model::{
-    UserPreferenceData, UserPreferenceForCreateRequest, UserPreferenceForUpdateRequest,
+    UserPreferenceData, UserPreferenceDataFilterParams, UserPreferenceForCreateRequest,
+    UserPreferenceForUpdateRequest,
 };
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::ResponseJson,
     result::{OkUuid, OkUuidResponse, Result},
 };
@@ -97,10 +99,11 @@ async fn filter_user_preferences(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
+    filter_params: FilterParams<UserPreferenceDataFilterParams>,
 ) -> Result<ResponseJson<QueryResult<UserPreferenceData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![];
+    let filters = filter_params.0.all_filters();
 
     let result =
         UserPreferenceService::get_user_preferences(&state.conn, pagination, order, filters)
@@ -109,7 +112,7 @@ async fn filter_user_preferences(
 }
 
 #[utoipa::path(
-    put,
+    patch,
     path = "/user-preferences/{preference_id}",
     tag = TAG,
     request_body = UserPreferenceForUpdateRequest,
@@ -162,7 +165,7 @@ pub fn routes(app_state: &AppState<ProfileAppState, ProfileCacheState>) -> Route
         )
         .route(
             "/user-preferences/{preference_id}",
-            put(update_user_preference),
+            patch(update_user_preference),
         )
         .route(
             "/user-preferences/{preference_id}",

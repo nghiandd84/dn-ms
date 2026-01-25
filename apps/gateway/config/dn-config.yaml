@@ -26,6 +26,8 @@ gateways:
         filter: bakery_router_filter
       - upstream: auth
         filter: auth_router_filter
+      - upstream: profile
+        filter: profile_router_filter
       - upstream: app_notification
         filter: app_notification_filter
     upstreams:
@@ -58,6 +60,22 @@ gateways:
           - address:
               host: 127.0.0.1
               port: 5102
+            tls: false
+            sni: null
+            weight: 2
+      - name: profile
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5501
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5502
             tls: false
             sni: null
             weight: 2
@@ -146,6 +164,10 @@ gateways:
         path:
           operator: start_with
           value: /api/auth
+      - name: profile_router_filter
+        path:
+          operator: start_with
+          value: /api/profile
       - name: app_notification_filter
         path:
           operator: start_with

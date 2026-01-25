@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
-    routing::{delete, get, post, put},
+    routing::{delete, get, patch, post},
     Json, Router,
 };
 use tracing::{instrument, Level};
@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::ResponseJson,
     result::{OkUuid, OkUuidResponse, Result},
 };
@@ -18,7 +19,8 @@ use shared_shared_data_core::{
 
 use features_profiles_model::{
     state::{ProfileAppState, ProfileCacheState},
-    SocialLinkData, SocialLinkForCreateRequest, SocialLinkForUpdateRequest,
+    SocialLinkData, SocialLinkDataFilterParams, SocialLinkForCreateRequest,
+    SocialLinkForUpdateRequest,
 };
 use features_profiles_service::SocialLinkService;
 
@@ -94,10 +96,11 @@ async fn filter_social_links(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
+    filter_params: FilterParams<SocialLinkDataFilterParams>,
 ) -> Result<ResponseJson<QueryResult<SocialLinkData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![];
+    let filters = filter_params.0.all_filters();
 
     let result =
         SocialLinkService::get_social_links(&state.conn, pagination, order, filters).await?;
@@ -105,7 +108,7 @@ async fn filter_social_links(
 }
 
 #[utoipa::path(
-    put,
+    patch,
     path = "/social-links/{link_id}",
     tag = TAG,
     request_body = SocialLinkForUpdateRequest,
@@ -153,7 +156,7 @@ pub fn routes(app_state: &AppState<ProfileAppState, ProfileCacheState>) -> Route
             "/social-links/profile/{profile_id}",
             get(get_social_links_by_profile_id),
         )
-        .route("/social-links/{link_id}", put(update_social_link))
+        .route("/social-links/{link_id}", patch(update_social_link))
         .route("/social-links/{link_id}", delete(delete_social_link))
         .with_state(app_state.clone())
 }

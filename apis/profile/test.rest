@@ -1,0 +1,119 @@
+
+@baseUrl = http://localhost:5501
+@baseUrl = http://localhost:6101
+
+@profileId = 1c847730-2bf0-45d1-a915-cb96a5195de7
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+
+### Get All Profile 
+GET {{baseUrl}}/profiles
+
+### Search Profile 
+GET {{baseUrl}}/profiles?bio=li|My
+
+
+### Get Profile By ID Profile 
+GET {{baseUrl}}/profiles/{{profileId}}
+
+### CREATE Profile 
+POST {{baseUrl}}/profiles
+Content-Type: application/json
+
+{
+  "avatar_url": "My Avatar URL",
+  "bio": "My Bio",
+  "first_name": "First Name",
+  "last_name": "Last Name",
+  "location": "My Location",
+  "user_id": "34a85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### Update Profile 
+PATCH {{baseUrl}}/profiles/{{profileId}}
+Content-Type: application/json
+
+{
+  "avatar_url": "My Avatar URL UPDATE",
+  "last_name": "Last Name UPDATE"
+}
+
+### DELETE Profile 
+DELETE {{baseUrl}}/profiles/deb98ead-5e38-49ef-a904-ffd03c177b59
+Content-Type: application/json
+
+@userPreferenceId = 2e207d4d-c0bf-43ba-8ba4-d4b0f6fdccb8
+### Get All User preference 
+GET {{baseUrl}}/user-preferences
+
+### Search Profile 
+GET {{baseUrl}}/user-preferences?language=li|en
+
+
+### Get user preference by id 
+GET {{baseUrl}}/user-preferences/{{userPreferenceId}}
+
+### CREATE User Preference 
+POST {{baseUrl}}/user-preferences
+Content-Type: application/json
+
+{
+  "language": "en-US",
+  "notifications_enabled": true,
+  "profile_id": "{{profileId}}",
+  "theme": "dark"
+}
+
+
+### Update user preference 
+PATCH {{baseUrl}}/user-preferences/{{userPreferenceId}}
+Content-Type: application/json
+
+{
+  "notifications_enabled": false,
+  "theme": "light"
+}
+
+
+### Delete user preference by id 
+DELETE {{baseUrl}}/user-preferences/74bf6e91-8eb3-4ebd-ae9d-372815201fd2
+
+
+@socialLinkId = 1c2e8bc8-ea22-4054-abd9-0961ec93391d
+
+### Get All Social Links
+GET {{baseUrl}}/social-links
+
+
+### search Social Links
+GET {{baseUrl}}/social-links?platform=eq|github
+
+### Get Social Link by ID
+GET {{baseUrl}}/social-links/{{socialLinkId}}
+
+### Create Social Link
+POST {{baseUrl}}/social-links
+Content-Type: application/json
+
+{
+  "profile_id": "{{profileId}}",
+  "platform": "github",
+  "url": "https://github.com/username"
+}
+
+### Update Social Link
+PATCH {{baseUrl}}/social-links/{{socialLinkId}}
+Content-Type: application/json
+
+{
+  "platform": "linkedin",
+  "url": "https://linkedin.com/in/username"
+}
+
+### Delete Social Link
+DELETE {{baseUrl}}/social-links/1c2e8bc8-ea22-4054-abd9-0961ec93391d
+
