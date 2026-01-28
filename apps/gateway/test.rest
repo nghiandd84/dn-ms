@@ -57,9 +57,6 @@ Origin: http://localhost1:4200
     "code":"71PKnyOhGvtjB5LxhfqOahkNyoCg5H7gE5uZGxHYnLUojGvuzWvUSbdDoQa0dHCP"
 }
 
-
-
-
 ### Verify token
 POST {{baseUrl}}/api/auth/tokens/verify
 Content-Type: application/json

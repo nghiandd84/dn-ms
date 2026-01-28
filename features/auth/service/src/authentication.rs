@@ -99,7 +99,7 @@ impl AuthenticationRequestService {
         let language = request
             .language
             .clone()
-            .unwrap_or_else(|| "EN-US".to_string());
+            .unwrap_or_else(|| "en-US".to_string());
         let create_user_request = UserForCreateRequest {
             email: request.email.unwrap(),
             password: request.password.unwrap(),

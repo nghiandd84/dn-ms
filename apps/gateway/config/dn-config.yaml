@@ -154,7 +154,16 @@ gateways:
         type: request_id
         enabled: true
         filter: app_notification_filter   
-    
+      
+      # Profile
+      - name: profile_cors
+        type: cors
+        enabled: true
+        filter: profile_router_filter
+        config:
+          allowed_domains: localhost
+
+
     filters:
       - name: bakery_router_filter
         path:

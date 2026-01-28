@@ -17,9 +17,6 @@ export BAKERY_PORT=5201
 export EMAIL_TEMPLATE_PORT=5301
 export NOTIFICATION_PORT=5401
 export NOTIFICATION_APP_PORT=4001
-export GATEWAY_PORT=6000
-# export GATEWAY_PORT=6001
-# export GATEWAY_PORT=6002
 
 echo "Kill current instances"
 
@@ -163,7 +160,7 @@ IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/
 echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
 # Execute the program
-# $APP_DIRECTORY/app-gateway  &
+$APP_DIRECTORY/app-gateway  &
 
 
 sleep 1s
