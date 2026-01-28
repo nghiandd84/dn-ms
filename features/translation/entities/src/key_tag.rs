@@ -21,10 +21,31 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    // #[sea_orm(belongs_to = "super::translation_key::Entity", foreign_key = "key_id")]
-    // TranslationKey,
-    // #[sea_orm(belongs_to = "super::tag::Entity", foreign_key = "tag_id")]
-    // Tag,
+    #[sea_orm(
+        belongs_to = "super::translation_key::Entity",
+        from = "Column::KeyId",
+        to = "super::translation_key::Column::Id"
+    )]
+    TranslationKey,
+    #[sea_orm(
+        belongs_to = "super::tag::Entity",
+        from = "Column::TagId",
+        to = "super::tag::Column::Id"
+    )]
+    Tag,
+}
+
+
+impl Related<super::translation_key::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TranslationKey.def()
+    }
+}
+
+impl Related<super::tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Tag.def()
+    }
 }
 
 #[async_trait]

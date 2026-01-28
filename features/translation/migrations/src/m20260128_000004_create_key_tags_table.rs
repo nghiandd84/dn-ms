@@ -1,4 +1,6 @@
 use features_translation_entities::key_tag;
+use features_translation_entities::tag;
+use features_translation_entities::translation_key;
 use sea_orm_migration::prelude::*;
 
 pub struct Migration;
@@ -32,20 +34,20 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     // .primary_key(Expr::col((key_tag::Entity, key_tag::Column::KeyId)).and(Expr::col((key_tag::Entity, key_tag::Column::TagId))))
-                    // .foreign_key(
-                    //     ForeignKey::create()
-                    //         .name("fk_key_tags_key_id")
-                    //         .from(key_tag::Entity, key_tag::Column::KeyId)
-                    //         .to(crate::m20260128_000002_create_translation_keys_table::TranslationKey, TranslationKeyColumn::Id)
-                    //         .on_delete(ForeignKeyAction::Cascade),
-                    // )
-                    // .foreign_key(
-                    //     ForeignKey::create()
-                    //         .name("fk_key_tags_tag_id")
-                    //         .from(key_tag::Entity, key_tag::Column::TagId)
-                    //         .to(crate::m20260128_000003_create_tags_table::Tag, TagColumn::Id)
-                    //         .on_delete(ForeignKeyAction::Cascade),
-                    // )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_key_tags_key_id")
+                            .from(key_tag::Entity, key_tag::Column::KeyId)
+                            .to(translation_key::Entity, translation_key::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_key_tags_tag_id")
+                            .from(key_tag::Entity, key_tag::Column::TagId)
+                            .to(tag::Entity, tag::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
                     .to_owned(),
             )
             .await

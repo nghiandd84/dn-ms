@@ -28,15 +28,22 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    // #[sea_orm(
-    //     belongs_to = "super::project::Entity",
-    //     foreign_key = "project_id"
-    // )]
-    // Project,
-    // #[sea_orm(has_many = "super::key_tag::Entity")]
-    // KeyTag,
-    // #[sea_orm(has_many = "super::translation_version::Entity")]
-    // TranslationVersion,
+    #[sea_orm(
+        belongs_to = "super::project::Entity",
+        from = "Column::ProjectId",
+        to = "super::project::Column::Id"
+    )]
+    Project,
+    #[sea_orm(has_many = "super::key_tag::Entity")]
+    KeyTag,
+    #[sea_orm(has_many = "super::translation_version::Entity")]
+    TranslationVersion,
+}
+
+impl Related<super::project::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Project.def()
+    }
 }
 
 #[async_trait]

@@ -1,3 +1,4 @@
+use features_translation_entities::translation_key;
 use features_translation_entities::translation_version;
 use sea_orm_migration::prelude::*;
 
@@ -64,13 +65,16 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
-                    // .foreign_key(
-                    //     ForeignKey::create()
-                    //         .name("fk_translation_versions_key_id")
-                    //         .from(translation_version::Entity, translation_version::Column::KeyId)
-                    //         .to(crate::m20260128_000002_create_translation_keys_table::TranslationKey, TranslationKeyColumn::Id)
-                    //         .on_delete(ForeignKeyAction::Cascade),
-                    // )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_translation_versions_key_id")
+                            .from(
+                                translation_version::Entity,
+                                translation_version::Column::KeyId,
+                            )
+                            .to(translation_key::Entity, translation_key::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
                     .index(
                         Index::create()
                             .name("idx_translation_latest")

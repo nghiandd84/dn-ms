@@ -21,8 +21,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    // #[sea_orm(has_many = "super::key_tag::Entity")]
-    // KeyTag,
+    #[sea_orm(has_many = "super::key_tag::Entity")]
+    KeyTag,
 }
 
 #[async_trait]

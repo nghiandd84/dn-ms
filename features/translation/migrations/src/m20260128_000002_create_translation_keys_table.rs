@@ -1,5 +1,7 @@
-use features_translation_entities::translation_key;
 use sea_orm_migration::prelude::*;
+
+use features_translation_entities::project;
+use features_translation_entities::translation_key;
 
 pub struct Migration;
 
@@ -57,13 +59,13 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
-                    // .foreign_key(
-                    //     ForeignKey::create()
-                    //         .name("fk_translation_keys_project_id")
-                    //         .from(translation_key::Entity, translation_key::Column::ProjectId)
-                    //         .to(crate::m20260128_000001_create_projects_table::Project, ProjectColumn::Id)
-                    //         .on_delete(ForeignKeyAction::Cascade),
-                    // )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_translation_keys_project_id")
+                            .from(translation_key::Entity, translation_key::Column::ProjectId)
+                            .to(project::Entity, project::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
                     .index(
                         Index::create()
                             .name("idx_translation_keys_project_id")

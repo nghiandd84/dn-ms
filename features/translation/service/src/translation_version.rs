@@ -9,7 +9,7 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 
-use features_translation_entities::translation_version::TranslationVersionForCreateDto;
+use features_translation_entities::translation_version::{TranslationVersionForCreateDto, TranslationVersionForUpdateDto};
 use features_translation_model::{
     TranslationVersionData, TranslationVersionForCreateRequest, TranslationVersionForUpdateRequest,
 };
@@ -67,7 +67,7 @@ impl TranslationVersionService {
         version_id: Uuid,
         translation_version_request: TranslationVersionForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let dto: features_translation_entities::translation_version::TranslationVersionForUpdateDto = translation_version_request.into();
+        let dto: TranslationVersionForUpdateDto = translation_version_request.into();
         let result =
             TranslationVersionMutation::update_translation_version(db, version_id, dto).await;
         match result {
