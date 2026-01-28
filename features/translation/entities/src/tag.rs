@@ -7,40 +7,22 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
-#[sea_orm(table_name = "profiles")]
-#[dto(
-    name(ProfileForCreate),
-    columns(user_id, first_name, last_name, bio, avatar_url, location)
-)]
-#[dto(
-    name(ProfileForUpdate),
-    columns(first_name, last_name, bio, avatar_url, location),
-    option
-)]
+#[sea_orm(table_name = "tags")]
+#[dto(name(TagForCreate), columns(name))]
+#[dto(name(TagForUpdate), columns(name), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub user_id: Uuid,
-    #[sea_orm(column_type = "String(StringLen::N(100))")]
-    pub first_name: String,
-    #[sea_orm(column_type = "String(StringLen::N(100))")]
-    pub last_name: String,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub bio: String,
-    #[sea_orm(column_type = "String(StringLen::N(500))", nullable)]
-    pub avatar_url: String,
-    #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
-    pub location: String,
+    #[sea_orm(column_type = "String(StringLen::N(50))", unique)]
+    pub name: String,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::user_preference::Entity")]
-    UserPreference,
-    #[sea_orm(has_many = "super::social_link::Entity")]
-    SocialLink,
+    // #[sea_orm(has_many = "super::key_tag::Entity")]
+    // KeyTag,
 }
 
 #[async_trait]

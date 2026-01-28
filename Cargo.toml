@@ -35,6 +35,12 @@ members = [
     "features/profiles/repo", 
     "features/profiles/service", 
 
+    "features/translation/entities", 
+    "features/translation/migrations", 
+    "features/translation/model", 
+    "features/translation/repo", 
+    "features/translation/service", 
+
     "features/notification/model", 
     "features/notification/stream", 
 
@@ -169,6 +175,14 @@ features-profiles-migrations = { path = "./features/profiles/migrations"}
 features-profiles-model = { path = "./features/profiles/model"}
 features-profiles-repo = { path = "./features/profiles/repo"}
 features-profiles-service = { path = "./features/profiles/service"}
+
+
+# Translation Feature
+features-translation-entities = { path = "./features/translation/entities"}
+features-translation-migrations = { path = "./features/translation/migrations"}
+features-translation-model = { path = "./features/translation/model"}
+features-translation-repo = { path = "./features/translation/repo"}
+features-translation-service = { path = "./features/translation/service"}
 
 # Email Template Feature
 features-email-template-entities = { path = "./features/email-template/entities"}

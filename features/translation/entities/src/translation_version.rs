@@ -7,40 +7,36 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
-#[sea_orm(table_name = "profiles")]
+#[sea_orm(table_name = "translation_versions")]
 #[dto(
-    name(ProfileForCreate),
-    columns(user_id, first_name, last_name, bio, avatar_url, location)
+    name(TranslationVersionForCreate),
+    columns(key_id, locale, content, version_number, status, created_by)
 )]
-#[dto(
-    name(ProfileForUpdate),
-    columns(first_name, last_name, bio, avatar_url, location),
-    option
-)]
+#[dto(name(TranslationVersionForUpdate), columns(content, status), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub user_id: Uuid,
-    #[sea_orm(column_type = "String(StringLen::N(100))")]
-    pub first_name: String,
-    #[sea_orm(column_type = "String(StringLen::N(100))")]
-    pub last_name: String,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub bio: String,
-    #[sea_orm(column_type = "String(StringLen::N(500))", nullable)]
-    pub avatar_url: String,
-    #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
-    pub location: String,
+    pub key_id: Uuid,
+    #[sea_orm(column_type = "String(StringLen::N(10))")]
+    pub locale: String,
+    #[sea_orm(column_type = "Text")]
+    pub content: String,
+    pub version_number: i32,
+    #[sea_orm(column_type = "String(StringLen::N(20))")]
+    pub status: String,
+
+    pub created_by: Uuid,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::user_preference::Entity")]
-    UserPreference,
-    #[sea_orm(has_many = "super::social_link::Entity")]
-    SocialLink,
+    // #[sea_orm(
+    //     belongs_to = "super::translation_key::Entity",
+    //     foreign_key = "key_id"
+    // )]
+    // TranslationKey,
 }
 
 #[async_trait]

@@ -32,29 +32,8 @@ pub struct ProfileQuery;
 
 impl ProfileQuery {
     pub async fn get_profile_by_id(db: &DbConn, profile_id: Uuid) -> Result<ProfileData, AppError> {
-        let pagination = Pagination::new(1, 1);
-        let order = Order::default();
-
-        let param: FilterParam<Uuid> = FilterParam {
-            name: Column::Id.to_string(),
-            operator: FilterOperator::Equal,
-            value: Some(profile_id),
-            raw_value: profile_id.to_string(),
-        };
-        let id_filter = FilterEnum::Uuid(param);
-        let filters: Vec<FilterEnum> = vec![id_filter];
-
-        let result = ProfileQueryManager::filter(db, &pagination, &order, &filters).await?;
-        let dto = result.result.into_iter().next();
-
-        if dto.is_none() {
-            // return Err(AppError::NotFound("Profile not found".to_string()));
-            return Err(AppError::EntityNotFound {
-                entity: "profile".to_string(),
-            });
-        }
-
-        Ok(dto.unwrap().into())
+        let model = ProfileQueryManager::get_by_id_uuid(db, profile_id).await?;
+        Ok(model.into())
     }
 
     pub async fn get_profile_by_user_id(
