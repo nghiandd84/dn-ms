@@ -9,7 +9,9 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 
-use features_translation_entities::translation_version::{TranslationVersionForCreateDto, TranslationVersionForUpdateDto};
+use features_translation_entities::translation_version::{
+    TranslationVersionForCreateDto, TranslationVersionForUpdateDto,
+};
 use features_translation_model::{
     TranslationVersionData, TranslationVersionForCreateRequest, TranslationVersionForUpdateRequest,
 };
@@ -57,9 +59,11 @@ impl TranslationVersionService {
     pub async fn get_latest_version_by_key_locale<'a>(
         db: &'a DbConn,
         key_id: Uuid,
-        locale: &str,
+        filters: &Vec<FilterEnum>,
+        pagination: &Pagination,
+        order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
-        TranslationVersionQuery::get_latest_version_by_key_locale(db, key_id, locale).await
+        TranslationVersionQuery::get_latest_version_by_key_locale(db, key_id, filters, pagination, order).await
     }
 
     pub async fn update_translation_version<'a>(

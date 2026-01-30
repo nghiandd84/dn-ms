@@ -59,7 +59,9 @@ members = [
 
     "apis/auth", 
     "apis/profile", 
+    "apis/translation",
     "apis/bakery", 
+    "apis/translation", 
     "apis/email-template",
     "apis/notification",
     "apps/auth-notification",

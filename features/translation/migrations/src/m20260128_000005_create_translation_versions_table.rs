@@ -55,9 +55,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(translation_version::Column::CreatedBy)
-                            .string()
-                            .string_len(255)
-                            .null(),
+                            .uuid()
+                            .not_null(),
                     )
                     .col(
                         ColumnDef::new(translation_version::Column::CreatedAt)
@@ -65,9 +64,15 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
+                    .col(
+                        ColumnDef::new(translation_version::Column::UpdatedAt)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk_translation_versions_key_id")
+                            .name("fk_translation_key_id")
                             .from(
                                 translation_version::Entity,
                                 translation_version::Column::KeyId,

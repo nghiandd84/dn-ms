@@ -58,11 +58,10 @@ impl TranslationVersionQuery {
     pub async fn get_latest_version_by_key_locale(
         db: &DbConn,
         key_id: Uuid,
-        locale: &str,
+        filters: &Vec<FilterEnum>,
+        pagination: &Pagination,
+        order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
-        let pagination = Pagination::new(1, 1);
-        let order = Order::default();
-
         let key_param: FilterParam<Uuid> = FilterParam {
             name: Column::KeyId.to_string(),
             operator: FilterOperator::Equal,
@@ -71,18 +70,12 @@ impl TranslationVersionQuery {
         };
         let key_filter = FilterEnum::Uuid(key_param);
 
-        let locale_param: FilterParam<String> = FilterParam {
-            name: Column::Locale.to_string(),
-            operator: FilterOperator::Equal,
-            value: Some(locale.to_string()),
-            raw_value: locale.to_string(),
-        };
-        let locale_filter = FilterEnum::String(locale_param);
-
-        let filters: Vec<FilterEnum> = vec![key_filter, locale_filter];
+        let mut search_filters = filters.clone();
+        search_filters.push(key_filter);
 
         let result =
-            TranslationVersionQueryManager::filter(db, &pagination, &order, &filters).await?;
+            TranslationVersionQueryManager::filter(db, &pagination, &order, &search_filters)
+                .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

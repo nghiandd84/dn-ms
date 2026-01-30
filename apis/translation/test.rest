@@ -1,0 +1,141 @@
+@baseUrl = http://localhost:5601
+@projectId = 080486dd-2584-4fd6-a29d-aa71eaf7e74b
+@keyId = 25511ecb-4222-4310-88a5-a0b0a06e803f
+@tagId = 6120a589-fec2-41fa-bedf-753c13c473ed
+@versionId = 251461a9-d91a-486f-8b95-bbb81df66833
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== PROJECTS =====
+
+### Get All Projects
+GET {{baseUrl}}/projects
+
+### Search Projects
+GET {{baseUrl}}/projects?default_locale=li|en&order_name=default_locale&order_direction=1
+
+### Create Project
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "My App",
+  "api_key": "app_key_12345",
+  "default_locale": "en"
+}
+
+### Get Project By ID
+GET {{baseUrl}}/projects/{{projectId}}
+
+### Update Project
+PATCH {{baseUrl}}/projects/{{projectId}}
+Content-Type: application/json
+
+{
+  "name": "My App Updated",
+  "default_locale": "es"
+}
+
+### Delete Project
+DELETE {{baseUrl}}/projects/{{projectId}}
+
+### ===== TRANSLATION KEYS =====
+
+### Get All Translation Keys
+GET {{baseUrl}}/translation-keys
+
+### Create Translation Key
+POST {{baseUrl}}/translation-keys
+Content-Type: application/json
+
+{
+  "project_id": "{{projectId}}",
+  "key_name": "welcome_message",
+  "description": "Welcome message on home page"
+}
+
+### Get Translation Key By ID
+GET {{baseUrl}}/translation-keys/{{keyId}}
+
+### Get Translation Keys by Project
+GET {{baseUrl}}/projects/{{projectId}}/translation-keys
+
+### Update Translation Key
+PATCH {{baseUrl}}/translation-keys/{{keyId}}
+Content-Type: application/json
+
+{
+  "key_name": "welcome_message_updated",
+  "description": "Updated welcome message"
+}
+
+### Delete Translation Key
+DELETE {{baseUrl}}/translation-keys/{{keyId}}
+
+### ===== TAGS =====
+
+### Get All Tags
+GET {{baseUrl}}/tags
+
+### Search Tags
+GET {{baseUrl}}/tags?name=li|ui&order_name=name&order_direction=-1
+
+### Create Tag
+POST {{baseUrl}}/tags
+Content-Type: application/json
+
+{
+  "name": "aui-new"
+}
+
+### Get Tag By ID
+GET {{baseUrl}}/tags/{{tagId}}
+
+### Update Tag
+PATCH {{baseUrl}}/tags/{{tagId}}
+Content-Type: application/json
+
+{
+  "name": "interface"
+}
+
+### Delete Tag
+DELETE {{baseUrl}}/tags/{{tagId}}
+
+### ===== TRANSLATION VERSIONS =====
+
+### Get All Translation Versions
+GET {{baseUrl}}/translation-versions?version_number=eq|2
+
+### Create Translation Version
+POST {{baseUrl}}/translation-versions
+Content-Type: application/json
+
+{
+  "key_id": "{{keyId}}",
+  "locale": "vi-VN",
+  "content": "Welcome to our nghia",
+  "version_number": 1,
+  "status": "published"
+}
+
+### Get Translation Version By ID
+GET {{baseUrl}}/translation-versions/{{versionId}}
+
+### Get Latest Translation Version
+GET {{baseUrl}}/translation-keys/{{keyId}}/versions/latest?locale=li|en&status=eq|published
+
+### Update Translation Version
+PATCH {{baseUrl}}/translation-versions/{{versionId}}
+Content-Type: application/json
+
+{
+  "content": "Welcome to our awesome application",
+  "status": "published"
+}
+
+### Delete Translation Version
+DELETE {{baseUrl}}/translation-versions/feb72e59-593c-4eb8-aae5-08e85b1f4f13

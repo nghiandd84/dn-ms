@@ -68,12 +68,6 @@ impl MigrationTrait for Migration {
                     )
                     .index(
                         Index::create()
-                            .name("idx_translation_keys_project_id")
-                            .table(translation_key::Entity)
-                            .col(translation_key::Column::ProjectId)
-                            .unique(),                    )
-                    .index(
-                        Index::create()
                             .name("idx_translation_keys_unique")
                             .table(translation_key::Entity)
                             .col(translation_key::Column::ProjectId)

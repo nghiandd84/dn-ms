@@ -16,6 +16,8 @@ export AUTH_NOTIFICATION_PORT=5111
 export BAKERY_PORT=5201
 export EMAIL_TEMPLATE_PORT=5301
 export NOTIFICATION_PORT=5401
+export PROFILE_PORT=5501
+export TRANSLATION_PORT=5601
 export NOTIFICATION_APP_PORT=4001
 
 echo "Kill current instances"
@@ -55,6 +57,12 @@ done
 for i in {1..2}; do 
     fuser -k -15 550$i/tcp 
 done
+
+# Kill Translation port
+for i in {1..2}; do 
+    fuser -k -15 560$i/tcp 
+done
+
 
 # Kill Notification App port
 for i in {1..2}; do 
@@ -150,6 +158,15 @@ for i in {1..2}; do
     echo "--- Profile on port $PORT ---"
     # Execute the program
     PROFILE_PORT=550$i $APP_DIRECTORY/api-profile  &
+done
+sleep 1s
+
+echo "------------ Start Translation API ------------"
+for i in {1..2}; do
+    PORT=560$i
+    echo "--- Translation on port $PORT ---"
+    # Execute the program
+    TRANSLATION_PORT=560$i $APP_DIRECTORY/api-translation  &
 done
 sleep 1s
 

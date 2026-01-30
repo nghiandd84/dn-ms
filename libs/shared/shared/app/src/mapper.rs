@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{
     body::to_bytes,
     extract::Request,
-    http::{HeaderValue, Method, Uri},
+    http::{Method, Uri},
     middleware::Next,
     response::{IntoResponse, Response},
     Json,
@@ -16,7 +16,7 @@ use shared_shared_data_app::ctx::Ctx;
 use shared_shared_data_app::result::Result;
 use shared_shared_data_error::app::AppError;
 
-pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Response) -> Response {
+pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
     debug!(
         "main_response_mapper: uri: {}, method: {}",
         uri, _req_method
@@ -61,8 +61,6 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, mut res: Respon
             let trace_id_str = tracing_opentelemetry_instrumentation_sdk::find_current_trace_id()
                 .unwrap_or_default();
             info!("Current Trace ID: {}", trace_id_str);
-
-         
 
             let status = res.status();
             let body = to_bytes(res.into_body(), usize::MAX)

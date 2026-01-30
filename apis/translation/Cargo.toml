@@ -1,0 +1,33 @@
+[package]
+name = "api-translation"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
+
+async-trait = { workspace = true }
+chrono = { version = "0.4.39", features = ["serde"] }
+dotenv = { workspace = true }
+tracing = { workspace = true }
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = { workspace = true }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-async-std", "debug-print"] }
+uuid = { version = "1.13.2", features = ["serde", "v4"] }
+validator = { version = "0.20.0", features = ["derive"] }
+
+shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-data-app = { workspace = true }
+
+features-translation-migrations = { workspace = true }
+features-translation-model = { workspace = true }
+features-translation-entities = { workspace = true }
+features-translation-repo = { workspace = true }
+features-translation-service = { workspace = true }

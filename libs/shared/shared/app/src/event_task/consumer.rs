@@ -1,7 +1,6 @@
 use futures_util::StreamExt;
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
-use opentelemetry::trace::TraceContextExt;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::{Headers, Message, OwnedHeaders};
@@ -95,7 +94,7 @@ where
                 };
 
                 // TODO set up headers hashmap to pass to handler
-                let mut headers: HashMap<String, String> = HashMap::new();
+                let headers: HashMap<String, String> = HashMap::new();
 
                 let origin_message = match borrow_message.payload_view::<str>() {
                     Some(Ok(s)) => s,
