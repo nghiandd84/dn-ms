@@ -19,6 +19,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(key_tag::Entity)
                     .if_not_exists()
+                    .col(
+                        ColumnDef::new(key_tag::Column::Id)
+                            .uuid()
+                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(key_tag::Column::KeyId).uuid().not_null())
                     .col(ColumnDef::new(key_tag::Column::TagId).uuid().not_null())
                     .col(
@@ -33,7 +39,12 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
-                    // .primary_key(Expr::col((key_tag::Entity, key_tag::Column::KeyId)).and(Expr::col((key_tag::Entity, key_tag::Column::TagId))))
+                    .primary_key(
+                        Index::create()
+                            .name("pk_key_tags")
+                            .col(key_tag::Column::KeyId)
+                            .col(key_tag::Column::TagId),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_key_tags_key_id")

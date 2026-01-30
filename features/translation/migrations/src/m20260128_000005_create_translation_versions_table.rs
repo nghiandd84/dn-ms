@@ -82,7 +82,8 @@ impl MigrationTrait for Migration {
                             .col(translation_version::Column::KeyId)
                             .col(translation_version::Column::Locale)
                             .col(translation_version::Column::Status)
-                            .col(translation_version::Column::VersionNumber),
+                            .col(translation_version::Column::VersionNumber)
+                            .unique(),
                     )
                     .index(
                         Index::create()

@@ -70,8 +70,8 @@ impl MigrationTrait for Migration {
                         Index::create()
                             .name("idx_translation_keys_project_id")
                             .table(translation_key::Entity)
-                            .col(translation_key::Column::ProjectId),
-                    )
+                            .col(translation_key::Column::ProjectId)
+                            .unique(),                    )
                     .index(
                         Index::create()
                             .name("idx_translation_keys_unique")
