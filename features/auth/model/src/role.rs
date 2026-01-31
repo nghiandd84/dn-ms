@@ -10,7 +10,7 @@ use shared_shared_macro::{ParamFilter, Response};
 pub struct RoleForCreateRequest {
     #[validate(length(
         min = 1,
-        max = 16,
+        max = 50,
         code = "name_length",
         message = "the length of email must be between 1 and 50"
     ))]

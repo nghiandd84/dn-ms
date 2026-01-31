@@ -22,14 +22,17 @@ gateways:
       - host: 0.0.0.0
         port: 6002
     routers:
-      - upstream: bakery
-        filter: bakery_router_filter
       - upstream: auth
         filter: auth_router_filter
-      - upstream: profile
-        filter: profile_router_filter
       - upstream: app_notification
         filter: app_notification_filter
+      - upstream: profile
+        filter: profile_router_filter
+      - upstream: translation
+        filter: translation_router_filter
+      - upstream: bakery
+        filter: bakery_router_filter
+      
     upstreams:
       - name: bakery
         default: false
@@ -63,22 +66,7 @@ gateways:
             tls: false
             sni: null
             weight: 2
-      - name: profile
-        default: false
-        traffic_distribution_policy: random
-        upstream_nodes:
-          - address:
-              host: 127.0.0.1
-              port: 5501
-            tls: false
-            sni: null
-            weight: 1
-          - address:
-              host: 127.0.0.1
-              port: 5502
-            tls: false
-            sni: null
-            weight: 2
+
       - name: app_notification
         default: false
         traffic_distribution_policy: random
@@ -95,6 +83,41 @@ gateways:
             tls: false
             sni: null
             weight: 1
+
+      - name: profile
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5501
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5502
+            tls: false
+            sni: null
+            weight: 2
+
+      - name: translation
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5601
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5602
+            tls: false
+            sni: null
+            weight: 2
+      
     
     interceptors:
       # Bakery
@@ -162,24 +185,35 @@ gateways:
         filter: profile_router_filter
         config:
           allowed_domains: localhost
-
+      
+      # Translation
+      - name: translation_cors
+        type: cors
+        enabled: true
+        filter: translation_router_filter
+        config:
+          allowed_domains: localhost
 
     filters:
-      - name: bakery_router_filter
-        path:
-          operator: start_with
-          value: /api/bakery
       - name: auth_router_filter
         path:
           operator: start_with
           value: /api/auth
-      - name: profile_router_filter
-        path:
-          operator: start_with
-          value: /api/profile
       - name: app_notification_filter
         path:
           operator: start_with
           value: /app-notification
         timeout: 100
+      - name: profile_router_filter
+        path:
+          operator: start_with
+          value: /api/profile
+      - name: translation_router_filter
+        path:
+          operator: start_with
+          value: /api/translation
+      - name: bakery_router_filter
+        path:
+          operator: start_with
+          value: /api/bakery
          
