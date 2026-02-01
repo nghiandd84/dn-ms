@@ -22,6 +22,8 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::translation_key::filter_translation_keys,
         crate::routes::translation_key::update_translation_key,
         crate::routes::translation_key::delete_translation_key,
+        crate::routes::translation_key::assign_tags_to_key,
+        crate::routes::translation_key::unassign_tags_from_key,
         crate::routes::tag::create_tag,
         crate::routes::tag::get_tag,
         crate::routes::tag::filter_tags,

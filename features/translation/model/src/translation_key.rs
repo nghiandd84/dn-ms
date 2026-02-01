@@ -88,3 +88,14 @@ impl From<TranslationKeyForUpdateRequest> for TranslationKeyForUpdateDto {
         }
     }
 }
+#[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct AssignTagsRequest {
+    #[validate(length(min = 1, code = "tag_ids", message = "tag_ids must contain at least one tag"))]
+    pub tag_ids: Vec<Uuid>,
+}
+
+#[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct UnassignTagsRequest {
+    #[validate(length(min = 1, code = "tag_ids", message = "tag_ids must contain at least one tag"))]
+    pub tag_ids: Vec<Uuid>,
+}

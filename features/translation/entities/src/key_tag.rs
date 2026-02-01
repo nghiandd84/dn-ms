@@ -11,10 +11,9 @@ use shared_shared_macro::Dto;
 #[dto(name(KeyTagForCreate), columns(key_id, tag_id))]
 #[dto(name(KeyTagForUpdate), columns(key_id, tag_id), option)]
 pub struct Model {
+    #[sea_orm(primary_key)]
     pub id: Uuid,
-    #[sea_orm(primary_key, auto_increment = false)]
     pub key_id: Uuid,
-    #[sea_orm(primary_key, auto_increment = false)]
     pub tag_id: Uuid,
     pub created_at: DateTime,
     pub updated_at: DateTime,

@@ -72,6 +72,22 @@ Content-Type: application/json
   "description": "Updated welcome message"
 }
 
+### Assign Tag
+POST {{baseUrl}}/translation-keys/{{keyId}}/assign-tags
+Content-Type: application/json
+
+{
+  "tag_ids": ["{{tagId}}", "96010d85-39d6-444f-9940-c0a85b9d97b3"]
+}
+
+### UnAssign Tag
+POST {{baseUrl}}/translation-keys/{{keyId}}/unassign-tags
+Content-Type: application/json
+
+{
+  "tag_ids": ["{{tagId}}", "96010d85-39d6-444f-9940-c0a85b9d97b3"]
+}
+
 ### Delete Translation Key
 DELETE {{baseUrl}}/translation-keys/{{keyId}}
 

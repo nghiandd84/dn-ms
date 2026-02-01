@@ -1,7 +1,7 @@
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterParam},
+    filter::{FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };

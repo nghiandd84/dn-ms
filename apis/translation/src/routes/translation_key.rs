@@ -9,7 +9,7 @@ use uuid::Uuid;
 use features_translation_model::{
     state::{TranslationAppState, TranslationCacheState},
     TranslationKeyData, TranslationKeyDataFilterParams, TranslationKeyForCreateRequest,
-    TranslationKeyForUpdateRequest,
+    TranslationKeyForUpdateRequest, AssignTagsRequest, UnassignTagsRequest,
 };
 
 use shared_shared_app::state::AppState;
@@ -149,6 +149,48 @@ async fn delete_translation_key(
     }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/translation-keys/{key_id}/assign-tags",
+    tag = TAG,
+    request_body = AssignTagsRequest,
+    responses(
+        (status = 200, description = "Tags assigned to translation key successfully", body = OkUuidResponse),
+    )
+)]
+async fn assign_tags_to_key(
+    state: State<AppState<TranslationAppState, TranslationCacheState>>,
+    Path(key_id): Path<Uuid>,
+    Json(req): Json<AssignTagsRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    TranslationKeyService::assign_tags_to_key(&state.conn, key_id, req).await?;
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(key_id),
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/translation-keys/{key_id}/unassign-tags",
+    tag = TAG,
+    request_body = UnassignTagsRequest,
+    responses(
+        (status = 200, description = "Tags unassigned from translation key successfully", body = OkUuidResponse),
+    )
+)]
+async fn unassign_tags_from_key(
+    state: State<AppState<TranslationAppState, TranslationCacheState>>,
+    Path(key_id): Path<Uuid>,
+    Json(req): Json<UnassignTagsRequest>,
+) -> Result<ResponseJson<OkUuid>> {
+    TranslationKeyService::unassign_tags_from_key(&state.conn, key_id, req).await?;
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(key_id),
+    }))
+}
+
 pub fn routes(app_state: &AppState<TranslationAppState, TranslationCacheState>) -> Router {
     Router::new()
         .route("/translation-keys", post(create_translation_key))
@@ -156,6 +198,8 @@ pub fn routes(app_state: &AppState<TranslationAppState, TranslationCacheState>) 
         .route("/translation-keys/{key_id}", get(get_translation_key))
         .route("/translation-keys/{key_id}", patch(update_translation_key))
         .route("/translation-keys/{key_id}", delete(delete_translation_key))
+        .route("/translation-keys/{key_id}/assign-tags", post(assign_tags_to_key))
+        .route("/translation-keys/{key_id}/unassign-tags", post(unassign_tags_from_key))
         .route(
             "/projects/{project_id}/translation-keys",
             get(get_translation_keys_by_project),
