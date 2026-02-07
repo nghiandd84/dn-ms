@@ -10,7 +10,6 @@ use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
 };
-use shared_shared_data_auth::header::user_id::UserId;
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
@@ -38,10 +37,8 @@ const TAG: &str = "Email-Template";
 )]
 async fn create_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
-    UserId(user_id): UserId,
-    ValidJson(mut request): ValidJson<EmailTemplateForCreateRequest>,
+    ValidJson(request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    request.user_id = Some(user_id);
     let template_id = EmailTemplateService::create(&state.conn, request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,

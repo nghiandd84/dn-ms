@@ -99,6 +99,9 @@ GET {{baseUrl}}/tags
 ### Search Tags
 GET {{baseUrl}}/tags?name=li|ui&order_name=name&order_direction=-1
 
+###
+GET {{baseUrl}}/tags?name=li%7Cui&order_name=name&order_direction=-1
+
 ### Create Tag
 POST {{baseUrl}}/tags
 Content-Type: application/json
