@@ -41,7 +41,7 @@ impl BakerQueryManager {
         }
         condition
     }
-
+    /*
     async fn advance_search(
         db: &DbConn,
         pagination: &Pagination,
@@ -108,6 +108,7 @@ impl BakerQueryManager {
         let condition = Self::build_filter_condition(filters);
         select.filter(condition)
     }
+     */
 }
 
 pub struct BakerQuery {}
@@ -124,7 +125,8 @@ impl BakerQuery {
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<BakerData>, DbErr> {
-        let result = BakerQueryManager::advance_search(db, pagination, order, filters).await?;
+        // let result = BakerQueryManager::advance_search(db, pagination, order, filters).await?;
+        let result = BakerQueryManager::filter(db, pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

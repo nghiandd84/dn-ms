@@ -56,7 +56,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         let fn_name = format_ident!("filter_condition_{}", column_name.to_lowercase());
         let column_name = format_ident!("{}", column_name);
         quote! { 
-
+            
             fn #fn_name (column: #column_name, filter_enum: &FilterEnum) -> Condition {
                 match filter_enum {
                     FilterEnum::Bool(filter) => match filter.operator {
@@ -220,9 +220,10 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     _ => Condition::all(),
                 }
             }
+            
         }
     });
-
+    
     let get_by_id_quote = match key_type_str.as_str() {
         "Uuid" => quote! {
             #[tracing::instrument(skip(db))]
@@ -257,8 +258,10 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         },
         _ => quote! {},
     };
+     
 
     let expanded = quote! {
+        
         use std::str::FromStr;
         use sea_orm::{
             ConnectionTrait, DbConn, DbErr,
@@ -268,13 +271,16 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             prelude::*
         };
         use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, order::OrderDirection};
+        
 
         impl #name {
             fn compute_pages_number(num_items: u64, page_size: u64) -> u64 {
                 (num_items / page_size) + (num_items % page_size > 0) as u64
             }
 
+            /*
             async fn get_num_items(db: &DbConn, query: &SelectStatement) -> Result<u64, DbErr> {
+                
                 let stmt = SelectStatement::new()
                     .expr(sea_orm::prelude::Expr::cust("COUNT(*) AS num_items"))
                     .from_subquery(
@@ -288,13 +294,16 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     )
                     .to_owned();
                 let stmt = db.get_database_backend().build(&stmt);
-                let num_items = match db.query_one(stmt).await? {
-                    Some(res) => res.try_get::<i64>("", "num_items")? as u64,
-                    None => 0,
-                };
-                Ok(num_items)
+                
+                // let num_items = match db.query_one(stmt).await? {
+                //     Some(res) => res.try_get::<i64>("", "num_items")? as u64,
+                //     None => 0,
+                // };
+                // Ok(num_items)
             }
+            */
 
+            
             fn build_query(order: &Order, filters: &Vec<FilterEnum>) -> Select<Entity> {
                 let default_order = Entity::find().order_by(Column::CreatedAt, SeaOrder::Desc);
 
@@ -311,16 +320,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     }
                     _ => default_order,
                 };
-                /*
-                let mut condition = Condition::all();
-                for filter_enum in filters {
-                    if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                        condition = condition.add(Self::filter_condition_column(column, filter_enum));
-                    }
-                }
-
-                let select = select.filter(condition);
-                 */
+                
                 let condition = Self::build_filter_condition(filters);
                 let select = select.filter(condition);
 
@@ -330,9 +330,12 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             #(#function_quotes)*  
         }
 
+        
         impl QueryManager<ActiveModel, ModelOptionDto> for #name {
             
             #get_by_id_quote
+
+            
             #[tracing::instrument(skip(db))]
             async fn filter(
                 db: &DbConn,
@@ -355,8 +358,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     result: result,
                 };
                 Ok(page_result)
-            }
-
+            }           
             
         }
 
