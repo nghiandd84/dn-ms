@@ -197,8 +197,8 @@ exit 0
 
 
 # Run migrate
-# cargo run --bin migrations_auth -- -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth
+# cargo run --bin migrations_auth -- -v -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth
 # Rollack to last version
-# cargo run --bin migrations_auth -- -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth down
+# cargo run --bin migrations_auth -- -v -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth down
 # Check migrate status
-# cargo run --bin migrations_auth -- -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth status
+# cargo run --bin migrations_auth -- -v -u postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms -s auth status
