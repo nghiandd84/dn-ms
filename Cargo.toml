@@ -36,6 +36,12 @@ members = [
     "features/event/repo", 
     "features/event/service", 
 
+    "features/inventory/entities", 
+    "features/inventory/migrations", 
+    "features/inventory/model", 
+    "features/inventory/repo", 
+    "features/inventory/service", 
+
     "features/profiles/entities", 
     "features/profiles/migrations", 
     "features/profiles/model", 
@@ -180,12 +186,19 @@ features-auth-remote = { path = "./features/auth/remote"}
 features-auth-stream = { path = "./features/auth/stream"}
 
 
-# Evnet Feature
+# Event Feature
 features-event-entities = { path = "./features/event/entities"}
 features-event-migrations = { path = "./features/event/migrations"}
 features-event-model = { path = "./features/event/model"}
 features-event-repo = { path = "./features/event/repo"}
 features-event-service = { path = "./features/event/service"}
+
+# Inventory Feature
+features-inventory-entities = { path = "./features/inventory/entities"}
+features-inventory-migrations = { path = "./features/inventory/migrations"}
+features-inventory-model = { path = "./features/inventory/model"}
+features-inventory-repo = { path = "./features/inventory/repo"}
+features-inventory-service = { path = "./features/inventory/service"}
 
 # Profile Feature
 features-profiles-entities = { path = "./features/profiles/entities"}

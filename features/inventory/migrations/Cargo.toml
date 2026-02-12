@@ -1,0 +1,22 @@
+[package]
+name = "features-inventory-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_inventory_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_inventory"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+serde_json = { workspace = true }
+sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
+
+shared-shared-data-core = { workspace = true }
+
+features-inventory-entities = { workspace = true }

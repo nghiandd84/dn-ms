@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use features_event_migrations::Migrator;
+use features_inventory_migrations::Migrator;
 
 #[async_std::main]
 async fn main() {

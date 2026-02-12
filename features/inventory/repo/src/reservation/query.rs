@@ -1,0 +1,55 @@
+use uuid::Uuid;
+
+use shared_shared_data_core::{
+    filter::FilterEnum,
+    order::Order,
+    paging::{Pagination, QueryResult},
+};
+use shared_shared_data_error::app::AppError;
+use shared_shared_macro::Query;
+
+use features_inventory_entities::reservation::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_inventory_model::reservation::ReservationData;
+
+#[derive(Query)]
+#[query(key_type(Uuid))]
+#[query_filter(column_name(Column))]
+struct ReservationQueryManager;
+
+impl ReservationQueryManager {
+    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
+        let mut condition = Condition::all();
+        for filter_enum in filters {
+            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
+                condition = condition.add(Self::filter_condition_column(column, filter_enum));
+            }
+        }
+        condition
+    }
+}
+
+pub struct ReservationQuery;
+
+impl ReservationQuery {
+    pub async fn get_reservation_by_id(
+        db: &DbConn,
+        reservation_id: Uuid,
+    ) -> Result<ReservationData, AppError> {
+        let model = ReservationQueryManager::get_by_id_uuid(db, reservation_id).await?;
+        Ok(model.into())
+    }
+
+    pub async fn get_reservations<'a>(
+        db: &'a DbConn,
+        pagination: &Pagination,
+        order: &Order,
+        filters: &Vec<FilterEnum>,
+    ) -> Result<QueryResult<ReservationData>, AppError> {
+        let result = ReservationQueryManager::filter(db, pagination, order, filters).await?;
+        let mapped_result = QueryResult {
+            total_page: result.total_page,
+            result: result.result.into_iter().map(|m| m.into()).collect(),
+        };
+        Ok(mapped_result)
+    }
+}

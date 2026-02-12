@@ -93,10 +93,7 @@ where
             let cache_prefix = app_key.clone();
             let cache_url = env::var(format!("{}_REDIS_URL", app_config.app_key.clone()))
                 .unwrap_or_else(|_| default_cache_url.to_string());
-            debug!(
-                "Connect cache with url {} and prefix {}",
-                cache_url, cache_prefix
-            );
+            debug!("Connect cache {}", cache_prefix);
 
             let cache = Cache::<String, C>::new(cache_url.as_str(), cache_prefix.as_str())
                 .expect("Failed to connect to redis cache");

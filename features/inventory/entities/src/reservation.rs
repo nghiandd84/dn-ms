@@ -7,46 +7,27 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
-#[sea_orm(table_name = "events")]
+#[sea_orm(table_name = "reservations")]
 #[dto(
-    name(EventForCreate),
-    columns(
-        event_name,
-        event_date,
-        venue_name,
-        total_seats,
-        status,
-        sale_start_time
-    )
+    name(ReservationForCreate),
+    columns(seat_id, event_id, user_id, expires_at, status)
 )]
 #[dto(
-    name(EventForUpdate),
-    columns(
-        event_name,
-        event_date,
-        venue_name,
-        total_seats,
-        status,
-        sale_start_time
-    ),
+    name(ReservationForUpdate),
+    columns(seat_id, event_id, user_id, expires_at, status),
     option
 )]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_type = "String(StringLen::N(255))")]
-    pub event_name: String,
-    pub event_date: DateTime,
-    #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
-    pub venue_name: String,
-    pub total_seats: i32,
-    #[sea_orm(column_type = "String(StringLen::N(100))")]
-    pub status: String,
-    pub sale_start_time: DateTime,
+    pub seat_id: Uuid,
+    pub event_id: Uuid,
+    pub user_id: Uuid,
+    pub expires_at: DateTime,
+    pub status: String,             // ENUM('ACTIVE','CONFIRMED','EXPIRED','CANCELLED') DEFAULT 'ACTIVE'
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
-
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}

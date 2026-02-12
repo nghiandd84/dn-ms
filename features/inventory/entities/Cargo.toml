@@ -1,0 +1,21 @@
+[package]
+name = "features-inventory-entities"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_inventory_entities"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+rand = { workspace = true }
+uuid = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+
+shared-shared-macro = { workspace = true }
+shared-shared-data-core = { workspace = true }
