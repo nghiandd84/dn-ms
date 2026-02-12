@@ -28,7 +28,13 @@ impl Into<EventData> for ModelOptionDto {
     fn into(self) -> EventData {
         EventData {
             id: self.id,
-
+            event_name: self.event_name,
+            event_date: self.event_date,
+            venue_name: self.venue_name,
+            total_seats: self.total_seats,
+            status: self.status,
+            sale_start_time: self.sale_start_time,
+            created_at: self.created_at,
             ..Default::default()
         }
     }

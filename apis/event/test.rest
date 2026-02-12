@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:5701
+@eventId = ffbaa1ea-af8c-43b6-ab85-95dfa8c808b9
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== EVENTS =====
+
+### Get All Events
+GET {{baseUrl}}/events
+
+### Search Events
+GET {{baseUrl}}/events?status=li|UPCOMING&order_name=event_name&order_direction=1
+
+### Create Event
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "event_name": "Tech Conference 2026",
+  "event_date": "2026-06-15T10:00:00",
+  "venue_name": "Convention Center",
+  "total_seats": 500,
+  "status": "UPCOMING",
+  "sale_start_time": "2026-02-01T00:00:00"
+}
+
+### Get Event By ID
+GET {{baseUrl}}/events/{{eventId}}
+
+### Update Event
+PATCH {{baseUrl}}/events/{{eventId}}
+Content-Type: application/json
+
+{
+  "event_name": "Tech Conference 2026 Updated",
+  "total_seats": 600,
+  "status": "COMING_SOON"
+}
+
+### Delete Event
+DELETE {{baseUrl}}/events/ddbb6469-a2bf-478c-95fc-b99b674e35a0

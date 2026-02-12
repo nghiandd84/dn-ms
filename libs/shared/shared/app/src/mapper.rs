@@ -17,10 +17,10 @@ use shared_shared_data_app::result::Result;
 use shared_shared_data_error::app::AppError;
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
-    debug!(
-        "main_response_mapper: uri: {}, method: {}",
-        uri, _req_method
-    );
+    // debug!(
+    //     "main_response_mapper: uri: {}, method: {}",
+    //     uri, _req_method
+    // );
     // let uuid = Uuid::new_v4();
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
@@ -90,9 +90,9 @@ pub async fn mw_ctx_resolver(
     let _result_ctx: Result<Ctx> = Ok(ctx);
     // let result_ctx: Result<Ctx, Error> = Err(Error::CtxNotInRequestExt);
     // request.extensions_mut().insert(result_ctx);
-    debug!("mw_ctx_resolver: ctx inserted into request extensions");
+    // debug!("mw_ctx_resolver: ctx inserted into request extensions");
     let res = next.run(req).await;
-    debug!("mw_ctx_resolver: response generated");
+    // debug!("mw_ctx_resolver: response generated");
 
     res
 }

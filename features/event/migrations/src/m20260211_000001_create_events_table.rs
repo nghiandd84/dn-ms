@@ -15,6 +15,7 @@ impl MigrationName for Migration {
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        /*
         // Create the event_status enum type
         // We can view values in psql with: "select * from pg_enum WHERE enumtypid = 'event_status'::regtype;"
         let _event_status_enum = manager
@@ -30,6 +31,7 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await;
+        */
         let _ = manager
             .create_table(
                 Table::create()
@@ -66,7 +68,9 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(event::Column::Status)
-                            .custom(Alias::new("event_status"))
+                            // .custom(Alias::new("event_status"))
+                            .string()
+                            .string_len(100)
                             .not_null()
                             .default("UPCOMING"),
                     )
@@ -134,6 +138,7 @@ impl MigrationTrait for Migration {
         let _drop_table = manager
             .drop_table(Table::drop().table(event::Entity).to_owned())
             .await?;
+        /*
         let _drop_event_status_enum = manager
             .drop_type(
                 Type::drop()
@@ -142,6 +147,7 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+        */
         Ok(())
     }
 }

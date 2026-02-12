@@ -70,6 +70,7 @@ members = [
     "apis/bakery", 
     "apis/translation", 
     "apis/email-template",
+    "apis/event",
     "apis/notification",
     "apps/auth-notification",
     "apps/auth-web",
