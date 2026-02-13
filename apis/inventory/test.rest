@@ -1,0 +1,80 @@
+@baseUrl = http://localhost:5801
+@reservationId = dd63b490-514e-46c9-88e1-71900e518184
+@seatId = c98421b1-0150-4175-b170-2a4ae35ce83b
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== RESERVATIONS =====
+
+### Get All Reservations
+GET {{baseUrl}}/reservations
+
+### Search Reservations
+GET {{baseUrl}}/reservations?status=li|UPCOMING&order_name=event_name&order_direction=1
+
+### Create Reservation
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+
+{
+  "seat_id": "{{seatId}}",
+  "event_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "expires_at": "2026-02-13T02:26:37",
+  "status": "ACTIVE"
+}
+
+### Get Reservation By ID
+GET {{baseUrl}}/reservations/{{reservationId}}
+
+### Update Reservation
+PATCH {{baseUrl}}/reservations/{{reservationId}}
+Content-Type: application/json
+
+{
+  "status": "COMING_SOON"
+}
+
+### Delete Reservation
+DELETE {{baseUrl}}/reservations/93693a9a-11a1-4d9a-a889-6938cbf31ce1
+
+
+
+### ===== SEAT =====
+
+### Get All SEATS
+GET {{baseUrl}}/seats
+
+### Search seat
+GET {{baseUrl}}/seats?seat_number=li|N1&order_name=created_at&order_direction=1
+
+### Create seat
+POST {{baseUrl}}/seats
+Content-Type: application/json
+
+{
+  "event_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "seat_number": "N1",
+  "section": "S1",
+  "row_number": "R1",
+  "price": 22,
+  "seat_type": "REGULAR"
+}
+
+### Get seats By ID
+GET {{baseUrl}}/seats/{{seatId}}
+
+### Update Reservation
+PATCH {{baseUrl}}/seats/{{seatId}}
+Content-Type: application/json
+
+{
+  "section": "S1 UPDATE"
+}
+
+### Delete seat
+DELETE {{baseUrl}}/seats/a60a811a-066b-42c5-9106-a50c442f25ab

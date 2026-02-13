@@ -39,7 +39,7 @@ impl Into<ReservationData> for ModelOptionDto {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct ReservationForCreateRequest {
     pub seat_id: Uuid,
     pub event_id: Uuid,
@@ -60,7 +60,7 @@ impl Into<ReservationForCreateDto> for ReservationForCreateRequest {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct ReservationForUpdateRequest {
     pub seat_id: Option<Uuid>,
     pub event_id: Option<Uuid>,

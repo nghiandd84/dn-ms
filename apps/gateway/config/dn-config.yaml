@@ -30,6 +30,10 @@ gateways:
         filter: profile_router_filter
       - upstream: translation
         filter: translation_router_filter
+      - upstream: event
+        filter: event_router_filter
+      - upstream: inventory
+        filter: inventory_router_filter
       - upstream: bakery
         filter: bakery_router_filter
       - upstream: email_template
@@ -116,6 +120,40 @@ gateways:
           - address:
               host: 127.0.0.1
               port: 5602
+            tls: false
+            sni: null
+            weight: 2
+
+      - name: event
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5701
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5702
+            tls: false
+            sni: null
+            weight: 2
+
+      - name: inventory
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5801
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5802
             tls: false
             sni: null
             weight: 2
@@ -213,6 +251,22 @@ gateways:
         config:
           allowed_domains: localhost
 
+      # Event
+      - name: event_cors
+        type: cors
+        enabled: true
+        filter: event_router_filter
+        config:
+          allowed_domains: localhost
+
+      # Inventory
+      - name: inventory_cors
+        type: cors
+        enabled: true
+        filter: translation_router_filter
+        config:
+          allowed_domains: localhost
+
       # Email Template
       - name: email_template_cors
         type: cors
@@ -239,6 +293,17 @@ gateways:
         path:
           operator: start_with
           value: /api/translation
+
+      - name: event_router_filter
+        path:
+          operator: start_with
+          value: /api/event
+
+      - name: inventory_router_filter
+        path:
+          operator: start_with
+          value: /api/inventory
+
       - name: bakery_router_filter
         path:
           operator: start_with

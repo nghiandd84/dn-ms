@@ -40,7 +40,7 @@ pub struct Model {
     #[sea_orm(column_type = "String(StringLen::N(255))")]
     pub row_number: String,
     pub seat_type: String, // ENUM('REGULAR','VIP','PREMIUM') DEFAULT 'REGULAR'
-    pub price: i32,
+    pub price: f32,
     pub version: i32,
     pub status: String, // ENUM('AVAILABLE','RESERVED','BOOKED','BLOCKED') DEFAULT 'AVAILABLE'
     pub reserved_by: String, // -- User ID or session ID

@@ -48,10 +48,10 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default("REGULAR"),
                     )
-                    .col(ColumnDef::new(seat::Column::Price).decimal().not_null())
+                    .col(ColumnDef::new(seat::Column::Price).float().not_null())
                     .col(
                         ColumnDef::new(seat::Column::Version)
-                            .big_integer()
+                            .integer()
                             .not_null()
                             .default(0),
                     )
@@ -66,6 +66,12 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(seat::Column::BookingId).uuid())
                     .col(
                         ColumnDef::new(seat::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
+                    .col(
+                        ColumnDef::new(seat::Column::UpdatedAt)
                             .date_time()
                             .not_null()
                             .extra("DEFAULT CURRENT_TIMESTAMP"),
@@ -113,6 +119,12 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(reservation::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
+                    .col(
+                        ColumnDef::new(reservation::Column::UpdatedAt)
                             .date_time()
                             .not_null()
                             .extra("DEFAULT CURRENT_TIMESTAMP"),

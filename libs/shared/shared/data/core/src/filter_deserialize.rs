@@ -111,7 +111,24 @@ where
         .map_err(serde::de::Error::custom)
 }
 
+
 // F32
+pub fn default_none_f32() -> Option<FilterParam<f32>> {
+    None
+}
+
+pub fn deserialize_filter_from_f32<'de, D>(
+    deserializer: D,
+) -> Result<Option<FilterParam<f32>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+    parse_filter_param::<f32, _>(&value, 0f32, |s| s.parse::<f32>().unwrap())
+        .map_err(serde::de::Error::custom)
+}
+
+// F64
 pub fn default_none_f64() -> Option<FilterParam<f64>> {
     None
 }

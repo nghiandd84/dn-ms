@@ -70,6 +70,11 @@ for i in {1..2}; do
 done
 
 
+# Kill Inventory port
+for i in {1..2}; do 
+    fuser -k -15 580$i/tcp 
+done
+
 # Kill Notification App port
 for i in {1..2}; do 
     fuser -k -15 400$i/tcp 
@@ -182,6 +187,16 @@ for i in {1..2}; do
     echo "--- Event on port $PORT ---"
     # Execute the program
     EVENT_PORT=570$i $APP_DIRECTORY/api-event  &
+done
+sleep 1s
+
+
+echo "------------ Start INVENTORY API ------------"
+for i in {1..2}; do
+    PORT=580$i
+    echo "--- INVENTORY on port $PORT ---"
+    # Execute the program
+    INVENTORY_PORT=580$i $APP_DIRECTORY/api-inventory  &
 done
 sleep 1s
 

@@ -21,7 +21,7 @@ use features_auth_model::{
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
-    result::{OkUuidResponse, Result},
+    result::Result,
 };
 use shared_shared_data_core::{
     order::Order,

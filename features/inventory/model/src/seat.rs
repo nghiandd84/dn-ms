@@ -20,7 +20,7 @@ pub struct SeatData {
     pub section: Option<String>,
     pub row_number: Option<String>,
     pub seat_type: Option<String>,
-    pub price: Option<i32>,
+    pub price: Option<f32>,
     pub status: Option<String>,
     pub version: Option<i32>,
     pub reserved_by: Option<String>,
@@ -57,7 +57,7 @@ pub struct SeatForCreateRequest {
     pub section: Option<String>,
     pub row_number: Option<String>,
     pub seat_type: Option<String>,
-    pub price: i32,
+    pub price: f32,
 }
 
 impl Into<SeatForCreateDto> for SeatForCreateRequest {
@@ -73,13 +73,13 @@ impl Into<SeatForCreateDto> for SeatForCreateRequest {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct SeatForUpdateRequest {
     pub seat_number: Option<String>,
     pub section: Option<String>,
     pub row_number: Option<String>,
     pub seat_type: Option<String>,
-    pub price: Option<i32>,
+    pub price: Option<f32>,
     pub status: Option<String>,
     pub event_id: Option<Uuid>,
     pub version: Option<i32>,

@@ -84,7 +84,6 @@ pub async fn mw_ctx_resolver(
     req: Request,
     next: Next,
 ) -> Response {
-    debug!("---------------------------------------");
     // Create ctx from token
     let ctx = Ctx::new(1);
     let _result_ctx: Result<Ctx> = Ok(ctx);

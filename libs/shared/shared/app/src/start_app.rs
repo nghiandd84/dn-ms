@@ -16,7 +16,7 @@ use shared_shared_data_cache::cache::Cache;
 use crate::config::AppConfig;
 use crate::discovery::{deregister_service, get_consul_client, register_service};
 use crate::health::health_checker_handler;
-use crate::mapper::{main_response_mapper, mw_ctx_resolver};
+use crate::mapper::main_response_mapper;
 use crate::state::AppState;
 use crate::tracing::init_tracing_log;
 
@@ -139,13 +139,15 @@ where
                 .merge(self.routes(&app_state))
                 .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
                 .layer(middleware::map_response(main_response_mapper))
-                .layer(middleware::from_fn(mw_ctx_resolver)) // Add custom context resolver middleware
+                // .layer(middleware::from_fn(mw_ctx_resolver)) // Add custom context resolver middleware
                 .layer(axum_layer); // OtelAxumLayer: Starts the trace and extracts parent context from request headers
 
             self.custom_handler(&mut app_state).await?;
             let addr = format!("0.0.0.0:{port}");
             println!("Binding to address: {}", addr);
-            let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+            let listener = tokio::net::TcpListener::bind(addr.clone())
+                .await
+                .expect(format!("Address already in use: {}", addr).as_str());
             debug!("Listener created");
             axum::serve(listener, routes_all.into_make_service())
                 .with_graceful_shutdown(shutdown_signal())
