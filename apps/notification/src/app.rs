@@ -40,9 +40,9 @@ impl<'a> StartApp<Arc<RwLock<NotificationState>>, NotificationCacheState> for My
         let app_key = self.config.app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let kafka_group = if instance_id.is_ok() {
-            format!("notification_group_{}", instance_id.unwrap())
+            format!("notification_{}", instance_id.unwrap())
         } else {
-            "notification_group".to_string()
+            "notification".to_string()
         };
 
         let consumer_config = ConsumerConfig::from_env(

@@ -31,3 +31,5 @@ features-inventory-model = { workspace = true }
 features-inventory-entities = { workspace = true }
 features-inventory-repo = { workspace = true }
 features-inventory-service = { workspace = true }
+
+features-event-stream = { workspace = true }

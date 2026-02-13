@@ -40,6 +40,7 @@ members = [
     "features/event/model", 
     "features/event/repo", 
     "features/event/service", 
+    "features/event/stream", 
 
     "features/inventory/entities", 
     "features/inventory/migrations", 
@@ -206,6 +207,7 @@ features-event-migrations = { path = "./features/event/migrations"}
 features-event-model = { path = "./features/event/model"}
 features-event-repo = { path = "./features/event/repo"}
 features-event-service = { path = "./features/event/service"}
+features-event-stream = { path = "./features/event/stream"}
 
 # Inventory Feature
 features-inventory-entities = { path = "./features/inventory/entities"}

@@ -38,9 +38,9 @@ impl<'a> StartApp<AuthAppState> for MyApp<'a> {
         let app_key = self.config.app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let kafka_group = if instance_id.is_ok() {
-            format!("auth_notification_group_{}", instance_id.unwrap())
+            format!("auth_notification_{}", instance_id.unwrap())
         } else {
-            "auth_notification_group".to_string()
+            "auth_notification".to_string()
         };
 
         let consumer_config = ConsumerConfig::from_env(

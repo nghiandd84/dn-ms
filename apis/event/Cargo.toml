@@ -31,3 +31,4 @@ features-event-model = { workspace = true }
 features-event-entities = { workspace = true }
 features-event-repo = { workspace = true }
 features-event-service = { workspace = true }
+features-event-stream = { workspace = true }

@@ -1,0 +1,24 @@
+[package]
+name = "features-event-stream"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "features_event_stream"
+path = "src/lib.rs"
+
+[dependencies]
+
+tokio = { workspace = true }
+chrono = { workspace = true }
+serde_json = { workspace = true }
+validator = { version = "0.20.0", features = ["derive"] }
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+serde = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+tracing = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-macro = { workspace = true }
