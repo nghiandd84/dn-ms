@@ -69,10 +69,14 @@ for i in {1..2}; do
     fuser -k -15 570$i/tcp 
 done
 
-
 # Kill Inventory port
 for i in {1..2}; do 
     fuser -k -15 580$i/tcp 
+done
+
+# Kill Booking port
+for i in {1..2}; do 
+    fuser -k -15 590$i/tcp 
 done
 
 # Kill Notification App port
@@ -197,6 +201,16 @@ for i in {1..2}; do
     echo "--- INVENTORY on port $PORT ---"
     # Execute the program
     INVENTORY_PORT=580$i $APP_DIRECTORY/api-inventory  &
+done
+sleep 1s
+
+
+echo "------------ Start Booking API ------------"
+for i in {1..2}; do
+    PORT=590$i
+    echo "--- BOOKING on port $PORT ---"
+    # Execute the program
+    BOOKING_PORT=590$i $APP_DIRECTORY/api-booking  &
 done
 sleep 1s
 

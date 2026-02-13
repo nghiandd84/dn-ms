@@ -28,7 +28,12 @@ members = [
     "features/auth/service", 
     "features/auth/remote", 
     "features/auth/stream", 
-
+    
+    "features/booking/entities", 
+    "features/booking/model", 
+    "features/booking/migrations", 
+    "features/booking/repo", 
+    "features/booking/service", 
 
     "features/event/entities", 
     "features/event/migrations", 
@@ -41,6 +46,7 @@ members = [
     "features/inventory/model", 
     "features/inventory/repo", 
     "features/inventory/service", 
+
 
     "features/profiles/entities", 
     "features/profiles/migrations", 
@@ -78,6 +84,7 @@ members = [
     "apis/email-template",
     "apis/event",
     "apis/inventory",
+    "apis/booking",
     "apis/notification",
     "apps/auth-notification",
     "apps/auth-web",
@@ -186,6 +193,12 @@ features-auth-service = { path = "./features/auth/service"}
 features-auth-remote = { path = "./features/auth/remote"}
 features-auth-stream = { path = "./features/auth/stream"}
 
+# Booking Feature
+features-booking-entities = { path = "./features/booking/entities"}
+features-booking-model = { path = "./features/booking/model"}
+features-booking-migrations = { path = "./features/booking/migrations"}
+features-booking-repo = { path = "./features/booking/repo"}
+features-booking-service = { path = "./features/booking/service"}
 
 # Event Feature
 features-event-entities = { path = "./features/event/entities"}

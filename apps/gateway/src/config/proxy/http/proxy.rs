@@ -63,10 +63,12 @@ impl Proxy {
                 let default_filter = String::from("");
                 let interceptor_filter = interceptor.filter().as_ref().unwrap_or(&default_filter);
                 let is_match_filter = *interceptor_filter == filter_name;
-                debug!(
-                    "get_interceptors filter_name: {} interceptor_name {} is_match_phase: {} is_match_filter: {}",
-                    filter_name, interceptor_name, is_match_phase, is_match_filter
-                );
+                if is_match_filter {
+                    debug!(
+                        "get_interceptors filter_name: {} interceptor_name {} is_match_phase: {} is_match_filter: {}",
+                        filter_name, interceptor_name, is_match_phase, is_match_filter
+                    );
+                }
                 is_match_phase && is_match_filter
             })
             .cloned()

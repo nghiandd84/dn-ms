@@ -1,0 +1,85 @@
+@baseUrl = http://localhost:5901
+# @baseUrl = http://localhost:6001/api/booking
+@bookingId = 887712cc-1571-492c-b55b-99dc65b9202b
+@bookingSeatId = 25a14c7f-2775-482a-b0f0-a98dd2c2ece8
+
+@origin = http://localhost
+
+### Booking API Test requests
+
+### Create a new booking
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "event_id": "12345678-1234-1234-1234-123456789022",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 150.50,
+  "status": "PENDING",
+  "booking_reference": "BOOKING002"
+}
+
+### Get booking by ID
+GET {{baseUrl}}/bookings/{{bookingId}}
+Origin: {{origin}}
+
+
+### List all bookings with filters
+GET {{baseUrl}}/bookings
+Origin: {{origin}}
+
+
+### List all bookings with filters
+GET {{baseUrl}}/bookings?status=li|PENDING1
+Origin: {{origin}}
+
+
+### Update booking
+PATCH {{baseUrl}}/bookings/{{bookingId}}
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "status": "CONFIRMED"
+}
+
+### Delete booking
+DELETE {{baseUrl}}/bookings/6c1303c9-3f43-4538-ada1-5d2402787732
+Origin: {{origin}}
+
+### Create booking seat
+POST {{baseUrl}}/booking-seats
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "booking_id": "{{bookingId}}",
+  "seat_id": "11111111-1111-1111-1111-111111111112",
+  "price": 75.25
+}
+
+### Get booking seat by ID
+GET {{baseUrl}}/booking-seats/{{bookingSeatId}}
+Origin: {{origin}}
+
+### List all booking seats
+GET {{baseUrl}}/booking-seats
+Origin: {{origin}}
+
+### Search all booking seats
+GET {{baseUrl}}/booking-seats?price=le|300
+Origin: {{origin}}
+
+### Update booking seat
+PATCH {{baseUrl}}/booking-seats/{{bookingSeatId}}
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "price": 80.00
+}
+
+### Delete booking seat
+DELETE {{baseUrl}}/booking-seats/6090b514-38df-487f-80d5-faf15b53ceeb
+Origin: {{origin}}
