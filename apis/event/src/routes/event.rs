@@ -23,6 +23,7 @@ use shared_shared_data_core::{
 };
 
 use features_event_service::EventService;
+use features_event_stream::PRODUCER_KEY;
 
 const TAG: &str = "event";
 
@@ -40,7 +41,10 @@ async fn create_event(
     state: State<AppState<EventAppState, EventCacheState>>,
     Json(req): Json<EventForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let event_id = EventService::create_event(&state.conn, req).await?;
+    let producer = state
+        .get_producer(PRODUCER_KEY.to_string())
+        .expect("Producer not found");
+    let event_id = EventService::create_event(&state.conn, req, &producer).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(event_id),
@@ -104,7 +108,10 @@ async fn update_event(
     Path(event_id): Path<Uuid>,
     Json(req): Json<EventForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    EventService::update_event(&state.conn, event_id, req).await?;
+        let producer = state
+            .get_producer(PRODUCER_KEY.to_string())
+            .expect("Producer not found");
+    EventService::update_event(&state.conn, event_id, req, &producer).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(event_id),

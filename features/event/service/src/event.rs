@@ -3,6 +3,7 @@ use sea_orm::{DbConn, Iden};
 use tracing::debug;
 use uuid::Uuid;
 
+use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterOperator, FilterParam},
     order::Order,
@@ -12,6 +13,7 @@ use shared_shared_data_error::app::AppError;
 
 use features_event_model::{EventData, EventForCreateRequest, EventForUpdateRequest};
 use features_event_repo::event::{EventMutation, EventQuery};
+use features_event_stream::{ChangeEventMessage, EventMessage, NewEventMessage};
 
 pub struct EventService {}
 
@@ -19,8 +21,9 @@ impl EventService {
     pub async fn create_event<'a>(
         db: &'a DbConn,
         event_request: EventForCreateRequest,
+        producer: &'a Producer,
     ) -> Result<Uuid, AppError> {
-        let event_id = EventMutation::create_event(db, event_request.into()).await;
+        let event_id = EventMutation::create_event(db, event_request.clone().into()).await;
         let id = match event_id {
             Ok(id) => id,
             Err(e) => {
@@ -28,6 +31,20 @@ impl EventService {
                 return Err(AppError::Internal("Failed to create event".to_string()));
             }
         };
+        let new_event_message = EventMessage::New {
+            message: NewEventMessage {
+                id: id.clone(),
+                total_seats: event_request.total_seats,
+            },
+        };
+        let message = ProducerMessage {
+            payload: new_event_message,
+            key: None,
+        };
+        producer.send(&message).await.map_err(|e| {
+            debug!("Error sending new event message to Kafka: {:?}", e.reason);
+            AppError::Unknown
+        })?;
         Ok(id)
     }
 
@@ -69,10 +86,29 @@ impl EventService {
         db: &DbConn,
         event_id: Uuid,
         event_request: EventForUpdateRequest,
+        producer: &Producer,
     ) -> Result<bool, AppError> {
-        let result = EventMutation::update_event(db, event_id, event_request.into()).await;
+        let result = EventMutation::update_event(db, event_id, event_request.clone().into()).await;
         match result {
-            Ok(success) => Ok(success),
+            Ok(success) => {
+                if event_request.total_seats.is_some() {
+                    let new_event_message = EventMessage::Update {
+                        message: ChangeEventMessage {
+                            id: event_id,
+                            total_seats: event_request.total_seats.unwrap(),
+                        },
+                    };
+                    let message = ProducerMessage {
+                        payload: new_event_message,
+                        key: None,
+                    };
+                    producer.send(&message).await.map_err(|e| {
+                        debug!("Error sending new event message to Kafka: {:?}", e.reason);
+                        AppError::Unknown
+                    })?;
+                }
+                Ok(success)
+            }
             Err(e) => {
                 debug!("Error updating event: {:?}", e);
                 Err(AppError::Internal("Failed to update event".to_string()))

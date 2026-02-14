@@ -14,8 +14,10 @@ tracing = { workspace = true }
 uuid = { workspace = true }
 
 shared-shared-data-core = { workspace = true }
+shared-shared-app = { workspace = true }
 shared-shared-data-error = { workspace = true }
 
 features-event-entities = { workspace = true }
 features-event-model = { workspace = true }
 features-event-repo = { workspace = true }
+features-event-stream = { workspace = true }

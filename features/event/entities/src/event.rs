@@ -39,7 +39,8 @@ pub struct Model {
     pub event_date: DateTime,
     #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
     pub venue_name: String,
-    pub total_seats: i32,     // 'UPCOMING','ON_SALE','SOLD_OUT','CANCELLED'
+    pub total_seats: u32,     
+    // 'UPCOMING','ON_SALE','SOLD_OUT','CANCELLED'
     #[sea_orm(column_type = "String(StringLen::N(100))")]
     pub status: String,
     pub sale_start_time: DateTime,

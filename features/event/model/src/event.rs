@@ -18,7 +18,7 @@ pub struct EventData {
     pub event_name: Option<String>,
     pub event_date: Option<DateTime>,
     pub venue_name: Option<String>,
-    pub total_seats: Option<i32>,
+    pub total_seats: Option<u32>,
     pub status: Option<String>,
     pub sale_start_time: Option<DateTime>,
     pub created_at: Option<DateTime>,
@@ -51,7 +51,7 @@ pub struct EventForCreateRequest {
     pub event_name: String,
     pub event_date: DateTime,
     pub venue_name: String,
-    pub total_seats: i32,
+    pub total_seats: u32,
     pub status: Option<String>,
     pub sale_start_time: Option<DateTime>,
 }
@@ -74,7 +74,7 @@ pub struct EventForUpdateRequest {
     pub event_name: Option<String>,
     pub event_date: Option<DateTime>,
     pub venue_name: Option<String>,
-    pub total_seats: Option<i32>,
+    pub total_seats: Option<u32>,
     pub status: Option<String>,
     pub sale_start_time: Option<DateTime>,
 }

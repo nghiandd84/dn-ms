@@ -17,7 +17,7 @@ pub struct NewEventMessage {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ChangeEventMessage {
     pub id: Uuid,
-    pub total_seats: String,
+    pub total_seats: u32,
 }
 
 pub const PRODUCER_KEY: &str = "event";
