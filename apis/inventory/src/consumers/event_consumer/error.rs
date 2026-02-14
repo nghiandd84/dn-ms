@@ -5,6 +5,7 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EventError {
     NotFoundClient { user_id: Uuid },
+    FailedToCreateSeats
 }
 
 impl fmt::Display for EventError {
@@ -12,6 +13,9 @@ impl fmt::Display for EventError {
         match self {
             EventError::NotFoundClient { user_id } => {
                 write!(f, "Client not found for user_id: {}", user_id)
+            },
+            EventError::FailedToCreateSeats => {
+                write!(f, "Failed to create seats for the event")
             }
         }
     }

@@ -23,7 +23,7 @@ Content-Type: application/json
   "event_name": "Tech Conference 2026",
   "event_date": "2026-06-15T10:00:00",
   "venue_name": "Convention Center",
-  "total_seats": 100,
+  "total_seats": 5,
   "status": "UPCOMING",
   "sale_start_time": "2026-02-01T00:00:00"
 }

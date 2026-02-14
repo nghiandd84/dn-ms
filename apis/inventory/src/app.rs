@@ -1,3 +1,8 @@
+use std::{
+    clone,
+    sync::{Arc, RwLock},
+};
+
 use axum::Router;
 use tracing::{debug, error};
 use utoipa::OpenApi;
@@ -36,11 +41,7 @@ impl<'a> StartApp<InventoryAppState, InventoryCacheState> for MyApp<'a> {
         &self,
         app_state: &mut AppState<InventoryAppState, InventoryCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        // Event consummer
-        let inventory_state = match app_state.state {
-            Some(ref state) => state.clone(),
-            None => InventoryAppState::default(),
-        };
+        let clone_app_state = app_state.clone();
         let app_key = self.config.app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let event_kafka_group = if instance_id.is_ok() {
@@ -61,9 +62,10 @@ impl<'a> StartApp<InventoryAppState, InventoryCacheState> for MyApp<'a> {
             ))
             .await;
             tokio::spawn(async move {
+                // let clone_arc_state = Arc::clone(&arc_state);
                 if let Err(e) = consumer_task(
                     consumer_config,
-                    inventory_state,
+                    clone_app_state,
                     dlq_producer,
                     app_key.clone(),
                     handle_event_consumer_message,

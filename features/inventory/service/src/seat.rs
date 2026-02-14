@@ -31,7 +31,7 @@ impl SeatService {
         Ok(id)
     }
 
-    async fn bulk_create_seats<'a>(
+    pub async fn bulk_create_seats<'a>(
         db: &'a DbConn,
         seat_requests: Vec<SeatForCreateRequest>,
     ) -> Result<Vec<Uuid>, AppError> {
