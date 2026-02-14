@@ -2,7 +2,7 @@ mod change_event_handler;
 mod new_event_handler;
 
 use std::collections::HashMap;
-use tracing::error;
+use tracing::{debug, error};
 
 use change_event_handler::handle_change_event;
 use features_inventory_model::state::InventoryAppState;
@@ -17,6 +17,7 @@ pub async fn handle_event_consumer_message(
     _inventory_state: InventoryAppState,
     _headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    debug!("Received event message: {:?}", message);
     let result = match message {
         EventMessage::New { message: event } => handle_new_event(event).await,
         EventMessage::Update { message: event } => handle_change_event(event).await,

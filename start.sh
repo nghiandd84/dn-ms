@@ -202,7 +202,7 @@ for i in {1..2}; do
     PORT=580$i
     echo "--- INVENTORY on port $PORT ---"
     # Execute the program
-    INVENTORY_PORT=580$i $APP_DIRECTORY/api-inventory  &
+    # INVENTORY_PORT=580$i $APP_DIRECTORY/api-inventory  &
 done
 sleep 1s
 

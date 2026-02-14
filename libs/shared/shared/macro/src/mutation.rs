@@ -41,15 +41,38 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                     Ok(id)
                 }
 
+                #[tracing::instrument(skip(db))]
+                async fn bulk_create_uuid(db: &DbConn, models: Vec<Model>) -> Result<Vec<Uuid>, DbErr> {
+                    let active_models: Vec<ActiveModel> = models.into_iter().map(|model| {
+                        let mut active_model: ActiveModel = model.into();
+                        active_model.not_set(Column::Id);
+                        active_model
+                    }).collect();
+
+                    let result_models = Entity::insert_many(active_models).exec_with_returning(db).await?;
+                    let ids = result_models.iter().map(|model| model.id).collect();
+                    Ok(ids)
+                }
+
                 async fn create_i32(db: &DbConn, model: Model) -> Result<i32, DbErr> {
                     unimplemented!("Not implemented")
                 }
+
+                async fn bulk_create_i32(db: &DbConn, models: Vec<Model>) -> Result<Vec<i32>, DbErr> {
+                    unimplemented!("Not implemented")
+                }
+
             }
         }
         "i32" => quote! {
             async fn create_uuid(db: &DbConn, model: Model) -> Result<Uuid, DbErr> {
                 unimplemented!("Not implemented")
             }
+
+            async fn bulk_create_uuid(db: &DbConn, models: Vec<Model>) -> Result<Vec<Uuid>, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
             #[tracing::instrument(skip(db))]
             async fn create_i32(db: &DbConn, model: Model) -> Result<i32, DbErr> {
                 let mut active_model: ActiveModel = model.into();
@@ -57,6 +80,20 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 let result_model = active_model.insert(db).await;
                 let id = result_model?.id;
                 Ok(id)
+            }
+
+            #[tracing::instrument(skip(db))]
+            async fn bulk_create_i32(db: &DbConn, models: Vec<Model>) -> Result<Vec<i32>, DbErr> {
+
+                let active_models: Vec<ActiveModel> = models.into_iter().map(|model| {
+                    let mut active_model: ActiveModel = model.into();
+                    active_model.not_set(Column::Id);
+                    active_model
+                }).collect();
+
+                let result_models = Entity::insert_many(active_models).exec_with_returning(db).await?;
+                let ids = result_models.iter().map(|model| model.id).collect();
+                Ok(ids)
             }
         },
         _ => panic!("Unsupported key type: {}", key_type_str),
@@ -82,6 +119,25 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                     Ok(true)
                 }
 
+                #[tracing::instrument(skip(db))]
+                async fn bulk_update_by_id_uuid(
+                    db: &DbConn,
+                    data: Vec<(Uuid, ModelOptionDto)>,
+                ) -> Result<Vec<Uuid>, DbErr> {
+                    let mut ids = Vec::new();
+                    for (id, model_option) in data {
+                        let exists = Entity::find_by_id(id)
+                            .one(db)
+                            .await?
+                            .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+
+                        let active_model = assign(exists.into(), model_option);
+                        active_model.update(db).await?;
+                        ids.push(id);
+                    }
+                    Ok(ids)
+                }
+
                 async fn update_by_id_i32(
                     db: &DbConn,
                     id: i32,
@@ -89,6 +145,14 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 ) -> Result<bool, DbErr> {
                     unimplemented!("Not implemented")
                 }
+
+                async fn bulk_update_by_id_i32(
+                    db: &DbConn,
+                    data: Vec<(i32, ModelOptionDto)>,
+                ) -> Result<Vec<i32>, DbErr> {
+                    unimplemented!("Not implemented")
+                }
+
             }
         }
         "i32" => quote! {
@@ -99,6 +163,14 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             ) -> Result<bool, DbErr> {
                 unimplemented!("Not implemented")
             }
+
+            async fn bulk_update_by_id_uuid(
+                    db: &DbConn,
+                    data: Vec<(Uuid, ModelOptionDto)>,
+                ) -> Result<Vec<Uuid>, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
             #[tracing::instrument(skip(db))]
             async fn update_by_id_i32(
                 db: &DbConn,
@@ -113,7 +185,27 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 let active_model = assign(exists.into(), model_option);
                 active_model.update(db).await?;
 
-                Ok(true)            }
+                Ok(true)            
+            }
+
+            #[tracing::instrument(skip(db))]
+            async fn bulk_update_by_id_i32(
+                    db: &DbConn,
+                    data: Vec<(i32, ModelOptionDto)>,
+                ) -> Result<Vec<i32>, DbErr> {
+                let mut ids = Vec::new();
+                for (id, model_option) in data {
+                    let exists = Entity::find_by_id(id)
+                        .one(db)
+                        .await?
+                        .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+
+                    let active_model = assign(exists.into(), model_option);
+                    active_model.update(db).await?;
+                    ids.push(id);
+                }
+                Ok(ids)
+            }
         },
         _ => panic!("Unsupported key type: {}", key_type_str),
     };
@@ -128,12 +220,12 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                         .await?
                         .ok_or(DbErr::RecordNotFound("Not found".to_string()))
                         .map(Into::into)?;
-    
+
                     model.delete(db).await?;
-    
+
                     Ok(true)
                 }
-    
+
                 async fn delete_by_id_i32(db: &DbConn, id: i32) -> Result<bool, DbErr> {
                     unimplemented!("Not implemented")
                 }
@@ -153,7 +245,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
 
                 model.delete(db).await?;
 
-                Ok(true)   
+                Ok(true)
             }
 
         },

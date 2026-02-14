@@ -1,5 +1,5 @@
 use sea_orm::{DbConn, Iden};
-use tracing::debug;
+use tracing::{debug, event};
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -29,6 +29,26 @@ impl SeatService {
             }
         };
         Ok(id)
+    }
+
+    async fn bulk_create_seats<'a>(
+        db: &'a DbConn,
+        seat_requests: Vec<SeatForCreateRequest>,
+    ) -> Result<Vec<Uuid>, AppError> {
+        let seat_ids = SeatMutation::bulk_create_seats(
+            db,
+            seat_requests.into_iter().map(|r| r.into()).collect(),
+        )
+        .await;
+        match seat_ids {
+            Ok(ids) => Ok(ids),
+            Err(e) => {
+                debug!("Error bulk creating seats: {:?}", e);
+                Err(AppError::Internal(
+                    "Failed to bulk create seats".to_string(),
+                ))
+            }
+        }
     }
 
     pub async fn get_seat_by_id<'a>(db: &'a DbConn, seat_id: Uuid) -> Result<SeatData, AppError> {
