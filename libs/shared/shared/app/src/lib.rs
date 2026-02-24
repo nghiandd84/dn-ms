@@ -3,8 +3,6 @@ pub mod discovery;
 pub mod doc;
 pub mod event_task;
 pub mod health;
-pub mod kafka_error;
 pub mod mapper;
 pub mod start_app;
 pub mod state;
-pub mod tracing;

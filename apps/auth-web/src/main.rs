@@ -71,7 +71,7 @@ fn main() {
         use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
 
         use features_auth_remote::AuthenticationRequestService;
-        use shared_shared_app::{discovery::get_consul_client, tracing::init_otel_log_and_traces};
+        use shared_shared_app::{discovery::get_consul_client};
 
         use crate::models::state::AppState;
 

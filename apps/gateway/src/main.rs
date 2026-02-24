@@ -13,7 +13,8 @@ use pingora::{
 use std::{sync::Arc, time::Duration};
 use tracing::debug;
 
-use shared_shared_app::tracing::init_tracing_log;
+
+use shared_shared_observability::init_log_trace_metric;
 
 use config::{app_config::load_app_config, dn_config::DnConfig, proxy::http::Proxy};
 use gateway::{
@@ -28,7 +29,7 @@ async fn main() {
     dotenv().ok();
     let service_key = "GATEWAY".to_string();
     let (_log_provider, _trace_provider) =
-        init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
+        init_log_trace_metric(service_key).expect("Failed to initialize logging and tracing");
     global::set_text_map_propagator(TraceContextPropagator::new());
 
     let app_config = load_app_config();

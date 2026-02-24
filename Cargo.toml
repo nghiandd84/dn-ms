@@ -13,6 +13,7 @@ members = [
     "libs/shared/shared/data/error",
 
     "libs/shared/shared/app",
+    "libs/shared/shared/observability",
     "libs/shared/shared/auth",
     "libs/shared/shared/config",
 
@@ -178,6 +179,7 @@ shared-shared-data-core = { path = "./libs/shared/shared/data/core"}
 shared-shared-data-error = { path = "./libs/shared/shared/data/error"}
 
 shared-shared-app = { path = "./libs/shared/shared/app"}
+shared-shared-observability = { path = "./libs/shared/shared/observability"}
 shared-shared-auth = { path = "./libs/shared/shared/auth"}
 shared-shared-config = { path = "./libs/shared/shared/config"}
 shared-shared-macro = { path = "./libs/shared/shared/macro"}

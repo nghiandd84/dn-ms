@@ -12,13 +12,13 @@ use tracing::{debug, info};
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;
+use shared_shared_observability::init_log_trace_metric;
 
 use crate::config::AppConfig;
 use crate::discovery::{deregister_service, get_consul_client, register_service};
 use crate::health::health_checker_handler;
 use crate::mapper::main_response_mapper;
 use crate::state::AppState;
-use crate::tracing::init_tracing_log;
 
 pub trait StartApp<T, C = ()>
 where
@@ -51,7 +51,7 @@ where
             let service_key = app_key.clone();
 
             let (log_provider, trace_provider) =
-                init_tracing_log(service_key).expect("Failed to initialize logging and tracing");
+                init_log_trace_metric(service_key).expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 

@@ -38,6 +38,7 @@ uuid = { workspace = true, features = ["v4"] }
 wildmatch = { workspace = true }
 
 shared-shared-app = { workspace = true }
+shared-shared-observability = { workspace = true }
 
 features-auth-remote = { workspace = true }
 
