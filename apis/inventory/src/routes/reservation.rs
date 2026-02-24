@@ -63,6 +63,7 @@ async fn get_reservation(
 ) -> Result<ResponseJson<ReservationData>> {
     let reservation =
         ReservationService::get_reservation_by_id(&state.conn, reservation_id).await?;
+    let _ = state.metrics.process_metrics.update_stats().await;
     Ok(ResponseJson(reservation))
 }
 

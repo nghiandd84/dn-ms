@@ -9,6 +9,7 @@ use tracing::error;
 
 use shared_shared_auth::permission::StatePermission;
 use shared_shared_data_cache::cache::Cache;
+use shared_shared_observability::metrics::StateMetrics;
 
 use crate::event_task::producer::Producer;
 
@@ -22,6 +23,7 @@ where
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
     pub permissions_map: Arc<Mutex<HashMap<String, Vec<(String, u32)>>>>,
+    pub metrics: StateMetrics,
 }
 
 impl<T, C> Clone for AppState<T, C>
@@ -36,6 +38,7 @@ where
             state: self.state.clone(),
             producer: self.producer.clone(),
             permissions_map: self.permissions_map.clone(),
+            metrics: self.metrics.clone(),
         }
     }
 }
@@ -70,13 +73,14 @@ where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
 {
-    pub fn new(conn: DatabaseConnection, cache: Cache<String, C>, state: Option<T>) -> Self {
+    pub fn new(service_name: String, conn: DatabaseConnection, cache: Cache<String, C>, state: Option<T>) -> Self {
         Self {
             conn,
             cache,
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),
             permissions_map: Arc::new(Mutex::new(HashMap::new())),
+            metrics: StateMetrics::new(service_name),
         }
     }
 

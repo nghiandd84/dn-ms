@@ -118,6 +118,7 @@ where
                 };
                 debug!("Deserialized message: {:?}", message);
                 let handler = handler.clone();
+                // TODO Remove clone of state and producer by using channels or some other method of sharing state with the task without cloning
                 let handler_state = state.clone();
                 let handler_origin_message = origin_message.to_string();
                 let handler_producer = dlq_producer.clone();

@@ -10,7 +10,7 @@ use crate::consumer::error::ConsumerError;
 pub async fn handle_consumer_message(
     message: NotificationMessage,
     notification_state: Arc<RwLock<NotificationState>>,
-    headers: Option<HashMap<String, String>>,
+    _headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let result = match message {
         NotificationMessage::Notification { user_id, message } => {

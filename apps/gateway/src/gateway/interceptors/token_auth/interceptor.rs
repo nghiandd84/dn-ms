@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use opentelemetry::baggage::{Baggage, BaggageExt};
-use opentelemetry::Context;
-use tracing::{debug, span};
+use tracing::{debug};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::{

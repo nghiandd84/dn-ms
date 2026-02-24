@@ -1,19 +1,20 @@
 mod kafka_error;
-mod logging;
-mod tracing;
+mod logs;
+pub mod metrics;
+mod traces;
 
 use opentelemetry::{global, trace::TracerProvider};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-
-use ::tracing::info;
 use opentelemetry_sdk::{
     logs::SdkLoggerProvider, propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
+use tracing::info;
+use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::kafka_error::KafkaErrorSender;
-use crate::logging::init_otel_logger_provider;
-use crate::tracing::init_otel_traces;
+use crate::logs::{init_otel_logger_provider, init_rolling_file_appender};
+use crate::traces::init_otel_traces;
 
 // https://dev.to/ciscoemerge/trace-through-a-kafka-cluster-with-rust-and-opentelemetry-2jln
 
@@ -42,10 +43,16 @@ pub fn init_log_trace_metric(
 
     global::set_text_map_propagator(TraceContextPropagator::new());
 
+    let rolling_file_appender = init_rolling_file_appender(service_name.clone());
+    let log_file_layer = tracing_subscriber::fmt::layer()
+        .with_writer(rolling_file_appender)
+        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .with_ansi(true);
+
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .with(tracer_layer)
-        // .with(log_file_layer)
+        .with(log_file_layer)
         .with(kafka_layer)
         .with(logger_otel_layer)
         .init();
@@ -55,6 +62,7 @@ pub fn init_log_trace_metric(
     Ok((logger_otel_provider, tracer_provider))
 }
 
+/*
 pub fn init_otel_log_and_traces(
     service_name: String,
 ) -> Result<(SdkLoggerProvider, SdkTracerProvider), Box<dyn std::error::Error>> {
@@ -76,3 +84,4 @@ pub fn init_otel_log_and_traces(
     info!("Tracing subscriber initialized");
     Ok((logger_otel_provider, tracer_provider))
 }
+     */

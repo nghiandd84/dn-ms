@@ -1,12 +1,9 @@
 use std::fmt;
-use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum ConsumerError {
     NotFound { message: String },
     SendEmailError { message: String },
-    NotFoundClient { user_id: Uuid },
-    FailedToSendMessage { user_id: Uuid, message: String },
 }
 
 impl fmt::Display for ConsumerError {
@@ -17,16 +14,6 @@ impl fmt::Display for ConsumerError {
             }
             ConsumerError::SendEmailError { message } => {
                 write!(f, "Failed to send email: {}", message)
-            }
-            ConsumerError::NotFoundClient { user_id } => {
-                write!(f, "Client not found for user_id: {}", user_id)
-            }
-            ConsumerError::FailedToSendMessage { user_id, message } => {
-                write!(
-                    f,
-                    "Failed to send message to user_id {}: {}",
-                    user_id, message
-                )
             }
         }
     }

@@ -50,8 +50,8 @@ where
             let app_key = app_config.app_key.clone();
             let service_key = app_key.clone();
 
-            let (log_provider, trace_provider) =
-                init_log_trace_metric(service_key).expect("Failed to initialize logging and tracing");
+            let (log_provider, trace_provider) = init_log_trace_metric(service_key)
+                .expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 
@@ -116,13 +116,8 @@ where
 
             let db_connection = (&db).get_connection().clone();
 
-            let mut app_state = AppState {
-                conn: db_connection.clone(),
-                cache,
-                state,
-                producer: Arc::new(Mutex::new(HashMap::new())),
-                permissions_map: Arc::new(Mutex::new(HashMap::new())),
-            };
+            let mut app_state =
+                AppState::new(service_name.clone(), db_connection.clone(), cache, state);
 
             let axum_layer = OtelAxumLayer::default().filter(|str| {
                 let prefixs = vec!["/healthchecker", "/swagger-ui", "/api-docs"];
