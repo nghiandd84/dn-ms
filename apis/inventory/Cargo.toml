@@ -11,8 +11,9 @@ utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
 utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 
 async-trait = { workspace = true }
-chrono = { version = "0.4.39", features = ["serde"] }
+chrono = { workspace = true , features = ["serde"] }
 dotenv = { workspace = true }
+opentelemetry = { workspace = true }
 tracing = { workspace = true }
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = { workspace = true }

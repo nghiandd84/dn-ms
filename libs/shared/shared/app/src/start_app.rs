@@ -50,8 +50,9 @@ where
             let app_key = app_config.app_key.clone();
             let service_key = app_key.clone();
 
-            let (log_provider, trace_provider) = init_log_trace_metric(service_key)
-                .expect("Failed to initialize logging and tracing");
+            let (log_provider, trace_provider, metric_provider) =
+                init_log_trace_metric(service_key)
+                    .expect("Failed to initialize logging and tracing");
 
             info!("Starting {} app...", app_config.app_key);
 
@@ -160,6 +161,10 @@ where
             trace_provider
                 .shutdown()
                 .expect("Shutdown trace provider failed");
+
+            metric_provider
+                .shutdown()
+                .expect("Shutdown metric provider failed");
 
             // TODO disconnect Cache
             info!("Cache connection closed");

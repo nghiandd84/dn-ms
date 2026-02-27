@@ -5,6 +5,7 @@ mod traces;
 
 use opentelemetry::{global, trace::TracerProvider};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::{
     logs::SdkLoggerProvider, propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
@@ -14,13 +15,14 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::kafka_error::KafkaErrorSender;
 use crate::logs::{init_otel_logger_provider, init_rolling_file_appender};
+use crate::metrics::init_metrics_provider;
 use crate::traces::init_otel_traces;
 
 // https://dev.to/ciscoemerge/trace-through-a-kafka-cluster-with-rust-and-opentelemetry-2jln
 
 pub fn init_log_trace_metric(
     service_name: String,
-) -> Result<(SdkLoggerProvider, SdkTracerProvider), Box<dyn std::error::Error>> {
+) -> Result<(SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider ), Box<dyn std::error::Error>> {
     // Set up tracing with Kafka error layer
     let kafka_server_env = "ERROR_KAFKA_BOOTSTRAP_SERVERS".to_string();
     let kafka_bootstrap_servers = std::env::var(&kafka_server_env)
@@ -57,9 +59,11 @@ pub fn init_log_trace_metric(
         .with(logger_otel_layer)
         .init();
 
+    let metrics_provider = init_metrics_provider(service_name.clone());
+
     info!("Tracing subscriber initialized");
 
-    Ok((logger_otel_provider, tracer_provider))
+    Ok((logger_otel_provider, tracer_provider, metrics_provider))
 }
 
 /*

@@ -28,7 +28,7 @@ use crate::poller::ApiPoller;
 async fn main() {
     dotenv().ok();
     let service_key = "GATEWAY".to_string();
-    let (_log_provider, _trace_provider) =
+    let (_log_provider, _trace_provider, _metrics_provider) =
         init_log_trace_metric(service_key).expect("Failed to initialize logging and tracing");
     global::set_text_map_propagator(TraceContextPropagator::new());
 

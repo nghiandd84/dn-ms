@@ -3,6 +3,7 @@ use axum::{
     routing::{delete, get, patch, post},
     Router,
 };
+use opentelemetry::{global, KeyValue};
 use tracing::{debug, instrument, Level};
 use uuid::Uuid;
 
@@ -63,7 +64,26 @@ async fn get_reservation(
 ) -> Result<ResponseJson<ReservationData>> {
     let reservation =
         ReservationService::get_reservation_by_id(&state.conn, reservation_id).await?;
-    let _ = state.metrics.process_metrics.update_stats().await;
+
+    let meter = global::meter("reservation_service");
+    // Create a Counter Instrument.
+    let counter = meter
+        .u64_counter("inventory.get_reservation_calls")
+        .with_description("Count for get_reservation")
+        .build();
+
+    // Record measurements using the Counter instrument.
+    counter.add(
+        1,
+        &[
+            KeyValue::new("reservation_id", reservation_id.to_string()),
+            KeyValue::new("service", "inventory"),
+        ],
+    );
+    debug!(
+        "Recorded counter measurement for reservation retrieval: {:?}",
+        reservation_id
+    );
     Ok(ResponseJson(reservation))
 }
 

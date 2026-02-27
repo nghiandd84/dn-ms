@@ -172,6 +172,7 @@ validator = { version = "0.20.0", features = ["derive"] }
 wildmatch = "2.4.0"
 
 
+
 shared-shared-data-app = { path = "./libs/shared/shared/data/app"}
 shared-shared-data-auth = { path = "./libs/shared/shared/data/auth"}
 shared-shared-data-cache = { path = "./libs/shared/shared/data/cache"}
