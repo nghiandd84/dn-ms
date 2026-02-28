@@ -2,26 +2,21 @@ use std::sync::Arc;
 
 use axum::{
     body::to_bytes,
-    extract::Request,
     http::{Method, Uri},
-    middleware::Next,
     response::{IntoResponse, Response},
     Json,
 };
-use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk;
 use serde_json::{json, to_value, Value};
-use tracing::{debug, info};
+use tracing::debug;
 
-use shared_shared_data_app::ctx::Ctx;
-use shared_shared_data_app::result::Result;
 use shared_shared_data_error::app::AppError;
 
 pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) -> Response {
-    // debug!(
-    //     "main_response_mapper: uri: {}, method: {}",
-    //     uri, _req_method
-    // );
-    // let uuid = Uuid::new_v4();
+    let path = uri.path().replace("/", "_").trim_matches('_').to_string();
+    debug!(
+        "main_response_mapper: path: {}, method: {}",
+        path, _req_method
+    );
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
     match client_status_error {
@@ -57,11 +52,6 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
                 return res;
             }
 
-            // Can get current trace id if  RUST_LOG=trace is set
-            let trace_id_str = tracing_opentelemetry_instrumentation_sdk::find_current_trace_id()
-                .unwrap_or_default();
-            info!("Current Trace ID: {}", trace_id_str);
-
             let status = res.status();
             let body = to_bytes(res.into_body(), usize::MAX)
                 .await
@@ -76,22 +66,4 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             (status, Json(json_response)).into_response()
         }
     }
-}
-
-pub async fn mw_ctx_resolver(
-    // TODO try to use app state in here
-    // State(_state): State<AppState<C>>,
-    req: Request,
-    next: Next,
-) -> Response {
-    // Create ctx from token
-    let ctx = Ctx::new(1);
-    let _result_ctx: Result<Ctx> = Ok(ctx);
-    // let result_ctx: Result<Ctx, Error> = Err(Error::CtxNotInRequestExt);
-    // request.extensions_mut().insert(result_ctx);
-    // debug!("mw_ctx_resolver: ctx inserted into request extensions");
-    let res = next.run(req).await;
-    // debug!("mw_ctx_resolver: response generated");
-
-    res
 }

@@ -1,12 +1,11 @@
 use axum::routing::get;
 use axum::{middleware, Router};
+use axum_otel_metrics::HttpMetricsLayerBuilder;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use dotenv::dotenv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::env;
-use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
 
@@ -129,12 +128,14 @@ where
                 }
                 true
             });
+            let metrics = HttpMetricsLayerBuilder::new().build();
 
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
                 .merge(self.routes(&app_state))
                 .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
                 .layer(middleware::map_response(main_response_mapper))
+                .layer(metrics) // Add HTTP metrics layer
                 // .layer(middleware::from_fn(mw_ctx_resolver)) // Add custom context resolver middleware
                 .layer(axum_layer); // OtelAxumLayer: Starts the trace and extracts parent context from request headers
 
