@@ -109,7 +109,6 @@ async-std = { version = "1", features = ["attributes"] }
 async-trait = { version = "0.1.86" }
 axum = { version = "0.8.0" }
 axum-extra = { version = "0.8.0" }
-axum-otel-metrics = { version = "0.12.0" }
 axum-tracing-opentelemetry = { version = "0.32" }
 base64 = "0.22.1"
 bytes = "1.0"
@@ -133,8 +132,10 @@ opentelemetry = { version = "0.31.0" }
 opentelemetry_sdk = { version = "0.31.0" }
 opentelemetry-appender-tracing = { version = "0.31.0"}
 opentelemetry-otlp = { version = "0.31.0", features = ["http-proto"] }
+opentelemetry-semantic-conventions = { version = "0.31.0" }
 opentelemetry-stdout = { version = "0.31.0", features = ["trace"] }
 pcre2 = "0.2.9"
+pin-project-lite = { version = "0.2" }
 pingora = { version = "0.5.0", features = ["lb"] }
 pingora-core = { version = "0.5.0" }
 pingora-http = { version = "0.5.0" }
@@ -158,6 +159,7 @@ syn = "2.0"
 thiserror = { version="2" }
 time = { version="0.3.31" }
 tokio = { version="1", features = ["full"] }
+tower = { version="0.5" }
 tower-sessions = { version="0.14.0" }
 tracing = { version = "0.1.41" }
 tracing-appender = { version = "0.2.4" }

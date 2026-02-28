@@ -1,6 +1,5 @@
 use axum::routing::get;
 use axum::{middleware, Router};
-use axum_otel_metrics::HttpMetricsLayerBuilder;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use dotenv::dotenv;
 use serde::de::DeserializeOwned;
@@ -11,7 +10,9 @@ use tracing::{debug, info};
 
 use shared_shared_config::db::Database;
 use shared_shared_data_cache::cache::Cache;
-use shared_shared_observability::init_log_trace_metric;
+use shared_shared_observability::{
+    init_log_trace_metric, metrics::axum_otel::HttpMetricsLayerBuilder,
+};
 
 use crate::config::AppConfig;
 use crate::discovery::{deregister_service, get_consul_client, register_service};
@@ -128,7 +129,9 @@ where
                 }
                 true
             });
-            let metrics = HttpMetricsLayerBuilder::new().build();
+            let metrics = HttpMetricsLayerBuilder::new()
+                // .with_provider(metric_provider)
+                .build();
 
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))

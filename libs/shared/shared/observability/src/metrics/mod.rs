@@ -1,3 +1,5 @@
+pub mod axum_otel;
+
 use opentelemetry::global;
 use opentelemetry_sdk::{
     metrics::{PeriodicReader, SdkMeterProvider, Temporality},

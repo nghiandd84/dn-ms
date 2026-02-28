@@ -10,13 +10,19 @@ name = "shared_shared_observability"
 path = "src/lib.rs"
 
 [dependencies]
+axum = { workspace = true }
+futures-util = { workspace = true }
+http-body = { workspace = true }
 opentelemetry = { workspace = true, features = [ "trace"] }
 opentelemetry_sdk = { workspace = true, features = ["trace", "rt-tokio", "metrics"] }
 opentelemetry-appender-tracing = { workspace = true }
 opentelemetry-otlp = { workspace = true, features = ["trace", "metrics", "http-proto", "grpc-tonic"] }
+opentelemetry-semantic-conventions = { workspace = true, features = ["semconv_experimental"] }
+pin-project-lite = { workspace = true }
 rdkafka = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
+tower = { workspace = true }
 tracing = { workspace = true }
 tracing-appender = { workspace = true }
 tracing-opentelemetry = { workspace = true }
