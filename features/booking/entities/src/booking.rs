@@ -10,7 +10,7 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "bookings")]
 #[dto(
     name(BookingForCreate),
-    columns(event_id, user_id, total_amount, status, booking_reference)
+    columns(event_id, user_id, total_amount, currency, status, booking_reference)
 )]
 #[dto(
     name(BookingForUpdate),
@@ -18,6 +18,7 @@ use shared_shared_macro::Dto;
         event_id,
         user_id,
         total_amount,
+        currency,
         status,
         payment_id,
         payment_status,
@@ -31,6 +32,7 @@ pub struct Model {
     pub event_id: Uuid,
     pub user_id: Uuid,
     pub total_amount: f32,
+    pub currency: String,
     pub status: String, // ENUM('PENDING','CONFIRMED','CANCELLED','FAILED') DEFAULT 'PENDING'
     pub payment_id: Uuid,
     pub payment_status: String, // ENUM('PENDING','SUCCESS','FAILED') DEFAULT 'PENDING'
