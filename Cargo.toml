@@ -70,6 +70,9 @@ members = [
     "features/bakery/model", 
     "features/bakery/service", 
 
+    "features/payments/core/entities", 
+    "features/payments/core/migrations", 
+
 
     "features/email-template/entities", 
     "features/email-template/migrations", 
@@ -253,6 +256,10 @@ features-bakery-entities = { path = "./features/bakery/entities"}
 features-bakery-migrations = { path = "./features/bakery/migrations"}
 features-bakery-model = { path = "./features/bakery/model"}
 features-bakery-service = { path = "./features/bakery/service"}
+
+# Payment core features
+features-payments-core-entities = { path = "./features/payments/core/entities"}
+features-payments-core-migrations = { path = "./features/payments/core/migrations"}
 
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}
