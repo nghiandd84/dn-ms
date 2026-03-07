@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-const FILTER_TYPES: [&str; 13] = [
-    "string", "bool", "json", "i32", "i8", "u32", "u64", "f32", "f64", "uuid", "datetime", "vecstring", "vecuuid",
+const FILTER_TYPES: [&str; 15] = [
+    "string", "bool", "json", "i32", "i64", "i8", "u32", "u64", "f32", "f64", "uuid", "datetime", "vecstring", "vecuuid", "jsonvalue",
 ];
 
 pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {

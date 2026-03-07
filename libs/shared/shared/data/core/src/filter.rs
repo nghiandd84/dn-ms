@@ -45,6 +45,7 @@ pub enum FilterEnum {
     Bool(FilterParam<bool>),
     Json(FilterParam<Json>),
     I32(FilterParam<i32>),
+    I64(FilterParam<i64>),
     I8(FilterParam<i8>),
     U32(FilterParam<u32>),
     U64(FilterParam<u64>),
@@ -64,6 +65,7 @@ impl FilterEnum {
             FilterEnum::Bool(param) => param.name.clone(),
             FilterEnum::I8(param) => param.name.clone(),
             FilterEnum::I32(param) => param.name.clone(),
+            FilterEnum::I64(param) => param.name.clone(),
             FilterEnum::U32(param) => param.name.clone(),
             FilterEnum::U64(param) => param.name.clone(),
             FilterEnum::Uuid(param) => param.name.clone(),
@@ -89,6 +91,9 @@ impl FilterEnum {
                 param.name = prefix.clone();
             }
             FilterEnum::I32(ref mut param) => {
+                param.name = prefix.clone();
+            }
+             FilterEnum::I64(ref mut param) => {
                 param.name = prefix.clone();
             }
             FilterEnum::I8(ref mut param) => {

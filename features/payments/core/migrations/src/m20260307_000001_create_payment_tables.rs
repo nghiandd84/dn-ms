@@ -1,6 +1,8 @@
 use sea_orm_migration::prelude::*;
 
-use features_payments_core_entities::{payment, payment_attempt, payment_method};
+use features_payments_core_entities::{
+    payment, payment_attempt, payment_method, payment_method_limit,
+};
 
 // Import Postgres-specific Type support for enums
 // use sea_orm_migration::prelude::sea_query::extension::postgres::Type;
@@ -86,10 +88,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(true),
                     )
-                    .col(
-                        ColumnDef::new(payment_method::Column::FeePercentage)
-                            .float(),
-                    )
+                    .col(ColumnDef::new(payment_method::Column::FeePercentage).float())
                     .col(
                         ColumnDef::new(payment_method::Column::IconUrl)
                             .text()
@@ -106,6 +105,68 @@ impl MigrationTrait for Migration {
                             .date_time()
                             .not_null()
                             .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
+                    .to_owned(),
+            )
+            .await;
+
+        // -- 2.5. payment_method_limits table
+        let _ = manager
+            .create_table(
+                Table::create()
+                    .table(payment_method_limit::Entity)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::Id)
+                            .uuid()
+                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .not_null()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::PaymentMethodId)
+                            .uuid()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::Currency)
+                            .string()
+                            .string_len(3)
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::MinAmount)
+                            .big_integer()
+                            .not_null()
+                            .default(0),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::MaxAmount)
+                            .big_integer()
+                            .null(),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
+                    .col(
+                        ColumnDef::new(payment_method_limit::Column::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_payment_method_limits_payment_method_id")
+                            .from(
+                                payment_method_limit::Entity,
+                                payment_method_limit::Column::PaymentMethodId,
+                            )
+                            .to(payment_method::Entity, payment_method::Column::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .to_owned(),
             )
@@ -129,11 +190,7 @@ impl MigrationTrait for Migration {
                             .uuid()
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(payment::Column::UserId)
-                            .uuid()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(payment::Column::UserId).uuid().not_null())
                     .col(
                         ColumnDef::new(payment::Column::Amount)
                             .big_integer()
@@ -242,6 +299,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .create_index(
                 Index::create()
+                    .if_not_exists()
                     .name("idx_pm_country")
                     .table(payment_method::Entity)
                     .col(payment_method::Column::SupportedCountries)
@@ -252,6 +310,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .create_index(
                 Index::create()
+                    .if_not_exists()
                     .name("idx_pm_active")
                     .table(payment_method::Entity)
                     .col(payment_method::Column::IsActive)
@@ -262,6 +321,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .create_index(
                 Index::create()
+                    .if_not_exists()
                     .name("idx_payments_transaction_id")
                     .table(payment::Entity)
                     .col(payment::Column::TransactionId)
@@ -272,9 +332,23 @@ impl MigrationTrait for Migration {
         let _ = manager
             .create_index(
                 Index::create()
+                    .if_not_exists()
                     .name("idx_payments_status")
                     .table(payment::Entity)
                     .col(payment::Column::Status)
+                    .to_owned(),
+            )
+            .await;
+
+        let _ = manager
+            .create_index(
+                Index::create()
+                    .if_not_exists()
+                    .name("unique_pm_limit")
+                    .table(payment_method_limit::Entity)
+                    .col(payment_method_limit::Column::PaymentMethodId)
+                    .col(payment_method_limit::Column::Currency)
+                    .unique()
                     .to_owned(),
             )
             .await;
@@ -286,6 +360,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .drop_index(
                 Index::drop()
+                    .if_exists()
                     .name("idx_pm_country")
                     .table(payment_method::Entity)
                     .to_owned(),
@@ -294,6 +369,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .drop_index(
                 Index::drop()
+                    .if_exists()
                     .name("idx_pm_active")
                     .table(payment_method::Entity)
                     .to_owned(),
@@ -302,6 +378,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .drop_index(
                 Index::drop()
+                    .if_exists()
                     .name("idx_payments_transaction_id")
                     .table(payment::Entity)
                     .to_owned(),
@@ -310,6 +387,7 @@ impl MigrationTrait for Migration {
         let _ = manager
             .drop_index(
                 Index::drop()
+                    .if_exists()
                     .name("idx_payments_status")
                     .table(payment::Entity)
                     .to_owned(),
@@ -317,13 +395,41 @@ impl MigrationTrait for Migration {
             .await;
 
         let _ = manager
-            .drop_table(Table::drop().table(payment_attempt::Entity).to_owned())
+            .drop_index(
+                Index::drop()
+                    .if_exists()
+                    .name("unique_pm_limit")
+                    .table(payment_method_limit::Entity)
+                    .to_owned(),
+            )
+            .await;
+
+        let _ = manager
+            .drop_table(
+                Table::drop()
+                    .if_exists()
+                    .table(payment_attempt::Entity)
+                    .to_owned(),
+            )
             .await;
         let _ = manager
-            .drop_table(Table::drop().table(payment::Entity).to_owned())
+            .drop_table(Table::drop().if_exists().table(payment::Entity).to_owned())
             .await;
         let _ = manager
-            .drop_table(Table::drop().table(payment_method::Entity).to_owned())
+            .drop_table(
+                Table::drop()
+                    .if_exists()
+                    .table(payment_method_limit::Entity)
+                    .to_owned(),
+            )
+            .await;
+        let _ = manager
+            .drop_table(
+                Table::drop()
+                    .if_exists()
+                    .table(payment_method::Entity)
+                    .to_owned(),
+            )
             .await;
 
         /*

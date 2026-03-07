@@ -95,6 +95,23 @@ where
         .map_err(serde::de::Error::custom)
 }
 
+
+// I64
+pub fn default_none_i64() -> Option<FilterParam<i64>> {
+    None
+}
+
+pub fn deserialize_filter_from_i64<'de, D>(
+    deserializer: D,
+) -> Result<Option<FilterParam<i64>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+    parse_filter_param::<i64, _>(&value, 0, |s| s.parse::<i64>().unwrap())
+        .map_err(serde::de::Error::custom)
+}
+
 // U32
 pub fn default_none_u32() -> Option<FilterParam<u32>> {
     None
