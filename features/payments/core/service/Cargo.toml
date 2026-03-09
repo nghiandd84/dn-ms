@@ -1,0 +1,21 @@
+[package]
+name = "features-payments-core-service"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_payments_core_service"
+path = "src/lib.rs"
+
+[dependencies]
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+
+features-payments-core-entities = { workspace = true }
+features-payments-core-model = { workspace = true }
+features-payments-core-repo = { workspace = true }
