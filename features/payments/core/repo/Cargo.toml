@@ -1,0 +1,25 @@
+[package]
+name = "features-payments-core-repo"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_payments_core_repo"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+tracing = { workspace = true }
+
+shared-shared-data-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-macro = { workspace = true }
+shared-shared-macro-rule = { workspace = true }
+
+features-payments-core-entities = { workspace = true }
+features-payments-core-model = { workspace = true }
