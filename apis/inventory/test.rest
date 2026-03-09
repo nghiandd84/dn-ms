@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5801
+@baseUrl = http://localhost:5081
 @reservationId = dd63b490-514e-46c9-88e1-71900e518184
 @seatId = c98421b1-0150-4175-b170-2a4ae35ce83b
 

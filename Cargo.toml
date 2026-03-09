@@ -94,6 +94,7 @@ members = [
     "apis/inventory",
     "apis/booking",
     "apis/notification",
+    "apis/payment-core",
     "apps/auth-notification",
     "apps/auth-web",
     "apps/gateway", 

@@ -11,23 +11,24 @@ APP_DIRECTORY=./target/debug
 RUST_LOG_DIRECTORY=/home/nghiandd/Training/dn-ms/logs
 CURRENT_DATE=$(date +%Y%m%d)
 
-export AUTH_PORT=5101
+export AUTH_PORT=5011
 export AUTH_NOTIFICATION_PORT=5111
-export BAKERY_PORT=5201
-export EMAIL_TEMPLATE_PORT=5301
-export NOTIFICATION_PORT=5401
-export PROFILE_PORT=5501
-export TRANSLATION_PORT=5601
-export EVENT_PORT=5701
-export INVENTORY_PORT=5801
-export BOOKING_PORT=5901
+export BAKERY_PORT=5021
+export EMAIL_TEMPLATE_PORT=5031
+export NOTIFICATION_PORT=5041
+export PROFILE_PORT=5051
+export TRANSLATION_PORT=5061
+export EVENT_PORT=5071
+export INVENTORY_PORT=5081
+export BOOKING_PORT=5091
+export PAYMENT_CORE_PORT=5101
 export NOTIFICATION_APP_PORT=4001
 
 echo "Kill current instances"
 
 # Kill Auth port
 for i in {1..2}; do 
-    fuser -k -15 510$i/tcp 
+    fuser -k -15 501$i/tcp 
 done
 
 # Kill Auth Notification port
@@ -38,47 +39,47 @@ done
 
 # Kill Bakery port
 for i in {1..2}; do 
-    fuser -k -15 520$i/tcp 
+    fuser -k -15 502$i/tcp 
 done
 
 
 # Kill Email Template port
 for i in {1..2}; do 
-    fuser -k -15 530$i/tcp 
+    fuser -k -15 503$i/tcp 
 done
-fuser -k -15 5306/tcp 
-fuser -k -15 5307/tcp 
-fuser -k -15 5308/tcp 
+fuser -k -15 5036/tcp 
+fuser -k -15 5037/tcp 
+fuser -k -15 5038/tcp 
 
 # Kill Notification port
 for i in {1..2}; do 
-    fuser -k -15 540$i/tcp 
+    fuser -k -15 504$i/tcp 
 done
 
 
 # Kill Profile port
 for i in {1..2}; do 
-    fuser -k -15 550$i/tcp 
+    fuser -k -15 505$i/tcp 
 done
 
 # Kill Translation port
 for i in {1..2}; do 
-    fuser -k -15 560$i/tcp 
+    fuser -k -15 506$i/tcp 
 done
 
 # Kill Event port
 for i in {1..2}; do 
-    fuser -k -15 570$i/tcp 
+    fuser -k -15 507$i/tcp 
 done
 
 # Kill Inventory port
 for i in {1..2}; do 
-    fuser -k -15 580$i/tcp 
+    fuser -k -15 508$i/tcp 
 done
 
 # Kill Booking port
 for i in {1..2}; do 
-    fuser -k -15 590$i/tcp 
+    fuser -k -15 509$i/tcp 
 done
 
 # Kill Notification App port
@@ -108,42 +109,42 @@ fi
 
 echo "------------ Start Auth API ------------"
 for i in {1..2}; do
-    PORT=510$i
+    PORT=501$i
     echo "--- Auth on port $PORT ---"
     # Execute the program
-    AUTH_PORT=510$i $APP_DIRECTORY/api-auth  &
+    AUTH_PORT=501$i $APP_DIRECTORY/api-auth  &
 done
 sleep 1s
 
 echo "------------ Start Bakery API ------------"
 for i in {1..2}; do
-    PORT=520$i
+    PORT=502$i
     echo "--- Bakery on port $PORT ---"
     # Execute the program
-    BAKERY_PORT=520$i $APP_DIRECTORY/api-bakery  &
+    BAKERY_PORT=502$i $APP_DIRECTORY/api-bakery  &
 done
 sleep 1s
 
 echo "------------ Start Email Template API ------------"
 for i in {1..2}; do
-    PORT=530$i
+    PORT=503$i
     echo "--- Email Template on port $PORT ---"
     # Execute the program
-    EMAIL_TEMPLATE_PORT=530$i TENANT=TENANT_${i} $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=503$i TENANT=TENANT_${i} $APP_DIRECTORY/api-email-template  &
 done
 # Tenant DEFAULT
-    EMAIL_TEMPLATE_PORT=5306 TENANT=TENANT_1 $APP_DIRECTORY/api-email-template  &
-    EMAIL_TEMPLATE_PORT=5307 TENANT=TENANT_2 $APP_DIRECTORY/api-email-template  &
-    EMAIL_TEMPLATE_PORT=5308 TENANT=DEFAULT $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=5036 TENANT=TENANT_1 $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=5037 TENANT=TENANT_2 $APP_DIRECTORY/api-email-template  &
+    EMAIL_TEMPLATE_PORT=5038 TENANT=DEFAULT $APP_DIRECTORY/api-email-template  &
 
 sleep 1s
 
 echo "------------ Start Notification API ------------"
 for i in {1..2}; do
-    PORT=540$i
+    PORT=504$i
     echo "--- Notification API on port $PORT ---"
     # Execute the program
-    NOTIFICATION_PORT=540$i $APP_DIRECTORY/api-notification  &
+    NOTIFICATION_PORT=504$i $APP_DIRECTORY/api-notification  &
 done
 sleep 1s
 
@@ -171,48 +172,57 @@ sleep 1s
 
 echo "------------ Start Profile API ------------"
 for i in {1..2}; do
-    PORT=550$i
+    PORT=505$i
     echo "--- Profile on port $PORT ---"
     # Execute the program
-    PROFILE_PORT=550$i $APP_DIRECTORY/api-profile  &
+    PROFILE_PORT=505$i $APP_DIRECTORY/api-profile  &
 done
 sleep 1s
 
 echo "------------ Start Translation API ------------"
 for i in {1..2}; do
-    PORT=560$i
+    PORT=506$i
     echo "--- Translation on port $PORT ---"
     # Execute the program
-    TRANSLATION_PORT=560$i $APP_DIRECTORY/api-translation  &
+    TRANSLATION_PORT=506$i $APP_DIRECTORY/api-translation  &
 done
 sleep 1s
 
 echo "------------ Start Event API ------------"
 for i in {1..2}; do
-    PORT=570$i
+    PORT=507$i
     echo "--- Event on port $PORT ---"
     # Execute the program
-    EVENT_PORT=570$i $APP_DIRECTORY/api-event  &
+    EVENT_PORT=507$i $APP_DIRECTORY/api-event  &
 done
 sleep 1s
 
 
 echo "------------ Start INVENTORY API ------------"
 for i in {1..2}; do
-    PORT=580$i
+    PORT=508$i
     echo "--- INVENTORY on port $PORT ---"
     # Execute the program
-    # INVENTORY_PORT=580$i $APP_DIRECTORY/api-inventory  &
+    INVENTORY_PORT=508$i $APP_DIRECTORY/api-inventory  &
 done
 sleep 1s
 
 
 echo "------------ Start Booking API ------------"
 for i in {1..2}; do
-    PORT=590$i
+    PORT=509$i
     echo "--- BOOKING on port $PORT ---"
     # Execute the program
-    BOOKING_PORT=590$i $APP_DIRECTORY/api-booking  &
+    BOOKING_PORT=509$i $APP_DIRECTORY/api-booking  &
+done
+sleep 1s
+
+echo "------------ Start Payment c-re API ------------"
+for i in {1..2}; do
+    PORT=510$i
+    echo "--- PAYMENT CORE on port $PORT ---"
+    # Execute the program
+    PAYMENT_CORE_PORT=510$i $APP_DIRECTORY/api-payment-core  &
 done
 sleep 1s
 

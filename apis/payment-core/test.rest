@@ -1,0 +1,107 @@
+@baseUrl = http://localhost:5101
+@paymentId = dd63b490-514e-46c9-88e1-71900e518184
+@paymentAttemptId = c98421b1-0150-4175-b170-2a4ae35ce83b
+@paymentMethodId = e1234567-8901-2345-6789-012345678901
+@paymentMethodLimitId = f2345678-9012-3456-7890-123456789012
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== PAYMENTS =====
+
+### Get All Payments
+GET {{baseUrl}}/payments
+
+### Search Payments
+GET {{baseUrl}}/payments?status=li|succeeded&order_name=created_at&order_direction=1
+
+### Create Payment
+POST {{baseUrl}}/payments
+Content-Type: application/json
+
+{
+  "transaction_id": "TXN-001",
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "amount": 10000,
+  "currency": "USD",
+  "status": "created",
+  "provider_name": "stripe",
+  "gateway_transaction_id": "ch_1234567890",
+  "idempotency_key": "key-001"
+}
+
+### Get Payment by ID
+GET {{baseUrl}}/payments/{{paymentId}}
+
+### Update Payment
+PATCH {{baseUrl}}/payments/{{paymentId}}
+Content-Type: application/json
+
+{
+  "status": "succeeded"
+}
+
+### Delete Payment
+DELETE {{baseUrl}}/payments/{{paymentId}}
+
+### ===== PAYMENT ATTEMPTS =====
+
+### Get All Payment Attempts
+GET {{baseUrl}}/payment-attempts
+
+### Create Payment Attempt
+POST {{baseUrl}}/payment-attempts
+Content-Type: application/json
+
+{
+  "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "attempt_number": 1,
+  "status": "pending",
+  "error_message": null,
+  "retry_after": null
+}
+
+### Get Payment Attempt by ID
+GET {{baseUrl}}/payment-attempts/{{paymentAttemptId}}
+
+### ===== PAYMENT METHODS =====
+
+### Get All Payment Methods
+GET {{baseUrl}}/payment-methods
+
+### Create Payment Method
+POST {{baseUrl}}/payment-methods
+Content-Type: application/json
+
+{
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "type": "card",
+  "details": "4111111111111111",
+  "is_default": true,
+  "is_active": true
+}
+
+### Get Payment Method by ID
+GET {{baseUrl}}/payment-methods/{{paymentMethodId}}
+
+### ===== PAYMENT METHOD LIMITS =====
+
+### Get All Payment Method Limits
+GET {{baseUrl}}/payment-method-limits
+
+### Create Payment Method Limit
+POST {{baseUrl}}/payment-method-limits
+Content-Type: application/json
+
+{
+  "payment_method_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "daily_limit": 50000,
+  "monthly_limit": 500000,
+  "transaction_limit": 10000
+}
+
+### Get Payment Method Limit by ID
+GET {{baseUrl}}/payment-method-limits/{{paymentMethodLimitId}}

@@ -1,6 +1,6 @@
 
 ### Variables
-@baseUrl = http://localhost:5101
+@baseUrl = http://localhost:5011
 # @baseUrl = http://localhost:6101
 @userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
 @clientId = 5ed8e536-12ae-463d-ae9b-8c78cc5481e1

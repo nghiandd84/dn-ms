@@ -1,5 +1,5 @@
 use axum::Router;
-use tracing::{debug, error};
+use tracing::error;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -14,35 +14,39 @@ use shared_shared_app::{
 };
 use shared_shared_config::db::Database;
 
-use features_inventory_migrations::{Migrator, MigratorTrait};
-use features_inventory_model::state::{InventoryAppState, InventoryCacheState};
+use features_payments_core_migrations::{Migrator, MigratorTrait};
+use features_payments_core_model::state::{PaymentsCoreAppState, PaymentsCoreCacheState};
 
 use crate::{
     consumers::event_consumer::handler::handle_event_consumer_message,
     doc::ApiDoc,
-    routes::{reservation::routes as reservation_routes, seat::routes as seat_routes},
+    routes::{
+        payment::routes as payment_routes, payment_attempt::routes as payment_attempt_routes,
+        payment_method::routes as payment_method_routes,
+        payment_method_limit::routes as payment_method_limit_routes,
+    },
 };
 
 struct MyApp<'a> {
     config: &'a AppConfig,
 }
 
-impl<'a> StartApp<InventoryAppState, InventoryCacheState> for MyApp<'a> {
+impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
     }
 
     fn custom_handler(
         &self,
-        app_state: &mut AppState<InventoryAppState, InventoryCacheState>,
+        app_state: &mut AppState<PaymentsCoreAppState, PaymentsCoreCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let clone_app_state = app_state.clone();
         let app_key = self.config.app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let event_kafka_group = if instance_id.is_ok() {
-            format!("inventory_for_event_{}", instance_id.unwrap())
+            format!("payment_core_for_event_{}", instance_id.unwrap())
         } else {
-            "inventory_for_event".to_string()
+            "payment_core_for_event".to_string()
         };
 
         let consumer_config = ConsumerConfig::from_env(
@@ -85,10 +89,12 @@ impl<'a> StartApp<InventoryAppState, InventoryCacheState> for MyApp<'a> {
         }
     }
 
-    fn routes(&self, app_state: &AppState<InventoryAppState, InventoryCacheState>) -> Router {
+    fn routes(&self, app_state: &AppState<PaymentsCoreAppState, PaymentsCoreCacheState>) -> Router {
         let all_routes = Router::new()
-            .merge(seat_routes(app_state))
-            .merge(reservation_routes(app_state))
+            .merge(payment_routes(app_state))
+            .merge(payment_attempt_routes(app_state))
+            .merge(payment_method_routes(app_state))
+            .merge(payment_method_limit_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
@@ -96,8 +102,8 @@ impl<'a> StartApp<InventoryAppState, InventoryCacheState> for MyApp<'a> {
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     let app_config = AppConfig::new(
-        "INVENTORY".to_string(),
-        Some("inventory".to_string()),
+        "PAYMENT_CORE".to_string(),
+        Some("payment".to_string()),
         true,
         true,
     );
@@ -107,8 +113,6 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     my_app.start_app(None).await?;
-
-    debug!("Inventory app stopped");
 
     Ok(())
 }

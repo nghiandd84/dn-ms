@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5901
+@baseUrl = http://localhost:5091
 # @baseUrl = http://localhost:6001/api/booking
 @bookingId = 887712cc-1571-492c-b55b-99dc65b9202b
 @bookingSeatId = 25a14c7f-2775-482a-b0f0-a98dd2c2ece8

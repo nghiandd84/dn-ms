@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5701
+@baseUrl = http://localhost:5071
 @eventId = ffbaa1ea-af8c-43b6-ab85-95dfa8c808b9
 
 ### healthchecker
