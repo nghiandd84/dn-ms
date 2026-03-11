@@ -1,8 +1,8 @@
 @baseUrl = http://localhost:5101
-@paymentId = dd63b490-514e-46c9-88e1-71900e518184
+@paymentId = 8a3cf34a-c2e4-428c-b5f4-756779ca457d
 @paymentAttemptId = c98421b1-0150-4175-b170-2a4ae35ce83b
-@paymentMethodId = e1234567-8901-2345-6789-012345678901
-@paymentMethodLimitId = f2345678-9012-3456-7890-123456789012
+@paymentMethodId = bb49bd21-6d9f-4521-87ac-4efd993e8031
+@paymentMethodLimitId = a0d46e6a-df79-4000-aff0-2f0554dbdfc8
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -23,14 +23,13 @@ POST {{baseUrl}}/payments
 Content-Type: application/json
 
 {
-  "transaction_id": "TXN-001",
-  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "amount": 10000,
+  "amount": 1,
   "currency": "USD",
-  "status": "created",
-  "provider_name": "stripe",
-  "gateway_transaction_id": "ch_1234567890",
-  "idempotency_key": "key-001"
+  "gateway_transaction_id": "credit-card-transaction-one",
+  "idempotency_key": "SEAT1A-UserOne-BookingIOne",
+  "provider_name": "credit-card",
+  "transaction_id": "BookingIdOne",
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 
 ### Get Payment by ID
@@ -72,36 +71,87 @@ GET {{baseUrl}}/payment-attempts/{{paymentAttemptId}}
 ### Get All Payment Methods
 GET {{baseUrl}}/payment-methods
 
+
+### Search Payment Methods
+GET {{baseUrl}}/payment-methods?display_name=li|card
+
 ### Create Payment Method
 POST {{baseUrl}}/payment-methods
 Content-Type: application/json
 
 {
-  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "type": "card",
-  "details": "4111111111111111",
-  "is_default": true,
-  "is_active": true
+    "display_name": "card",
+    "fee_percentage": 0.1,
+    "icon_url": "card-icon.svg",
+    "is_active": true,
+    "priority": 1,
+    "provider_config": {
+        "data_1": "Test 1"
+    },
+    "provider_name": "credit-card",
+    "supported_countries": ["VN", "US"],
+    "supported_currencies": ["VND", "USD"]
 }
+
+
+### Update Payment Method
+PATCH {{baseUrl}}/payment-methods/{{paymentMethodId}}
+Content-Type: application/json
+
+{
+    "display_name": "card-update",
+    "fee_percentage": 0.11,
+    "icon_url": "card-icon-update.svg",
+    "is_active": true,
+    "priority": 3,
+    "provider_config": {
+        "data_1": "Test 1 update"
+    },
+    "provider_name": "credit-card",
+    "supported_countries": ["VN", "US", "AU"],
+    "supported_currencies": ["VND", "USD", "AUD"]
+}
+
 
 ### Get Payment Method by ID
 GET {{baseUrl}}/payment-methods/{{paymentMethodId}}
+
+
+### Get Payment Method by ID
+DELETE {{baseUrl}}/payment-methods/abdff062-8d6a-4746-801e-5e8ce4e4e5ba
 
 ### ===== PAYMENT METHOD LIMITS =====
 
 ### Get All Payment Method Limits
 GET {{baseUrl}}/payment-method-limits
 
+### Search Payment Method Limits
+GET {{baseUrl}}/payment-method-limits?currency=eq|USD
+
 ### Create Payment Method Limit
 POST {{baseUrl}}/payment-method-limits
 Content-Type: application/json
 
 {
-  "payment_method_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "daily_limit": 50000,
-  "monthly_limit": 500000,
-  "transaction_limit": 10000
+  "payment_method_id": "{{paymentMethodId}}",
+  "max_amount": 50000,
+  "min_amount": 100000,
+  "currency": "AUD"
+}
+
+### Create Payment Method Limit
+PATCH  {{baseUrl}}/payment-method-limits/{{paymentMethodLimitId}}
+Content-Type: application/json
+
+{
+  "payment_method_id": "{{paymentMethodId}}",
+  "max_amount": 500001,
+  "min_amount": 100001,
+  "currency": "USD"
 }
 
 ### Get Payment Method Limit by ID
 GET {{baseUrl}}/payment-method-limits/{{paymentMethodLimitId}}
+
+### Delete Payment Method Limit by ID
+DELETE  {{baseUrl}}/payment-method-limits/e8f2b12a-3677-4b0a-8582-50def77aa55c

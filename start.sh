@@ -82,6 +82,11 @@ for i in {1..2}; do
     fuser -k -15 509$i/tcp 
 done
 
+# Kill Payment Core port
+for i in {1..2}; do 
+    fuser -k -15 510$i/tcp 
+done
+
 # Kill Notification App port
 for i in {1..2}; do 
     fuser -k -15 400$i/tcp 

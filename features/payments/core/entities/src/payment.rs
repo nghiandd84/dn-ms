@@ -17,22 +17,13 @@ use shared_shared_macro::Dto;
         currency,
         status,
         provider_name,
-        gateway_transaction_id,
-        idempotency_key
+        idempotency_key,
+        gateway_transaction_id
     )
 )]
 #[dto(
     name(PaymentForUpdate),
-    columns(
-        transaction_id,
-        user_id,
-        amount,
-        currency,
-        status,
-        provider_name,
-        gateway_transaction_id,
-        idempotency_key
-    ),
+    columns(status, gateway_transaction_id),
     option
 )]
 pub struct Model {

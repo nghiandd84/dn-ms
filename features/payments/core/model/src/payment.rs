@@ -49,54 +49,41 @@ impl Into<PaymentData> for ModelOptionDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct PaymentForCreateRequest {
-    pub transaction_id: String,
-    pub user_id: Uuid,
     pub amount: i64,
     pub currency: String,
-    pub status: String,
-    pub provider_name: String,
     pub gateway_transaction_id: String,
     pub idempotency_key: String,
+    pub provider_name: String,
+    pub transaction_id: String,
+    pub user_id: Uuid,
 }
 
 impl Into<PaymentForCreateDto> for PaymentForCreateRequest {
     fn into(self) -> PaymentForCreateDto {
         PaymentForCreateDto {
-            transaction_id: self.transaction_id,
-            user_id: self.user_id,
             amount: self.amount,
             currency: self.currency,
-            status: self.status,
-            provider_name: self.provider_name,
             gateway_transaction_id: self.gateway_transaction_id,
             idempotency_key: self.idempotency_key,
+            provider_name: self.provider_name,
+            status: "created".to_string(), // Default status for new payments
+            transaction_id: self.transaction_id,
+            user_id: self.user_id,
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct PaymentForUpdateRequest {
-    pub transaction_id: Option<String>,
-    pub user_id: Option<Uuid>,
-    pub amount: Option<i64>,
-    pub currency: Option<String>,
     pub status: Option<String>,
-    pub provider_name: Option<String>,
     pub gateway_transaction_id: Option<String>,
-    pub idempotency_key: Option<String>,
 }
 
 impl Into<PaymentForUpdateDto> for PaymentForUpdateRequest {
     fn into(self) -> PaymentForUpdateDto {
         PaymentForUpdateDto {
-            transaction_id: self.transaction_id,
-            user_id: self.user_id,
-            amount: self.amount,
-            currency: self.currency,
             status: self.status,
-            provider_name: self.provider_name,
             gateway_transaction_id: self.gateway_transaction_id,
-            idempotency_key: self.idempotency_key,
         }
     }
 }
