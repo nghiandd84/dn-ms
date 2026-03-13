@@ -1,4 +1,5 @@
 use sea_orm::{DbConn, DbErr};
+use shared_shared_config::db::DB_WRITE;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -18,9 +19,10 @@ pub struct AccessMutation {}
 
 impl AccessMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
+        _db: &'a DbConn,
         data: AccessForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
+        let db = DB_WRITE.get().expect("DB_WRITE is not initialized");
         AccessMutationManager::create_uuid(db, data.into())
     }
 

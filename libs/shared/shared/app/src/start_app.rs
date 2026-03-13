@@ -5,10 +5,11 @@ use dotenv::dotenv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::env;
+use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
 
-use shared_shared_config::db::Database;
+use shared_shared_config::db::{Database, DB_READ, DB_WRITE};
 use shared_shared_data_cache::cache::Cache;
 use shared_shared_observability::{
     init_log_trace_metric, metrics::axum_otel::HttpMetricsLayerBuilder,
@@ -62,12 +63,32 @@ where
                 .clone()
                 .unwrap_or(app_key.clone().to_string().to_lowercase());
 
-            let mut db = Database::new(
-                Some(format!("{}_DATABASE_URL", app_key.clone())),
-                Some(db_scheme),
-            );
+            // let mut db = Database::new(
+            //     Some(format!("{}_DATABASE_WRITE_URL", app_key.clone())),
+            //     Some(db_scheme.clone()),
+            // );
 
-            db.connect().await;
+            // db.connect().await;
+
+            let mut db_read = Database::new(
+                Some(format!("{}_DATABASE_READ_URL", app_key.clone())),
+                Some(db_scheme.clone()),
+            );
+            db_read.connect().await;
+            let db_read_connection = db_read.get_connection();
+            DB_READ
+                .set(db_read_connection)
+                .expect("Failed to set DB_READ");
+
+            let mut db_write = Database::new(
+                Some(format!("{}_DATABASE_WRITE_URL", app_key.clone())),
+                Some(db_scheme.clone()),
+            );
+            db_write.connect().await;
+            let db_write_connection = db_write.get_connection();
+            DB_WRITE
+                .set(db_write_connection)
+                .expect("Failed to set DB_WRITE");
 
             let default_port = 6101;
             let port = env::var(format!("{}_PORT", app_config.app_key.clone()))
@@ -87,7 +108,7 @@ where
                 );
             }
 
-            self.migrate(&db).await?;
+            self.migrate(&db_write).await?;
 
             // Cache
             let default_cache_url: &str = "redis://127.0.0.1/";
@@ -115,7 +136,9 @@ where
             )
             .await?;
 
-            let db_connection = (&db).get_connection().clone();
+            // TODO Delete conn in appstate
+            let db_connection = (&db_write).get_connection().clone();
+            let db_connection = Arc::as_ref(&db_connection);
 
             let mut app_state =
                 AppState::new(service_name.clone(), db_connection.clone(), cache, state);
@@ -155,8 +178,9 @@ where
                 .unwrap();
 
             info!("Gracefully shutting down");
-            // Close DB connection
-            db_connection.close().await?;
+            // Close DB connections
+            db_read.disconnect().await;
+            db_write.disconnect().await;
             info!("Database connection closed");
 
             log_provider

@@ -59,8 +59,8 @@ impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
         &self,
         db: &Database,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        async {
-            Migrator::up((db).get_connection(), None).await?;
+       async {
+            Migrator::up((db).get_connection().as_ref(), None).await?;
             Ok(())
         }
     }

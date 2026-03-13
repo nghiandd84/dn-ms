@@ -15,11 +15,12 @@ chrono = { workspace = true }
 sea-orm = { workspace = true , features = ["sqlx-postgres"]}
 tracing = { workspace = true }
 
+shared-shared-config = { workspace = true }
 shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 shared-shared-macro = { workspace = true }
 shared-shared-macro-rule = { workspace = true }
-
 features-inventory-entities = { workspace = true }
+
 features-inventory-model = { workspace = true }

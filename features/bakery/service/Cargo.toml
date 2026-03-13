@@ -15,10 +15,11 @@ sea-orm = { workspace = true, features = ["with-json"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
-shared-shared-data-core = { workspace = true }
+shared-shared-config = { workspace = true }
 shared-shared-data-app = { workspace = true }
-shared-shared-macro-rule = { workspace = true }
+shared-shared-data-core = { workspace = true }
 shared-shared-macro = { workspace = true }
+shared-shared-macro-rule = { workspace = true }
 
 features-bakery-entities = { workspace = true }
 features-bakery-model = { workspace = true }

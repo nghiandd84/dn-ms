@@ -84,7 +84,7 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
         db: &Database,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         async {
-            Migrator::up((db).get_connection(), None).await?;
+            Migrator::up((db).get_connection().as_ref(), None).await?;
             Ok(())
         }
     }

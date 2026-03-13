@@ -1,11 +1,11 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use sea_orm::{ConnectOptions, DatabaseConnection};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Database {
     connect_option: ConnectOptions,
-    connection: Option<DatabaseConnection>,
+    connection: Option<Arc<DatabaseConnection>>,
     scheme_path: String,
 }
 
@@ -57,10 +57,25 @@ impl Database {
                 panic!("Conect to scheme {} . Error: {}  ", scheme_path, e,);
             }
         };
-        self.connection = Some(connection);
+        self.connection = Some(Arc::new(connection));
     }
 
-    pub fn get_connection(&self) -> &DatabaseConnection {
-        self.connection.as_ref().unwrap()
+    pub async fn disconnect(&mut self) {
+        if let Some(conn) = &self.connection {
+            let connection = Arc::as_ref(conn);
+            connection.close_by_ref().await.unwrap_or_else(|e| {
+                panic!("Error closing database connection: {:?}", e);
+            });
+            self.connection = None;
+        }
+    }
+
+    pub fn get_connection(&self) -> Arc<DatabaseConnection> {
+        self.connection.as_ref().unwrap().clone()
     }
 }
+
+use std::sync::OnceLock;
+
+pub static DB_READ: OnceLock<Arc<DatabaseConnection>> = OnceLock::new();
+pub static DB_WRITE: OnceLock<Arc<DatabaseConnection>> = OnceLock::new();
