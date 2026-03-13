@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -36,10 +36,7 @@ const TAG: &str = "project";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_project(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Json(req): Json<ProjectForCreateRequest>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn create_project(Json(req): Json<ProjectForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let project_id = ProjectService::create_project(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -55,11 +52,8 @@ async fn create_project(
         (status = 200, description = "Project retrieved successfully", body = ProjectData),
     )
 )]
-async fn get_project(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(project_id): Path<Uuid>,
-) -> Result<ResponseJson<ProjectData>> {
-    let project = ProjectService::get_project_by_id(&state.conn, project_id).await?;
+async fn get_project(Path(project_id): Path<Uuid>) -> Result<ResponseJson<ProjectData>> {
+    let project = ProjectService::get_project_by_id(project_id).await?;
     Ok(ResponseJson(project))
 }
 
@@ -77,7 +71,6 @@ async fn get_project(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_projects(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ProjectDataFilterParams>,
@@ -85,7 +78,7 @@ async fn filter_projects(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = ProjectService::get_projects(&state.conn, &pagination, &order, &filters).await?;
+    let result = ProjectService::get_projects(&pagination, &order, &filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -99,7 +92,6 @@ async fn filter_projects(
     )
 )]
 async fn update_project(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(project_id): Path<Uuid>,
     Json(req): Json<ProjectForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -118,10 +110,7 @@ async fn update_project(
         (status = 200, description = "Project deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_project(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(project_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_project(Path(project_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ProjectService::delete_project(project_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

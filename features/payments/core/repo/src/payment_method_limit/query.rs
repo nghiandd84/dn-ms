@@ -8,7 +8,9 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
 
-use features_payments_core_entities::payment_method_limit::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_payments_core_entities::payment_method_limit::{
+    ActiveModel, Column, Entity, ModelOptionDto,
+};
 use features_payments_core_model::payment_method_limit::PaymentMethodLimitData;
 
 #[derive(Query)]
@@ -32,20 +34,18 @@ pub struct PaymentMethodLimitQuery;
 
 impl PaymentMethodLimitQuery {
     pub async fn get_payment_method_limit_by_id(
-        db: &DbConn,
         limit_id: Uuid,
     ) -> Result<PaymentMethodLimitData, AppError> {
-        let model = PaymentMethodLimitQueryManager::get_by_id_uuid(db, limit_id).await?;
+        let model = PaymentMethodLimitQueryManager::get_by_id_uuid(limit_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_payment_method_limits<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<PaymentMethodLimitData>, AppError> {
-        let result = PaymentMethodLimitQueryManager::filter(db, pagination, order, filters).await?;
+        let result = PaymentMethodLimitQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

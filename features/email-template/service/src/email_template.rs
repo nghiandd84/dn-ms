@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 
 use shared_shared_data_app::result::Result;
@@ -23,8 +22,8 @@ impl EmailTemplateService {
         Ok(result)
     }
 
-    pub async fn get<'a>(db: &'a DbConn, id: i32) -> Result<EmailTemplateData> {
-        let email_data = EmailTemplateQuery::get(db, id).await?;
+    pub async fn get<'a>(id: i32) -> Result<EmailTemplateData> {
+        let email_data = EmailTemplateQuery::get(id).await?;
         Ok(email_data)
     }
 
@@ -41,12 +40,11 @@ impl EmailTemplateService {
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<EmailTemplateData>> {
-        let result = EmailTemplateQuery::search(db, pagination, order, filters).await?;
+        let result = EmailTemplateQuery::search(pagination, order, filters).await?;
         Ok(result)
     }
 }

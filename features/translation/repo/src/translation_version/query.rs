@@ -34,20 +34,18 @@ pub struct TranslationVersionQuery;
 
 impl TranslationVersionQuery {
     pub async fn get_translation_version_by_id(
-        db: &DbConn,
         version_id: Uuid,
     ) -> Result<TranslationVersionData, AppError> {
-        let model = TranslationVersionQueryManager::get_by_id_uuid(db, version_id).await?;
+        let model = TranslationVersionQueryManager::get_by_id_uuid(version_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_translation_versions<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
-        let result = TranslationVersionQueryManager::filter(db, pagination, order, filters).await?;
+        let result = TranslationVersionQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),
@@ -56,7 +54,6 @@ impl TranslationVersionQuery {
     }
 
     pub async fn get_latest_version_by_key_locale(
-        db: &DbConn,
         key_id: Uuid,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
@@ -74,8 +71,7 @@ impl TranslationVersionQuery {
         search_filters.push(key_filter);
 
         let result =
-            TranslationVersionQueryManager::filter(db, &pagination, &order, &search_filters)
-                .await?;
+            TranslationVersionQueryManager::filter(&pagination, &order, &search_filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

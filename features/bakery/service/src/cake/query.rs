@@ -30,19 +30,18 @@ impl CakeQueryManager {
 pub struct CakeQuery {}
 
 impl CakeQuery {
-    pub async fn get_by_id<'a>(db: &'a DbConn, id: i32) -> Result<CakeData, DbErr> {
-        let model = CakeQueryManager::get_by_id_i32(db, id).await?;
+    pub async fn get_by_id<'a>(id: i32) -> Result<CakeData, DbErr> {
+        let model = CakeQueryManager::get_by_id_i32(id).await?;
         let baker: CakeData = model.into();
         Ok(baker)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<CakeData>, DbErr> {
-        let result = CakeQueryManager::filter(db, pagination, order, filters).await?;
+        let result = CakeQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

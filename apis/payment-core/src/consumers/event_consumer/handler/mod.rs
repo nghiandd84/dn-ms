@@ -22,7 +22,7 @@ pub async fn handle_event_consumer_message(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     debug!("Received event message: {:?}", message);
     let result = match message {
-        EventMessage::New { message: event } => handle_new_event(event, &state.conn).await,
+        EventMessage::New { message: event } => handle_new_event(event).await,
         EventMessage::Update { message: event } => handle_change_event(event).await,
     };
 

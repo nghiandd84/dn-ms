@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -39,7 +39,6 @@ const TAG: &str = "reservation";
     )
 )]
 async fn create_reservation(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     ValidJson(req): ValidJson<ReservationForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let reservation_id = ReservationService::create_reservation(req).await?;
@@ -58,11 +57,9 @@ async fn create_reservation(
     )
 )]
 async fn get_reservation(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<ResponseJson<ReservationData>> {
-    let reservation =
-        ReservationService::get_reservation_by_id(&state.conn, reservation_id).await?;
+    let reservation = ReservationService::get_reservation_by_id(reservation_id).await?;
 
     debug!(
         "Recorded counter measurement for reservation retrieval: {:?}",
@@ -85,7 +82,6 @@ async fn get_reservation(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_reservations(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ReservationDataFilterParams>,
@@ -94,8 +90,7 @@ async fn filter_reservations(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        ReservationService::get_reservations(&state.conn, &filters, &pagination, &order).await?;
+    let result = ReservationService::get_reservations(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -110,7 +105,6 @@ async fn filter_reservations(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_reservation(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(reservation_id): Path<Uuid>,
     ValidJson(req): ValidJson<ReservationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -131,7 +125,6 @@ async fn update_reservation(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_reservation(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     ReservationService::delete_reservation(reservation_id).await?;

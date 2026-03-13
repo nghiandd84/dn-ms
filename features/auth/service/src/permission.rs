@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterOperator, FilterParam},
     order::Order,
@@ -20,16 +19,12 @@ use features_auth_repo::{
 pub struct PermissionService {}
 
 impl PermissionService {
-    pub async fn create_permission<'a>(
-        db: &'a DbConn,
-        request: PermissionForCreateRequest,
-    ) -> Result<Uuid> {
+    pub async fn create_permission<'a>(request: PermissionForCreateRequest) -> Result<Uuid> {
         let permission_id = PermissionMutation::create(request.into()).await?;
         Ok(permission_id)
     }
 
     pub async fn update_permission<'a>(
-        db: &'a DbConn,
         permission_id: Uuid,
         request: PermissionForUpdateRequest,
     ) -> Result<bool> {
@@ -37,13 +32,12 @@ impl PermissionService {
         Ok(result)
     }
 
-    pub async fn get<'a>(db: &'a DbConn, permission_id: Uuid) -> Result<PermissionData> {
-        let permission = PermissionQuery::get(db, permission_id).await?;
+    pub async fn get<'a>(permission_id: Uuid) -> Result<PermissionData> {
+        let permission = PermissionQuery::get(permission_id).await?;
         Ok(permission.into())
     }
 
     pub async fn search_by_role<'a>(
-        db: &'a DbConn,
         role_id: Uuid,
         pagination: &Pagination,
     ) -> Result<QueryResult<PermissionData>> {
@@ -56,8 +50,7 @@ impl PermissionService {
         };
         let role_filter = FilterEnum::Uuid(role_filter_param);
         let filters = vec![role_filter];
-        let role_permissions =
-            RolePermissionQuery::search(db, pagination, &order, &filters).await?;
+        let role_permissions = RolePermissionQuery::search(pagination, &order, &filters).await?;
         let permission_ids: Vec<Uuid> = role_permissions
             .result
             .into_iter()
@@ -84,11 +77,11 @@ impl PermissionService {
         let permission_filter = FilterEnum::Uuid(permission_filter_param);
         let permission_filters = vec![permission_filter];
 
-        let result = PermissionQuery::search(db, pagination, &order, &permission_filters).await?;
+        let result = PermissionQuery::search(pagination, &order, &permission_filters).await?;
         Ok(result)
     }
 
-    pub async fn delete<'a>(db: &'a DbConn, permission_id: Uuid) -> Result<bool> {
+    pub async fn delete<'a>(permission_id: Uuid) -> Result<bool> {
         let result = PermissionMutation::delete(permission_id).await?;
         Ok(result)
     }

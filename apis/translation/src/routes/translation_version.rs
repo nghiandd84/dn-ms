@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -38,7 +38,6 @@ const TAG: &str = "translation_version";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_translation_version(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<TranslationVersionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let version_id = TranslationVersionService::create_translation_version(req).await?;
@@ -57,11 +56,9 @@ async fn create_translation_version(
     )
 )]
 async fn get_translation_version(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(version_id): Path<Uuid>,
 ) -> Result<ResponseJson<TranslationVersionData>> {
-    let version =
-        TranslationVersionService::get_translation_version_by_id(&state.conn, version_id).await?;
+    let version = TranslationVersionService::get_translation_version_by_id(version_id).await?;
     Ok(ResponseJson(version))
 }
 
@@ -78,7 +75,6 @@ async fn get_translation_version(
     )
 )]
 async fn get_latest_translation_version(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(key_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -88,7 +84,6 @@ async fn get_latest_translation_version(
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
     let version = TranslationVersionService::get_latest_version_by_key_locale(
-        &state.conn,
         key_id,
         &filters,
         &pagination,
@@ -112,7 +107,6 @@ async fn get_latest_translation_version(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_translation_versions(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TranslationVersionDataFilterParams>,
@@ -120,13 +114,8 @@ async fn filter_translation_versions(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = TranslationVersionService::get_translation_versions(
-        &state.conn,
-        &pagination,
-        &order,
-        &filters,
-    )
-    .await?;
+    let result =
+        TranslationVersionService::get_translation_versions(&pagination, &order, &filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -140,7 +129,6 @@ async fn filter_translation_versions(
     )
 )]
 async fn update_translation_version(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(version_id): Path<Uuid>,
     Json(req): Json<TranslationVersionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -159,10 +147,7 @@ async fn update_translation_version(
         (status = 200, description = "Translation version deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_translation_version(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(version_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_translation_version(Path(version_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TranslationVersionService::delete_translation_version(version_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

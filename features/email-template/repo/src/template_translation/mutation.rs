@@ -1,4 +1,3 @@
-use sea_orm::{DbConn, DbErr};
 use uuid::Uuid;
 
 use shared_shared_macro::Mutation;

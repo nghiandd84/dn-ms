@@ -31,18 +31,17 @@ impl TagQueryManager {
 pub struct TagQuery;
 
 impl TagQuery {
-    pub async fn get_tag_by_id(db: &DbConn, tag_id: Uuid) -> Result<TagData, AppError> {
-        let model = TagQueryManager::get_by_id_uuid(db, tag_id).await?;
+    pub async fn get_tag_by_id(tag_id: Uuid) -> Result<TagData, AppError> {
+        let model = TagQueryManager::get_by_id_uuid(tag_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_tags<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TagData>, AppError> {
-        let result = TagQueryManager::filter(db, pagination, order, filters).await?;
+        let result = TagQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

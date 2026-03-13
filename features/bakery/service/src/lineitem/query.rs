@@ -30,18 +30,17 @@ impl LineitemQueryManager {
 pub struct LineitemQuery {}
 
 impl LineitemQuery {
-    pub async fn get_by_id<'a>(db: &'a DbConn, id: i32) -> Result<LineitemData, DbErr> {
-        let model = LineitemQueryManager::get_by_id_i32(db, id).await?;
+    pub async fn get_by_id<'a>(id: i32) -> Result<LineitemData, DbErr> {
+        let model = LineitemQueryManager::get_by_id_i32(id).await?;
         Ok(model.into())
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<LineitemData>, DbErr> {
-        let result = LineitemQueryManager::filter(db, pagination, order, filters).await?;
+        let result = LineitemQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

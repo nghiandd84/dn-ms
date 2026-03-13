@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -36,10 +36,7 @@ const TAG: &str = "tag";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_tag(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Json(req): Json<TagForCreateRequest>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn create_tag(Json(req): Json<TagForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let tag_id = TagService::create_tag(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -55,11 +52,8 @@ async fn create_tag(
         (status = 200, description = "Tag retrieved successfully", body = TagData),
     )
 )]
-async fn get_tag(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(tag_id): Path<Uuid>,
-) -> Result<ResponseJson<TagData>> {
-    let tag = TagService::get_tag_by_id(&state.conn, tag_id).await?;
+async fn get_tag(Path(tag_id): Path<Uuid>) -> Result<ResponseJson<TagData>> {
+    let tag = TagService::get_tag_by_id(tag_id).await?;
     Ok(ResponseJson(tag))
 }
 
@@ -77,7 +71,6 @@ async fn get_tag(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_tags(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TagDataFilterParams>,
@@ -85,7 +78,7 @@ async fn filter_tags(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = TagService::get_tags(&state.conn, &pagination, &order, &filters).await?;
+    let result = TagService::get_tags(&pagination, &order, &filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -99,7 +92,6 @@ async fn filter_tags(
     )
 )]
 async fn update_tag(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(tag_id): Path<Uuid>,
     Json(req): Json<TagForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -118,10 +110,7 @@ async fn update_tag(
         (status = 200, description = "Tag deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_tag(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(tag_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_tag(Path(tag_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TagService::delete_tag(tag_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

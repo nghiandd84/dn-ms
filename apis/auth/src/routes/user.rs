@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get},
     Router,
 };
@@ -33,10 +33,7 @@ const TAG: &str = "user";
         (status = 200, description = "User is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_user(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(user_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_user(Path(user_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     UserMutation::delete_user(user_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -49,11 +46,8 @@ async fn delete_user(
         (status = 200, description = "User is deleted", body = UserDataResponse),       
     )
 )]
-async fn get_user(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(user_id): Path<Uuid>,
-) -> Result<ResponseJson<UserData>> {
-    let user_dto = UserQuery::get(&state.conn, user_id).await?;
+async fn get_user(Path(user_id): Path<Uuid>) -> Result<ResponseJson<UserData>> {
+    let user_dto = UserQuery::get(user_id).await?;
     Ok(ResponseJson(user_dto))
 }
 
@@ -71,7 +65,6 @@ async fn get_user(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_users(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<UserDataFilterParams>,
@@ -80,18 +73,16 @@ async fn filter_users(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = UserQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = UserQuery::search(&pagination, &order, &all_filters).await?;
     Ok(ResponseJson(result))
 }
 
-async fn test_filters(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-) -> Result<ResponseJson<QueryResult<UserData>>> {
+async fn test_filters() -> Result<ResponseJson<QueryResult<UserData>>> {
     let pagination = Pagination::default();
     let order = Order::default();
     let all_filters = vec![];
 
-    let result = UserQuery::advance_search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = UserQuery::advance_search(&pagination, &order, &all_filters).await?;
     Ok(ResponseJson(result))
 }
 

@@ -1,4 +1,4 @@
-use sea_orm::DbConn;
+
 use tracing::debug;
 use uuid::Uuid;
 
@@ -31,20 +31,16 @@ impl ProjectService {
         Ok(id)
     }
 
-    pub async fn get_project_by_id<'a>(
-        db: &'a DbConn,
-        project_id: Uuid,
-    ) -> Result<ProjectData, AppError> {
-        ProjectQuery::get_project_by_id(db, project_id).await
+    pub async fn get_project_by_id<'a>(project_id: Uuid) -> Result<ProjectData, AppError> {
+        ProjectQuery::get_project_by_id(project_id).await
     }
 
     pub async fn get_projects<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<ProjectData>, AppError> {
-        ProjectQuery::get_projects(db, pagination, order, filters).await
+        ProjectQuery::get_projects(pagination, order, filters).await
     }
 
     pub async fn update_project<'a>(

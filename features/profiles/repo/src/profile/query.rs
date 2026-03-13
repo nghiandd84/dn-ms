@@ -31,15 +31,12 @@ impl ProfileQueryManager {
 pub struct ProfileQuery;
 
 impl ProfileQuery {
-    pub async fn get_profile_by_id(db: &DbConn, profile_id: Uuid) -> Result<ProfileData, AppError> {
-        let model = ProfileQueryManager::get_by_id_uuid(db, profile_id).await?;
+    pub async fn get_profile_by_id(profile_id: Uuid) -> Result<ProfileData, AppError> {
+        let model = ProfileQueryManager::get_by_id_uuid(profile_id).await?;
         Ok(model.into())
     }
 
-    pub async fn get_profile_by_user_id(
-        db: &DbConn,
-        user_id: Uuid,
-    ) -> Result<ProfileData, AppError> {
+    pub async fn get_profile_by_user_id(user_id: Uuid) -> Result<ProfileData, AppError> {
         let pagination = Pagination::new(1, 1);
         let order = Order::default();
 
@@ -52,7 +49,7 @@ impl ProfileQuery {
         let user_id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![user_id_filter];
 
-        let result = ProfileQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = ProfileQueryManager::filter(&pagination, &order, &filters).await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -65,12 +62,11 @@ impl ProfileQuery {
     }
 
     pub async fn get_profiles(
-        db: &DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<ProfileData>, AppError> {
-        let result = ProfileQueryManager::filter(db, pagination, order, filters).await?;
+        let result = ProfileQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

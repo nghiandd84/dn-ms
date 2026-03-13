@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use std::time::Duration;
 use tracing::{debug, error, info};
 use uuid::Uuid;
@@ -37,7 +36,6 @@ impl TokenService {
     // Add methods for token-related operations here
     // For example, create_token, delete_token, get_token, etc.
     pub async fn create_authorization_data<'a>(
-        db: &'a DbConn,
         cache: &'a Cache<String, AuthCacheState>,
         token_request: &'a TokenForCreateRequest,
     ) -> Result<AuthorizationCodeData> {
@@ -50,7 +48,7 @@ impl TokenService {
             ..Default::default()
         };
 
-        let client = ClientQuery::get(db, client_id).await;
+        let client = ClientQuery::get(client_id).await;
         if client.is_err() {
             error!("Error fetching client with id : {:?}", client_id);
             return Err(AppError::EntityNotFound {
@@ -63,7 +61,7 @@ impl TokenService {
         match grant_type {
             GrantType::AuthorizationCode => {
                 let auth_code =
-                    AuthCodeQuery::get_by_client_id_and_code(db, client_id, code.clone()).await;
+                    AuthCodeQuery::get_by_client_id_and_code(client_id, code.clone()).await;
                 if auth_code.is_err() {
                     error!(
                         "Error fetching auth_code for client_id: {} and code: {}",
@@ -78,10 +76,9 @@ impl TokenService {
                 let scopes = auth_code.scopes.clone().unwrap_or_default();
                 let client_secret = client.client_secret.unwrap_or_default();
                 let user_id = auth_code.user_id.unwrap();
-                let accesses = UserQuery::get_access_data_by_user_id(db, user_id).await?;
+                let accesses = UserQuery::get_access_data_by_user_id(user_id).await?;
                 debug!("AuthCode found: {:?}", auth_code);
                 let authorization_code_data = create_new_token_authorization_data(
-                    db,
                     cache,
                     user_id,
                     client_id,
@@ -104,7 +101,6 @@ impl TokenService {
                 let old_refresh_token = token_request.code.clone().unwrap_or_default();
                 let client_secret = client.client_secret.unwrap_or_default();
                 let authorization_code_data = create_refresh_token_authorization_data(
-                    db,
                     cache,
                     &old_refresh_token,
                     &client_secret,
@@ -121,14 +117,11 @@ impl TokenService {
         Ok(authorization_data)
     }
 
-    pub async fn verify_token(
-        db: &DbConn,
-        token_request: &TokenForVerifyRequest,
-    ) -> Result<AccessTokenStruct> {
+    pub async fn verify_token(token_request: &TokenForVerifyRequest) -> Result<AccessTokenStruct> {
         let token = token_request.token.clone().unwrap_or_default();
         let access_token = insecured_decode_access_token(token.as_str());
         let access_token = access_token.unwrap();
-        let client = ClientQuery::get(db, access_token.client_id).await;
+        let client = ClientQuery::get(access_token.client_id).await;
         if client.is_err() {
             return Err(AppError::EntityNotFound {
                 entity: "Client".to_string(),
@@ -144,7 +137,6 @@ impl TokenService {
 }
 
 pub async fn create_new_token_authorization_data<'a>(
-    db: &'a DbConn,
     cache: &'a Cache<String, AuthCacheState>,
     user_id: Uuid,
     client_id: Uuid,
@@ -222,7 +214,6 @@ pub async fn create_new_token_authorization_data<'a>(
 }
 
 pub async fn create_refresh_token_authorization_data<'a>(
-    db: &'a DbConn,
     cache: &'a Cache<String, AuthCacheState>,
     old_refresh_token: &str,
     client_secret: &str,
@@ -245,7 +236,7 @@ pub async fn create_refresh_token_authorization_data<'a>(
         }
     }
 
-    let accesses = UserQuery::get_access_data_by_user_id(db, user_id).await?;
+    let accesses = UserQuery::get_access_data_by_user_id(user_id).await?;
     let (access_token, jti) = create_access_token(user_id, client_id, client_secret, accesses)
         .map_err(|error| AppError::Token(error))?;
     cache

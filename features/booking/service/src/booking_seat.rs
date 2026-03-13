@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -36,14 +36,12 @@ impl BookingSeatService {
     }
 
     pub async fn get_booking_seat_by_id<'a>(
-        db: &'a DbConn,
         booking_seat_id: Uuid,
     ) -> Result<BookingSeatData, AppError> {
-        BookingSeatQuery::get_booking_seat_by_id(db, booking_seat_id).await
+        BookingSeatQuery::get_booking_seat_by_id(booking_seat_id).await
     }
 
     pub async fn get_booking_seats_by_booking(
-        db: &DbConn,
         booking_id: Uuid,
         pagination: &Pagination,
         order: &Order,
@@ -57,16 +55,15 @@ impl BookingSeatService {
         };
         let booking_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![booking_filter];
-        BookingSeatQuery::get_booking_seats(db, &pagination, &order, &filters).await
+        BookingSeatQuery::get_booking_seats(&pagination, &order, &filters).await
     }
 
     pub async fn get_booking_seats<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<BookingSeatData>, AppError> {
-        BookingSeatQuery::get_booking_seats(db, pagination, order, filters).await
+        BookingSeatQuery::get_booking_seats(pagination, order, filters).await
     }
 
     pub async fn update_booking_seat(
@@ -87,7 +84,7 @@ impl BookingSeatService {
         }
     }
 
-    pub async fn delete_booking_seat( booking_seat_id: Uuid) -> Result<bool, AppError> {
+    pub async fn delete_booking_seat(booking_seat_id: Uuid) -> Result<bool, AppError> {
         let result = BookingSeatMutation::delete_booking_seat(booking_seat_id).await;
         match result {
             Ok(success) => Ok(success),

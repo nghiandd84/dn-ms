@@ -63,13 +63,6 @@ where
                 .clone()
                 .unwrap_or(app_key.clone().to_string().to_lowercase());
 
-            // let mut db = Database::new(
-            //     Some(format!("{}_DATABASE_WRITE_URL", app_key.clone())),
-            //     Some(db_scheme.clone()),
-            // );
-
-            // db.connect().await;
-
             let mut db_read = Database::new(
                 Some(format!("{}_DATABASE_READ_URL", app_key.clone())),
                 Some(db_scheme.clone()),
@@ -136,12 +129,7 @@ where
             )
             .await?;
 
-            // TODO Delete conn in appstate
-            let db_connection = (&db_write).get_connection().clone();
-            let db_connection = Arc::as_ref(&db_connection);
-
-            let mut app_state =
-                AppState::new(service_name.clone(), db_connection.clone(), cache, state);
+            let mut app_state = AppState::new(service_name.clone(), cache, state);
 
             let axum_layer = OtelAxumLayer::default().filter(|str| {
                 let prefixs = vec!["/healthchecker", "/swagger-ui", "/api-docs"];

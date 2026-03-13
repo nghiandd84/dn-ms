@@ -31,16 +31,12 @@ impl TranslationKeyQueryManager {
 pub struct TranslationKeyQuery;
 
 impl TranslationKeyQuery {
-    pub async fn get_translation_key_by_id(
-        db: &DbConn,
-        key_id: Uuid,
-    ) -> Result<TranslationKeyData, AppError> {
-        let model = TranslationKeyQueryManager::get_by_id_uuid(db, key_id).await?;
+    pub async fn get_translation_key_by_id(key_id: Uuid) -> Result<TranslationKeyData, AppError> {
+        let model = TranslationKeyQueryManager::get_by_id_uuid(key_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_translation_keys_by_project<'a>(
-        db: &'a DbConn,
         project_id: Uuid,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
         let pagination = Pagination::new(1, 1000);
@@ -55,7 +51,7 @@ impl TranslationKeyQuery {
         let project_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![project_filter];
 
-        let result = TranslationKeyQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = TranslationKeyQueryManager::filter(&pagination, &order, &filters).await?;
 
         let mapped_result = QueryResult {
             total_page: result.total_page,
@@ -65,12 +61,11 @@ impl TranslationKeyQuery {
     }
 
     pub async fn get_translation_keys<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
-        let result = TranslationKeyQueryManager::filter(db, pagination, order, filters).await?;
+        let result = TranslationKeyQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

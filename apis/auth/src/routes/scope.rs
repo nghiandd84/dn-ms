@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -39,7 +39,6 @@ const TAG: &str = "scope";
     )
 )]
 async fn create_scope(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<ScopeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: ScopeForCreateDto = register_request.into();
@@ -64,7 +63,6 @@ async fn create_scope(
     )
 )]
 async fn update_scope(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(scope_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ScopeForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -80,10 +78,7 @@ async fn update_scope(
         (status = 200, description = "Scope is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_scope(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(scope_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ScopeMutation::delete(scope_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -96,11 +91,8 @@ async fn delete_scope(
         (status = 200, description = "Scope Data", body = ScopeDataResponse),       
     )
 )]
-async fn get_scope(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(scope_id): Path<Uuid>,
-) -> Result<ResponseJson<ScopeData>> {
-    let scope = ScopeQuery::get(&state.conn, scope_id).await?;
+async fn get_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<ScopeData>> {
+    let scope = ScopeQuery::get(scope_id).await?;
     Ok(ResponseJson(scope))
 }
 
@@ -117,7 +109,6 @@ async fn get_scope(
     )
 )]
 async fn filter_scopes(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ScopeDataFilterParams>,
@@ -126,7 +117,7 @@ async fn filter_scopes(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = ScopeQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = ScopeQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

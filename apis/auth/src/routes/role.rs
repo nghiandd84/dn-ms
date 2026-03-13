@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -40,7 +40,6 @@ const TAG: &str = "role";
     )
 )]
 async fn create_role(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<RoleForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: RoleForCreateDto = register_request.into();
@@ -65,7 +64,6 @@ async fn create_role(
     )
 )]
 async fn update_role(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
     ValidJson(register_request): ValidJson<RoleForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -84,10 +82,7 @@ async fn update_role(
         (status = 200, description = "Role is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_role(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(role_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     RoleMutation::delete(role_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -100,11 +95,8 @@ async fn delete_role(
         (status = 200, description = "Role Data", body = RoleDataResponse),       
     )
 )]
-async fn get_role(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(role_id): Path<Uuid>,
-) -> Result<ResponseJson<RoleData>> {
-    let role = RoleQuery::get(&state.conn, role_id).await?;
+async fn get_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<RoleData>> {
+    let role = RoleQuery::get(role_id).await?;
     Ok(ResponseJson(role))
 }
 
@@ -117,11 +109,10 @@ async fn get_role(
     )
 )]
 async fn get_permission_by_role(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
 ) -> Result<ResponseJson<QueryResult<PermissionData>>> {
     let pagination = Pagination::new(1, 200);
-    let permissions = PermissionService::search_by_role(&state.conn, role_id, &pagination).await?;
+    let permissions = PermissionService::search_by_role(role_id, &pagination).await?;
     Ok(ResponseJson(permissions))
 }
 
@@ -138,7 +129,6 @@ async fn get_permission_by_role(
     )
 )]
 async fn filter_roles(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<RoleDataFilterParams>,
@@ -147,7 +137,7 @@ async fn filter_roles(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = RoleQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = RoleQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
@@ -162,7 +152,6 @@ async fn filter_roles(
     )
 )]
 async fn assign_permissions(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
     ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -183,12 +172,10 @@ async fn assign_permissions(
     )
 )]
 async fn unassign_permissions(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
     ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let assign =
-        RoleService::unassign_permissions(&state.conn, role_id, request.permission_ids).await?;
+    let assign = RoleService::unassign_permissions(role_id, request.permission_ids).await?;
     Ok(ResponseJson(OkUuid {
         ok: assign,
         id: None,

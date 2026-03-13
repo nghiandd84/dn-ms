@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, post},
     Router,
 };
@@ -39,7 +39,6 @@ const TAG: &str = "baker";
     )
 )]
 async fn create(
-    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<BakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: BakerForCreateDto = request.into();
@@ -61,7 +60,6 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState<BakeryCacheState>>,
     auth: Auth<CanDeleteBaker>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
@@ -78,11 +76,8 @@ async fn delete_by_id(
         (status = 200, description = "Baker Data", body = BakerDataResponse),
     )
 )]
-async fn get_by_id(
-    state: State<AppState<BakeryCacheState>>,
-    Path(baker_id): Path<i32>,
-) -> Result<ResponseJson<BakerData>> {
-    let baker = BakerQuery::get_by_id(&state.conn, baker_id).await?;
+async fn get_by_id(Path(baker_id): Path<i32>) -> Result<ResponseJson<BakerData>> {
+    let baker = BakerQuery::get_by_id(baker_id).await?;
     Ok(ResponseJson(baker))
 }
 
@@ -100,7 +95,6 @@ async fn get_by_id(
     )
 )]
 async fn filter(
-    state: State<AppState<BakeryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: FilterParams<BakerDataFilterParams>,
@@ -110,7 +104,7 @@ async fn filter(
     let all_filters = filter.0.all_filters();
     debug!("all_filters: {:?}", all_filters);
 
-    let result = BakerQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = BakerQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

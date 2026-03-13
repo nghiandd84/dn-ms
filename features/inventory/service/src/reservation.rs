@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -36,14 +36,12 @@ impl ReservationService {
     }
 
     pub async fn get_reservation_by_id<'a>(
-        db: &'a DbConn,
         reservation_id: Uuid,
     ) -> Result<ReservationData, AppError> {
-        ReservationQuery::get_reservation_by_id(db, reservation_id).await
+        ReservationQuery::get_reservation_by_id(reservation_id).await
     }
 
     pub async fn get_reservations_by_status(
-        db: &DbConn,
         status: &str,
         pagination: &Pagination,
         order: &Order,
@@ -57,16 +55,15 @@ impl ReservationService {
         };
         let status_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![status_filter];
-        ReservationQuery::get_reservations(db, &pagination, &order, &filters).await
+        ReservationQuery::get_reservations(&pagination, &order, &filters).await
     }
 
     pub async fn get_reservations<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<ReservationData>, AppError> {
-        ReservationQuery::get_reservations(db, pagination, order, filters).await
+        ReservationQuery::get_reservations(pagination, order, filters).await
     }
 
     pub async fn update_reservation(

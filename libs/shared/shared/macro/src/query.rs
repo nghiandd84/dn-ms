@@ -226,8 +226,8 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
     
     let get_by_id_quote = match key_type_str.as_str() {
         "Uuid" => quote! {
-            #[tracing::instrument(skip(db))]
-            async fn get_by_id_uuid(db: &DbConn, id: Uuid) -> Result<ModelOptionDto, DbErr> {
+            #[tracing::instrument]
+            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
                     .one(Self::get_db())
                     .await?
@@ -236,17 +236,17 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 Ok(model_option)
             }
 
-            async fn get_by_id_i32(db: &DbConn, id: i32) -> Result<ModelOptionDto, DbErr> {
+            async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
         },
         "i32" => quote! {
-            async fn get_by_id_uuid(db: &DbConn, id: Uuid) -> Result<ModelOptionDto, DbErr> {
+            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
             
-            #[tracing::instrument(skip(db))]
-            async fn get_by_id_i32(db: &DbConn, id: i32) -> Result<ModelOptionDto, DbErr> {
+            #[tracing::instrument]
+            async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
                     .one(Self::get_db())
                     .await?
@@ -279,10 +279,10 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 (num_items / page_size) + (num_items % page_size > 0) as u64
             }
 
-            pub fn get_db<'a>() -> &'a DbConn {
-                let db: &DbConn = DB_READ.get().expect("DB_READ is not initialized");
-                db
-            }
+            // fn get_db<'a>() -> &'a DbConn {
+            //     let db: &DbConn = DB_READ.get().expect("DB_READ is not initialized");
+            //     db
+            // }
 
             /*
             async fn get_num_items(db: &DbConn, query: &SelectStatement) -> Result<u64, DbErr> {
@@ -336,15 +336,22 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             #(#function_quotes)*  
         }
 
+        impl #name {
+            pub fn get_db<'a>() -> &'a DbConn {
+                let db: &DbConn = DB_READ.get().expect("DB_WRITE is not initialized");
+                db
+            }
+        }
+
+
         
         impl QueryManager<ActiveModel, ModelOptionDto> for #name {
             
             #get_by_id_quote
 
             
-            #[tracing::instrument(skip(db))]
+            #[tracing::instrument]
             async fn filter(
-                db: &DbConn,
                 pagination: &Pagination,
                 order: &Order,
                 filter: &Vec<FilterEnum>,

@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -35,18 +34,15 @@ use rand::{thread_rng, Rng};
 pub struct AuthenticationRequestService {}
 
 impl AuthenticationRequestService {
-    pub async fn request<'a>(
-        db: &'a DbConn,
-        request: AuthenticationRequestForCreateDto,
-    ) -> Result<Uuid> {
+    pub async fn request<'a>(request: AuthenticationRequestForCreateDto) -> Result<Uuid> {
         let request_id = AuthenticationRequestMutation::create(request).await;
         Ok(request_id.unwrap())
     }
 
-    pub async fn login<'a>(db: &'a DbConn, request: AuthLoginRequest) -> Result<AuthLoginData> {
+    pub async fn login<'a>(request: AuthLoginRequest) -> Result<AuthLoginData> {
         // Get request data from request.state\
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
-        let request_code_data = AuthenticationRequestQuery::get(db, state_id).await;
+        let request_code_data = AuthenticationRequestQuery::get(state_id).await;
         if request_code_data.is_err() {
             return Err(AppError::EntityNotFound {
                 entity: "request".to_string(),
@@ -55,7 +51,6 @@ impl AuthenticationRequestService {
         // Validate email and password
         let request_code_data = request_code_data.unwrap();
         let user_data = UserQuery::get_user_by_email_and_password(
-            db,
             request.email.unwrap(),
             request.password.unwrap(),
         )
@@ -74,7 +69,7 @@ impl AuthenticationRequestService {
             user_id: user_data.id,
         };
         let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
-        let auth_code = AuthCodeQuery::get(db, code_id).await?;
+        let auth_code = AuthCodeQuery::get(code_id).await?;
         let result = AuthLoginData {
             id_token: auth_code.code.unwrap(),
             redirect_uri: redirect_uri,
@@ -83,13 +78,12 @@ impl AuthenticationRequestService {
     }
 
     pub async fn register<'a>(
-        db: &'a DbConn,
         producer: &'a Producer,
         request: AuthRegisterRequest,
     ) -> Result<AuthRegisterData> {
         let email = request.email.clone().unwrap();
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|_e| AppError::Unknown)?;
-        let request_code_data = AuthenticationRequestQuery::get(db, state_id).await;
+        let request_code_data = AuthenticationRequestQuery::get(state_id).await;
         if request_code_data.is_err() {
             return Err(AppError::EntityNotFound {
                 entity: "request".to_string(),
@@ -108,7 +102,7 @@ impl AuthenticationRequestService {
         debug!("User data for create: {:?}", create_user_request);
 
         let client_id = request_code_data.client_id.unwrap();
-        let client = ClientQuery::get(db, client_id).await;
+        let client = ClientQuery::get(client_id).await;
         if client.is_err() {
             debug!("Client not found for client_id {}", client_id);
             return Err(AppError::EntityNotFound {
@@ -135,7 +129,7 @@ impl AuthenticationRequestService {
         ];
 
         let default_roles =
-            RoleQuery::search(db, &Pagination::default(), &Order::default(), &filters).await;
+            RoleQuery::search(&Pagination::default(), &Order::default(), &filters).await;
         if default_roles.is_err() {
             let error = default_roles.err().unwrap();
             debug!("Error fetching default roles: {:?}", error);
@@ -214,7 +208,7 @@ impl AuthenticationRequestService {
             user_id: Some(user_id),
         };
         let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
-        let auth_code = AuthCodeQuery::get(db, code_id).await?;
+        let auth_code = AuthCodeQuery::get(code_id).await?;
         let result = AuthRegisterData {
             id_token: auth_code.code.unwrap(),
             redirect_uri: redirect_uri,

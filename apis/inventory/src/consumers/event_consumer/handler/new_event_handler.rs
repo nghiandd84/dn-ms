@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 
 use features_event_stream::NewEventMessage;

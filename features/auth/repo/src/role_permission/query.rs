@@ -31,20 +31,19 @@ impl RolePermissionQueryManager {
 pub struct RolePermissionQuery {}
 
 impl RolePermissionQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<RolePermissionData, DbErr> {
-        let model = RolePermissionQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<RolePermissionData, DbErr> {
+        let model = RolePermissionQueryManager::get_by_id_uuid(id).await?;
         let user_data: RolePermissionData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<RolePermissionData>, DbErr> {
         debug!("RolePermissionQuery::search filters: {:?}", filters);
-        let result = RolePermissionQueryManager::filter(db, pagination, order, filters).await;
+        let result = RolePermissionQueryManager::filter(pagination, order, filters).await;
         let result = match result {
             Ok(res) => res,
             Err(e) => {

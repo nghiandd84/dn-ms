@@ -1,5 +1,5 @@
 use features_event_entities::event::Column;
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -47,15 +47,11 @@ impl EventService {
         Ok(id)
     }
 
-    pub async fn get_event_by_id<'a>(
-        db: &'a DbConn,
-        event_id: Uuid,
-    ) -> Result<EventData, AppError> {
-        EventQuery::get_event_by_id(db, event_id).await
+    pub async fn get_event_by_id<'a>(event_id: Uuid) -> Result<EventData, AppError> {
+        EventQuery::get_event_by_id(event_id).await
     }
 
     pub async fn get_events_by_status(
-        db: &DbConn,
         status: &str,
         pagination: &Pagination,
         order: &Order,
@@ -69,16 +65,15 @@ impl EventService {
         };
         let status_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![status_filter];
-        EventQuery::get_events(db, &pagination, &order, &filters).await
+        EventQuery::get_events(&pagination, &order, &filters).await
     }
 
     pub async fn get_events<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<EventData>, AppError> {
-        EventQuery::get_events(db, pagination, order, filters).await
+        EventQuery::get_events(pagination, order, filters).await
     }
 
     pub async fn update_event(

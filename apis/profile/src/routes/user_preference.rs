@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -38,7 +38,6 @@ const TAG: &str = "user-preference";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_user_preference(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<UserPreferenceForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let preference_id = UserPreferenceService::create_user_preference(req).await?;
@@ -57,11 +56,9 @@ async fn create_user_preference(
     )
 )]
 async fn get_user_preference(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(preference_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserPreferenceData>> {
-    let preference =
-        UserPreferenceService::get_user_preference_by_id(&state.conn, preference_id).await?;
+    let preference = UserPreferenceService::get_user_preference_by_id(preference_id).await?;
     Ok(ResponseJson(preference))
 }
 
@@ -74,11 +71,9 @@ async fn get_user_preference(
     )
 )]
 async fn get_user_preference_by_profile_id(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserPreferenceData>> {
-    let preference =
-        UserPreferenceService::get_user_preference_by_profile_id(&state.conn, profile_id).await?;
+    let preference = UserPreferenceService::get_user_preference_by_profile_id(profile_id).await?;
     Ok(ResponseJson(preference))
 }
 
@@ -96,7 +91,6 @@ async fn get_user_preference_by_profile_id(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_user_preferences(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<UserPreferenceDataFilterParams>,
@@ -105,9 +99,7 @@ async fn filter_user_preferences(
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
 
-    let result =
-        UserPreferenceService::get_user_preferences(&state.conn, pagination, order, filters)
-            .await?;
+    let result = UserPreferenceService::get_user_preferences(pagination, order, filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -121,7 +113,6 @@ async fn filter_user_preferences(
     )
 )]
 async fn update_user_preference(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(preference_id): Path<Uuid>,
     Json(req): Json<UserPreferenceForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -140,10 +131,7 @@ async fn update_user_preference(
         (status = 200, description = "User preference deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_user_preference(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
-    Path(preference_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_user_preference(Path(preference_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     UserPreferenceService::delete_user_preference(preference_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

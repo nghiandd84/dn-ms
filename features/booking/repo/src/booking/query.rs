@@ -31,18 +31,17 @@ impl BookingQueryManager {
 pub struct BookingQuery;
 
 impl BookingQuery {
-    pub async fn get_booking_by_id(db: &DbConn, booking_id: Uuid) -> Result<BookingData, AppError> {
-        let model = BookingQueryManager::get_by_id_uuid(db, booking_id).await?;
+    pub async fn get_booking_by_id(booking_id: Uuid) -> Result<BookingData, AppError> {
+        let model = BookingQueryManager::get_by_id_uuid(booking_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_bookings<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<BookingData>, AppError> {
-        let result = BookingQueryManager::filter(db, pagination, order, filters).await?;
+        let result = BookingQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

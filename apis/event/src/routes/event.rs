@@ -60,10 +60,9 @@ async fn create_event(
     )
 )]
 async fn get_event(
-    state: State<AppState<EventAppState, EventCacheState>>,
     Path(event_id): Path<Uuid>,
 ) -> Result<ResponseJson<EventData>> {
-    let event = EventService::get_event_by_id(&state.conn, event_id).await?;
+    let event = EventService::get_event_by_id(event_id).await?;
     Ok(ResponseJson(event))
 }
 
@@ -81,7 +80,6 @@ async fn get_event(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_events(
-    state: State<AppState<EventAppState, EventCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<EventDataFilterParams>,
@@ -89,7 +87,7 @@ async fn filter_events(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = EventService::get_events(&state.conn, &filters, &pagination, &order).await?;
+    let result = EventService::get_events(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -128,7 +126,6 @@ async fn update_event(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_event(
-    state: State<AppState<EventAppState, EventCacheState>>,
     Path(event_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     EventService::delete_event(event_id).await?;

@@ -37,7 +37,7 @@ const TAG: &str = "Template-Translation";
     )
 )]
 async fn create_template_translation(
-    state: State<AppState<EmailTemplateCacheState>>,
+    _state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<TemplateTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let translation_id = TemplateTranslationService::create(request).await?;
@@ -61,7 +61,6 @@ async fn create_template_translation(
     )
 )]
 async fn update_template_translation(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(translation_id): Path<i32>,
     ValidJson(request): ValidJson<TemplateTranslationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +77,6 @@ async fn update_template_translation(
     )
 )]
 async fn delete_template_translation(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(translation_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
     TemplateTranslationService::delete(translation_id).await?;
@@ -94,10 +92,9 @@ async fn delete_template_translation(
     )
 )]
 async fn get_template_translation(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(translation_id): Path<i32>,
 ) -> Result<ResponseJson<TemplateTranslationData>> {
-    let scope = TemplateTranslationService::get(&state.conn, translation_id).await?;
+    let scope = TemplateTranslationService::get(translation_id).await?;
     Ok(ResponseJson(scope))
 }
 
@@ -114,7 +111,6 @@ async fn get_template_translation(
     )
 )]
 async fn filter_template_translation(
-    state: State<AppState<EmailTemplateCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TemplateTranslationDataFilterParams>,
@@ -123,8 +119,7 @@ async fn filter_template_translation(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result =
-        TemplateTranslationService::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = TemplateTranslationService::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

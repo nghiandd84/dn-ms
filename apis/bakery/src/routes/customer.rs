@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, post},
     Router,
 };
@@ -36,7 +36,6 @@ const TAG: &str = "customer";
     )
 )]
 async fn create(
-    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CustomerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = CustomerMutation::create(request.into()).await?;
@@ -55,10 +54,7 @@ async fn create(
         (status = 200, description = "Customer is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(
-    state: State<AppState<BakeryCacheState>>,
-    Path(customer_id): Path<i32>,
-) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     CustomerMutation::delete(customer_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
@@ -72,11 +68,8 @@ async fn delete_by_id(
         (status = 200, description = "Customer Data", body = CustomerDataResponse),
     )
 )]
-async fn get_by_id(
-    state: State<AppState<BakeryCacheState>>,
-    Path(customer_id): Path<i32>,
-) -> Result<ResponseJson<CustomerData>> {
-    let cake = CustomerQuery::get_by_id(&state.conn, customer_id).await?;
+async fn get_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<CustomerData>> {
+    let cake = CustomerQuery::get_by_id(customer_id).await?;
     Ok(ResponseJson(cake))
 }
 
@@ -94,7 +87,6 @@ async fn get_by_id(
     )
 )]
 async fn filter(
-    state: State<AppState<BakeryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<CustomerDataFilterParams>,
@@ -103,7 +95,7 @@ async fn filter(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = CustomerQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = CustomerQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

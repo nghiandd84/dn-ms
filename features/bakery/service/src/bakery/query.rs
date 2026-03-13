@@ -30,19 +30,18 @@ impl BakeryQueryManager {
 pub struct BakeryQuery {}
 
 impl BakeryQuery {
-    pub async fn get_by_id<'a>(db: &'a DbConn, id: i32) -> Result<BakeryData, DbErr> {
-        let model = BakeryQueryManager::get_by_id_i32(db, id).await?;
+    pub async fn get_by_id<'a>(id: i32) -> Result<BakeryData, DbErr> {
+        let model = BakeryQueryManager::get_by_id_i32(id).await?;
         let baker: BakeryData = model.into();
         Ok(baker)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<BakeryData>, DbErr> {
-        let result = BakeryQueryManager::filter(db, pagination, order, filters).await?;
+        let result = BakeryQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

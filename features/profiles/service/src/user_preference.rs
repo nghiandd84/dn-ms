@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -34,26 +33,23 @@ impl UserPreferenceService {
     }
 
     pub async fn get_user_preference_by_id<'a>(
-        db: &'a DbConn,
         preference_id: Uuid,
     ) -> Result<UserPreferenceData, AppError> {
-        UserPreferenceQuery::get_user_preference_by_id(db, preference_id).await
+        UserPreferenceQuery::get_user_preference_by_id(preference_id).await
     }
 
     pub async fn get_user_preference_by_profile_id<'a>(
-        db: &'a DbConn,
         profile_id: Uuid,
     ) -> Result<UserPreferenceData, AppError> {
-        UserPreferenceQuery::get_user_preference_by_profile_id(db, profile_id).await
+        UserPreferenceQuery::get_user_preference_by_profile_id(profile_id).await
     }
 
     pub async fn get_user_preferences<'a>(
-        db: &'a DbConn,
         pagination: Pagination,
         order: Order,
         filters: Vec<FilterEnum>,
     ) -> Result<QueryResult<UserPreferenceData>, AppError> {
-        UserPreferenceQuery::get_user_preferences(db, &pagination, &order, &filters).await
+        UserPreferenceQuery::get_user_preferences(&pagination, &order, &filters).await
     }
 
     pub async fn update_user_preference<'a>(

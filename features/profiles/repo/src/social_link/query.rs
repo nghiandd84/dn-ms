@@ -1,5 +1,3 @@
-
-use std::vec;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
@@ -7,6 +5,7 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
+use std::vec;
 
 use features_profiles_entities::social_link::{ActiveModel, Column, Entity, ModelOptionDto};
 use features_profiles_model::SocialLinkData;
@@ -31,10 +30,7 @@ impl SocialLinkQueryManager {
 pub struct SocialLinkQuery;
 
 impl SocialLinkQuery {
-    pub async fn get_social_link_by_id(
-        db: &DbConn,
-        link_id: Uuid,
-    ) -> Result<SocialLinkData, AppError> {
+    pub async fn get_social_link_by_id(link_id: Uuid) -> Result<SocialLinkData, AppError> {
         let pagination = Pagination::new(1, 1);
         let order = Order::default();
 
@@ -47,7 +43,7 @@ impl SocialLinkQuery {
         let id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![id_filter];
 
-        let result = SocialLinkQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = SocialLinkQueryManager::filter(&pagination, &order, &filters).await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -60,7 +56,6 @@ impl SocialLinkQuery {
     }
 
     pub async fn get_social_links_by_profile_id(
-        db: &DbConn,
         profile_id: Uuid,
     ) -> Result<Vec<SocialLinkData>, AppError> {
         let pagination = Pagination::new(1, 100);
@@ -75,23 +70,18 @@ impl SocialLinkQuery {
         let profile_id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![profile_id_filter];
 
-        let result = SocialLinkQueryManager::filter(db, &pagination, &order, &filters).await?;
-        let result: Vec<SocialLinkData> = result
-            .result
-            .into_iter()
-            .map(|dto| dto.into())
-            .collect();
+        let result = SocialLinkQueryManager::filter(&pagination, &order, &filters).await?;
+        let result: Vec<SocialLinkData> = result.result.into_iter().map(|dto| dto.into()).collect();
         Ok(result)
     }
 
     pub async fn get_social_links(
-        db: &DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<SocialLinkData>, AppError> {
-        let result = SocialLinkQueryManager::filter(db, pagination, order, filters).await?;
-        
+        let result = SocialLinkQueryManager::filter(pagination, order, filters).await?;
+
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

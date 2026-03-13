@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, post},
     Router,
 };
@@ -39,7 +39,6 @@ const TAG: &str = "auth_code";
     )
 )]
 async fn create_auth_code(
-    _state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<AuthCodeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: AuthCodeForCreateDto = register_request.into();
@@ -58,10 +57,7 @@ async fn create_auth_code(
         (status = 200, description = "Auth Code is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_auth_code(
-    _state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(auth_code_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     AuthCodeMutation::delete(auth_code_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -74,11 +70,8 @@ async fn delete_auth_code(
         (status = 200, description = "Auth Code Data", body = AuthCodeDataResponse),       
     )
 )]
-async fn get_auth_code(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(auth_code_id): Path<Uuid>,
-) -> Result<ResponseJson<AuthCodeData>> {
-    let auth_code = AuthCodeQuery::get(&state.conn, auth_code_id).await?;
+async fn get_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson<AuthCodeData>> {
+    let auth_code = AuthCodeQuery::get(auth_code_id).await?;
     Ok(ResponseJson(auth_code))
 }
 
@@ -95,7 +88,6 @@ async fn get_auth_code(
     )
 )]
 async fn filter_auth_codes(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<AuthCodeDataFilterParams>,
@@ -104,7 +96,7 @@ async fn filter_auth_codes(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = AuthCodeQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = AuthCodeQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

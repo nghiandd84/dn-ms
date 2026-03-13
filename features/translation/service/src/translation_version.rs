@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -40,30 +39,27 @@ impl TranslationVersionService {
     }
 
     pub async fn get_translation_version_by_id<'a>(
-        db: &'a DbConn,
         version_id: Uuid,
     ) -> Result<TranslationVersionData, AppError> {
-        TranslationVersionQuery::get_translation_version_by_id(db, version_id).await
+        TranslationVersionQuery::get_translation_version_by_id(version_id).await
     }
 
     pub async fn get_translation_versions<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
-        TranslationVersionQuery::get_translation_versions(db, pagination, order, filters).await
+        TranslationVersionQuery::get_translation_versions(pagination, order, filters).await
     }
 
     pub async fn get_latest_version_by_key_locale<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
         TranslationVersionQuery::get_latest_version_by_key_locale(
-            db, key_id, filters, pagination, order,
+            key_id, filters, pagination, order,
         )
         .await
     }
@@ -85,9 +81,7 @@ impl TranslationVersionService {
         }
     }
 
-    pub async fn delete_translation_version<'a>(
-        version_id: Uuid,
-    ) -> Result<bool, AppError> {
+    pub async fn delete_translation_version<'a>(version_id: Uuid) -> Result<bool, AppError> {
         let result = TranslationVersionMutation::delete_translation_version(version_id).await;
         match result {
             Ok(success) => Ok(success),

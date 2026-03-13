@@ -32,10 +32,9 @@ const TAG: &str = "request";
     )
 )]
 async fn request_code(
-    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthenticationCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let request_id = AuthenticationRequestService::request(&state.conn, request.into()).await?;
+    let request_id = AuthenticationRequestService::request(request.into()).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(request_id),
@@ -52,10 +51,9 @@ async fn request_code(
     )
 )]
 async fn request_login(
-    State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthLoginRequest>,
 ) -> Result<ResponseJson<AuthLoginData>> {
-    let login_data = AuthenticationRequestService::login(&state.conn, request).await?;
+    let login_data = AuthenticationRequestService::login(request).await?;
     Ok(ResponseJson(login_data))
 }
 
@@ -75,8 +73,7 @@ async fn request_register(
     let producer = state
         .get_producer(PRODUCER_KEY.to_string())
         .expect("Producer not found");
-    let register_data =
-        AuthenticationRequestService::register(&state.conn, &producer, request).await?;
+    let register_data = AuthenticationRequestService::register(&producer, request).await?;
     Ok(ResponseJson(register_data))
 }
 

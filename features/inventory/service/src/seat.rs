@@ -1,5 +1,5 @@
-use sea_orm::{DbConn, Iden};
-use tracing::{debug, event};
+use sea_orm::Iden;
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -16,9 +16,7 @@ use features_inventory_repo::seat::{SeatMutation, SeatQuery};
 pub struct SeatService {}
 
 impl SeatService {
-    pub async fn create_seat<'a>(
-        seat_request: SeatForCreateRequest,
-    ) -> Result<Uuid, AppError> {
+    pub async fn create_seat<'a>(seat_request: SeatForCreateRequest) -> Result<Uuid, AppError> {
         let seat_id = SeatMutation::create_seat(seat_request.into()).await;
         let id = match seat_id {
             Ok(id) => id,
@@ -47,12 +45,11 @@ impl SeatService {
         }
     }
 
-    pub async fn get_seat_by_id<'a>(db: &'a DbConn, seat_id: Uuid) -> Result<SeatData, AppError> {
-        SeatQuery::get_seat_by_id(db, seat_id).await
+    pub async fn get_seat_by_id<'a>(seat_id: Uuid) -> Result<SeatData, AppError> {
+        SeatQuery::get_seat_by_id(seat_id).await
     }
 
     pub async fn get_seats_by_status(
-        db: &DbConn,
         status: &str,
         pagination: &Pagination,
         order: &Order,
@@ -66,16 +63,15 @@ impl SeatService {
         };
         let status_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![status_filter];
-        SeatQuery::get_seats(db, &pagination, &order, &filters).await
+        SeatQuery::get_seats(&pagination, &order, &filters).await
     }
 
     pub async fn get_seats<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<SeatData>, AppError> {
-        SeatQuery::get_seats(db, pagination, order, filters).await
+        SeatQuery::get_seats(pagination, order, filters).await
     }
 
     pub async fn update_seat(

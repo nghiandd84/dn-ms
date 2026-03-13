@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -40,7 +40,6 @@ const TAG: &str = "payment-method";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_method(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentMethodForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_method_id = PaymentMethodService::create_payment_method(req).await?;
@@ -59,11 +58,9 @@ pub async fn create_payment_method(
     )
 )]
 pub async fn get_payment_method(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentMethodData>> {
-    let payment_method =
-        PaymentMethodService::get_payment_method_by_id(&state.conn, payment_method_id).await?;
+    let payment_method = PaymentMethodService::get_payment_method_by_id(payment_method_id).await?;
     Ok(ResponseJson(payment_method))
 }
 
@@ -81,7 +78,6 @@ pub async fn get_payment_method(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_methods(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentMethodDataFilterParams>,
@@ -89,9 +85,7 @@ pub async fn filter_payment_methods(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        PaymentMethodService::get_payment_methods(&state.conn, &filters, &pagination, &order)
-            .await?;
+    let result = PaymentMethodService::get_payment_methods(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -106,7 +100,6 @@ pub async fn filter_payment_methods(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_method(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentMethodForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -127,7 +120,6 @@ pub async fn update_payment_method(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_method(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentMethodService::delete_payment_method(payment_method_id).await?;

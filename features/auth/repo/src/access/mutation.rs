@@ -1,4 +1,3 @@
-use sea_orm::{DbConn, DbErr};
 use uuid::Uuid;
 
 use shared_shared_macro::Mutation;
@@ -29,9 +28,7 @@ impl AccessMutation {
         AccessMutationManager::update_by_id_uuid(id, data.into())
     }
 
-    pub fn delete<'a>(
-        id: Uuid,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         AccessMutationManager::delete_by_id_uuid(id)
     }
 }

@@ -30,19 +30,18 @@ impl ScopeQueryManager {
 pub struct ScopeQuery {}
 
 impl ScopeQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<ScopeData, DbErr> {
-        let model = ScopeQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<ScopeData, DbErr> {
+        let model = ScopeQueryManager::get_by_id_uuid(id).await?;
         let user_data: ScopeData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<ScopeData>, DbErr> {
-        let result = ScopeQueryManager::filter(db, pagination, order, filters).await?;
+        let result = ScopeQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

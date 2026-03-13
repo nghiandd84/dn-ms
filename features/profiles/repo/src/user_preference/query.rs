@@ -32,7 +32,6 @@ pub struct UserPreferenceQuery;
 
 impl UserPreferenceQuery {
     pub async fn get_user_preference_by_id(
-        db: &DbConn,
         preference_id: Uuid,
     ) -> Result<UserPreferenceData, AppError> {
         let pagination = Pagination::new(1, 1);
@@ -47,7 +46,7 @@ impl UserPreferenceQuery {
         let id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![id_filter];
 
-        let result = UserPreferenceQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = UserPreferenceQueryManager::filter(&pagination, &order, &filters).await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -60,7 +59,6 @@ impl UserPreferenceQuery {
     }
 
     pub async fn get_user_preference_by_profile_id(
-        db: &DbConn,
         profile_id: Uuid,
     ) -> Result<UserPreferenceData, AppError> {
         let pagination = Pagination::new(1, 1);
@@ -75,7 +73,7 @@ impl UserPreferenceQuery {
         let profile_id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![profile_id_filter];
 
-        let result = UserPreferenceQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = UserPreferenceQueryManager::filter(&pagination, &order, &filters).await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -88,12 +86,11 @@ impl UserPreferenceQuery {
     }
 
     pub async fn get_user_preferences(
-        db: &DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<UserPreferenceData>, AppError> {
-        let result = UserPreferenceQueryManager::filter(db, pagination, order, filters).await?;
+        let result = UserPreferenceQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

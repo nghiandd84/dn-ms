@@ -31,18 +31,17 @@ impl EventQueryManager {
 pub struct EventQuery;
 
 impl EventQuery {
-    pub async fn get_event_by_id(db: &DbConn, event_id: Uuid) -> Result<EventData, AppError> {
-        let model = EventQueryManager::get_by_id_uuid(db, event_id).await?;
+    pub async fn get_event_by_id(event_id: Uuid) -> Result<EventData, AppError> {
+        let model = EventQueryManager::get_by_id_uuid(event_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_events<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<EventData>, AppError> {
-        let result = EventQueryManager::filter(db, pagination, order, filters).await?;
+        let result = EventQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

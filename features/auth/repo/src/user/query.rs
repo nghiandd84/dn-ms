@@ -49,7 +49,6 @@ pub struct UserQuery;
 
 impl UserQuery {
     pub async fn get_user_by_email_and_password<'a>(
-        db: &'a DbConn,
         email: String,
         password: String,
     ) -> Result<UserData, AppError> {
@@ -65,7 +64,7 @@ impl UserQuery {
         let email_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![email_filter];
 
-        let result = UserQueryManager::filter(db, &pagination, &order, &filters).await?;
+        let result = UserQueryManager::filter(&pagination, &order, &filters).await?;
 
         let dto = result.result.into_iter().next();
         if dto.is_none() {
@@ -85,14 +84,11 @@ impl UserQuery {
         Ok(dto.into())
     }
 
-    pub async fn get_access_data_by_user_id<'a>(
-        db: &'a DbConn,
-        id: Uuid,
-    ) -> Result<Vec<UserAccessData>, DbErr> {
+    pub async fn get_access_data_by_user_id<'a>(id: Uuid) -> Result<Vec<UserAccessData>, DbErr> {
         let models = Entity::find()
             .filter(Column::Id.eq(id))
             .find_with_related(AccessEntity)
-            .all(db)
+            .all(UserQueryManager::get_db())
             .await?;
 
         if let Some(data) = models.first() {
@@ -100,7 +96,7 @@ impl UserQuery {
             let accesses = data.1.clone();
             let users = vec![user_model.clone()];
             let roles = users
-                .load_many_to_many(RoleEntity, AccessEntity, db)
+                .load_many_to_many(RoleEntity, AccessEntity, UserQueryManager::get_db())
                 .await?;
 
             let roles = roles.first().unwrap();
@@ -122,19 +118,18 @@ impl UserQuery {
             return Err(DbErr::RecordNotFound("Not found".to_string()));
         }
     }
-    pub async fn get<'a>(db: &'a DbConn, user_id: Uuid) -> Result<UserData, DbErr> {
-        let model = UserQueryManager::get_by_id_uuid(db, user_id).await?;
+    pub async fn get<'a>(user_id: Uuid) -> Result<UserData, DbErr> {
+        let model = UserQueryManager::get_by_id_uuid(user_id).await?;
         let user_data: UserData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<UserData>, DbErr> {
-        let result = UserQueryManager::filter(db, pagination, order, filters).await?;
+        let result = UserQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),
@@ -143,7 +138,6 @@ impl UserQuery {
     }
 
     pub async fn advance_search<'a>(
-        db: &'a DbConn,
         _pagination: &Pagination,
         _order: &Order,
         _filters: &Vec<FilterEnum>,
@@ -164,7 +158,7 @@ impl UserQuery {
             // .find_also_linked(l)
             // .find_with_linked(l)
             .find_with_related(AccessEntity)
-            .all(db)
+            .all(UserQueryManager::get_db())
             .await?;
         // .join(JoinType::LeftJoin, features_auth_entities::role::Relation::Access);
         // .join(JoinType::LeftJoin, rel);
@@ -185,11 +179,11 @@ impl UserQuery {
 
         let user1s = Entity::find()
             .filter(Column::Email.contains("n"))
-            .all(db)
+            .all(UserQueryManager::get_db())
             .await?;
         debug!("user1s: {:?}", user1s);
         let user2s = user1s
-            .load_many_to_many(RoleEntity, AccessEntity, db)
+            .load_many_to_many(RoleEntity, AccessEntity, UserQueryManager::get_db())
             .await?;
         debug!("user2s: {:?}", user2s);
         // let rs = users

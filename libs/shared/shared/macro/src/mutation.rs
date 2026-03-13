@@ -245,6 +245,7 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
+        use sea_orm::{DbConn, DbErr};
         use sea_orm::{entity::ActiveModelTrait, EntityTrait};
         use shared_shared_data_core::mutation::MutationManager;
         use shared_shared_config::db::DB_WRITE;

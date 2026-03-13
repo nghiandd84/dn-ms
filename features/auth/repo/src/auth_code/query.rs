@@ -30,13 +30,12 @@ impl AuthCodeQueryManager {
 pub struct AuthCodeQuery {}
 
 impl AuthCodeQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<AuthCodeData, DbErr> {
-        let model = AuthCodeQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<AuthCodeData, DbErr> {
+        let model = AuthCodeQueryManager::get_by_id_uuid(id).await?;
         let user_data: AuthCodeData = model.into();
         Ok(user_data)
     }
     pub async fn get_by_client_id_and_code<'a>(
-        db: &'a DbConn,
         client_id: Uuid,
         code: String,
     ) -> Result<AuthCodeData, DbErr> {
@@ -55,7 +54,7 @@ impl AuthCodeQuery {
             operator: FilterOperator::Equal,
         });
         let filters: Vec<FilterEnum> = vec![client_id_filter, code_filter];
-        let query_result = Self::search(db, &paging, &order, &filters).await?;
+        let query_result = Self::search(&paging, &order, &filters).await?;
         if query_result.result.is_empty() {
             return Err(DbErr::RecordNotFound(format!(
                 "AuthCode with client_id {} not found",
@@ -67,12 +66,11 @@ impl AuthCodeQuery {
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<AuthCodeData>, DbErr> {
-        let result = AuthCodeQueryManager::filter(db, pagination, order, filters).await?;
+        let result = AuthCodeQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

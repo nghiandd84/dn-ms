@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -36,7 +36,6 @@ const TAG: &str = "Email-Template";
     )
 )]
 async fn create_email_template(
-    state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let template_id = EmailTemplateService::create(request).await?;
@@ -60,7 +59,6 @@ async fn create_email_template(
     )
 )]
 async fn update_email_template(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(template_id): Path<i32>,
     ValidJson(request): ValidJson<EmailTemplateForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -76,10 +74,7 @@ async fn update_email_template(
         (status = 200, description = "Email Template was delete", body = OkI32Response),
     )
 )]
-async fn delete_email_template(
-    state: State<AppState<EmailTemplateCacheState>>,
-    Path(template_id): Path<i32>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_email_template(Path(template_id): Path<i32>) -> Result<ResponseJson<OkUuid>> {
     EmailTemplateService::delete(template_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -93,10 +88,9 @@ async fn delete_email_template(
     )
 )]
 async fn get_email_template(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(template_id): Path<i32>,
 ) -> Result<ResponseJson<EmailTemplateData>> {
-    let scope = EmailTemplateService::get(&state.conn, template_id).await?;
+    let scope = EmailTemplateService::get(template_id).await?;
     Ok(ResponseJson(scope))
 }
 
@@ -113,7 +107,6 @@ async fn get_email_template(
     )
 )]
 async fn filter_email_template(
-    state: State<AppState<EmailTemplateCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<EmailTemplateDataFilterParams>,
@@ -122,8 +115,7 @@ async fn filter_email_template(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result =
-        EmailTemplateService::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = EmailTemplateService::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

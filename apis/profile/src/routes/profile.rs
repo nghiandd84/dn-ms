@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -37,7 +37,6 @@ const TAG: &str = "profile";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_profile(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<ProfileForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let profile_id = ProfileService::create_profile(req).await?;
@@ -56,10 +55,9 @@ async fn create_profile(
     )
 )]
 async fn get_profile(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<ProfileData>> {
-    let profile = ProfileService::get_profile_by_id(&state.conn, profile_id).await?;
+    let profile = ProfileService::get_profile_by_id(profile_id).await?;
     Ok(ResponseJson(profile))
 }
 
@@ -72,10 +70,9 @@ async fn get_profile(
     )
 )]
 async fn get_profile_by_user_id(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<ProfileData>> {
-    let profile = ProfileService::get_profile_by_user_id(&state.conn, user_id).await?;
+    let profile = ProfileService::get_profile_by_user_id(user_id).await?;
     Ok(ResponseJson(profile))
 }
 
@@ -93,7 +90,6 @@ async fn get_profile_by_user_id(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_profiles(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ProfileDataFilterParams>,
@@ -101,7 +97,7 @@ async fn filter_profiles(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = ProfileService::get_profiles(&state.conn, pagination, order, filters).await?;
+    let result = ProfileService::get_profiles(pagination, order, filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -115,7 +111,6 @@ async fn filter_profiles(
     )
 )]
 async fn update_profile(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
     Json(req): Json<ProfileForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -135,7 +130,6 @@ async fn update_profile(
     )
 )]
 async fn delete_profile(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     ProfileService::delete_profile(profile_id).await?;

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path},
     routing::{delete, post},
     Router,
 };
@@ -27,11 +27,10 @@ const TAG: &str = "cake-bakers";
     )
 )]
 async fn create(
-    state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CakeBakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: CakeBakerForCreateDto = request.into();
-    let success = CakeBakerMutation::create(&state.conn, dto).await?;
+    let success = CakeBakerMutation::create(dto).await?;
     Ok(ResponseJson(OkI32 {
         ok: success,
         id: None,
@@ -48,10 +47,9 @@ async fn create(
     )
 )]
 async fn delete_by_id(
-    state: State<AppState<BakeryCacheState>>,
     Path((cake_id, baker_id)): Path<(i32, i32)>,
 ) -> Result<ResponseJson<OkI32>> {
-    CakeBakerMutation::delete(&state.conn, cake_id, baker_id).await?;
+    CakeBakerMutation::delete(cake_id, baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 

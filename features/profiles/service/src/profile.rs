@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -31,27 +30,20 @@ impl ProfileService {
         Ok(id)
     }
 
-    pub async fn get_profile_by_id<'a>(
-        db: &'a DbConn,
-        profile_id: Uuid,
-    ) -> Result<ProfileData, AppError> {
-        ProfileQuery::get_profile_by_id(db, profile_id).await
+    pub async fn get_profile_by_id<'a>(profile_id: Uuid) -> Result<ProfileData, AppError> {
+        ProfileQuery::get_profile_by_id(profile_id).await
     }
 
-    pub async fn get_profile_by_user_id<'a>(
-        db: &'a DbConn,
-        user_id: Uuid,
-    ) -> Result<ProfileData, AppError> {
-        ProfileQuery::get_profile_by_user_id(db, user_id).await
+    pub async fn get_profile_by_user_id<'a>(user_id: Uuid) -> Result<ProfileData, AppError> {
+        ProfileQuery::get_profile_by_user_id(user_id).await
     }
 
     pub async fn get_profiles<'a>(
-        db: &'a DbConn,
         pagination: Pagination,
         order: Order,
         filters: Vec<FilterEnum>,
     ) -> Result<QueryResult<ProfileData>, AppError> {
-        ProfileQuery::get_profiles(db, &pagination, &order, &filters).await
+        ProfileQuery::get_profiles(&pagination, &order, &filters).await
     }
 
     pub async fn update_profile<'a>(

@@ -1,4 +1,4 @@
-use axum::{extract::State, routing::post, Router};
+use axum::{routing::post, Router};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -10,7 +10,6 @@ use shared_shared_data_error::app::AppError;
 use features_auth_model::state::{AuthAppState, AuthCacheState};
 use features_auth_model::user::UserForCreateRequest;
 use features_auth_service::RegisterService;
-// use tracing::error;
 
 #[utoipa::path(
     post,
@@ -22,7 +21,6 @@ use features_auth_service::RegisterService;
     )
 )]
 async fn register(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<UserForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let result = RegisterService::register(register_request).await;

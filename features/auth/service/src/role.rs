@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterOperator, FilterParam},
     order::Order,
@@ -23,8 +22,8 @@ impl RoleService {
         Ok(role_id)
     }
 
-    pub async fn get<'a>(db: &'a DbConn, role_id: Uuid) -> Result<RoleData> {
-        let role = RoleQuery::get(db, role_id).await?;
+    pub async fn get<'a>(role_id: Uuid) -> Result<RoleData> {
+        let role = RoleQuery::get(role_id).await?;
         Ok(role.into())
     }
 
@@ -38,7 +37,6 @@ impl RoleService {
         Ok(result)
     }
     pub async fn unassign_permissions<'a>(
-        db: &'a DbConn,
         role_id: Uuid,
         permission_ids: Vec<Uuid>,
     ) -> Result<bool> {
@@ -52,7 +50,7 @@ impl RoleService {
         let filters: Vec<FilterEnum> = vec![email_filter];
         let pagination = Pagination::new(1, 200);
         let order = Order::default();
-        let search = RolePermissionQuery::search(db, &pagination, &order, &filters).await?;
+        let search = RolePermissionQuery::search(&pagination, &order, &filters).await?;
         for dto in search.result {
             debug!(
                 "Current permission id {:?} and unassign permission {:?}",

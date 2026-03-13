@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -38,7 +38,6 @@ const TAG: &str = "translation_key";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_translation_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<TranslationKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let key_id = TranslationKeyService::create_translation_key(req).await?;
@@ -56,11 +55,8 @@ async fn create_translation_key(
         (status = 200, description = "Translation key retrieved successfully", body = TranslationKeyData),
     )
 )]
-async fn get_translation_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(key_id): Path<Uuid>,
-) -> Result<ResponseJson<TranslationKeyData>> {
-    let key = TranslationKeyService::get_translation_key_by_id(&state.conn, key_id).await?;
+async fn get_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson<TranslationKeyData>> {
+    let key = TranslationKeyService::get_translation_key_by_id(key_id).await?;
     Ok(ResponseJson(key))
 }
 
@@ -73,11 +69,9 @@ async fn get_translation_key(
     )
 )]
 async fn get_translation_keys_by_project(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(project_id): Path<Uuid>,
 ) -> Result<ResponseJson<QueryResult<TranslationKeyData>>> {
-    let keys =
-        TranslationKeyService::get_translation_keys_by_project(&state.conn, project_id).await?;
+    let keys = TranslationKeyService::get_translation_keys_by_project(project_id).await?;
     Ok(ResponseJson(keys))
 }
 
@@ -95,7 +89,6 @@ async fn get_translation_keys_by_project(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_translation_keys(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TranslationKeyDataFilterParams>,
@@ -103,9 +96,7 @@ async fn filter_translation_keys(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        TranslationKeyService::get_translation_keys(&state.conn, &pagination, &order, &filters)
-            .await?;
+    let result = TranslationKeyService::get_translation_keys(&pagination, &order, &filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -119,7 +110,6 @@ async fn filter_translation_keys(
     )
 )]
 async fn update_translation_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<TranslationKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -138,10 +128,7 @@ async fn update_translation_key(
         (status = 200, description = "Translation key deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_translation_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
-    Path(key_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TranslationKeyService::delete_translation_key(key_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -159,11 +146,10 @@ async fn delete_translation_key(
     )
 )]
 async fn assign_tags_to_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<AssignTagsRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationKeyService::assign_tags_to_key(&state.conn, key_id, req).await?;
+    TranslationKeyService::assign_tags_to_key(key_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(key_id),
@@ -180,7 +166,6 @@ async fn assign_tags_to_key(
     )
 )]
 async fn unassign_tags_from_key(
-    state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<UnassignTagsRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

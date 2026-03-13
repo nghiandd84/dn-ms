@@ -30,18 +30,17 @@ impl OrderQueryManager {
 pub struct OrderQuery {}
 
 impl OrderQuery {
-    pub async fn get_by_id<'a>(db: &'a DbConn, id: i32) -> Result<OrderData, DbErr> {
-        let model = OrderQueryManager::get_by_id_i32(db, id).await?;
+    pub async fn get_by_id<'a>(id: i32) -> Result<OrderData, DbErr> {
+        let model = OrderQueryManager::get_by_id_i32(id).await?;
         Ok(model.into())
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<OrderData>, DbErr> {
-        let result = OrderQueryManager::filter(db, pagination, order, filters).await?;
+        let result = OrderQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

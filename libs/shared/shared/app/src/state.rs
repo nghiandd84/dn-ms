@@ -3,7 +3,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use sea_orm_migration::sea_orm::DatabaseConnection;
 use serde::{de::DeserializeOwned, Serialize};
 use tracing::error;
 
@@ -17,7 +16,6 @@ where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
 {
-    pub conn: DatabaseConnection,
     pub cache: Cache<String, C>,
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
@@ -31,7 +29,6 @@ where
 {
     fn clone(&self) -> Self {
         Self {
-            conn: self.conn.clone(),
             cache: self.cache.clone(),
             state: self.state.clone(),
             producer: self.producer.clone(),
@@ -70,9 +67,8 @@ where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
 {
-    pub fn new(service_name: String, conn: DatabaseConnection, cache: Cache<String, C>, state: Option<T>) -> Self {
+    pub fn new(service_name: String, cache: Cache<String, C>, state: Option<T>) -> Self {
         Self {
-            conn,
             cache,
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),

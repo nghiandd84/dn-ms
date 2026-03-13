@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -38,7 +38,6 @@ const TAG: &str = "permissions";
     )
 )]
 async fn create_permission(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<PermissionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: PermissionForCreateDto = register_request.into();
@@ -64,7 +63,6 @@ async fn create_permission(
     )
 )]
 async fn update_permission(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(permission_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<PermissionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -80,10 +78,7 @@ async fn update_permission(
         (status = 200, description = "Permission is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_permission(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(permission_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     PermissionMutation::delete(permission_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -96,11 +91,8 @@ async fn delete_permission(
         (status = 200, description = "Permission Data", body = PermissionDataResponse),       
     )
 )]
-async fn get_permission(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(permission_id): Path<Uuid>,
-) -> Result<ResponseJson<PermissionData>> {
-    let permission = PermissionQuery::get(&state.conn, permission_id).await?;
+async fn get_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJson<PermissionData>> {
+    let permission = PermissionQuery::get(permission_id).await?;
     Ok(ResponseJson(permission))
 }
 
@@ -117,7 +109,6 @@ async fn get_permission(
     )
 )]
 async fn filter_permissions(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<PermissionDataFilterParams>,
@@ -126,8 +117,7 @@ async fn filter_permissions(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = PermissionQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
-    debug!("{:?}", result);
+    let result = PermissionQuery::search(&pagination, &order, &all_filters).await?;
     Ok(ResponseJson(result))
 }
 

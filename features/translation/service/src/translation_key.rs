@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -42,26 +41,23 @@ impl TranslationKeyService {
     }
 
     pub async fn get_translation_key_by_id<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
     ) -> Result<TranslationKeyData, AppError> {
-        TranslationKeyQuery::get_translation_key_by_id(db, key_id).await
+        TranslationKeyQuery::get_translation_key_by_id(key_id).await
     }
 
     pub async fn get_translation_keys_by_project<'a>(
-        db: &'a DbConn,
         project_id: Uuid,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
-        TranslationKeyQuery::get_translation_keys_by_project(db, project_id).await
+        TranslationKeyQuery::get_translation_keys_by_project(project_id).await
     }
 
     pub async fn get_translation_keys<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
-        TranslationKeyQuery::get_translation_keys(db, pagination, order, filters).await
+        TranslationKeyQuery::get_translation_keys(pagination, order, filters).await
     }
 
     pub async fn update_translation_key<'a>(
@@ -96,13 +92,12 @@ impl TranslationKeyService {
     }
 
     pub async fn assign_tags_to_key<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
         req: AssignTagsRequest,
     ) -> Result<bool, AppError> {
         let mut success = false;
         for tag_id in req.tag_ids {
-            let exists = KeyTagQueryManager::key_tag_exists(db, key_id, tag_id).await?;
+            let exists = KeyTagQueryManager::key_tag_exists(key_id, tag_id).await?;
             if !exists {
                 let dto = KeyTagForCreateDto { key_id, tag_id };
                 match KeyTagMutation::create_key_tag(dto).await {

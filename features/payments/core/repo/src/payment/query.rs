@@ -31,21 +31,17 @@ impl PaymentQueryManager {
 pub struct PaymentQuery;
 
 impl PaymentQuery {
-    pub async fn get_payment_by_id(
-        db: &DbConn,
-        payment_id: Uuid,
-    ) -> Result<PaymentData, AppError> {
-        let model = PaymentQueryManager::get_by_id_uuid(db, payment_id).await?;
+    pub async fn get_payment_by_id(payment_id: Uuid) -> Result<PaymentData, AppError> {
+        let model = PaymentQueryManager::get_by_id_uuid(payment_id).await?;
         Ok(model.into())
     }
 
     pub async fn get_payments<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<PaymentData>, AppError> {
-        let result = PaymentQueryManager::filter(db, pagination, order, filters).await?;
+        let result = PaymentQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

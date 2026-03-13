@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 
 use features_auth_model::{
@@ -16,9 +15,9 @@ use features_auth_repo::{
 pub struct LoginService {}
 
 impl LoginService {
-    pub async fn login<'a>(db: &'a DbConn, request: LoginRequest) -> Result<LoginData> {
+    pub async fn login<'a>(request: LoginRequest) -> Result<LoginData> {
         let user_data =
-            UserQuery::get_user_by_email_and_password(db, request.email, request.password).await?;
+            UserQuery::get_user_by_email_and_password(request.email, request.password).await?;
 
         debug!("User data {:?}", user_data);
 
@@ -29,7 +28,7 @@ impl LoginService {
             user_id: user_data.id,
         };
         let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
-        let auth_code = AuthCodeQuery::get(db, code_id).await?;
+        let auth_code = AuthCodeQuery::get(code_id).await?;
         let result = LoginData {
             code: auth_code.code.unwrap(),
         };

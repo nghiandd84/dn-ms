@@ -42,19 +42,18 @@ impl ClientQueryManager {
 pub struct ClientQuery {}
 
 impl ClientQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<ClientData, DbErr> {
-        let model = ClientQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<ClientData, DbErr> {
+        let model = ClientQueryManager::get_by_id_uuid(id).await?;
         let user_data: ClientData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<ClientData>, DbErr> {
-        let result = ClientQueryManager::filter(db, pagination, order, filters).await?;
+        let result = ClientQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

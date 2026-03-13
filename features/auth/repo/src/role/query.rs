@@ -31,20 +31,19 @@ impl RoleQueryManager {
 pub struct RoleQuery {}
 
 impl RoleQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<RoleData, DbErr> {
-        let model = RoleQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<RoleData, DbErr> {
+        let model = RoleQueryManager::get_by_id_uuid(id).await?;
         let user_data: RoleData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<RoleData>, DbErr> {
-        debug!("RoleQuery::search filters: {:?}", filters); 
-        let result = RoleQueryManager::filter(db, pagination, order, filters).await;
+        debug!("RoleQuery::search filters: {:?}", filters);
+        let result = RoleQueryManager::filter(pagination, order, filters).await;
         let result = match result {
             Ok(res) => res,
             Err(e) => {

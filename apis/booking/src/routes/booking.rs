@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -7,7 +7,9 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_booking_model::{
-    booking::{BookingData, BookingDataFilterParams, BookingForCreateRequest, BookingForUpdateRequest},
+    booking::{
+        BookingData, BookingDataFilterParams, BookingForCreateRequest, BookingForUpdateRequest,
+    },
     state::{BookingAppState, BookingCacheState},
 };
 
@@ -37,7 +39,6 @@ const TAG: &str = "booking";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_booking(
-    state: State<AppState<BookingAppState, BookingCacheState>>,
     ValidJson(req): ValidJson<BookingForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let booking_id = BookingService::create_booking(req).await?;
@@ -56,10 +57,9 @@ async fn create_booking(
     )
 )]
 async fn get_booking(
-    state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_id): Path<Uuid>,
 ) -> Result<ResponseJson<BookingData>> {
-    let booking = BookingService::get_booking_by_id(&state.conn, booking_id).await?;
+    let booking = BookingService::get_booking_by_id(booking_id).await?;
     Ok(ResponseJson(booking))
 }
 
@@ -77,7 +77,6 @@ async fn get_booking(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_bookings(
-    state: State<AppState<BookingAppState, BookingCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<BookingDataFilterParams>,
@@ -85,7 +84,7 @@ async fn filter_bookings(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = BookingService::get_bookings(&state.conn, &filters, &pagination, &order).await?;
+    let result = BookingService::get_bookings(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -100,11 +99,10 @@ async fn filter_bookings(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_booking(
-    state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingService::update_booking( booking_id, req).await?;
+    BookingService::update_booking(booking_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
@@ -121,7 +119,6 @@ async fn update_booking(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_booking(
-    state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     BookingService::delete_booking(booking_id).await?;

@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -37,7 +37,6 @@ const TAG: &str = "Template-Plaeceholder";
     )
 )]
 async fn create_template_placeholder(
-    state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<TemplatePlaceholderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let placeholder_id = TemplatePlaceholderService::create(request).await?;
@@ -61,7 +60,6 @@ async fn create_template_placeholder(
     )
 )]
 async fn update_template_placeholder(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(placeholder_id): Path<i32>,
     ValidJson(request): ValidJson<TemplatePlaeholderForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +76,6 @@ async fn update_template_placeholder(
     )
 )]
 async fn delete_template_placeholder(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(placeholder_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
     TemplatePlaceholderService::delete(placeholder_id).await?;
@@ -94,10 +91,9 @@ async fn delete_template_placeholder(
     )
 )]
 async fn get_template_placeholder(
-    state: State<AppState<EmailTemplateCacheState>>,
     Path(placeholder_id): Path<i32>,
 ) -> Result<ResponseJson<TemplatePlaceholderData>> {
-    let scope = TemplatePlaceholderService::get(&state.conn, placeholder_id).await?;
+    let scope = TemplatePlaceholderService::get(placeholder_id).await?;
     Ok(ResponseJson(scope))
 }
 
@@ -114,7 +110,6 @@ async fn get_template_placeholder(
     )
 )]
 async fn filter_template_placeholder(
-    state: State<AppState<EmailTemplateCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TemplatePlaceholderDataFilterParams>,
@@ -123,8 +118,7 @@ async fn filter_template_placeholder(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result =
-        TemplatePlaceholderService::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = TemplatePlaceholderService::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

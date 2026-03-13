@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -40,7 +40,6 @@ const TAG: &str = "payment-attempt";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_attempt(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentAttemptForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_attempt_id = PaymentAttemptService::create_payment_attempt(req).await?;
@@ -59,11 +58,10 @@ pub async fn create_payment_attempt(
     )
 )]
 pub async fn get_payment_attempt(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentAttemptData>> {
     let payment_attempt =
-        PaymentAttemptService::get_payment_attempt_by_id(&state.conn, payment_attempt_id).await?;
+        PaymentAttemptService::get_payment_attempt_by_id(payment_attempt_id).await?;
     Ok(ResponseJson(payment_attempt))
 }
 
@@ -81,7 +79,6 @@ pub async fn get_payment_attempt(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_attempts(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentAttemptDataFilterParams>,
@@ -89,9 +86,7 @@ pub async fn filter_payment_attempts(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        PaymentAttemptService::get_payment_attempts(&state.conn, &filters, &pagination, &order)
-            .await?;
+    let result = PaymentAttemptService::get_payment_attempts(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -106,7 +101,6 @@ pub async fn filter_payment_attempts(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_attempt(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_attempt_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentAttemptForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -127,7 +121,6 @@ pub async fn update_payment_attempt(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_attempt(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentAttemptService::delete_payment_attempt(payment_attempt_id).await?;

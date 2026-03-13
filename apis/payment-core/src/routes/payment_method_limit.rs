@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -40,7 +40,6 @@ const TAG: &str = "payment-method-limit";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_method_limit(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentMethodLimitForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_method_limit_id =
@@ -60,14 +59,10 @@ pub async fn create_payment_method_limit(
     )
 )]
 pub async fn get_payment_method_limit(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentMethodLimitData>> {
-    let payment_method_limit = PaymentMethodLimitService::get_payment_method_limit_by_id(
-        &state.conn,
-        payment_method_limit_id,
-    )
-    .await?;
+    let payment_method_limit =
+        PaymentMethodLimitService::get_payment_method_limit_by_id(payment_method_limit_id).await?;
     Ok(ResponseJson(payment_method_limit))
 }
 
@@ -85,7 +80,6 @@ pub async fn get_payment_method_limit(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_method_limits(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentMethodLimitDataFilterParams>,
@@ -93,13 +87,8 @@ pub async fn filter_payment_method_limits(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = PaymentMethodLimitService::get_payment_method_limits(
-        &state.conn,
-        &filters,
-        &pagination,
-        &order,
-    )
-    .await?;
+    let result =
+        PaymentMethodLimitService::get_payment_method_limits(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -114,7 +103,6 @@ pub async fn filter_payment_method_limits(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_method_limit(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_limit_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentMethodLimitForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -135,7 +123,6 @@ pub async fn update_payment_method_limit(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_method_limit(
-    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentMethodLimitService::delete_payment_method_limit(payment_method_limit_id).await?;

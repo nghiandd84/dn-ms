@@ -31,20 +31,19 @@ impl AccessQueryManager {
 pub struct AccessQuery {}
 
 impl AccessQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<AccessData, DbErr> {
-        let model = AccessQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<AccessData, DbErr> {
+        let model = AccessQueryManager::get_by_id_uuid(id).await?;
         let user_data: AccessData = model.into();
         Ok(user_data)
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<AccessData>, DbErr> {
         debug!("AccessQuery::search filters: {:?}", filters);
-        let result = AccessQueryManager::filter(db, pagination, order, filters).await;
+        let result = AccessQueryManager::filter(pagination, order, filters).await;
         let result = match result {
             Ok(res) => res,
             Err(e) => {

@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -36,14 +36,12 @@ impl PaymentAttemptService {
     }
 
     pub async fn get_payment_attempt_by_id<'a>(
-        db: &'a DbConn,
         payment_attempt_id: Uuid,
     ) -> Result<PaymentAttemptData, AppError> {
-        PaymentAttemptQuery::get_payment_attempt_by_id(db, payment_attempt_id).await
+        PaymentAttemptQuery::get_payment_attempt_by_id(payment_attempt_id).await
     }
 
     pub async fn get_payment_attempts_by_success(
-        db: &DbConn,
         success: bool,
         pagination: &Pagination,
         order: &Order,
@@ -57,16 +55,15 @@ impl PaymentAttemptService {
         };
         let success_filter = FilterEnum::Bool(param);
         let filters: Vec<FilterEnum> = vec![success_filter];
-        PaymentAttemptQuery::get_payment_attempts(db, &pagination, &order, &filters).await
+        PaymentAttemptQuery::get_payment_attempts(&pagination, &order, &filters).await
     }
 
     pub async fn get_payment_attempts<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<PaymentAttemptData>, AppError> {
-        PaymentAttemptQuery::get_payment_attempts(db, pagination, order, filters).await
+        PaymentAttemptQuery::get_payment_attempts(pagination, order, filters).await
     }
 
     pub async fn update_payment_attempt(

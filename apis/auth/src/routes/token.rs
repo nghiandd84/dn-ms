@@ -49,8 +49,7 @@ async fn create_token(
     debug!("Create token with request: {:?}", request);
     let cache = &state.cache;
     // Create Logic Service to convert request to DTO
-    let authorization_code =
-        TokenService::create_authorization_data(&state.conn, cache, &request).await?;
+    let authorization_code = TokenService::create_authorization_data(cache, &request).await?;
     let data = authorization_code.clone();
 
     Ok(ResponseJson(data))
@@ -66,12 +65,11 @@ async fn create_token(
     )
 )]
 async fn verify_token(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForVerifyRequest>,
 ) -> Result<ResponseJson<AccessTokenStruct>> {
     debug!("Verify token with request: {:?}", request);
     // Create Logic Service to convert request to DTO
-    let access_token_struct = TokenService::verify_token(&state.conn, &request).await?;
+    let access_token_struct = TokenService::verify_token(&request).await?;
 
     Ok(ResponseJson(access_token_struct))
 }
@@ -84,11 +82,8 @@ async fn verify_token(
         (status = 200, description = "Token Data", body = TokenDataResponse),       
     )
 )]
-async fn get_token(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(token_id): Path<Uuid>,
-) -> Result<ResponseJson<TokenData>> {
-    let token = TokenQuery::get(&state.conn, token_id).await?;
+async fn get_token(Path(token_id): Path<Uuid>) -> Result<ResponseJson<TokenData>> {
+    let token = TokenQuery::get(token_id).await?;
     Ok(ResponseJson(token))
 }
 
@@ -105,7 +100,6 @@ async fn get_token(
     )
 )]
 async fn filter_tokens(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TokenDataFilterParams>,
@@ -114,7 +108,7 @@ async fn filter_tokens(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = TokenQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = TokenQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

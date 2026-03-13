@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Json, Router,
 };
@@ -37,7 +37,6 @@ const TAG: &str = "social-link";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_social_link(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<SocialLinkForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let link_id = SocialLinkService::create_social_link(req).await?;
@@ -55,11 +54,8 @@ async fn create_social_link(
         (status = 200, description = "Social link retrieved successfully", body = SocialLinkData),
     )
 )]
-async fn get_social_link(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
-    Path(link_id): Path<Uuid>,
-) -> Result<ResponseJson<SocialLinkData>> {
-    let link = SocialLinkService::get_social_link_by_id(&state.conn, link_id).await?;
+async fn get_social_link(Path(link_id): Path<Uuid>) -> Result<ResponseJson<SocialLinkData>> {
+    let link = SocialLinkService::get_social_link_by_id(link_id).await?;
     Ok(ResponseJson(link))
 }
 
@@ -72,10 +68,9 @@ async fn get_social_link(
     )
 )]
 async fn get_social_links_by_profile_id(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<Vec<SocialLinkData>>> {
-    let links = SocialLinkService::get_social_links_by_profile_id(&state.conn, profile_id).await?;
+    let links = SocialLinkService::get_social_links_by_profile_id(profile_id).await?;
     Ok(ResponseJson(links))
 }
 
@@ -93,7 +88,6 @@ async fn get_social_links_by_profile_id(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_social_links(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<SocialLinkDataFilterParams>,
@@ -102,8 +96,7 @@ async fn filter_social_links(
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
 
-    let result =
-        SocialLinkService::get_social_links(&state.conn, pagination, order, filters).await?;
+    let result = SocialLinkService::get_social_links(pagination, order, filters).await?;
     Ok(ResponseJson(result))
 }
 
@@ -117,7 +110,6 @@ async fn filter_social_links(
     )
 )]
 async fn update_social_link(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(link_id): Path<Uuid>,
     Json(req): Json<SocialLinkForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -136,10 +128,7 @@ async fn update_social_link(
         (status = 200, description = "Social link deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_social_link(
-    state: State<AppState<ProfileAppState, ProfileCacheState>>,
-    Path(link_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_social_link(Path(link_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     SocialLinkService::delete_social_link(link_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

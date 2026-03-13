@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -32,15 +32,11 @@ impl BookingService {
         Ok(id)
     }
 
-    pub async fn get_booking_by_id<'a>(
-        db: &'a DbConn,
-        booking_id: Uuid,
-    ) -> Result<BookingData, AppError> {
-        BookingQuery::get_booking_by_id(db, booking_id).await
+    pub async fn get_booking_by_id<'a>(booking_id: Uuid) -> Result<BookingData, AppError> {
+        BookingQuery::get_booking_by_id(booking_id).await
     }
 
     pub async fn get_bookings_by_status(
-        db: &DbConn,
         status: &str,
         pagination: &Pagination,
         order: &Order,
@@ -54,11 +50,10 @@ impl BookingService {
         };
         let status_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![status_filter];
-        BookingQuery::get_bookings(db, &pagination, &order, &filters).await
+        BookingQuery::get_bookings(&pagination, &order, &filters).await
     }
 
     pub async fn get_bookings_by_user(
-        db: &DbConn,
         user_id: Uuid,
         pagination: &Pagination,
         order: &Order,
@@ -72,16 +67,15 @@ impl BookingService {
         };
         let user_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![user_filter];
-        BookingQuery::get_bookings(db, &pagination, &order, &filters).await
+        BookingQuery::get_bookings(&pagination, &order, &filters).await
     }
 
     pub async fn get_bookings<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<BookingData>, AppError> {
-        BookingQuery::get_bookings(db, pagination, order, filters).await
+        BookingQuery::get_bookings(pagination, order, filters).await
     }
 
     pub async fn update_booking(

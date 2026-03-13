@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -37,7 +37,6 @@ const TAG: &str = "seat";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_seat(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     ValidJson(req): ValidJson<SeatForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let seat_id = SeatService::create_seat(req).await?;
@@ -56,10 +55,9 @@ async fn create_seat(
     )
 )]
 async fn get_seat(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<SeatData>> {
-    let seat = SeatService::get_seat_by_id(&state.conn, seat_id).await?;
+    let seat = SeatService::get_seat_by_id(seat_id).await?;
     Ok(ResponseJson(seat))
 }
 
@@ -77,7 +75,6 @@ async fn get_seat(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_seats(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<SeatDataFilterParams>,
@@ -85,7 +82,7 @@ async fn filter_seats(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = SeatService::get_seats(&state.conn, &filters, &pagination, &order).await?;
+    let result = SeatService::get_seats(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -100,7 +97,6 @@ async fn filter_seats(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_seat(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(seat_id): Path<Uuid>,
     ValidJson(req): ValidJson<SeatForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -121,7 +117,6 @@ async fn update_seat(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_seat(
-    state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     SeatService::delete_seat(seat_id).await?;

@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -29,17 +28,16 @@ impl TagService {
         Ok(id)
     }
 
-    pub async fn get_tag_by_id<'a>(db: &'a DbConn, tag_id: Uuid) -> Result<TagData, AppError> {
-        TagQuery::get_tag_by_id(db, tag_id).await
+    pub async fn get_tag_by_id<'a>(tag_id: Uuid) -> Result<TagData, AppError> {
+        TagQuery::get_tag_by_id(tag_id).await
     }
 
     pub async fn get_tags<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TagData>, AppError> {
-        TagQuery::get_tags(db, pagination, order, filters).await
+        TagQuery::get_tags(pagination, order, filters).await
     }
 
     pub async fn update_tag<'a>(

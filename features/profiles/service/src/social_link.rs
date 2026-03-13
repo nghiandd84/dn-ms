@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -33,27 +32,22 @@ impl SocialLinkService {
         Ok(id)
     }
 
-    pub async fn get_social_link_by_id<'a>(
-        db: &'a DbConn,
-        link_id: Uuid,
-    ) -> Result<SocialLinkData, AppError> {
-        SocialLinkQuery::get_social_link_by_id(db, link_id).await
+    pub async fn get_social_link_by_id<'a>(link_id: Uuid) -> Result<SocialLinkData, AppError> {
+        SocialLinkQuery::get_social_link_by_id(link_id).await
     }
 
     pub async fn get_social_links_by_profile_id<'a>(
-        db: &'a DbConn,
         profile_id: Uuid,
     ) -> Result<Vec<SocialLinkData>, AppError> {
-        SocialLinkQuery::get_social_links_by_profile_id(db, profile_id).await
+        SocialLinkQuery::get_social_links_by_profile_id(profile_id).await
     }
 
     pub async fn get_social_links<'a>(
-        db: &'a DbConn,
         pagination: Pagination,
         order: Order,
         filters: Vec<FilterEnum>,
     ) -> Result<QueryResult<SocialLinkData>, AppError> {
-        SocialLinkQuery::get_social_links(db, &pagination, &order, &filters).await
+        SocialLinkQuery::get_social_links(&pagination, &order, &filters).await
     }
 
     pub async fn update_social_link<'a>(

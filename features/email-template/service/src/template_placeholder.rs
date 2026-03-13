@@ -1,5 +1,3 @@
-use sea_orm::DbConn;
-
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
     filter::FilterEnum,
@@ -23,8 +21,8 @@ impl TemplatePlaceholderService {
         Ok(result)
     }
 
-    pub async fn get<'a>(db: &'a DbConn, id: i32) -> Result<TemplatePlaceholderData> {
-        let email_data = TemplatePlaceholderQuery::get(db, id).await?;
+    pub async fn get<'a>(id: i32) -> Result<TemplatePlaceholderData> {
+        let email_data = TemplatePlaceholderQuery::get(id).await?;
         Ok(email_data)
     }
 
@@ -39,12 +37,11 @@ impl TemplatePlaceholderService {
     }
 
     pub async fn search<'a>(
-        db: &'a DbConn,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<TemplatePlaceholderData>> {
-        let result = TemplatePlaceholderQuery::search(db, pagination, order, filters).await?;
+        let result = TemplatePlaceholderQuery::search(pagination, order, filters).await?;
         Ok(result)
     }
 }

@@ -1,4 +1,3 @@
-use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -39,19 +38,17 @@ impl PaymentMethodLimitService {
     }
 
     pub async fn get_payment_method_limit_by_id<'a>(
-        db: &'a DbConn,
         payment_method_limit_id: Uuid,
     ) -> Result<PaymentMethodLimitData, AppError> {
-        PaymentMethodLimitQuery::get_payment_method_limit_by_id(db, payment_method_limit_id).await
+        PaymentMethodLimitQuery::get_payment_method_limit_by_id(payment_method_limit_id).await
     }
 
     pub async fn get_payment_method_limits<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<PaymentMethodLimitData>, AppError> {
-        PaymentMethodLimitQuery::get_payment_method_limits(db, pagination, order, filters).await
+        PaymentMethodLimitQuery::get_payment_method_limits(pagination, order, filters).await
     }
 
     pub async fn update_payment_method_limit(

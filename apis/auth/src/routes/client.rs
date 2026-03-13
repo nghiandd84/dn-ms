@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Router,
 };
@@ -40,7 +40,6 @@ const TAG: &str = "client";
     )
 )]
 async fn create_client(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<ClientForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let role_id = ClientMutation::create(register_request.into()).await?;
@@ -64,7 +63,6 @@ async fn create_client(
     )
 )]
 async fn update_client(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(client_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ClientForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -80,10 +78,7 @@ async fn update_client(
         (status = 200, description = "Client is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_client(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(client_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ClientMutation::delete(client_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -96,11 +91,8 @@ async fn delete_client(
         (status = 200, description = "Client Data", body = ClientDataResponse),       
     )
 )]
-async fn get_client(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
-    Path(client_id): Path<Uuid>,
-) -> Result<ResponseJson<ClientData>> {
-    let scope = ClientQuery::get(&state.conn, client_id).await?;
+async fn get_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<ClientData>> {
+    let scope = ClientQuery::get(client_id).await?;
     Ok(ResponseJson(scope))
 }
 
@@ -117,7 +109,6 @@ async fn get_client(
     )
 )]
 async fn filter_clients(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ClientDataFilterParams>,
@@ -126,7 +117,7 @@ async fn filter_clients(
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = ClientQuery::search(&state.conn, &pagination, &order, &all_filters).await?;
+    let result = ClientQuery::search(&pagination, &order, &all_filters).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

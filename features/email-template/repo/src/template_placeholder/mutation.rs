@@ -1,4 +1,3 @@
-use sea_orm::{DbConn, DbErr};
 use uuid::Uuid;
 
 use shared_shared_macro::Mutation;
@@ -30,9 +29,7 @@ impl TemplatePlaceholderMutation {
         TemplatePlaceholderMutationManager::update_by_id_i32(id, data.into())
     }
 
-    pub fn delete<'a>(
-        id: i32,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         TemplatePlaceholderMutationManager::delete_by_id_i32(id)
     }
 }

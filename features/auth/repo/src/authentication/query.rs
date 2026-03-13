@@ -30,11 +30,9 @@ impl AuthenticationRequestQueryManager {
 pub struct AuthenticationRequestQuery {}
 
 impl AuthenticationRequestQuery {
-    pub async fn get<'a>(db: &'a DbConn, id: Uuid) -> Result<AuthenticationRequestData, DbErr> {
-        let model = AuthenticationRequestQueryManager::get_by_id_uuid(db, id).await?;
+    pub async fn get<'a>(id: Uuid) -> Result<AuthenticationRequestData, DbErr> {
+        let model = AuthenticationRequestQueryManager::get_by_id_uuid(id).await?;
         let authentication_request_data: AuthenticationRequestData = model.into();
         Ok(authentication_request_data)
     }
-
-    
 }

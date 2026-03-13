@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -36,14 +36,12 @@ impl PaymentMethodService {
     }
 
     pub async fn get_payment_method_by_id<'a>(
-        db: &'a DbConn,
         payment_method_id: Uuid,
     ) -> Result<PaymentMethodData, AppError> {
-        PaymentMethodQuery::get_payment_method_by_id(db, payment_method_id).await
+        PaymentMethodQuery::get_payment_method_by_id(payment_method_id).await
     }
 
     pub async fn get_payment_methods_by_active(
-        db: &DbConn,
         is_active: bool,
         pagination: &Pagination,
         order: &Order,
@@ -57,16 +55,15 @@ impl PaymentMethodService {
         };
         let active_filter = FilterEnum::Bool(param);
         let filters: Vec<FilterEnum> = vec![active_filter];
-        PaymentMethodQuery::get_payment_methods(db, &pagination, &order, &filters).await
+        PaymentMethodQuery::get_payment_methods(&pagination, &order, &filters).await
     }
 
     pub async fn get_payment_methods<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<PaymentMethodData>, AppError> {
-        PaymentMethodQuery::get_payment_methods(db, pagination, order, filters).await
+        PaymentMethodQuery::get_payment_methods(pagination, order, filters).await
     }
 
     pub async fn update_payment_method(

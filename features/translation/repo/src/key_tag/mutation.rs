@@ -1,4 +1,4 @@
-use sea_orm::{ColumnTrait, DbConn, DbErr, QueryFilter};
+use sea_orm::{ColumnTrait, QueryFilter};
 use std::future::Future;
 use uuid::Uuid;
 

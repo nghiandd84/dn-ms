@@ -1,4 +1,4 @@
-use sea_orm::{DbConn, Iden};
+use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -32,15 +32,11 @@ impl PaymentService {
         Ok(id)
     }
 
-    pub async fn get_payment_by_id<'a>(
-        db: &'a DbConn,
-        payment_id: Uuid,
-    ) -> Result<PaymentData, AppError> {
-        PaymentQuery::get_payment_by_id(db, payment_id).await
+    pub async fn get_payment_by_id<'a>(payment_id: Uuid) -> Result<PaymentData, AppError> {
+        PaymentQuery::get_payment_by_id(payment_id).await
     }
 
     pub async fn get_payments_by_status(
-        db: &DbConn,
         status: &str,
         pagination: &Pagination,
         order: &Order,
@@ -54,16 +50,15 @@ impl PaymentService {
         };
         let status_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![status_filter];
-        PaymentQuery::get_payments(db, &pagination, &order, &filters).await
+        PaymentQuery::get_payments(&pagination, &order, &filters).await
     }
 
     pub async fn get_payments<'a>(
-        db: &'a DbConn,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<PaymentData>, AppError> {
-        PaymentQuery::get_payments(db, pagination, order, filters).await
+        PaymentQuery::get_payments(pagination, order, filters).await
     }
 
     pub async fn update_payment(
