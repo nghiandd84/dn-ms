@@ -7,7 +7,10 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_core_model::{
-    payment_attempt::{PaymentAttemptData, PaymentAttemptDataFilterParams, PaymentAttemptForCreateRequest, PaymentAttemptForUpdateRequest},
+    payment_attempt::{
+        PaymentAttemptData, PaymentAttemptDataFilterParams, PaymentAttemptForCreateRequest,
+        PaymentAttemptForUpdateRequest,
+    },
     state::{PaymentsCoreAppState, PaymentsCoreCacheState},
 };
 
@@ -40,7 +43,7 @@ pub async fn create_payment_attempt(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentAttemptForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let payment_attempt_id = PaymentAttemptService::create_payment_attempt(&state.conn, req).await?;
+    let payment_attempt_id = PaymentAttemptService::create_payment_attempt(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_attempt_id),
@@ -59,7 +62,8 @@ pub async fn get_payment_attempt(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentAttemptData>> {
-    let payment_attempt = PaymentAttemptService::get_payment_attempt_by_id(&state.conn, payment_attempt_id).await?;
+    let payment_attempt =
+        PaymentAttemptService::get_payment_attempt_by_id(&state.conn, payment_attempt_id).await?;
     Ok(ResponseJson(payment_attempt))
 }
 
@@ -85,7 +89,9 @@ pub async fn filter_payment_attempts(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = PaymentAttemptService::get_payment_attempts(&state.conn, &filters, &pagination, &order).await?;
+    let result =
+        PaymentAttemptService::get_payment_attempts(&state.conn, &filters, &pagination, &order)
+            .await?;
     Ok(ResponseJson(result))
 }
 
@@ -104,7 +110,7 @@ pub async fn update_payment_attempt(
     Path(payment_attempt_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentAttemptForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentAttemptService::update_payment_attempt(&state.conn, payment_attempt_id, req).await?;
+    PaymentAttemptService::update_payment_attempt(payment_attempt_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_attempt_id),
@@ -124,7 +130,7 @@ pub async fn delete_payment_attempt(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentAttemptService::delete_payment_attempt(&state.conn, payment_attempt_id).await?;
+    PaymentAttemptService::delete_payment_attempt(payment_attempt_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_attempt_id),
@@ -135,8 +141,17 @@ pub fn routes(app_state: &AppState<PaymentsCoreAppState, PaymentsCoreCacheState>
     Router::new()
         .route("/payment-attempts", post(create_payment_attempt))
         .route("/payment-attempts", get(filter_payment_attempts))
-        .route("/payment-attempts/{payment_attempt_id}", get(get_payment_attempt))
-        .route("/payment-attempts/{payment_attempt_id}", patch(update_payment_attempt))
-        .route("/payment-attempts/{payment_attempt_id}", delete(delete_payment_attempt))
+        .route(
+            "/payment-attempts/{payment_attempt_id}",
+            get(get_payment_attempt),
+        )
+        .route(
+            "/payment-attempts/{payment_attempt_id}",
+            patch(update_payment_attempt),
+        )
+        .route(
+            "/payment-attempts/{payment_attempt_id}",
+            delete(delete_payment_attempt),
+        )
         .with_state(app_state.clone())
 }

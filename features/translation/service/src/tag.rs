@@ -16,12 +16,9 @@ use features_translation_repo::tag::{TagMutation, TagQuery};
 pub struct TagService {}
 
 impl TagService {
-    pub async fn create_tag<'a>(
-        db: &'a DbConn,
-        tag_request: TagForCreateRequest,
-    ) -> Result<Uuid, AppError> {
+    pub async fn create_tag<'a>(tag_request: TagForCreateRequest) -> Result<Uuid, AppError> {
         let dto: TagForCreateDto = tag_request.into();
-        let tag_id = TagMutation::create_tag(db, dto).await;
+        let tag_id = TagMutation::create_tag(dto).await;
         let id = match tag_id {
             Ok(id) => id,
             Err(e) => {
@@ -32,10 +29,7 @@ impl TagService {
         Ok(id)
     }
 
-    pub async fn get_tag_by_id<'a>(
-        db: &'a DbConn,
-        tag_id: Uuid,
-    ) -> Result<TagData, AppError> {
+    pub async fn get_tag_by_id<'a>(db: &'a DbConn, tag_id: Uuid) -> Result<TagData, AppError> {
         TagQuery::get_tag_by_id(db, tag_id).await
     }
 
@@ -49,12 +43,11 @@ impl TagService {
     }
 
     pub async fn update_tag<'a>(
-        db: &'a DbConn,
         tag_id: Uuid,
         tag_request: TagForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto: features_translation_entities::tag::TagForUpdateDto = tag_request.into();
-        let result = TagMutation::update_tag(db, tag_id, dto).await;
+        let result = TagMutation::update_tag(tag_id, dto).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -64,11 +57,8 @@ impl TagService {
         }
     }
 
-    pub async fn delete_tag<'a>(
-        db: &'a DbConn,
-        tag_id: Uuid,
-    ) -> Result<bool, AppError> {
-        let result = TagMutation::delete_tag(db, tag_id).await;
+    pub async fn delete_tag<'a>(tag_id: Uuid) -> Result<bool, AppError> {
+        let result = TagMutation::delete_tag(tag_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

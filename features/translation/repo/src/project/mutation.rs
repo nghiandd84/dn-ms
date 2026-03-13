@@ -17,24 +17,21 @@ pub struct ProjectMutation {}
 
 impl ProjectMutation {
     pub fn create_project<'a>(
-        db: &'a DbConn,
         data: ProjectForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        ProjectMutationManager::create_uuid(db, data.into())
+        ProjectMutationManager::create_uuid(data.into())
     }
 
     pub fn update_project<'a>(
-        db: &'a DbConn,
         project_id: Uuid,
         data: ProjectForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ProjectMutationManager::update_by_id_uuid(db, project_id, data.into())
+        ProjectMutationManager::update_by_id_uuid(project_id, data.into())
     }
 
     pub fn delete_project<'a>(
-        db: &'a DbConn,
         project_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ProjectMutationManager::delete_by_id_uuid(db, project_id)
+        ProjectMutationManager::delete_by_id_uuid(project_id)
     }
 }

@@ -1,4 +1,3 @@
-use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 use sea_orm::DbConn;
 use tracing::debug;
 use uuid::Uuid;
@@ -28,6 +27,7 @@ use features_auth_repo::{
     role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
+use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 
 use crate::RegisterService;
 use rand::{thread_rng, Rng};
@@ -39,7 +39,7 @@ impl AuthenticationRequestService {
         db: &'a DbConn,
         request: AuthenticationRequestForCreateDto,
     ) -> Result<Uuid> {
-        let request_id = AuthenticationRequestMutation::create(db, request).await;
+        let request_id = AuthenticationRequestMutation::create(request).await;
         Ok(request_id.unwrap())
     }
 
@@ -73,7 +73,7 @@ impl AuthenticationRequestService {
             scopes: Some(request_code_data.scopes.unwrap()),
             user_id: user_data.id,
         };
-        let code_id = AuthCodeMutation::create(db, auth_code_request.into()).await?;
+        let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
         let auth_code = AuthCodeQuery::get(db, code_id).await?;
         let result = AuthLoginData {
             id_token: auth_code.code.unwrap(),
@@ -153,7 +153,7 @@ impl AuthenticationRequestService {
         let default_role = &default_roles.result[0];
         debug!("Assigning default role: {:?}", default_role);
 
-        let user_id = RegisterService::register(db, create_user_request.into()).await;
+        let user_id = RegisterService::register(create_user_request.into()).await;
         if user_id.is_err() {
             let error = user_id.err().unwrap();
             debug!("Error creating user: {:?}", error);
@@ -173,18 +173,18 @@ impl AuthenticationRequestService {
             user_id: user_id,
             code: active_code.clone(),
         };
-        let active_code_result = ActiveCodeMutation::create(db, active_code_dto).await;
+        let active_code_result = ActiveCodeMutation::create(active_code_dto).await;
         if active_code_result.is_err() {
             debug!("Error creating active code for email : {:?}", email);
         }
 
         // Asign default role to user
         let assign_role_result =
-            RegisterService::assgin_user_to_role(db, user_id, default_role.get_id().unwrap()).await;
+            RegisterService::assgin_user_to_role(user_id, default_role.get_id().unwrap()).await;
         if assign_role_result.is_err() {
             let error = assign_role_result.err().unwrap();
             debug!("Error assigning role to user: {:?}", error);
-            UserMutation::delete_user(db, user_id).await.ok();
+            UserMutation::delete_user(user_id).await.ok();
             return Err(AppError::Auth(AuthError::UnknowRole));
         }
         let auth_message = AuthMessage::SignUp {
@@ -213,7 +213,7 @@ impl AuthenticationRequestService {
             scopes: Some(request_code_data.scopes.unwrap()),
             user_id: Some(user_id),
         };
-        let code_id = AuthCodeMutation::create(db, auth_code_request.into()).await?;
+        let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
         let auth_code = AuthCodeQuery::get(db, code_id).await?;
         let result = AuthRegisterData {
             id_token: auth_code.code.unwrap(),

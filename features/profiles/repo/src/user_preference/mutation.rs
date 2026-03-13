@@ -4,7 +4,8 @@ use uuid::Uuid;
 use shared_shared_macro::Mutation;
 
 use features_profiles_entities::user_preference::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, UserPreferenceForCreateDto, UserPreferenceForUpdateDto
+    ActiveModel, Column, Entity, Model, ModelOptionDto, UserPreferenceForCreateDto,
+    UserPreferenceForUpdateDto,
 };
 
 use crate::user_preference::util::assign;
@@ -17,24 +18,21 @@ pub struct UserPreferenceMutation {}
 
 impl UserPreferenceMutation {
     pub fn create_user_preference<'a>(
-        db: &'a DbConn,
         data: UserPreferenceForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        UserPreferenceMutationManager::create_uuid(db, data.into())
+        UserPreferenceMutationManager::create_uuid(data.into())
     }
 
     pub fn update_user_preference<'a>(
-        db: &'a DbConn,
         preference_id: Uuid,
         data: UserPreferenceForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        UserPreferenceMutationManager::update_by_id_uuid(db, preference_id, data.into())
+        UserPreferenceMutationManager::update_by_id_uuid(preference_id, data.into())
     }
 
     pub fn delete_user_preference<'a>(
-        db: &'a DbConn,
         preference_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        UserPreferenceMutationManager::delete_by_id_uuid(db, preference_id)
+        UserPreferenceMutationManager::delete_by_id_uuid(preference_id)
     }
 }

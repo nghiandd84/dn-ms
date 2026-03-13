@@ -17,11 +17,10 @@ pub struct ProjectService {}
 
 impl ProjectService {
     pub async fn create_project<'a>(
-        db: &'a DbConn,
         project_request: ProjectForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: ProjectForCreateDto = project_request.into();
-        let project_id = ProjectMutation::create_project(db, dto).await;
+        let project_id = ProjectMutation::create_project(dto).await;
         let id = match project_id {
             Ok(id) => id,
             Err(e) => {
@@ -49,12 +48,12 @@ impl ProjectService {
     }
 
     pub async fn update_project<'a>(
-        db: &'a DbConn,
         project_id: Uuid,
         project_request: ProjectForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let dto: features_translation_entities::project::ProjectForUpdateDto = project_request.into();
-        let result = ProjectMutation::update_project(db, project_id, dto).await;
+        let dto: features_translation_entities::project::ProjectForUpdateDto =
+            project_request.into();
+        let result = ProjectMutation::update_project(project_id, dto).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -64,11 +63,8 @@ impl ProjectService {
         }
     }
 
-    pub async fn delete_project<'a>(
-        db: &'a DbConn,
-        project_id: Uuid,
-    ) -> Result<bool, AppError> {
-        let result = ProjectMutation::delete_project(db, project_id).await;
+    pub async fn delete_project<'a>(project_id: Uuid) -> Result<bool, AppError> {
+        let result = ProjectMutation::delete_project(project_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

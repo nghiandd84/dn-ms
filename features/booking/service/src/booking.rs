@@ -10,17 +10,18 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 
 use features_booking_entities::booking::Column;
-use features_booking_model::booking::{BookingData, BookingForCreateRequest, BookingForUpdateRequest};
+use features_booking_model::booking::{
+    BookingData, BookingForCreateRequest, BookingForUpdateRequest,
+};
 use features_booking_repo::booking::{BookingMutation, BookingQuery};
 
 pub struct BookingService {}
 
 impl BookingService {
     pub async fn create_booking<'a>(
-        db: &'a DbConn,
         booking_request: BookingForCreateRequest,
     ) -> Result<Uuid, AppError> {
-        let booking_id = BookingMutation::create_booking(db, booking_request.into()).await;
+        let booking_id = BookingMutation::create_booking(booking_request.into()).await;
         let id = match booking_id {
             Ok(id) => id,
             Err(e) => {
@@ -31,7 +32,10 @@ impl BookingService {
         Ok(id)
     }
 
-    pub async fn get_booking_by_id<'a>(db: &'a DbConn, booking_id: Uuid) -> Result<BookingData, AppError> {
+    pub async fn get_booking_by_id<'a>(
+        db: &'a DbConn,
+        booking_id: Uuid,
+    ) -> Result<BookingData, AppError> {
         BookingQuery::get_booking_by_id(db, booking_id).await
     }
 
@@ -81,11 +85,10 @@ impl BookingService {
     }
 
     pub async fn update_booking(
-        db: &DbConn,
         booking_id: Uuid,
         booking_request: BookingForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result = BookingMutation::update_booking(db, booking_id, booking_request.into()).await;
+        let result = BookingMutation::update_booking(booking_id, booking_request.into()).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -95,8 +98,8 @@ impl BookingService {
         }
     }
 
-    pub async fn delete_booking(db: &DbConn, booking_id: Uuid) -> Result<bool, AppError> {
-        let result = BookingMutation::delete_booking(db, booking_id).await;
+    pub async fn delete_booking(booking_id: Uuid) -> Result<bool, AppError> {
+        let result = BookingMutation::delete_booking(booking_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

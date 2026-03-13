@@ -17,10 +17,9 @@ pub struct SeatService {}
 
 impl SeatService {
     pub async fn create_seat<'a>(
-        db: &'a DbConn,
         seat_request: SeatForCreateRequest,
     ) -> Result<Uuid, AppError> {
-        let seat_id = SeatMutation::create_seat(db, seat_request.into()).await;
+        let seat_id = SeatMutation::create_seat(seat_request.into()).await;
         let id = match seat_id {
             Ok(id) => id,
             Err(e) => {
@@ -32,14 +31,11 @@ impl SeatService {
     }
 
     pub async fn bulk_create_seats<'a>(
-        db: &'a DbConn,
         seat_requests: Vec<SeatForCreateRequest>,
     ) -> Result<Vec<Uuid>, AppError> {
-        let seat_ids = SeatMutation::bulk_create_seats(
-            db,
-            seat_requests.into_iter().map(|r| r.into()).collect(),
-        )
-        .await;
+        let seat_ids =
+            SeatMutation::bulk_create_seats(seat_requests.into_iter().map(|r| r.into()).collect())
+                .await;
         match seat_ids {
             Ok(ids) => Ok(ids),
             Err(e) => {
@@ -83,11 +79,10 @@ impl SeatService {
     }
 
     pub async fn update_seat(
-        db: &DbConn,
         seat_id: Uuid,
         seat_request: SeatForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result = SeatMutation::update_seat(db, seat_id, seat_request.into()).await;
+        let result = SeatMutation::update_seat(seat_id, seat_request.into()).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -97,8 +92,8 @@ impl SeatService {
         }
     }
 
-    pub async fn delete_seat(db: &DbConn, seat_id: Uuid) -> Result<bool, AppError> {
-        let result = SeatMutation::delete_seat(db, seat_id).await;
+    pub async fn delete_seat(seat_id: Uuid) -> Result<bool, AppError> {
+        let result = SeatMutation::delete_seat(seat_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

@@ -18,24 +18,19 @@ pub struct TemplateTranslationMutation {}
 
 impl TemplateTranslationMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: TemplateTranslationForCreateDto,
     ) -> impl std::future::Future<Output = Result<i32, DbErr>> + 'a {
-        TemplateTranslationMutationManager::create_i32(db, data.into())
+        TemplateTranslationMutationManager::create_i32(data.into())
     }
 
     pub fn update<'a>(
-        db: &'a DbConn,
         id: i32,
         data: TemplateTranslationForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        TemplateTranslationMutationManager::update_by_id_i32(db, id, data.into())
+        TemplateTranslationMutationManager::update_by_id_i32(id, data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: i32,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        TemplateTranslationMutationManager::delete_by_id_i32(db, id)
+    pub fn delete<'a>(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        TemplateTranslationMutationManager::delete_by_id_i32(id)
     }
 }

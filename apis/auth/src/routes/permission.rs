@@ -1,5 +1,7 @@
 use axum::{
-    Router, extract::{Path, Query, State}, routing::{delete, get, patch, post}
+    extract::{Path, Query, State},
+    routing::{delete, get, patch, post},
+    Router,
 };
 use tracing::debug;
 use uuid::Uuid;
@@ -18,7 +20,7 @@ use features_auth_entities::permission::PermissionForCreateDto;
 use features_auth_model::{
     permission::{
         PermissionData, PermissionDataFilterParams, PermissionDataResponse,
-        PermissionForCreateRequest, PermissionForUpdateRequest
+        PermissionForCreateRequest, PermissionForUpdateRequest,
     },
     state::{AuthAppState, AuthCacheState},
 };
@@ -40,15 +42,13 @@ async fn create_permission(
     ValidJson(register_request): ValidJson<PermissionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: PermissionForCreateDto = register_request.into();
-    let permission_id = PermissionMutation::create(&state.conn, dto).await?;
+    let permission_id = PermissionMutation::create(dto).await?;
     debug!("Created permission {:?}", permission_id);
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(permission_id),
     }))
 }
-
-
 
 #[utoipa::path(
     patch,
@@ -68,7 +68,7 @@ async fn update_permission(
     Path(permission_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<PermissionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PermissionMutation::update(&state.conn, permission_id, scope_request.into()).await?;
+    PermissionMutation::update(permission_id, scope_request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -84,7 +84,7 @@ async fn delete_permission(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(permission_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PermissionMutation::delete(&state.conn, permission_id).await?;
+    PermissionMutation::delete(permission_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

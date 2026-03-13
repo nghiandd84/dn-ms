@@ -40,7 +40,7 @@ async fn create_project(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<ProjectForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let project_id = ProjectService::create_project(&state.conn, req).await?;
+    let project_id = ProjectService::create_project(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(project_id),
@@ -103,7 +103,7 @@ async fn update_project(
     Path(project_id): Path<Uuid>,
     Json(req): Json<ProjectForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ProjectService::update_project(&state.conn, project_id, req).await?;
+    ProjectService::update_project(project_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(project_id),
@@ -122,7 +122,7 @@ async fn delete_project(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(project_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ProjectService::delete_project(&state.conn, project_id).await?;
+    ProjectService::delete_project(project_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(project_id),

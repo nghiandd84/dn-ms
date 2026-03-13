@@ -18,14 +18,12 @@ pub struct RolePermissionMutation {}
 
 impl RolePermissionMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: RolePermissionForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        RolePermissionMutationManager::create_uuid(db, data.into())
+        RolePermissionMutationManager::create_uuid(data.into())
     }
 
     pub async fn assign_permissions<'a>(
-        db: &'a DbConn,
         role_id: Uuid,
         permission_ids: Vec<Uuid>,
     ) -> Result<bool, DbErr> {
@@ -38,8 +36,7 @@ impl RolePermissionMutation {
                 role_id,
                 permission_id: *permission_id,
             };
-            let insert =
-                RolePermissionMutationManager::create_uuid(db, create_request.into()).await;
+            let insert = RolePermissionMutationManager::create_uuid(create_request.into()).await;
             if insert.is_err() {
                 debug!(
                     "Failed to assign permission {:?} to role {:?}: {:?}",
@@ -52,13 +49,8 @@ impl RolePermissionMutation {
         Ok(true)
     }
 
-    
-
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: Uuid,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         debug!("Delete role {:?}", id);
-        RolePermissionMutationManager::delete_by_id_uuid(db, id)
+        RolePermissionMutationManager::delete_by_id_uuid(id)
     }
 }

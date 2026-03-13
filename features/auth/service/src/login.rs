@@ -13,7 +13,6 @@ use features_auth_repo::{
     user::UserQuery,
 };
 
-
 pub struct LoginService {}
 
 impl LoginService {
@@ -29,7 +28,7 @@ impl LoginService {
             scopes: Some(request.scopes),
             user_id: user_data.id,
         };
-        let code_id = AuthCodeMutation::create(db, auth_code_request.into()).await?;
+        let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
         let auth_code = AuthCodeQuery::get(db, code_id).await?;
         let result = LoginData {
             code: auth_code.code.unwrap(),

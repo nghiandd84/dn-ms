@@ -17,16 +17,12 @@ pub struct CustomerMutation {}
 
 impl CustomerMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: CustomerForCreateDto,
     ) -> impl std::future::Future<Output = Result<i32, DbErr>> + 'a {
-        CustomerMutationManager::create_i32(db, data.into())
+        CustomerMutationManager::create_i32(data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: i32,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        CustomerMutationManager::delete_by_id_i32(db, id)
+    pub fn delete<'a>(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        CustomerMutationManager::delete_by_id_i32(id)
     }
 }

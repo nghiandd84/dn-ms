@@ -18,11 +18,8 @@ use features_email_template_repo::template_translation::{
 pub struct TemplateTranslationService {}
 
 impl TemplateTranslationService {
-    pub async fn create<'a>(
-        db: &'a DbConn,
-        request: TemplateTranslationForCreateRequest,
-    ) -> Result<i32> {
-        let result = TemplateTranslationMutation::create(db, request.into()).await?;
+    pub async fn create<'a>(request: TemplateTranslationForCreateRequest) -> Result<i32> {
+        let result = TemplateTranslationMutation::create(request.into()).await?;
         Ok(result)
     }
 
@@ -31,17 +28,13 @@ impl TemplateTranslationService {
         Ok(email_data)
     }
 
-    pub async fn update<'a>(
-        db: &'a DbConn,
-        id: i32,
-        request: TemplateTranslationForUpdateRequest,
-    ) -> Result<bool> {
-        let result = TemplateTranslationMutation::update(db, id, request.into()).await?;
+    pub async fn update<'a>(id: i32, request: TemplateTranslationForUpdateRequest) -> Result<bool> {
+        let result = TemplateTranslationMutation::update(id, request.into()).await?;
         Ok(result)
     }
 
-    pub async fn delete<'a>(db: &'a DbConn, id: i32) -> Result<bool> {
-        let result = TemplateTranslationMutation::delete(db, id).await?;
+    pub async fn delete<'a>(id: i32) -> Result<bool> {
+        let result = TemplateTranslationMutation::delete(id).await?;
         Ok(result)
     }
 

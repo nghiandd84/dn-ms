@@ -17,16 +17,12 @@ pub struct LineitemMutation {}
 
 impl LineitemMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: LineitemForCreateDto,
     ) -> impl std::future::Future<Output = Result<i32, DbErr>> + 'a {
-        LineitemMutationManager::create_i32(db, data.into())
+        LineitemMutationManager::create_i32(data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: i32,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        LineitemMutationManager::delete_by_id_i32(db, id)
+    pub fn delete<'a>(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        LineitemMutationManager::delete_by_id_i32(id)
     }
 }

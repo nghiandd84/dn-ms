@@ -17,16 +17,12 @@ pub struct OrderMutation {}
 
 impl OrderMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: OrderForCreateDto,
     ) -> impl std::future::Future<Output = Result<i32, DbErr>> + 'a {
-        OrderMutationManager::create_i32(db, data.into())
+        OrderMutationManager::create_i32(data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: i32,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        OrderMutationManager::delete_by_id_i32(db, id)
+    pub fn delete<'a>(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        OrderMutationManager::delete_by_id_i32(id)
     }
 }

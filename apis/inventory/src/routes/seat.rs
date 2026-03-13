@@ -40,7 +40,7 @@ async fn create_seat(
     state: State<AppState<InventoryAppState, InventoryCacheState>>,
     ValidJson(req): ValidJson<SeatForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let seat_id = SeatService::create_seat(&state.conn, req).await?;
+    let seat_id = SeatService::create_seat(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(seat_id),
@@ -104,7 +104,7 @@ async fn update_seat(
     Path(seat_id): Path<Uuid>,
     ValidJson(req): ValidJson<SeatForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    SeatService::update_seat(&state.conn, seat_id, req).await?;
+    SeatService::update_seat(seat_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(seat_id),
@@ -124,7 +124,7 @@ async fn delete_seat(
     state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    SeatService::delete_seat(&state.conn, seat_id).await?;
+    SeatService::delete_seat(seat_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(seat_id),

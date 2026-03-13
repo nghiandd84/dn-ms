@@ -5,7 +5,7 @@ use uuid::Uuid;
 use shared_shared_macro::Mutation;
 
 use features_translation_entities::key_tag::{
-    ActiveModel, Column, Entity, KeyTagForCreateDto, KeyTagForUpdateDto, Model, ModelOptionDto,
+    ActiveModel, Column, Entity, KeyTagForCreateDto, Model, ModelOptionDto,
 };
 
 use crate::key_tag::util::assign;
@@ -18,14 +18,12 @@ pub struct KeyTagMutation;
 
 impl KeyTagMutation {
     pub fn create_key_tag<'a>(
-        db: &'a DbConn,
         data: KeyTagForCreateDto,
     ) -> impl Future<Output = Result<Uuid, DbErr>> + 'a {
-        KeyTagMutationManager::create_uuid(db, data.into())
+        KeyTagMutationManager::create_uuid(data.into())
     }
 
     pub fn delete_key_tag<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
         tag_id: Uuid,
     ) -> impl Future<Output = Result<bool, DbErr>> + 'a {
@@ -33,20 +31,19 @@ impl KeyTagMutation {
             let result = Entity::delete_many()
                 .filter(Column::KeyId.eq(key_id))
                 .filter(Column::TagId.eq(tag_id))
-                .exec(db)
+                .exec(KeyTagMutationManager::get_db())
                 .await?;
             Ok(result.rows_affected > 0)
         }
     }
 
     pub async fn delete_all_tags_from_key<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
     ) -> impl Future<Output = Result<bool, DbErr>> + 'a {
         async move {
             let result = Entity::delete_many()
                 .filter(Column::KeyId.eq(key_id))
-                .exec(db)
+                .exec(KeyTagMutationManager::get_db())
                 .await?;
             Ok(result.rows_affected > 0)
         }

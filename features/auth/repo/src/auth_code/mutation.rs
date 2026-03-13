@@ -17,16 +17,14 @@ pub struct AuthCodeMutation {}
 
 impl AuthCodeMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: AuthCodeForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        AuthCodeMutationManager::create_uuid(db, data.into())
+        AuthCodeMutationManager::create_uuid(data.into())
     }
 
     pub fn delete<'a>(
-        db: &'a DbConn,
         id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        AuthCodeMutationManager::delete_by_id_uuid(db, id)
+        AuthCodeMutationManager::delete_by_id_uuid(id)
     }
 }

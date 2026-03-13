@@ -74,7 +74,7 @@ impl TokenService {
                     });
                 }
                 let auth_code = auth_code.as_ref().unwrap();
-                AuthCodeMutation::delete(db, auth_code.id.unwrap()).await?;
+                AuthCodeMutation::delete(auth_code.id.unwrap()).await?;
                 let scopes = auth_code.scopes.clone().unwrap_or_default();
                 let client_secret = client.client_secret.unwrap_or_default();
                 let user_id = auth_code.user_id.unwrap();
@@ -167,7 +167,7 @@ pub async fn create_new_token_authorization_data<'a>(
     dto.client_id = client_id;
     dto.access_token = access_token.clone();
     dto.scopes = scopes.clone();
-    let token_id = TokenMutation::create(db, dto).await?;
+    let token_id = TokenMutation::create(dto).await?;
     debug!("Token created with id: {}", token_id);
 
     let insert_cache = cache.insert(
@@ -199,7 +199,7 @@ pub async fn create_new_token_authorization_data<'a>(
         access_token: None,
         refresh_token: Some(refresh_token.clone()),
     };
-    TokenMutation::update(db, token_id, token_for_update).await?;
+    TokenMutation::update(token_id, token_for_update).await?;
     debug!("Token updated with refresh token for id: {}", token_id);
 
     cache
@@ -262,7 +262,7 @@ pub async fn create_refresh_token_authorization_data<'a>(
         access_token: Some(access_token.clone()),
         refresh_token: Some(refresh_token.clone()),
     };
-    TokenMutation::update(db, token_id, token_for_update).await?;
+    TokenMutation::update(token_id, token_for_update).await?;
     cache
         .insert(
             get_refresh_token_cache_key(user_id),

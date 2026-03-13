@@ -17,11 +17,10 @@ pub struct ProfileService {}
 
 impl ProfileService {
     pub async fn create_profile<'a>(
-        db: &'a DbConn,
         profile_request: ProfileForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: ProfileForCreateDto = profile_request.into();
-        let profile_id = ProfileMutation::create_profile(db, dto).await;
+        let profile_id = ProfileMutation::create_profile(dto).await;
         let id = match profile_id {
             Ok(id) => id,
             Err(e) => {
@@ -56,13 +55,12 @@ impl ProfileService {
     }
 
     pub async fn update_profile<'a>(
-        db: &'a DbConn,
         profile_id: Uuid,
         profile_request: ProfileForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto = profile_request.into();
 
-        let result = ProfileMutation::update_profile(db, profile_id, dto).await;
+        let result = ProfileMutation::update_profile(profile_id, dto).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {
@@ -72,8 +70,8 @@ impl ProfileService {
         }
     }
 
-    pub async fn delete_profile<'a>(db: &'a DbConn, profile_id: Uuid) -> Result<bool, AppError> {
-        let result = ProfileMutation::delete_profile(db, profile_id).await;
+    pub async fn delete_profile<'a>(profile_id: Uuid) -> Result<bool, AppError> {
+        let result = ProfileMutation::delete_profile(profile_id).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {

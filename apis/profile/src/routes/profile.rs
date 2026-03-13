@@ -40,7 +40,7 @@ async fn create_profile(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<ProfileForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let profile_id = ProfileService::create_profile(&state.conn, req).await?;
+    let profile_id = ProfileService::create_profile(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(profile_id),
@@ -119,7 +119,7 @@ async fn update_profile(
     Path(profile_id): Path<Uuid>,
     Json(req): Json<ProfileForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ProfileService::update_profile(&state.conn, profile_id, req).await?;
+    ProfileService::update_profile(profile_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(profile_id),
@@ -138,7 +138,7 @@ async fn delete_profile(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ProfileService::delete_profile(&state.conn, profile_id).await?;
+    ProfileService::delete_profile(profile_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(profile_id),

@@ -19,11 +19,10 @@ pub struct ReservationService {}
 
 impl ReservationService {
     pub async fn create_reservation<'a>(
-        db: &'a DbConn,
         reservation_request: ReservationForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let reservation_id =
-            ReservationMutation::create_reservation(db, reservation_request.into()).await;
+            ReservationMutation::create_reservation(reservation_request.into()).await;
         let id = match reservation_id {
             Ok(id) => id,
             Err(e) => {
@@ -71,12 +70,11 @@ impl ReservationService {
     }
 
     pub async fn update_reservation(
-        db: &DbConn,
         reservation_id: Uuid,
         reservation_request: ReservationForUpdateRequest,
     ) -> Result<bool, AppError> {
         let result =
-            ReservationMutation::update_reservation(db, reservation_id, reservation_request.into())
+            ReservationMutation::update_reservation(reservation_id, reservation_request.into())
                 .await;
         match result {
             Ok(success) => Ok(success),
@@ -89,8 +87,8 @@ impl ReservationService {
         }
     }
 
-    pub async fn delete_reservation(db: &DbConn, reservation_id: Uuid) -> Result<bool, AppError> {
-        let result = ReservationMutation::delete_reservation(db, reservation_id).await;
+    pub async fn delete_reservation(reservation_id: Uuid) -> Result<bool, AppError> {
+        let result = ReservationMutation::delete_reservation(reservation_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

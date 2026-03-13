@@ -18,11 +18,8 @@ use features_email_template_repo::template_placeholder::{
 pub struct TemplatePlaceholderService {}
 
 impl TemplatePlaceholderService {
-    pub async fn create<'a>(
-        db: &'a DbConn,
-        request: TemplatePlaceholderForCreateRequest,
-    ) -> Result<i32> {
-        let result = TemplatePlaceholderMutation::create(db, request.into()).await?;
+    pub async fn create<'a>(request: TemplatePlaceholderForCreateRequest) -> Result<i32> {
+        let result = TemplatePlaceholderMutation::create(request.into()).await?;
         Ok(result)
     }
 
@@ -31,17 +28,13 @@ impl TemplatePlaceholderService {
         Ok(email_data)
     }
 
-    pub async fn update<'a>(
-        db: &'a DbConn,
-        id: i32,
-        request: TemplatePlaeholderForUpdateRequest,
-    ) -> Result<bool> {
-        let result = TemplatePlaceholderMutation::update(db, id, request.into()).await?;
+    pub async fn update<'a>(id: i32, request: TemplatePlaeholderForUpdateRequest) -> Result<bool> {
+        let result = TemplatePlaceholderMutation::update(id, request.into()).await?;
         Ok(result)
     }
 
-    pub async fn delete<'a>(db: &'a DbConn, id: i32) -> Result<bool> {
-        let result = TemplatePlaceholderMutation::delete(db, id).await?;
+    pub async fn delete<'a>(id: i32) -> Result<bool> {
+        let result = TemplatePlaceholderMutation::delete(id).await?;
         Ok(result)
     }
 

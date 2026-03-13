@@ -24,7 +24,7 @@ impl PermissionService {
         db: &'a DbConn,
         request: PermissionForCreateRequest,
     ) -> Result<Uuid> {
-        let permission_id = PermissionMutation::create(db, request.into()).await?;
+        let permission_id = PermissionMutation::create(request.into()).await?;
         Ok(permission_id)
     }
 
@@ -33,7 +33,7 @@ impl PermissionService {
         permission_id: Uuid,
         request: PermissionForUpdateRequest,
     ) -> Result<bool> {
-        let result = PermissionMutation::update(db, permission_id, request.into()).await?;
+        let result = PermissionMutation::update(permission_id, request.into()).await?;
         Ok(result)
     }
 
@@ -89,7 +89,7 @@ impl PermissionService {
     }
 
     pub async fn delete<'a>(db: &'a DbConn, permission_id: Uuid) -> Result<bool> {
-        let result = PermissionMutation::delete(db, permission_id).await?;
+        let result = PermissionMutation::delete(permission_id).await?;
         Ok(result)
     }
 }

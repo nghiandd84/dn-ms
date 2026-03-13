@@ -40,7 +40,7 @@ async fn create_template_translation(
     state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<TemplateTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let translation_id = TemplateTranslationService::create(&state.conn, request).await?;
+    let translation_id = TemplateTranslationService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(translation_id),
@@ -65,7 +65,7 @@ async fn update_template_translation(
     Path(translation_id): Path<i32>,
     ValidJson(request): ValidJson<TemplateTranslationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TemplateTranslationService::update(&state.conn, translation_id, request.into()).await?;
+    TemplateTranslationService::update(translation_id, request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -81,7 +81,7 @@ async fn delete_template_translation(
     state: State<AppState<EmailTemplateCacheState>>,
     Path(translation_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TemplateTranslationService::delete(&state.conn, translation_id).await?;
+    TemplateTranslationService::delete(translation_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

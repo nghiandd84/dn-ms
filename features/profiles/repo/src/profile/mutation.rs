@@ -17,24 +17,21 @@ pub struct ProfileMutation {}
 
 impl ProfileMutation {
     pub fn create_profile<'a>(
-        db: &'a DbConn,
         data: ProfileForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        ProfileMutationManager::create_uuid(db, data.into())
+        ProfileMutationManager::create_uuid(data.into())
     }
 
     pub fn update_profile<'a>(
-        db: &'a DbConn,
         profile_id: Uuid,
         data: ProfileForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ProfileMutationManager::update_by_id_uuid(db, profile_id, data.into())
+        ProfileMutationManager::update_by_id_uuid(profile_id, data.into())
     }
 
     pub fn delete_profile<'a>(
-        db: &'a DbConn,
         profile_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ProfileMutationManager::delete_by_id_uuid(db, profile_id)
+        ProfileMutationManager::delete_by_id_uuid(profile_id)
     }
 }

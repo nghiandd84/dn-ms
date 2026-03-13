@@ -7,7 +7,9 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_core_model::{
-    payment::{PaymentData, PaymentDataFilterParams, PaymentForCreateRequest, PaymentForUpdateRequest},
+    payment::{
+        PaymentData, PaymentDataFilterParams, PaymentForCreateRequest, PaymentForUpdateRequest,
+    },
     state::{PaymentsCoreAppState, PaymentsCoreCacheState},
 };
 
@@ -40,7 +42,7 @@ pub async fn create_payment(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let payment_id = PaymentService::create_payment(&state.conn, req).await?;
+    let payment_id = PaymentService::create_payment(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_id),
@@ -104,7 +106,7 @@ pub async fn update_payment(
     Path(payment_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentService::update_payment(&state.conn, payment_id, req).await?;
+    PaymentService::update_payment(payment_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_id),
@@ -124,7 +126,7 @@ pub async fn delete_payment(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentService::delete_payment(&state.conn, payment_id).await?;
+    PaymentService::delete_payment(payment_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_id),

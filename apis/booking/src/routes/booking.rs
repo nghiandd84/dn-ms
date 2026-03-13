@@ -40,7 +40,7 @@ async fn create_booking(
     state: State<AppState<BookingAppState, BookingCacheState>>,
     ValidJson(req): ValidJson<BookingForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let booking_id = BookingService::create_booking(&state.conn, req).await?;
+    let booking_id = BookingService::create_booking(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
@@ -104,7 +104,7 @@ async fn update_booking(
     Path(booking_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingService::update_booking(&state.conn, booking_id, req).await?;
+    BookingService::update_booking( booking_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
@@ -124,7 +124,7 @@ async fn delete_booking(
     state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingService::delete_booking(&state.conn, booking_id).await?;
+    BookingService::delete_booking(booking_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),

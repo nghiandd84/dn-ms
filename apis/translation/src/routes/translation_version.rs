@@ -41,8 +41,7 @@ async fn create_translation_version(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<TranslationVersionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let version_id =
-        TranslationVersionService::create_translation_version(&state.conn, req).await?;
+    let version_id = TranslationVersionService::create_translation_version(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(version_id),
@@ -145,7 +144,7 @@ async fn update_translation_version(
     Path(version_id): Path<Uuid>,
     Json(req): Json<TranslationVersionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationVersionService::update_translation_version(&state.conn, version_id, req).await?;
+    TranslationVersionService::update_translation_version(version_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(version_id),
@@ -164,7 +163,7 @@ async fn delete_translation_version(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(version_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationVersionService::delete_translation_version(&state.conn, version_id).await?;
+    TranslationVersionService::delete_translation_version(version_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(version_id),

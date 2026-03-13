@@ -40,7 +40,7 @@ async fn create_social_link(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<SocialLinkForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let link_id = SocialLinkService::create_social_link(&state.conn, req).await?;
+    let link_id = SocialLinkService::create_social_link(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(link_id),
@@ -121,7 +121,7 @@ async fn update_social_link(
     Path(link_id): Path<Uuid>,
     Json(req): Json<SocialLinkForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    SocialLinkService::update_social_link(&state.conn, link_id, req).await?;
+    SocialLinkService::update_social_link(link_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(link_id),
@@ -140,7 +140,7 @@ async fn delete_social_link(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(link_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    SocialLinkService::delete_social_link(&state.conn, link_id).await?;
+    SocialLinkService::delete_social_link(link_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(link_id),

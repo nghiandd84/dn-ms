@@ -16,8 +16,8 @@ use features_email_template_repo::email_template::{EmailTemplateMutation, EmailT
 pub struct EmailTemplateService {}
 
 impl EmailTemplateService {
-    pub async fn create<'a>(db: &'a DbConn, request: EmailTemplateForCreateRequest) -> Result<i32> {
-        let result = EmailTemplateMutation::create(db, request.into()).await?;
+    pub async fn create<'a>(request: EmailTemplateForCreateRequest) -> Result<i32> {
+        let result = EmailTemplateMutation::create(request.into()).await?;
 
         debug!("Email template was created with ID: {}", result);
         Ok(result)
@@ -28,19 +28,15 @@ impl EmailTemplateService {
         Ok(email_data)
     }
 
-    pub async fn update<'a>(
-        db: &'a DbConn,
-        id: i32,
-        request: EmailTemplateForUpdateRequest,
-    ) -> Result<bool> {
-        let result = EmailTemplateMutation::update(db, id, request.into()).await?;
+    pub async fn update<'a>(id: i32, request: EmailTemplateForUpdateRequest) -> Result<bool> {
+        let result = EmailTemplateMutation::update(id, request.into()).await?;
 
         debug!("Email template was updated with ID: {}", result);
         Ok(result)
     }
 
-    pub async fn delete<'a>(db: &'a DbConn, id: i32) -> Result<bool> {
-        let result = EmailTemplateMutation::delete(db, id).await?;
+    pub async fn delete<'a>(id: i32) -> Result<bool> {
+        let result = EmailTemplateMutation::delete(id).await?;
         Ok(result)
     }
 

@@ -7,9 +7,12 @@ use features_auth_entities::auth_code::AuthCodeForCreateDto;
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::{auth_code::{
-    AuthCodeData, AuthCodeDataFilterParams, AuthCodeDataResponse, AuthCodeForCreateRequest
-}, state::AuthCacheState};
+use features_auth_model::{
+    auth_code::{
+        AuthCodeData, AuthCodeDataFilterParams, AuthCodeDataResponse, AuthCodeForCreateRequest,
+    },
+    state::AuthCacheState,
+};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -21,8 +24,8 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_repo::auth_code::{AuthCodeMutation, AuthCodeQuery};
 use features_auth_model::state::AuthAppState;
+use features_auth_repo::auth_code::{AuthCodeMutation, AuthCodeQuery};
 
 const TAG: &str = "auth_code";
 
@@ -36,17 +39,16 @@ const TAG: &str = "auth_code";
     )
 )]
 async fn create_auth_code(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
+    _state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<AuthCodeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: AuthCodeForCreateDto = register_request.into();
-    let code_id = AuthCodeMutation::create(&state.conn, dto).await?;
+    let code_id = AuthCodeMutation::create(dto).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(code_id),
     }))
 }
-
 
 #[utoipa::path(
     delete,
@@ -57,10 +59,10 @@ async fn create_auth_code(
     )
 )]
 async fn delete_auth_code(
-    state: State<AppState<AuthAppState, AuthCacheState>>,
+    _state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(auth_code_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    AuthCodeMutation::delete(&state.conn, auth_code_id).await?;
+    AuthCodeMutation::delete(auth_code_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

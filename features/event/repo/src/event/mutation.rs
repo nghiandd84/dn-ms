@@ -17,24 +17,21 @@ pub struct EventMutation;
 
 impl EventMutation {
     pub fn create_event<'a>(
-        db: &'a DbConn,
         data: EventForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        EventMutationManager::create_uuid(db, data.into())
+        EventMutationManager::create_uuid(data.into())
     }
 
     pub fn update_event<'a>(
-        db: &'a DbConn,
         event_id: Uuid,
         data: EventForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        EventMutationManager::update_by_id_uuid(db, event_id, data.into())
+        EventMutationManager::update_by_id_uuid(event_id, data.into())
     }
 
     pub fn delete_event<'a>(
-        db: &'a DbConn,
         event_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        EventMutationManager::delete_by_id_uuid(db, event_id)
+        EventMutationManager::delete_by_id_uuid(event_id)
     }
 }

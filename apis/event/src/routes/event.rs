@@ -44,7 +44,7 @@ async fn create_event(
     let producer = state
         .get_producer(PRODUCER_KEY.to_string())
         .expect("Producer not found");
-    let event_id = EventService::create_event(&state.conn, req, &producer).await?;
+    let event_id = EventService::create_event(req, &producer).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(event_id),
@@ -108,10 +108,10 @@ async fn update_event(
     Path(event_id): Path<Uuid>,
     Json(req): Json<EventForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-        let producer = state
-            .get_producer(PRODUCER_KEY.to_string())
-            .expect("Producer not found");
-    EventService::update_event(&state.conn, event_id, req, &producer).await?;
+    let producer = state
+        .get_producer(PRODUCER_KEY.to_string())
+        .expect("Producer not found");
+    EventService::update_event(event_id, req, &producer).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(event_id),
@@ -131,7 +131,7 @@ async fn delete_event(
     state: State<AppState<EventAppState, EventCacheState>>,
     Path(event_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    EventService::delete_event(&state.conn, event_id).await?;
+    EventService::delete_event(event_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(event_id),

@@ -7,10 +7,13 @@ use axum::{
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::{client::{
-    ClientData, ClientDataFilterParams, ClientDataResponse, ClientForCreateRequest,
-    ClientForUpdateRequest,
-}, state::AuthCacheState};
+use features_auth_model::{
+    client::{
+        ClientData, ClientDataFilterParams, ClientDataResponse, ClientForCreateRequest,
+        ClientForUpdateRequest,
+    },
+    state::AuthCacheState,
+};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -22,8 +25,8 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_auth_repo::client::{ClientMutation, ClientQuery};
 use features_auth_model::state::AuthAppState;
+use features_auth_repo::client::{ClientMutation, ClientQuery};
 
 const TAG: &str = "client";
 
@@ -40,7 +43,7 @@ async fn create_client(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(register_request): ValidJson<ClientForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let role_id = ClientMutation::create(&state.conn, register_request.into()).await?;
+    let role_id = ClientMutation::create(register_request.into()).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(role_id),
@@ -65,7 +68,7 @@ async fn update_client(
     Path(client_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ClientForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ClientMutation::update(&state.conn, client_id, scope_request.into()).await?;
+    ClientMutation::update(client_id, scope_request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -81,7 +84,7 @@ async fn delete_client(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(client_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ClientMutation::delete(&state.conn, client_id).await?;
+    ClientMutation::delete(client_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

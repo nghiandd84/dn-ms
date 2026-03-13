@@ -18,8 +18,8 @@ use features_auth_repo::{
 pub struct RoleService {}
 
 impl RoleService {
-    pub async fn create_role<'a>(db: &'a DbConn, request: RoleForCreateRequest) -> Result<Uuid> {
-        let role_id = RoleMutation::create(db, request.into()).await?;
+    pub async fn create_role<'a>(request: RoleForCreateRequest) -> Result<Uuid> {
+        let role_id = RoleMutation::create(request.into()).await?;
         Ok(role_id)
     }
 
@@ -28,18 +28,13 @@ impl RoleService {
         Ok(role.into())
     }
 
-    pub async fn delete<'a>(db: &'a DbConn, role_id: Uuid) -> Result<bool> {
-        let result = RoleMutation::delete(db, role_id).await?;
+    pub async fn delete<'a>(role_id: Uuid) -> Result<bool> {
+        let result = RoleMutation::delete(role_id).await?;
         Ok(result)
     }
 
-    pub async fn assign_permissions<'a>(
-        db: &'a DbConn,
-        role_id: Uuid,
-        permission_ids: Vec<Uuid>,
-    ) -> Result<bool> {
-        let result =
-            RolePermissionMutation::assign_permissions(db, role_id, permission_ids).await?;
+    pub async fn assign_permissions<'a>(role_id: Uuid, permission_ids: Vec<Uuid>) -> Result<bool> {
+        let result = RolePermissionMutation::assign_permissions(role_id, permission_ids).await?;
         Ok(result)
     }
     pub async fn unassign_permissions<'a>(
@@ -68,7 +63,7 @@ impl RoleService {
                     "Unassign permission id {:?} from role id {:?}",
                     dto.permission_id, role_id
                 );
-                let _ = RolePermissionMutation::delete(db, dto.id.unwrap()).await?;
+                let _ = RolePermissionMutation::delete(dto.id.unwrap()).await?;
             }
         }
         Ok(true)

@@ -15,10 +15,12 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-
-use features_bakery_model::{lineitem::{
-    LineitemData, LineitemDataFilterParams, LineitemDataResponse, LineitemForCreateRequest,
-}, state::BakeryCacheState};
+use features_bakery_model::{
+    lineitem::{
+        LineitemData, LineitemDataFilterParams, LineitemDataResponse, LineitemForCreateRequest,
+    },
+    state::BakeryCacheState,
+};
 use features_bakery_service::lineitem::{LineitemMutation, LineitemQuery};
 
 const TAG: &str = "lineitem";
@@ -37,7 +39,7 @@ async fn create(
     state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<LineitemForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let role_id = LineitemMutation::create(&state.conn, request.into()).await?;
+    let role_id = LineitemMutation::create(request.into()).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(role_id),
@@ -57,7 +59,7 @@ async fn delete_by_id(
     state: State<AppState<BakeryCacheState>>,
     Path(lineitem_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
-    LineitemMutation::delete(&state.conn, lineitem_id).await?;
+    LineitemMutation::delete(lineitem_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 
@@ -105,7 +107,6 @@ async fn filter(
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
-
 
 pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()

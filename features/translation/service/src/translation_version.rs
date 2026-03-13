@@ -23,11 +23,10 @@ pub struct TranslationVersionService {}
 
 impl TranslationVersionService {
     pub async fn create_translation_version<'a>(
-        db: &'a DbConn,
         translation_version_request: TranslationVersionForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: TranslationVersionForCreateDto = translation_version_request.into();
-        let version_id = TranslationVersionMutation::create_translation_version(db, dto).await;
+        let version_id = TranslationVersionMutation::create_translation_version(dto).await;
         let id = match version_id {
             Ok(id) => id,
             Err(e) => {
@@ -63,17 +62,18 @@ impl TranslationVersionService {
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
-        TranslationVersionQuery::get_latest_version_by_key_locale(db, key_id, filters, pagination, order).await
+        TranslationVersionQuery::get_latest_version_by_key_locale(
+            db, key_id, filters, pagination, order,
+        )
+        .await
     }
 
     pub async fn update_translation_version<'a>(
-        db: &'a DbConn,
         version_id: Uuid,
         translation_version_request: TranslationVersionForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto: TranslationVersionForUpdateDto = translation_version_request.into();
-        let result =
-            TranslationVersionMutation::update_translation_version(db, version_id, dto).await;
+        let result = TranslationVersionMutation::update_translation_version(version_id, dto).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -86,10 +86,9 @@ impl TranslationVersionService {
     }
 
     pub async fn delete_translation_version<'a>(
-        db: &'a DbConn,
         version_id: Uuid,
     ) -> Result<bool, AppError> {
-        let result = TranslationVersionMutation::delete_translation_version(db, version_id).await;
+        let result = TranslationVersionMutation::delete_translation_version(version_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

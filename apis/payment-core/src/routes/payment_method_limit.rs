@@ -7,7 +7,10 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_core_model::{
-    payment_method_limit::{PaymentMethodLimitData, PaymentMethodLimitDataFilterParams, PaymentMethodLimitForCreateRequest, PaymentMethodLimitForUpdateRequest},
+    payment_method_limit::{
+        PaymentMethodLimitData, PaymentMethodLimitDataFilterParams,
+        PaymentMethodLimitForCreateRequest, PaymentMethodLimitForUpdateRequest,
+    },
     state::{PaymentsCoreAppState, PaymentsCoreCacheState},
 };
 
@@ -40,7 +43,8 @@ pub async fn create_payment_method_limit(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     ValidJson(req): ValidJson<PaymentMethodLimitForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let payment_method_limit_id = PaymentMethodLimitService::create_payment_method_limit(&state.conn, req).await?;
+    let payment_method_limit_id =
+        PaymentMethodLimitService::create_payment_method_limit(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_method_limit_id),
@@ -59,7 +63,11 @@ pub async fn get_payment_method_limit(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentMethodLimitData>> {
-    let payment_method_limit = PaymentMethodLimitService::get_payment_method_limit_by_id(&state.conn, payment_method_limit_id).await?;
+    let payment_method_limit = PaymentMethodLimitService::get_payment_method_limit_by_id(
+        &state.conn,
+        payment_method_limit_id,
+    )
+    .await?;
     Ok(ResponseJson(payment_method_limit))
 }
 
@@ -85,7 +93,13 @@ pub async fn filter_payment_method_limits(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = PaymentMethodLimitService::get_payment_method_limits(&state.conn, &filters, &pagination, &order).await?;
+    let result = PaymentMethodLimitService::get_payment_method_limits(
+        &state.conn,
+        &filters,
+        &pagination,
+        &order,
+    )
+    .await?;
     Ok(ResponseJson(result))
 }
 
@@ -104,7 +118,7 @@ pub async fn update_payment_method_limit(
     Path(payment_method_limit_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentMethodLimitForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentMethodLimitService::update_payment_method_limit(&state.conn, payment_method_limit_id, req).await?;
+    PaymentMethodLimitService::update_payment_method_limit(payment_method_limit_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_method_limit_id),
@@ -124,7 +138,7 @@ pub async fn delete_payment_method_limit(
     state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    PaymentMethodLimitService::delete_payment_method_limit(&state.conn, payment_method_limit_id).await?;
+    PaymentMethodLimitService::delete_payment_method_limit(payment_method_limit_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_method_limit_id),
@@ -135,8 +149,17 @@ pub fn routes(app_state: &AppState<PaymentsCoreAppState, PaymentsCoreCacheState>
     Router::new()
         .route("/payment-method-limits", post(create_payment_method_limit))
         .route("/payment-method-limits", get(filter_payment_method_limits))
-        .route("/payment-method-limits/{payment_method_limit_id}", get(get_payment_method_limit))
-        .route("/payment-method-limits/{payment_method_limit_id}", patch(update_payment_method_limit))
-        .route("/payment-method-limits/{payment_method_limit_id}", delete(delete_payment_method_limit))
+        .route(
+            "/payment-method-limits/{payment_method_limit_id}",
+            get(get_payment_method_limit),
+        )
+        .route(
+            "/payment-method-limits/{payment_method_limit_id}",
+            patch(update_payment_method_limit),
+        )
+        .route(
+            "/payment-method-limits/{payment_method_limit_id}",
+            delete(delete_payment_method_limit),
+        )
         .with_state(app_state.clone())
 }

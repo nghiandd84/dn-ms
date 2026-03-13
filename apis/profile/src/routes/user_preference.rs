@@ -41,7 +41,7 @@ async fn create_user_preference(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Json(req): Json<UserPreferenceForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let preference_id = UserPreferenceService::create_user_preference(&state.conn, req).await?;
+    let preference_id = UserPreferenceService::create_user_preference(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(preference_id),
@@ -125,7 +125,7 @@ async fn update_user_preference(
     Path(preference_id): Path<Uuid>,
     Json(req): Json<UserPreferenceForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    UserPreferenceService::update_user_preference(&state.conn, preference_id, req).await?;
+    UserPreferenceService::update_user_preference(preference_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(preference_id),
@@ -144,7 +144,7 @@ async fn delete_user_preference(
     state: State<AppState<ProfileAppState, ProfileCacheState>>,
     Path(preference_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    UserPreferenceService::delete_user_preference(&state.conn, preference_id).await?;
+    UserPreferenceService::delete_user_preference(preference_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(preference_id),

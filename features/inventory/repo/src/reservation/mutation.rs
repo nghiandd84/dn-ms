@@ -18,24 +18,21 @@ pub struct ReservationMutation;
 
 impl ReservationMutation {
     pub fn create_reservation<'a>(
-        db: &'a DbConn,
         data: ReservationForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        ReservationMutationManager::create_uuid(db, data.into())
+        ReservationMutationManager::create_uuid(data.into())
     }
 
     pub fn update_reservation<'a>(
-        db: &'a DbConn,
         event_id: Uuid,
         data: ReservationForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ReservationMutationManager::update_by_id_uuid(db, event_id, data.into())
+        ReservationMutationManager::update_by_id_uuid(event_id, data.into())
     }
 
     pub fn delete_reservation<'a>(
-        db: &'a DbConn,
         event_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        ReservationMutationManager::delete_by_id_uuid(db, event_id)
+        ReservationMutationManager::delete_by_id_uuid(event_id)
     }
 }

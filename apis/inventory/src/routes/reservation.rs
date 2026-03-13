@@ -42,7 +42,7 @@ async fn create_reservation(
     state: State<AppState<InventoryAppState, InventoryCacheState>>,
     ValidJson(req): ValidJson<ReservationForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let reservation_id = ReservationService::create_reservation(&state.conn, req).await?;
+    let reservation_id = ReservationService::create_reservation(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(reservation_id),
@@ -114,7 +114,7 @@ async fn update_reservation(
     Path(reservation_id): Path<Uuid>,
     ValidJson(req): ValidJson<ReservationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ReservationService::update_reservation(&state.conn, reservation_id, req).await?;
+    ReservationService::update_reservation(reservation_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(reservation_id),
@@ -134,7 +134,7 @@ async fn delete_reservation(
     state: State<AppState<InventoryAppState, InventoryCacheState>>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ReservationService::delete_reservation(&state.conn, reservation_id).await?;
+    ReservationService::delete_reservation(reservation_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(reservation_id),

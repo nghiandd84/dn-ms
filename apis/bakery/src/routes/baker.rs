@@ -6,6 +6,7 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -15,12 +16,12 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
-use shared_shared_auth::permission::{Auth};
 
 use features_bakery_entities::baker::BakerForCreateDto;
-use features_bakery_model::{baker::{
-    BakerData, BakerDataFilterParams, BakerDataResponse, BakerForCreateRequest,
-}, state::BakeryCacheState};
+use features_bakery_model::{
+    baker::{BakerData, BakerDataFilterParams, BakerDataResponse, BakerForCreateRequest},
+    state::BakeryCacheState,
+};
 use features_bakery_service::baker::{BakerMutation, BakerQuery};
 
 use crate::permission::CanDeleteBaker;
@@ -43,7 +44,7 @@ async fn create(
 ) -> Result<ResponseJson<OkI32>> {
     let dto: BakerForCreateDto = request.into();
     debug!("create_baker: {:?}", dto);
-    let role_id = BakerMutation::create(&state.conn, dto).await?;
+    let role_id = BakerMutation::create(dto).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(role_id),
@@ -64,7 +65,7 @@ async fn delete_by_id(
     auth: Auth<CanDeleteBaker>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
-    BakerMutation::delete(&state.conn, baker_id).await?;
+    BakerMutation::delete(baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 

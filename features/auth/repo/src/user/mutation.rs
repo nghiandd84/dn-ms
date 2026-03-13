@@ -17,16 +17,14 @@ pub struct UserMutation {}
 
 impl UserMutation {
     pub fn create_user<'a>(
-        db: &'a DbConn,
         data: UserForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        (&UserMutationManager::create_uuid)(db, data.into())
+        (&UserMutationManager::create_uuid)(data.into())
     }
 
     pub fn delete_user<'a>(
-        db: &'a DbConn,
         user_id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        UserMutationManager::delete_by_id_uuid(db, user_id)
+        UserMutationManager::delete_by_id_uuid(user_id)
     }
 }

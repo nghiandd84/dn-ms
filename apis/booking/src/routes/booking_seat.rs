@@ -7,7 +7,10 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_booking_model::{
-    booking_seat::{BookingSeatData, BookingSeatDataFilterParams, BookingSeatForCreateRequest, BookingSeatForUpdateRequest},
+    booking_seat::{
+        BookingSeatData, BookingSeatDataFilterParams, BookingSeatForCreateRequest,
+        BookingSeatForUpdateRequest,
+    },
     state::{BookingAppState, BookingCacheState},
 };
 
@@ -40,7 +43,7 @@ async fn create_booking_seat(
     state: State<AppState<BookingAppState, BookingCacheState>>,
     ValidJson(req): ValidJson<BookingSeatForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let booking_seat_id = BookingSeatService::create_booking_seat(&state.conn, req).await?;
+    let booking_seat_id = BookingSeatService::create_booking_seat(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_seat_id),
@@ -59,7 +62,8 @@ async fn get_booking_seat(
     state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<BookingSeatData>> {
-    let booking_seat = BookingSeatService::get_booking_seat_by_id(&state.conn, booking_seat_id).await?;
+    let booking_seat =
+        BookingSeatService::get_booking_seat_by_id(&state.conn, booking_seat_id).await?;
     Ok(ResponseJson(booking_seat))
 }
 
@@ -85,7 +89,8 @@ async fn filter_booking_seats(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = BookingSeatService::get_booking_seats(&state.conn, &filters, &pagination, &order).await?;
+    let result =
+        BookingSeatService::get_booking_seats(&state.conn, &filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -104,7 +109,7 @@ async fn update_booking_seat(
     Path(booking_seat_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingSeatForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingSeatService::update_booking_seat(&state.conn, booking_seat_id, req).await?;
+    BookingSeatService::update_booking_seat(booking_seat_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_seat_id),
@@ -124,7 +129,7 @@ async fn delete_booking_seat(
     state: State<AppState<BookingAppState, BookingCacheState>>,
     Path(booking_seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingSeatService::delete_booking_seat(&state.conn, booking_seat_id).await?;
+    BookingSeatService::delete_booking_seat(booking_seat_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_seat_id),
@@ -136,7 +141,13 @@ pub fn routes(app_state: &AppState<BookingAppState, BookingCacheState>) -> Route
         .route("/booking-seats", post(create_booking_seat))
         .route("/booking-seats", get(filter_booking_seats))
         .route("/booking-seats/{booking_seat_id}", get(get_booking_seat))
-        .route("/booking-seats/{booking_seat_id}", patch(update_booking_seat))
-        .route("/booking-seats/{booking_seat_id}", delete(delete_booking_seat))
+        .route(
+            "/booking-seats/{booking_seat_id}",
+            patch(update_booking_seat),
+        )
+        .route(
+            "/booking-seats/{booking_seat_id}",
+            delete(delete_booking_seat),
+        )
         .with_state(app_state.clone())
 }

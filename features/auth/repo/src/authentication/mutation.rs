@@ -17,9 +17,8 @@ pub struct AuthenticationRequestMutation {}
 
 impl AuthenticationRequestMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: AuthenticationRequestForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        AuthenticationMutationManager::create_uuid(db, data.into())
+        AuthenticationMutationManager::create_uuid(data.into())
     }
 }

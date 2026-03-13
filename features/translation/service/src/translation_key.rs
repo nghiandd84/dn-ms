@@ -25,11 +25,10 @@ pub struct TranslationKeyService {}
 
 impl TranslationKeyService {
     pub async fn create_translation_key<'a>(
-        db: &'a DbConn,
         translation_key_request: TranslationKeyForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: TranslationKeyForCreateDto = translation_key_request.into();
-        let key_id = TranslationKeyMutation::create_translation_key(db, dto).await;
+        let key_id = TranslationKeyMutation::create_translation_key(dto).await;
         let id = match key_id {
             Ok(id) => id,
             Err(e) => {
@@ -66,13 +65,12 @@ impl TranslationKeyService {
     }
 
     pub async fn update_translation_key<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
         translation_key_request: TranslationKeyForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto: features_translation_entities::translation_key::TranslationKeyForUpdateDto =
             translation_key_request.into();
-        let result = TranslationKeyMutation::update_translation_key(db, key_id, dto).await;
+        let result = TranslationKeyMutation::update_translation_key(key_id, dto).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -84,11 +82,8 @@ impl TranslationKeyService {
         }
     }
 
-    pub async fn delete_translation_key<'a>(
-        db: &'a DbConn,
-        key_id: Uuid,
-    ) -> Result<bool, AppError> {
-        let result = TranslationKeyMutation::delete_translation_key(db, key_id).await;
+    pub async fn delete_translation_key<'a>(key_id: Uuid) -> Result<bool, AppError> {
+        let result = TranslationKeyMutation::delete_translation_key(key_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -110,7 +105,7 @@ impl TranslationKeyService {
             let exists = KeyTagQueryManager::key_tag_exists(db, key_id, tag_id).await?;
             if !exists {
                 let dto = KeyTagForCreateDto { key_id, tag_id };
-                match KeyTagMutation::create_key_tag(db, dto).await {
+                match KeyTagMutation::create_key_tag(dto).await {
                     Ok(_) => success = true,
                     Err(e) => {
                         debug!("Error assigning tag to key: {:?}", e);
@@ -125,13 +120,12 @@ impl TranslationKeyService {
     }
 
     pub async fn unassign_tags_from_key<'a>(
-        db: &'a DbConn,
         key_id: Uuid,
         req: UnassignTagsRequest,
     ) -> Result<bool, AppError> {
         let mut success = false;
         for tag_id in req.tag_ids {
-            match KeyTagMutation::delete_key_tag(db, key_id, tag_id).await {
+            match KeyTagMutation::delete_key_tag(key_id, tag_id).await {
                 Ok(deleted) => {
                     if deleted {
                         success = true;

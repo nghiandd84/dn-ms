@@ -17,11 +17,10 @@ pub struct SocialLinkService {}
 
 impl SocialLinkService {
     pub async fn create_social_link<'a>(
-        db: &'a DbConn,
         social_link_request: SocialLinkForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: SocialLinkForCreateDto = social_link_request.into();
-        let link_id = SocialLinkMutation::create_social_link(db, dto).await;
+        let link_id = SocialLinkMutation::create_social_link(dto).await;
         let id = match link_id {
             Ok(id) => id,
             Err(e) => {
@@ -58,12 +57,11 @@ impl SocialLinkService {
     }
 
     pub async fn update_social_link<'a>(
-        db: &'a DbConn,
         link_id: Uuid,
         social_link_request: features_profiles_model::SocialLinkForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto = social_link_request.into();
-        let result = SocialLinkMutation::update_social_link(db, link_id, dto).await;
+        let result = SocialLinkMutation::update_social_link(link_id, dto).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {
@@ -75,8 +73,8 @@ impl SocialLinkService {
         }
     }
 
-    pub async fn delete_social_link<'a>(db: &'a DbConn, link_id: Uuid) -> Result<bool, AppError> {
-        let result = SocialLinkMutation::delete_social_link(db, link_id).await;
+    pub async fn delete_social_link<'a>(link_id: Uuid) -> Result<bool, AppError> {
+        let result = SocialLinkMutation::delete_social_link(link_id).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {

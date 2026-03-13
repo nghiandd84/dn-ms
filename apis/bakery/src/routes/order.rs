@@ -15,10 +15,10 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-
-use features_bakery_model::{order::{
-    OrderData, OrderDataFilterParams, OrderDataResponse, OrderForCreateRequest,
-}, state::BakeryCacheState};
+use features_bakery_model::{
+    order::{OrderData, OrderDataFilterParams, OrderDataResponse, OrderForCreateRequest},
+    state::BakeryCacheState,
+};
 use features_bakery_service::order::{OrderMutation, OrderQuery};
 
 const TAG: &str = "order";
@@ -37,7 +37,7 @@ async fn create(
     state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<OrderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let role_id = OrderMutation::create(&state.conn, request.into()).await?;
+    let role_id = OrderMutation::create(request.into()).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(role_id),
@@ -57,7 +57,7 @@ async fn delete_by_id(
     state: State<AppState<BakeryCacheState>>,
     Path(order_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
-    OrderMutation::delete(&state.conn, order_id).await?;
+    OrderMutation::delete(order_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 
@@ -105,7 +105,6 @@ async fn filter(
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
-
 
 pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()

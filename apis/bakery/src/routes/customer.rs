@@ -15,10 +15,12 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-
-use features_bakery_model::{customer::{
-    CustomerData, CustomerDataFilterParams, CustomerDataResponse, CustomerForCreateRequest,
-}, state::BakeryCacheState};
+use features_bakery_model::{
+    customer::{
+        CustomerData, CustomerDataFilterParams, CustomerDataResponse, CustomerForCreateRequest,
+    },
+    state::BakeryCacheState,
+};
 use features_bakery_service::customer::{CustomerMutation, CustomerQuery};
 
 const TAG: &str = "customer";
@@ -37,7 +39,7 @@ async fn create(
     state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CustomerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let role_id = CustomerMutation::create(&state.conn, request.into()).await?;
+    let role_id = CustomerMutation::create(request.into()).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(role_id),
@@ -57,7 +59,7 @@ async fn delete_by_id(
     state: State<AppState<BakeryCacheState>>,
     Path(customer_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
-    CustomerMutation::delete(&state.conn, customer_id).await?;
+    CustomerMutation::delete(customer_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 
@@ -105,7 +107,6 @@ async fn filter(
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
-
 
 pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()

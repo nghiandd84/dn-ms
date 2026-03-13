@@ -19,11 +19,10 @@ pub struct BookingSeatService {}
 
 impl BookingSeatService {
     pub async fn create_booking_seat<'a>(
-        db: &'a DbConn,
         booking_seat_request: BookingSeatForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let booking_seat_id =
-            BookingSeatMutation::create_booking_seat(db, booking_seat_request.into()).await;
+            BookingSeatMutation::create_booking_seat(booking_seat_request.into()).await;
         let id = match booking_seat_id {
             Ok(id) => id,
             Err(e) => {
@@ -71,16 +70,12 @@ impl BookingSeatService {
     }
 
     pub async fn update_booking_seat(
-        db: &DbConn,
         booking_seat_id: Uuid,
         booking_seat_request: BookingSeatForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result = BookingSeatMutation::update_booking_seat(
-            db,
-            booking_seat_id,
-            booking_seat_request.into(),
-        )
-        .await;
+        let result =
+            BookingSeatMutation::update_booking_seat(booking_seat_id, booking_seat_request.into())
+                .await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -92,8 +87,8 @@ impl BookingSeatService {
         }
     }
 
-    pub async fn delete_booking_seat(db: &DbConn, booking_seat_id: Uuid) -> Result<bool, AppError> {
-        let result = BookingSeatMutation::delete_booking_seat(db, booking_seat_id).await;
+    pub async fn delete_booking_seat( booking_seat_id: Uuid) -> Result<bool, AppError> {
+        let result = BookingSeatMutation::delete_booking_seat(booking_seat_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

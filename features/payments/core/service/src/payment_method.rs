@@ -19,11 +19,10 @@ pub struct PaymentMethodService {}
 
 impl PaymentMethodService {
     pub async fn create_payment_method<'a>(
-        db: &'a DbConn,
         payment_method_request: PaymentMethodForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let payment_method_id =
-            PaymentMethodMutation::create_payment_method(db, payment_method_request.into()).await;
+            PaymentMethodMutation::create_payment_method(payment_method_request.into()).await;
         let id = match payment_method_id {
             Ok(id) => id,
             Err(e) => {
@@ -71,13 +70,14 @@ impl PaymentMethodService {
     }
 
     pub async fn update_payment_method(
-        db: &DbConn,
         payment_method_id: Uuid,
         payment_method_request: PaymentMethodForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result =
-            PaymentMethodMutation::update_payment_method(db, payment_method_id, payment_method_request.into())
-                .await;
+        let result = PaymentMethodMutation::update_payment_method(
+            payment_method_id,
+            payment_method_request.into(),
+        )
+        .await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -89,8 +89,8 @@ impl PaymentMethodService {
         }
     }
 
-    pub async fn delete_payment_method(db: &DbConn, payment_method_id: Uuid) -> Result<bool, AppError> {
-        let result = PaymentMethodMutation::delete_payment_method(db, payment_method_id).await;
+    pub async fn delete_payment_method(payment_method_id: Uuid) -> Result<bool, AppError> {
+        let result = PaymentMethodMutation::delete_payment_method(payment_method_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

@@ -19,11 +19,10 @@ pub struct PaymentAttemptService {}
 
 impl PaymentAttemptService {
     pub async fn create_payment_attempt<'a>(
-        db: &'a DbConn,
         payment_attempt_request: PaymentAttemptForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let payment_attempt_id =
-            PaymentAttemptMutation::create_payment_attempt(db, payment_attempt_request.into()).await;
+            PaymentAttemptMutation::create_payment_attempt(payment_attempt_request.into()).await;
         let id = match payment_attempt_id {
             Ok(id) => id,
             Err(e) => {
@@ -71,13 +70,14 @@ impl PaymentAttemptService {
     }
 
     pub async fn update_payment_attempt(
-        db: &DbConn,
         payment_attempt_id: Uuid,
         payment_attempt_request: PaymentAttemptForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result =
-            PaymentAttemptMutation::update_payment_attempt(db, payment_attempt_id, payment_attempt_request.into())
-                .await;
+        let result = PaymentAttemptMutation::update_payment_attempt(
+            payment_attempt_id,
+            payment_attempt_request.into(),
+        )
+        .await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
@@ -89,8 +89,8 @@ impl PaymentAttemptService {
         }
     }
 
-    pub async fn delete_payment_attempt(db: &DbConn, payment_attempt_id: Uuid) -> Result<bool, AppError> {
-        let result = PaymentAttemptMutation::delete_payment_attempt(db, payment_attempt_id).await;
+    pub async fn delete_payment_attempt(payment_attempt_id: Uuid) -> Result<bool, AppError> {
+        let result = PaymentAttemptMutation::delete_payment_attempt(payment_attempt_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

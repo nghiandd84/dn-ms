@@ -20,11 +20,9 @@ pub struct PaymentMethodLimitService {}
 
 impl PaymentMethodLimitService {
     pub async fn create_payment_method_limit<'a>(
-        db: &'a DbConn,
         payment_method_limit_request: PaymentMethodLimitForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let payment_method_limit_id = PaymentMethodLimitMutation::create_payment_method_limit(
-            db,
             payment_method_limit_request.into(),
         )
         .await;
@@ -57,12 +55,10 @@ impl PaymentMethodLimitService {
     }
 
     pub async fn update_payment_method_limit(
-        db: &DbConn,
         payment_method_limit_id: Uuid,
         payment_method_limit_request: PaymentMethodLimitForUpdateRequest,
     ) -> Result<bool, AppError> {
         let result = PaymentMethodLimitMutation::update_payment_method_limit(
-            db,
             payment_method_limit_id,
             payment_method_limit_request.into(),
         )
@@ -79,12 +75,10 @@ impl PaymentMethodLimitService {
     }
 
     pub async fn delete_payment_method_limit(
-        db: &DbConn,
         payment_method_limit_id: Uuid,
     ) -> Result<bool, AppError> {
         let result =
-            PaymentMethodLimitMutation::delete_payment_method_limit(db, payment_method_limit_id)
-                .await;
+            PaymentMethodLimitMutation::delete_payment_method_limit(payment_method_limit_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

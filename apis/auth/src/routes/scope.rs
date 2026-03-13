@@ -7,10 +7,13 @@ use features_auth_entities::scope::ScopeForCreateDto;
 use tracing::debug;
 use uuid::Uuid;
 
-use features_auth_model::{scope::{
-    ScopeData, ScopeDataFilterParams, ScopeDataResponse, ScopeForCreateRequest,
-    ScopeForUpdateRequest,
-}, state::{AuthAppState, AuthCacheState}};
+use features_auth_model::{
+    scope::{
+        ScopeData, ScopeDataFilterParams, ScopeDataResponse, ScopeForCreateRequest,
+        ScopeForUpdateRequest,
+    },
+    state::{AuthAppState, AuthCacheState},
+};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -23,7 +26,6 @@ use shared_shared_data_core::{
 };
 
 use features_auth_repo::scope::{ScopeMutation, ScopeQuery};
-
 
 const TAG: &str = "scope";
 
@@ -41,7 +43,7 @@ async fn create_scope(
     ValidJson(register_request): ValidJson<ScopeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: ScopeForCreateDto = register_request.into();
-    let role_id = ScopeMutation::create(&state.conn, dto).await?;
+    let role_id = ScopeMutation::create(dto).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(role_id),
@@ -66,7 +68,7 @@ async fn update_scope(
     Path(scope_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ScopeForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ScopeMutation::update(&state.conn, scope_id, scope_request.into()).await?;
+    ScopeMutation::update(scope_id, scope_request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -82,7 +84,7 @@ async fn delete_scope(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(scope_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    ScopeMutation::delete(&state.conn, scope_id).await?;
+    ScopeMutation::delete(scope_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

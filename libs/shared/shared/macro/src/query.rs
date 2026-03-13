@@ -229,7 +229,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             #[tracing::instrument(skip(db))]
             async fn get_by_id_uuid(db: &DbConn, id: Uuid) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
-                    .one(db)
+                    .one(Self::get_db())
                     .await?
                     .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
                 let model_option: ModelOptionDto = exists.into();
@@ -248,7 +248,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             #[tracing::instrument(skip(db))]
             async fn get_by_id_i32(db: &DbConn, id: i32) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
-                    .one(db)
+                    .one(Self::get_db())
                     .await?
                     .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
                 let model_option: ModelOptionDto = exists.into();
@@ -271,11 +271,17 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             prelude::*
         };
         use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, order::OrderDirection};
+        use shared_shared_config::db::DB_READ;
         
 
         impl #name {
             fn compute_pages_number(num_items: u64, page_size: u64) -> u64 {
                 (num_items / page_size) + (num_items % page_size > 0) as u64
+            }
+
+            pub fn get_db<'a>() -> &'a DbConn {
+                let db: &DbConn = DB_READ.get().expect("DB_READ is not initialized");
+                db
             }
 
             /*
@@ -348,7 +354,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 if page <= 0 {
                     page = 1;
                 }
-                let paginator = Self::build_query(order, filter).paginate(db, page_size);
+                let paginator = Self::build_query(order, filter).paginate(Self::get_db(), page_size);
                 let num_pages = paginator.num_pages().await?;
                 let result = paginator.fetch_page(page - 1).await?;
                 let result: Vec<ModelOptionDto> = result.into_iter().map(|m| m.into()).collect();

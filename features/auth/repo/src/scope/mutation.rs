@@ -18,26 +18,21 @@ pub struct ScopeMutation {}
 
 impl ScopeMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: ScopeForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        ScopeMutationManager::create_uuid(db, data.into())
+        ScopeMutationManager::create_uuid(data.into())
     }
 
     pub fn update<'a>(
-        db: &'a DbConn,
         id: Uuid,
         data: ScopeForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         debug!("Delete scope {:?} data {:?}", id, data);
-        ScopeMutationManager::update_by_id_uuid(db, id, data.into())
+        ScopeMutationManager::update_by_id_uuid(id, data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: Uuid,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         debug!("Delete scope {:?}", id);
-        ScopeMutationManager::delete_by_id_uuid(db, id)
+        ScopeMutationManager::delete_by_id_uuid(id)
     }
 }

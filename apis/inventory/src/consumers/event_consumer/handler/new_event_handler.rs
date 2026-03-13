@@ -7,10 +7,7 @@ use features_inventory_service::SeatService;
 
 use crate::consumers::event_consumer::error::EventError;
 
-pub async fn handle_new_event<'a>(
-    message: NewEventMessage,
-    db: &'a DbConn,
-) -> Result<(), EventError> {
+pub async fn handle_new_event<'a>(message: NewEventMessage) -> Result<(), EventError> {
     // async move {
     debug!("Handling new event: {:?}", message);
     let event_id = message.id;
@@ -27,7 +24,7 @@ pub async fn handle_new_event<'a>(
         })
         .collect::<Vec<_>>();
 
-    let result = SeatService::bulk_create_seats(db, seat_requests).await;
+    let result = SeatService::bulk_create_seats(seat_requests).await;
     match result {
         Ok(seat_ids) => {
             debug!("Created seats with IDs: {:?}", seat_ids);

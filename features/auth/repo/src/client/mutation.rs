@@ -1,11 +1,10 @@
 use sea_orm::{DbConn, DbErr};
-use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::client::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, ClientForCreateDto, ClientForUpdateDto,
+    ActiveModel, ClientForCreateDto, ClientForUpdateDto, Column, Entity, Model, ModelOptionDto,
 };
 
 use crate::client::util::assign;
@@ -18,26 +17,21 @@ pub struct ClientMutation {}
 
 impl ClientMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: ClientForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        ClientMutationManager::create_uuid(db, data.into())
+        ClientMutationManager::create_uuid(data.into())
     }
 
     pub fn update<'a>(
-        db: &'a DbConn,
         id: Uuid,
         data: ClientForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        debug!("Update scope {:?} data {:?}", id, data);
-        ClientMutationManager::update_by_id_uuid(db, id, data.into())
+        ClientMutationManager::update_by_id_uuid(id, data.into())
     }
 
     pub fn delete<'a>(
-        db: &'a DbConn,
         id: Uuid,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        debug!("Delete scope {:?}", id);
-        ClientMutationManager::delete_by_id_uuid(db, id)
+        ClientMutationManager::delete_by_id_uuid(id)
     }
 }

@@ -8,8 +8,8 @@ use uuid::Uuid;
 
 use features_translation_model::{
     state::{TranslationAppState, TranslationCacheState},
-    TranslationKeyData, TranslationKeyDataFilterParams, TranslationKeyForCreateRequest,
-    TranslationKeyForUpdateRequest, AssignTagsRequest, UnassignTagsRequest,
+    AssignTagsRequest, TranslationKeyData, TranslationKeyDataFilterParams,
+    TranslationKeyForCreateRequest, TranslationKeyForUpdateRequest, UnassignTagsRequest,
 };
 
 use shared_shared_app::state::AppState;
@@ -41,7 +41,7 @@ async fn create_translation_key(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<TranslationKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let key_id = TranslationKeyService::create_translation_key(&state.conn, req).await?;
+    let key_id = TranslationKeyService::create_translation_key(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(key_id),
@@ -123,7 +123,7 @@ async fn update_translation_key(
     Path(key_id): Path<Uuid>,
     Json(req): Json<TranslationKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationKeyService::update_translation_key(&state.conn, key_id, req).await?;
+    TranslationKeyService::update_translation_key(key_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(key_id),
@@ -142,7 +142,7 @@ async fn delete_translation_key(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(key_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationKeyService::delete_translation_key(&state.conn, key_id).await?;
+    TranslationKeyService::delete_translation_key(key_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(key_id),
@@ -184,7 +184,7 @@ async fn unassign_tags_from_key(
     Path(key_id): Path<Uuid>,
     Json(req): Json<UnassignTagsRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TranslationKeyService::unassign_tags_from_key(&state.conn, key_id, req).await?;
+    TranslationKeyService::unassign_tags_from_key(key_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(key_id),
@@ -198,8 +198,14 @@ pub fn routes(app_state: &AppState<TranslationAppState, TranslationCacheState>) 
         .route("/translation-keys/{key_id}", get(get_translation_key))
         .route("/translation-keys/{key_id}", patch(update_translation_key))
         .route("/translation-keys/{key_id}", delete(delete_translation_key))
-        .route("/translation-keys/{key_id}/assign-tags", post(assign_tags_to_key))
-        .route("/translation-keys/{key_id}/unassign-tags", post(unassign_tags_from_key))
+        .route(
+            "/translation-keys/{key_id}/assign-tags",
+            post(assign_tags_to_key),
+        )
+        .route(
+            "/translation-keys/{key_id}/unassign-tags",
+            post(unassign_tags_from_key),
+        )
         .route(
             "/projects/{project_id}/translation-keys",
             get(get_translation_keys_by_project),

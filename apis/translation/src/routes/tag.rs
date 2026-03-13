@@ -40,7 +40,7 @@ async fn create_tag(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Json(req): Json<TagForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let tag_id = TagService::create_tag(&state.conn, req).await?;
+    let tag_id = TagService::create_tag(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(tag_id),
@@ -103,7 +103,7 @@ async fn update_tag(
     Path(tag_id): Path<Uuid>,
     Json(req): Json<TagForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TagService::update_tag(&state.conn, tag_id, req).await?;
+    TagService::update_tag(tag_id, req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(tag_id),
@@ -122,7 +122,7 @@ async fn delete_tag(
     state: State<AppState<TranslationAppState, TranslationCacheState>>,
     Path(tag_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TagService::delete_tag(&state.conn, tag_id).await?;
+    TagService::delete_tag(tag_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(tag_id),

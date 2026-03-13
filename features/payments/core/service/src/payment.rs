@@ -19,18 +19,14 @@ pub struct PaymentService {}
 
 impl PaymentService {
     pub async fn create_payment<'a>(
-        db: &'a DbConn,
         payment_request: PaymentForCreateRequest,
     ) -> Result<Uuid, AppError> {
-        let payment_id =
-            PaymentMutation::create_payment(db, payment_request.into()).await;
+        let payment_id = PaymentMutation::create_payment(payment_request.into()).await;
         let id = match payment_id {
             Ok(id) => id,
             Err(e) => {
                 debug!("Error creating payment: {:?}", e);
-                return Err(AppError::Internal(
-                    "Failed to create payment".to_string(),
-                ));
+                return Err(AppError::Internal("Failed to create payment".to_string()));
             }
         };
         Ok(id)
@@ -71,33 +67,26 @@ impl PaymentService {
     }
 
     pub async fn update_payment(
-        db: &DbConn,
         payment_id: Uuid,
         payment_request: PaymentForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result =
-            PaymentMutation::update_payment(db, payment_id, payment_request.into())
-                .await;
+        let result = PaymentMutation::update_payment(payment_id, payment_request.into()).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
                 debug!("Error updating payment: {:?}", e);
-                Err(AppError::Internal(
-                    "Failed to update payment".to_string(),
-                ))
+                Err(AppError::Internal("Failed to update payment".to_string()))
             }
         }
     }
 
-    pub async fn delete_payment(db: &DbConn, payment_id: Uuid) -> Result<bool, AppError> {
-        let result = PaymentMutation::delete_payment(db, payment_id).await;
+    pub async fn delete_payment(payment_id: Uuid) -> Result<bool, AppError> {
+        let result = PaymentMutation::delete_payment(payment_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
                 debug!("Error deleting payment: {:?}", e);
-                Err(AppError::Internal(
-                    "Failed to delete payment".to_string(),
-                ))
+                Err(AppError::Internal("Failed to delete payment".to_string()))
             }
         }
     }

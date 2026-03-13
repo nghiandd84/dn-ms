@@ -37,7 +37,7 @@ async fn delete_user(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    UserMutation::delete_user(&state.conn, user_id).await?;
+    UserMutation::delete_user(user_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

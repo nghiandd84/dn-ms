@@ -19,11 +19,10 @@ pub struct EventService {}
 
 impl EventService {
     pub async fn create_event<'a>(
-        db: &'a DbConn,
         event_request: EventForCreateRequest,
         producer: &'a Producer,
     ) -> Result<Uuid, AppError> {
-        let event_id = EventMutation::create_event(db, event_request.clone().into()).await;
+        let event_id = EventMutation::create_event(event_request.clone().into()).await;
         let id = match event_id {
             Ok(id) => id,
             Err(e) => {
@@ -83,12 +82,11 @@ impl EventService {
     }
 
     pub async fn update_event(
-        db: &DbConn,
         event_id: Uuid,
         event_request: EventForUpdateRequest,
         producer: &Producer,
     ) -> Result<bool, AppError> {
-        let result = EventMutation::update_event(db, event_id, event_request.clone().into()).await;
+        let result = EventMutation::update_event(event_id, event_request.clone().into()).await;
         match result {
             Ok(success) => {
                 if event_request.total_seats.is_some() {
@@ -116,8 +114,8 @@ impl EventService {
         }
     }
 
-    pub async fn delete_event(db: &DbConn, event_id: Uuid) -> Result<bool, AppError> {
-        let result = EventMutation::delete_event(db, event_id).await;
+    pub async fn delete_event(event_id: Uuid) -> Result<bool, AppError> {
+        let result = EventMutation::delete_event(event_id).await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {

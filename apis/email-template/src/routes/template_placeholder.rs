@@ -40,7 +40,7 @@ async fn create_template_placeholder(
     state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<TemplatePlaceholderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let placeholder_id = TemplatePlaceholderService::create(&state.conn, request).await?;
+    let placeholder_id = TemplatePlaceholderService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(placeholder_id),
@@ -65,7 +65,7 @@ async fn update_template_placeholder(
     Path(placeholder_id): Path<i32>,
     ValidJson(request): ValidJson<TemplatePlaeholderForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TemplatePlaceholderService::update(&state.conn, placeholder_id, request.into()).await?;
+    TemplatePlaceholderService::update(placeholder_id, request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -81,7 +81,7 @@ async fn delete_template_placeholder(
     state: State<AppState<EmailTemplateCacheState>>,
     Path(placeholder_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
-    TemplatePlaceholderService::delete(&state.conn, placeholder_id).await?;
+    TemplatePlaceholderService::delete(placeholder_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

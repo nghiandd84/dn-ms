@@ -39,7 +39,7 @@ async fn create_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let template_id = EmailTemplateService::create(&state.conn, request).await?;
+    let template_id = EmailTemplateService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(template_id),
@@ -64,7 +64,7 @@ async fn update_email_template(
     Path(template_id): Path<i32>,
     ValidJson(request): ValidJson<EmailTemplateForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    EmailTemplateService::update(&state.conn, template_id, request.into()).await?;
+    EmailTemplateService::update(template_id, request.into()).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -80,7 +80,7 @@ async fn delete_email_template(
     state: State<AppState<EmailTemplateCacheState>>,
     Path(template_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
-    EmailTemplateService::delete(&state.conn, template_id).await?;
+    EmailTemplateService::delete(template_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 

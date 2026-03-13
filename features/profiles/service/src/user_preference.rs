@@ -17,11 +17,10 @@ pub struct UserPreferenceService {}
 
 impl UserPreferenceService {
     pub async fn create_user_preference<'a>(
-        db: &'a DbConn,
         preference_request: UserPreferenceForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let dto: UserPreferenceForCreateDto = preference_request.into();
-        let preference_id = UserPreferenceMutation::create_user_preference(db, dto).await;
+        let preference_id = UserPreferenceMutation::create_user_preference(dto).await;
         let id = match preference_id {
             Ok(id) => id,
             Err(e) => {
@@ -58,12 +57,11 @@ impl UserPreferenceService {
     }
 
     pub async fn update_user_preference<'a>(
-        db: &'a DbConn,
         preference_id: Uuid,
         preference_request: features_profiles_model::UserPreferenceForUpdateRequest,
     ) -> Result<bool, AppError> {
         let dto = preference_request.into();
-        let result = UserPreferenceMutation::update_user_preference(db, preference_id, dto).await;
+        let result = UserPreferenceMutation::update_user_preference(preference_id, dto).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {
@@ -75,11 +73,8 @@ impl UserPreferenceService {
         }
     }
 
-    pub async fn delete_user_preference<'a>(
-        db: &'a DbConn,
-        preference_id: Uuid,
-    ) -> Result<bool, AppError> {
-        let result = UserPreferenceMutation::delete_user_preference(db, preference_id).await;
+    pub async fn delete_user_preference<'a>(preference_id: Uuid) -> Result<bool, AppError> {
+        let result = UserPreferenceMutation::delete_user_preference(preference_id).await;
         match result {
             Ok(_) => Ok(true),
             Err(e) => {

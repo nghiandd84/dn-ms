@@ -11,7 +11,6 @@ use features_auth_entities::role::{
 use crate::role::util::assign;
 
 #[derive(Mutation)]
-
 #[mutation(key_type(Uuid))]
 struct RoleMutationManager {}
 
@@ -19,25 +18,20 @@ pub struct RoleMutation {}
 
 impl RoleMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: RoleForCreateDto,
     ) -> impl std::future::Future<Output = Result<Uuid, DbErr>> + 'a {
-        RoleMutationManager::create_uuid(db, data.into())
+        RoleMutationManager::create_uuid(data.into())
     }
 
     pub fn update<'a>(
-        db: &'a DbConn,
         id: Uuid,
         data: RoleForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        RoleMutationManager::update_by_id_uuid(db, id, data.into())
+        RoleMutationManager::update_by_id_uuid(id, data.into())
     }
 
-    pub fn delete<'a>(
-        db: &'a DbConn,
-        id: Uuid,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         debug!("Delete role {:?}", id);
-        RoleMutationManager::delete_by_id_uuid(db, id)
+        RoleMutationManager::delete_by_id_uuid(id)
     }
 }

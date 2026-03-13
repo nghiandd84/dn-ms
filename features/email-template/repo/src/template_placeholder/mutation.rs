@@ -18,24 +18,21 @@ pub struct TemplatePlaceholderMutation {}
 
 impl TemplatePlaceholderMutation {
     pub fn create<'a>(
-        db: &'a DbConn,
         data: TemplatePlaceholderForCreateDto,
     ) -> impl std::future::Future<Output = Result<i32, DbErr>> + 'a {
-        TemplatePlaceholderMutationManager::create_i32(db, data.into())
+        TemplatePlaceholderMutationManager::create_i32(data.into())
     }
 
     pub fn update<'a>(
-        db: &'a DbConn,
         id: i32,
         data: TemplatePlaceholderForUpdateDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        TemplatePlaceholderMutationManager::update_by_id_i32(db, id, data.into())
+        TemplatePlaceholderMutationManager::update_by_id_i32(id, data.into())
     }
 
     pub fn delete<'a>(
-        db: &'a DbConn,
         id: i32,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
-        TemplatePlaceholderMutationManager::delete_by_id_i32(db, id)
+        TemplatePlaceholderMutationManager::delete_by_id_i32(id)
     }
 }

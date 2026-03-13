@@ -15,9 +15,10 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_bakery_model::{cake::{
-    CakeData, CakeDataFilterParams, CakeDataResponse, CakeForCreateRequest,
-}, state::BakeryCacheState};
+use features_bakery_model::{
+    cake::{CakeData, CakeDataFilterParams, CakeDataResponse, CakeForCreateRequest},
+    state::BakeryCacheState,
+};
 use features_bakery_service::cake::{CakeMutation, CakeQuery};
 
 const TAG: &str = "cake";
@@ -36,7 +37,7 @@ async fn create(
     state: State<AppState<BakeryCacheState>>,
     ValidJson(request): ValidJson<CakeForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
-    let role_id = CakeMutation::create(&state.conn,  request.into()).await?;
+    let role_id = CakeMutation::create(request.into()).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
         id: Some(role_id),
@@ -56,7 +57,7 @@ async fn delete_by_id(
     state: State<AppState<BakeryCacheState>>,
     Path(cake_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
-    CakeMutation::delete(&state.conn, cake_id).await?;
+    CakeMutation::delete(cake_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
 
@@ -104,7 +105,6 @@ async fn filter(
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
-
 
 pub fn routes(app_state: &AppState<BakeryCacheState>) -> Router {
     Router::new()

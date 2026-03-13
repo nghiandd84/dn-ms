@@ -44,7 +44,7 @@ async fn create_role(
     ValidJson(register_request): ValidJson<RoleForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: RoleForCreateDto = register_request.into();
-    let role_id = RoleMutation::create(&state.conn, dto).await?;
+    let role_id = RoleMutation::create(dto).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(role_id),
@@ -69,7 +69,7 @@ async fn update_role(
     Path(role_id): Path<Uuid>,
     ValidJson(register_request): ValidJson<RoleForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let success = RoleMutation::update(&state.conn, role_id, register_request.into()).await?;
+    let success = RoleMutation::update(role_id, register_request.into()).await?;
     Ok(ResponseJson(OkUuid {
         ok: success,
         id: Some(role_id),
@@ -88,7 +88,7 @@ async fn delete_role(
     state: State<AppState<AuthAppState, AuthCacheState>>,
     Path(role_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    RoleMutation::delete(&state.conn, role_id).await?;
+    RoleMutation::delete(role_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
 
@@ -166,8 +166,7 @@ async fn assign_permissions(
     Path(role_id): Path<Uuid>,
     ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let assign =
-        RoleService::assign_permissions(&state.conn, role_id, request.permission_ids).await?;
+    let assign = RoleService::assign_permissions(role_id, request.permission_ids).await?;
     Ok(ResponseJson(OkUuid {
         ok: assign,
         id: None,
