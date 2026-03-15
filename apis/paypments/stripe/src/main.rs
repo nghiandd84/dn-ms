@@ -1,12 +1,11 @@
-// use tracing_subscriber;
-
 use app::start_app;
 
 mod app;
+mod doc;
 mod routes;
+mod consumers;
 
 #[tokio::main]
 async fn main() {
-    // tracing_subscriber::fmt::init();
     start_app().await.unwrap();
 }

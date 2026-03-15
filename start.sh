@@ -22,6 +22,7 @@ export EVENT_PORT=5071
 export INVENTORY_PORT=5081
 export BOOKING_PORT=5091
 export PAYMENT_CORE_PORT=5101
+export PAYMENT_STRIPE_PORT=5201
 export NOTIFICATION_APP_PORT=4001
 
 echo "Kill current instances"
@@ -85,6 +86,11 @@ done
 # Kill Payment Core port
 for i in {1..2}; do 
     fuser -k -15 510$i/tcp 
+done
+
+# Kill Stripe Payment port
+for i in {1..2}; do 
+    fuser -k -15 520$i/tcp 
 done
 
 # Kill Notification App port
@@ -222,7 +228,7 @@ for i in {1..2}; do
 done
 sleep 1s
 
-echo "------------ Start Payment c-re API ------------"
+echo "------------ Start Payment core API ------------"
 for i in {1..2}; do
     PORT=510$i
     echo "--- PAYMENT CORE on port $PORT ---"
@@ -231,6 +237,16 @@ for i in {1..2}; do
 done
 sleep 1s
 
+
+
+echo "------------ Start  Stripe Payment API ------------"
+for i in {1..2}; do
+    PORT=520$i
+    echo "---  PAYMENT STRIPE on port $PORT ---"
+    # Execute the program
+    PAYMENT_STRIPE_PORT=520$i $APP_DIRECTORY/api-stripe  &
+done
+sleep 1s
 
 echo "------------ Start Auth-Server ------------"
 IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/web/auth-web >> $RUST_LOG_DIRECTORY/auth-server.log &

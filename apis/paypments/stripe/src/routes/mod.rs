@@ -1,17 +1,17 @@
 use axum::Router;
-use std::sync::Arc;
 
-use crate::app::AppState;
+use shared_shared_app::state::AppState;
+use features_payments_stripe_model::state::{PaymentsStripeAppState, PaymentsStripeCacheState};
 
-pub mod checkout;
-pub mod refund;
-pub mod payments;
-pub mod webhook;
+pub mod stripe_payment_intent;
+pub mod stripe_refund;
+pub mod stripe_webhook_event;
+pub mod stripe_api_log;
 
-pub fn routes() -> Router<Arc<AppState>> {
+pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .merge(checkout::checkout_routes())
-        .merge(refund::refund_routes())
-        .merge(payments::payments_routes())
-        .merge(webhook::webhook_routes())
+        .merge(stripe_payment_intent::routes(app_state))
+        .merge(stripe_refund::routes(app_state))
+        .merge(stripe_webhook_event::routes(app_state))
+        .merge(stripe_api_log::routes(app_state))
 }
