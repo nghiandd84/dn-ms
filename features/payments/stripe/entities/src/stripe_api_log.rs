@@ -36,7 +36,7 @@ pub struct Model {
     pub request_body: String,
     #[sea_orm(column_type = "Text", nullable)]
     pub response_body: String,
-    pub status_code: Option<i32>,
+    pub status_code: i32,
     #[sea_orm(column_type = "Text", nullable)]
     pub error_message: String,
     #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]

@@ -38,7 +38,7 @@ pub struct Model {
     #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
     pub client_secret: String,
     #[sea_orm(column_type = "Json", nullable)]
-    pub metadata: serde_json::Value,
+    pub metadata: Json,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

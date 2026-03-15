@@ -17,9 +17,7 @@ use crate::consumers::event_consumer::error::EventError;
 
 pub async fn handle_event_consumer_message(
     message: EventMessage,
-    state: AppState<InventoryAppState, InventoryCacheState>,
-    // conn: DatabaseConnection,
-    // _inventory_state: InventoryAppState,
+    _state: AppState<InventoryAppState, InventoryCacheState>,
     _headers: Option<HashMap<String, String>>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     debug!("Received event message: {:?}", message);

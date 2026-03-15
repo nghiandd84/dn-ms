@@ -1,0 +1,21 @@
+[package]
+name = "features-payments-stripe-service"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_payments_stripe_service"
+path = "src/lib.rs"
+
+[dependencies]
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+
+features-payments-stripe-entities = { workspace = true }
+features-payments-stripe-model = { workspace = true }
+features-payments-stripe-repo = { workspace = true }
