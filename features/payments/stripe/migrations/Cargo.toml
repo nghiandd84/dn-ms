@@ -1,0 +1,22 @@
+[package]
+name = "features-payments-stripe-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_payments_stripe_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_payments_stripe"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+serde_json = { workspace = true }
+sea-orm-migration = { workspace = true , features = ["sqlx-postgres"]}
+
+shared-shared-data-core = { workspace = true }
+
+features-payments-stripe-entities = { workspace = true }

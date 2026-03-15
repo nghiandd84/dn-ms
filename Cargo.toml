@@ -76,6 +76,9 @@ members = [
     "features/payments/core/repo", 
     "features/payments/core/service", 
 
+    "features/payments/stripe/entities",
+    "features/payments/stripe/migrations", 
+
 
     "features/email-template/entities", 
     "features/email-template/migrations", 
@@ -95,6 +98,7 @@ members = [
     "apis/booking",
     "apis/notification",
     "apis/payment-core",
+    "apis/paypments/stripe",
     "apps/auth-notification",
     "apps/auth-web",
     "apps/gateway", 
@@ -267,6 +271,10 @@ features-payments-core-migrations = { path = "./features/payments/core/migration
 features-payments-core-model = { path = "./features/payments/core/model"}
 features-payments-core-repo = { path = "./features/payments/core/repo"}
 features-payments-core-service = { path = "./features/payments/core/service"}
+
+
+# Payment Stripe features
+features-payments-stripe-entities = { path = "./features/payments/stripe/entities"}
 
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}

@@ -1,0 +1,32 @@
+[package]
+name = "api-stripe"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
+dotenv = { workspace = true }
+chrono = { version = "0.4.39", features = ["serde"] }
+uuid = { version = "1.13.2", features = ["serde", "v4"] }
+validator = { version = "0.20.0", features = ["derive"] }
+
+# Stripe
+stripe = { package = "async-stripe", version = "0.41", features = ["runtime-tokio-hyper"] }
+
+shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-data-app = { workspace = true }
+
+features-payments-core-model = { workspace = true }
+features-payments-core-entities = { workspace = true }
+features-payments-core-repo = { workspace = true }
+features-payments-core-service = { workspace = true }
