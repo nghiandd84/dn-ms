@@ -58,6 +58,10 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                     unimplemented!("Not implemented")
                 }
 
+                async fn create_str(model: Model) -> Result<String, DbErr> {
+                    unimplemented!("Not implemented")
+                }
+
                 async fn bulk_create_i32(models: Vec<Model>) -> Result<Vec<i32>, DbErr> {
                     unimplemented!("Not implemented")
                 }
@@ -65,14 +69,6 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             }
         }
         "i32" => quote! {
-            async fn create_uuid(model: Model) -> Result<Uuid, DbErr> {
-                unimplemented!("Not implemented")
-            }
-
-            async fn bulk_create_uuid(models: Vec<Model>) -> Result<Vec<Uuid>, DbErr> {
-                unimplemented!("Not implemented")
-            }
-
             #[tracing::instrument]
             async fn create_i32(model: Model) -> Result<i32, DbErr> {
                 let mut active_model: ActiveModel = model.into();
@@ -94,6 +90,44 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 let result_models = Entity::insert_many(active_models).exec_with_returning(Self::get_db()).await?;
                 let ids = result_models.iter().map(|model| model.id).collect();
                 Ok(ids)
+            }
+
+            async fn create_uuid(model: Model) -> Result<Uuid, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn create_str(model: Model) -> Result<String, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn bulk_create_uuid(models: Vec<Model>) -> Result<Vec<Uuid>, DbErr> {
+                unimplemented!("Not implemented")
+            }
+        },
+        "String" => quote! {
+            async fn create_uuid(model: Model) -> Result<Uuid, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn create_i32(model: Model) -> Result<i32, DbErr> {
+                unimplemented!("Not implemented")
+            }
+            
+            #[tracing::instrument]
+            async fn create_str(model: Model) -> Result<String, DbErr> {
+                let mut active_model: ActiveModel = model.into();
+                active_model.not_set(Column::Id);
+                let result_model = active_model.insert(Self::get_db()).await;
+                let id = result_model?.id;
+                Ok(id)
+            }
+
+            async fn bulk_create_uuid(models: Vec<Model>) -> Result<Vec<Uuid>, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn bulk_create_i32(models: Vec<Model>) -> Result<Vec<i32>, DbErr> {
+                unimplemented!("Not implemented")
             }
         },
         _ => panic!("Unsupported key type: {}", key_type_str),

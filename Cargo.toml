@@ -49,6 +49,10 @@ members = [
     "features/inventory/repo", 
     "features/inventory/service", 
 
+    "features/merchant/entities", 
+    "features/merchant/migrations", 
+    "features/merchant/model", 
+
 
     "features/profiles/entities", 
     "features/profiles/migrations", 
@@ -214,6 +218,11 @@ features-auth-repo = { path = "./features/auth/repo"}
 features-auth-service = { path = "./features/auth/service"}
 features-auth-remote = { path = "./features/auth/remote"}
 features-auth-stream = { path = "./features/auth/stream"}
+
+# Merchant feature
+features-merchant-entities = { path = "./features/merchant/entities"}
+features-merchant-migrations = { path = "./features/merchant/migrations"}
+features-merchant-model = { path = "./features/merchant/model"}
 
 # Booking Feature
 features-booking-entities = { path = "./features/booking/entities"}
