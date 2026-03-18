@@ -1,6 +1,6 @@
 mod mutation;
-// mod query;
+mod query;
 mod util;
 
 pub use mutation::MerchantMutation;
-// pub use query::MerchantQuery;
+pub use query::MerchantQuery;

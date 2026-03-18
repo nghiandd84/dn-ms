@@ -239,12 +239,11 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
-        },
-        "i32" => quote! {
-            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
+            async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
-            
+        },
+        "i32" => quote! {
             #[tracing::instrument]
             async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
@@ -255,6 +254,31 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
 
                 Ok(model_option)
             }
+            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+            }
+            async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+            } 
+        },
+        "String" => quote! {
+            #[tracing::instrument]
+            async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+                
+            }
+            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
+                let exists = Entity::find_by_id(id)
+                    .one(Self::get_db())
+                    .await?
+                    .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+                let model_option: ModelOptionDto = exists.into();
+
+                Ok(model_option)
+            }
+            async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+            } 
         },
         _ => quote! {},
     };

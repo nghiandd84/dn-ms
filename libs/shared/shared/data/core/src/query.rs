@@ -12,6 +12,7 @@ pub trait QueryManager<AM, MD> {
     fn get_by_id_uuid(id: Uuid) -> impl std::future::Future<Output = Result<MD, DbErr>>;
 
     fn get_by_id_i32(id: i32) -> impl std::future::Future<Output = Result<MD, DbErr>>;
+    fn get_by_id_str(id: String) -> impl std::future::Future<Output = Result<MD, DbErr>>;
 
     fn filter(
         pagination: &Pagination,
