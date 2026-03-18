@@ -24,9 +24,9 @@ where
     fn bulk_update_by_id_i32(
         data: Vec<(i32, MD)>,
     ) -> impl std::future::Future<Output = Result<Vec<i32>, DbErr>>;
-    // fn bulk_update_by_id_str(
-    //     data: Vec<(String, MD)>,
-    // ) -> impl std::future::Future<Output = Result<Vec<String>, DbErr>>;
+    fn bulk_update_by_id_str(
+        data: Vec<(String, MD)>,
+    ) -> impl std::future::Future<Output = Result<Vec<String>, DbErr>>;
 
     fn update_by_id_uuid(
         id: Uuid,
@@ -36,12 +36,12 @@ where
         id: i32,
         model_option: MD,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>>;
-    // fn update_by_id_str(
-    //     id: String,
-    //     model_option: MD,
-    // ) -> impl std::future::Future<Output = Result<bool, DbErr>>;
+    fn update_by_id_str(
+        id: String,
+        model_option: MD,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>>;
 
     fn delete_by_id_uuid(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>>;
     fn delete_by_id_i32(id: i32) -> impl std::future::Future<Output = Result<bool, DbErr>>;
-    // fn delete_by_id_str(id: String) -> impl std::future::Future<Output = Result<bool, DbErr>>;
+    fn delete_by_id_str(id: String) -> impl std::future::Future<Output = Result<bool, DbErr>>;
 }

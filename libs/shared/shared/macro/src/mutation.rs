@@ -205,21 +205,23 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                     unimplemented!("Not implemented")
                 }
 
+                async fn update_by_id_str(
+                    id: String,
+                    model_option: ModelOptionDto,
+                ) -> Result<bool, DbErr> {
+                    unimplemented!("Not implemented")
+                }
+
+                async fn bulk_update_by_id_str(
+                    data: Vec<(String, ModelOptionDto)>,
+                ) -> Result<Vec<String>, DbErr> {
+                    unimplemented!("Not implemented")
+                }
+
             }
         }
         "i32" => quote! {
-            async fn update_by_id_uuid(
-                id: Uuid,
-                model_option: ModelOptionDto,
-            ) -> Result<bool, DbErr> {
-                unimplemented!("Not implemented")
-            }
 
-            async fn bulk_update_by_id_uuid(
-                    data: Vec<(Uuid, ModelOptionDto)>,
-                ) -> Result<Vec<Uuid>, DbErr> {
-                unimplemented!("Not implemented")
-            }
 
             #[tracing::instrument]
             async fn update_by_id_i32(
@@ -254,8 +256,67 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 }
                 Ok(ids)
             }
+
+            async fn update_by_id_uuid(
+                id: Uuid,
+                model_option: ModelOptionDto,
+            ) -> Result<bool, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn bulk_update_by_id_uuid(
+                    data: Vec<(Uuid, ModelOptionDto)>,
+                ) -> Result<Vec<Uuid>, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn update_by_id_str(
+                    id: String,
+                    model_option: ModelOptionDto,
+            ) -> Result<bool, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn bulk_update_by_id_str(
+                    data: Vec<(String, ModelOptionDto)>,
+                ) -> Result<Vec<String>, DbErr> {
+                unimplemented!("Not implemented")
+            }
         },
         "String" => quote! {
+            async fn update_by_id_str(
+                id: String,
+                model_option: ModelOptionDto,
+            ) -> Result<bool, DbErr> {
+                let exists = Entity::find_by_id(id)
+                    .one(Self::get_db())
+                    .await?
+                    .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+
+                let active_model = assign(exists.into(), model_option);
+                active_model.update(Self::get_db()).await?;
+                Ok(true)
+            }
+
+            async fn bulk_update_by_id_str(
+                    data: Vec<(String, ModelOptionDto)>,
+                ) -> Result<Vec<String>, DbErr> {
+
+                let mut ids = Vec::new();
+                for (id, model_option) in data {
+                    let exists = Entity::find_by_id(id.clone())
+                        .one(Self::get_db())
+                        .await?
+                        .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+
+                    let active_model = assign(exists.into(), model_option);
+                    active_model.update(Self::get_db()).await?;
+                    ids.push(id);
+
+                }
+                Ok(ids)
+            }
+
             async fn update_by_id_uuid(
                 id: Uuid,
                 model_option: ModelOptionDto,
@@ -304,12 +365,13 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
                 async fn delete_by_id_i32(id: i32) -> Result<bool, DbErr> {
                     unimplemented!("Not implemented")
                 }
+
+                async fn delete_by_id_str(id: String) -> Result<bool, DbErr> {
+                    unimplemented!("Not implemented")
+                }
             }
         }
         "i32" => quote! {
-            async fn delete_by_id_uuid(id: Uuid) -> Result<bool, DbErr> {
-                unimplemented!("Not implemented")
-            }
             #[tracing::instrument]
             async fn delete_by_id_i32(id: i32) -> Result<bool, DbErr> {
                 let model: ActiveModel = Entity::find_by_id(id)
@@ -322,11 +384,24 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
 
                 Ok(true)
             }
-        },
-        "String" => quote! {
+
             async fn delete_by_id_uuid(id: Uuid) -> Result<bool, DbErr> {
                 unimplemented!("Not implemented")
             }
+
+            async fn delete_by_id_str(id: String) -> Result<bool, DbErr> {
+                unimplemented!("Not implemented")
+            }
+        },
+        "String" => quote! {
+            async fn delete_by_id_str(id: String) -> Result<bool, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
+            async fn delete_by_id_uuid(id: Uuid) -> Result<bool, DbErr> {
+                unimplemented!("Not implemented")
+            }
+
             async fn delete_by_id_i32(id: i32) -> Result<bool, DbErr> {
                 unimplemented!("Not implemented")
             }
