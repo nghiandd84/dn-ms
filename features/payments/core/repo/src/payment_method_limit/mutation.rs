@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_payments_core_entities::payment_method_limit::{

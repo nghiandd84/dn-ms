@@ -1,6 +1,3 @@
-
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::auth_code::{
@@ -22,9 +19,7 @@ impl AuthCodeMutation {
         AuthCodeMutationManager::create_uuid(data.into())
     }
 
-    pub fn delete<'a>(
-        id: Uuid,
-    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete<'a>(id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         AuthCodeMutationManager::delete_by_id_uuid(id)
     }
 }

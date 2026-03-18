@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_payments_stripe_entities::stripe_refund::{
@@ -43,7 +41,9 @@ impl StripeRefundMutation {
         )
     }
 
-    pub fn delete_refund<'a>(refund_id: Uuid) -> impl std::future::Future<Output = Result<bool, sea_orm::DbErr>> + 'a {
+    pub fn delete_refund<'a>(
+        refund_id: Uuid,
+    ) -> impl std::future::Future<Output = Result<bool, sea_orm::DbErr>> + 'a {
         StripeRefundMutationManager::delete_by_id_uuid(refund_id)
     }
 }

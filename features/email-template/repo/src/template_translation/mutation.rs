@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_email_template_entities::template_translations::{

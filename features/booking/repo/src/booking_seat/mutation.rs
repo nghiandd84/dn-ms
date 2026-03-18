@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_booking_entities::booking_seat::{

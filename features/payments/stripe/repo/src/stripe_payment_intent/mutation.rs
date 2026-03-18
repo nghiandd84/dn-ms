@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_payments_stripe_entities::stripe_payment_intent::{
@@ -25,7 +23,9 @@ impl StripePaymentIntentMutation {
     pub fn bulk_create_payment_intents<'a>(
         data: Vec<StripePaymentIntentForCreateDto>,
     ) -> impl std::future::Future<Output = Result<Vec<Uuid>, sea_orm::DbErr>> + 'a {
-        StripePaymentIntentMutationManager::bulk_create_uuid(data.into_iter().map(|d| d.into()).collect())
+        StripePaymentIntentMutationManager::bulk_create_uuid(
+            data.into_iter().map(|d| d.into()).collect(),
+        )
     }
 
     pub fn update_payment_intent<'a>(

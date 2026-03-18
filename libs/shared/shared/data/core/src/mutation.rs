@@ -14,9 +14,9 @@ where
     fn bulk_create_i32(
         models: Vec<M>,
     ) -> impl std::future::Future<Output = Result<Vec<i32>, DbErr>>;
-    // fn bulk_create_str(
-    //     models: Vec<M>,
-    // ) -> impl std::future::Future<Output = Result<Vec<String>, DbErr>>;
+    fn bulk_create_str(
+        models: Vec<M>,
+    ) -> impl std::future::Future<Output = Result<Vec<String>, DbErr>>;
 
     fn bulk_update_by_id_uuid(
         data: Vec<(Uuid, MD)>,

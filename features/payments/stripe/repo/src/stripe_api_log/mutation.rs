@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_payments_stripe_entities::stripe_api_log::{
@@ -43,7 +41,9 @@ impl StripeApiLogMutation {
         )
     }
 
-    pub fn delete_api_log<'a>(api_log_id: Uuid) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+    pub fn delete_api_log<'a>(
+        api_log_id: Uuid,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         StripeApiLogMutationManager::delete_by_id_uuid(api_log_id)
     }
 }

@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use shared_shared_macro::Mutation;
 
 use features_payments_stripe_entities::stripe_webhook_event::{
@@ -25,7 +23,9 @@ impl StripeWebhookEventMutation {
     pub fn bulk_create_webhook_events<'a>(
         data: Vec<StripeWebhookEventForCreateDto>,
     ) -> impl std::future::Future<Output = Result<Vec<Uuid>, DbErr>> + 'a {
-        StripeWebhookEventMutationManager::bulk_create_uuid(data.into_iter().map(|d| d.into()).collect())
+        StripeWebhookEventMutationManager::bulk_create_uuid(
+            data.into_iter().map(|d| d.into()).collect(),
+        )
     }
 
     pub fn update_webhook_event<'a>(

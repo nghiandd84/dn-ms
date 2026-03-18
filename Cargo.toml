@@ -52,6 +52,7 @@ members = [
     "features/merchant/entities", 
     "features/merchant/migrations", 
     "features/merchant/model", 
+    "features/merchant/repo", 
 
 
     "features/profiles/entities", 
@@ -223,6 +224,7 @@ features-auth-stream = { path = "./features/auth/stream"}
 features-merchant-entities = { path = "./features/merchant/entities"}
 features-merchant-migrations = { path = "./features/merchant/migrations"}
 features-merchant-model = { path = "./features/merchant/model"}
+features-merchant-repo = { path = "./features/merchant/repo"}
 
 # Booking Feature
 features-booking-entities = { path = "./features/booking/entities"}
