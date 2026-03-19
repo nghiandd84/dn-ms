@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:6060
+@merchantId = 00000000-0000-0000-0000-000000000000
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== MERCHANT =====
+
+### Get All Merchants
+GET {{baseUrl}}/merchants
+
+### Search Merchants
+GET {{baseUrl}}/merchants?status=ACTIVE&order_name=business_name&order_direction=1
+
+### Create Merchant
+POST {{baseUrl}}/merchants
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "business_name": "Acme Corp",
+  "email": "contact@acme.example",
+  "phone": "1234567890",
+  "business_type": "COMPANY",
+  "kyc_status": "PENDING",
+  "status": "ACTIVE"
+}
+
+### Get Merchant By ID
+GET {{baseUrl}}/merchants/{{merchantId}}
+
+### Update Merchant
+PATCH {{baseUrl}}/merchants/{{merchantId}}
+Content-Type: application/json
+
+{
+  "business_name": "Acme Corp Updated",
+  "status": "INACTIVE"
+}
+
+### Delete Merchant
+DELETE {{baseUrl}}/merchants/{{merchantId}}

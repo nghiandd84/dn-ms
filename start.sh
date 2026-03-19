@@ -22,6 +22,7 @@ export EVENT_PORT=5071
 export INVENTORY_PORT=5081
 export BOOKING_PORT=5091
 export PAYMENT_CORE_PORT=5101
+export MERCHANT_PORT=5131
 export PAYMENT_STRIPE_PORT=5121
 export NOTIFICATION_APP_PORT=4001
 
@@ -91,6 +92,11 @@ done
 # Kill Stripe Payment port
 for i in {1..2}; do 
     fuser -k -15 512$i/tcp 
+done
+
+# Kill Merchant  port
+for i in {1..2}; do 
+    fuser -k -15 513$i/tcp 
 done
 
 # Kill Notification App port
@@ -245,6 +251,15 @@ for i in {1..2}; do
     echo "---  PAYMENT STRIPE on port $PORT ---"
     # Execute the program
     PAYMENT_STRIPE_PORT=512$i $APP_DIRECTORY/api-stripe  &
+done
+sleep 1s
+
+echo "------------ Start Merchant API ------------"
+for i in {1..2}; do
+    PORT=513$i
+    echo "---  MERCHANT on port $PORT ---"
+    # Execute the program
+    MERCHANT_PORT=513$i $APP_DIRECTORY/api-merchant  &
 done
 sleep 1s
 

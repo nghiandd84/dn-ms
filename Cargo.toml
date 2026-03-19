@@ -53,7 +53,8 @@ members = [
     "features/merchant/migrations", 
     "features/merchant/model", 
     "features/merchant/repo", 
-
+    "features/merchant/service", 
+    "features/merchant/stream", 
 
     "features/profiles/entities", 
     "features/profiles/migrations", 
@@ -105,6 +106,7 @@ members = [
     "apis/event",
     "apis/inventory",
     "apis/booking",
+    "apis/merchant",
     "apis/notification",
     "apis/payment-core",
     "apis/paypments/stripe",
@@ -225,6 +227,8 @@ features-merchant-entities = { path = "./features/merchant/entities"}
 features-merchant-migrations = { path = "./features/merchant/migrations"}
 features-merchant-model = { path = "./features/merchant/model"}
 features-merchant-repo = { path = "./features/merchant/repo"}
+features-merchant-service = { path = "./features/merchant/service"}
+features-merchant-stream = { path = "./features/merchant/stream"}
 
 # Booking Feature
 features-booking-entities = { path = "./features/booking/entities"}

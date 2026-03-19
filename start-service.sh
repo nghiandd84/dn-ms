@@ -22,7 +22,10 @@ sleep 5s
 #/home/kafka/kafka/bin/kafka-topics.sh  --describe notification_topic --bootstrap-server localhost:9092 
 #/home/kafka/kafka/bin/kafka-topics.sh   --bootstrap-server localhost:9092  --topic notification_topic --delete
 # Get IP Address of WSL 
-# hostname -I
+# hostname -I 
+# new IP: 172.22.115.28
+# Run power shell with Administrator 
+# netsh interface portproxy add v4tov4 listenport=9092 listenaddress=0.0.0.0 connectport=9092 connectaddress=172.22.115.28
 # Create proxy on window to connect to kafka
 # netsh interface portproxy add v4tov4 listenport=9092 listenaddress=0.0.0.0 connectport=9092 connectaddress=172.25.43.223
 # TODO implement service discovery https://medium.com/@patrickkoss/how-to-build-a-service-discovery-and-leader-election-with-zookeeper-in-rust-1fcffd9c889d
