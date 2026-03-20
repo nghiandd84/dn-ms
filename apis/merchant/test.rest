@@ -1,5 +1,5 @@
-@baseUrl = http://localhost:6060
-@merchantId = 00000000-0000-0000-0000-000000000000
+@baseUrl = http://localhost:5131
+@merchantId = mch_7993b79cadbc4612
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -13,14 +13,13 @@ GET {{baseUrl}}/swagger-ui/
 GET {{baseUrl}}/merchants
 
 ### Search Merchants
-GET {{baseUrl}}/merchants?status=ACTIVE&order_name=business_name&order_direction=1
+GET {{baseUrl}}/merchants?status=li|INACTIVE&order_name=business_name&order_direction=1
 
 ### Create Merchant
 POST {{baseUrl}}/merchants
 Content-Type: application/json
 
 {
-  "id": "00000000-0000-0000-0000-000000000000",
   "business_name": "Acme Corp",
   "email": "contact@acme.example",
   "phone": "1234567890",
@@ -42,4 +41,4 @@ Content-Type: application/json
 }
 
 ### Delete Merchant
-DELETE {{baseUrl}}/merchants/{{merchantId}}
+DELETE {{baseUrl}}/merchants/mch_2c60d3fe5aeb4736

@@ -116,7 +116,6 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             #[tracing::instrument]
             async fn create_str(model: Model) -> Result<String, DbErr> {
                 let mut active_model: ActiveModel = model.into();
-                active_model.not_set(Column::Id);
                 let result_model = active_model.insert(Self::get_db()).await;
                 let id = result_model?.id;
                 Ok(id)
@@ -126,7 +125,6 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             async fn bulk_create_str(models: Vec<Model>) -> Result<Vec<String>, DbErr> {
                 let active_models: Vec<ActiveModel> = models.into_iter().map(|model| {
                     let mut active_model: ActiveModel = model.into();
-                    active_model.not_set(Column::Id);
                     active_model
                 }).collect();
 
@@ -221,8 +219,6 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
             }
         }
         "i32" => quote! {
-
-
             #[tracing::instrument]
             async fn update_by_id_i32(
                 id: i32,
@@ -395,7 +391,15 @@ pub fn mutation_impl(input: TokenStream) -> TokenStream {
         },
         "String" => quote! {
             async fn delete_by_id_str(id: String) -> Result<bool, DbErr> {
-                unimplemented!("Not implemented")
+                let model: ActiveModel = Entity::find_by_id(id)
+                    .one(Self::get_db())
+                    .await?
+                    .ok_or(DbErr::RecordNotFound("Not found".to_string()))
+                    .map(Into::into)?;
+
+                model.delete(Self::get_db()).await?;
+
+                Ok(true)
             }
 
             async fn delete_by_id_uuid(id: Uuid) -> Result<bool, DbErr> {

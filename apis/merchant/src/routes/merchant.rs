@@ -4,10 +4,11 @@ use axum::{
     Router,
 };
 use tracing::{instrument, Level};
-use uuid::Uuid;
 
 use features_merchant_model::{
-    merchant::{MerchantData, MerchantDataFilterParams, MerchantForCreateRequest, MerchantForUpdateRequest},
+    merchant::{
+        MerchantData, MerchantDataFilterParams, MerchantForCreateRequest, MerchantForUpdateRequest,
+    },
     state::{MerchantAppState, MerchantCacheState},
 };
 
@@ -15,7 +16,7 @@ use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
-    result::{OkUuid, OkUuidResponse, Result},
+    result::{OkStr, OkStrResponse, Result},
 };
 use shared_shared_data_core::{
     order::Order,
@@ -32,19 +33,17 @@ const TAG: &str = "merchant";
     tag = TAG,
     request_body = MerchantForCreateRequest,
     responses(
-        (status = 201, description = "Merchant created successfully", body = OkUuidResponse),
+        (status = 201, description = "Merchant created successfully", body = OkStrResponse),
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_merchant(
     ValidJson(req): ValidJson<MerchantForCreateRequest>,
-) -> Result<ResponseJson<OkUuid>> {
+) -> Result<ResponseJson<OkStr>> {
     let merchant_id = MerchantService::create_merchant(req).await?;
-    let merchant_uuid = Uuid::parse_str(&merchant_id)
-        .map_err(|_| shared_shared_data_error::app::AppError::Internal("Invalid merchant id".to_string()))?;
-    Ok(ResponseJson(OkUuid {
+    Ok(ResponseJson(OkStr {
         ok: true,
-        id: Some(merchant_uuid),
+        id: Some(merchant_id),
     }))
 }
 
@@ -56,10 +55,8 @@ async fn create_merchant(
         (status = 200, description = "Merchant retrieved successfully", body = MerchantData),
     )
 )]
-async fn get_merchant(
-    Path(merchant_id): Path<Uuid>,
-) -> Result<ResponseJson<MerchantData>> {
-    let merchant = MerchantService::get_merchant_by_id(merchant_id.to_string()).await?;
+async fn get_merchant(Path(merchant_id): Path<String>) -> Result<ResponseJson<MerchantData>> {
+    let merchant = MerchantService::get_merchant_by_id(merchant_id).await?;
     Ok(ResponseJson(merchant))
 }
 
@@ -94,18 +91,18 @@ async fn filter_merchants(
     tag = TAG,
     request_body = MerchantForUpdateRequest,
     responses(
-        (status = 200, description = "Merchant updated successfully", body = OkUuidResponse),
+        (status = 200, description = "Merchant updated successfully", body = OkStrResponse),
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_merchant(
-    Path(merchant_id): Path<Uuid>,
+    Path(merchant_id): Path<String>,
     ValidJson(req): ValidJson<MerchantForUpdateRequest>,
-) -> Result<ResponseJson<OkUuid>> {
+) -> Result<ResponseJson<OkStr>> {
     MerchantService::update_merchant(merchant_id.to_string(), req).await?;
-    Ok(ResponseJson(OkUuid {
+    Ok(ResponseJson(OkStr {
         ok: true,
-        id: Some(merchant_id),
+        id: Some(merchant_id.to_string()),
     }))
 }
 
@@ -114,17 +111,15 @@ async fn update_merchant(
     path = "/merchants/{merchant_id}",
     tag = TAG,
     responses(
-        (status = 200, description = "Merchant deleted successfully", body = OkUuidResponse),
+        (status = 200, description = "Merchant deleted successfully", body = OkStrResponse),
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_merchant(
-    Path(merchant_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_merchant(Path(merchant_id): Path<String>) -> Result<ResponseJson<OkStr>> {
     MerchantService::delete_merchant(merchant_id.to_string()).await?;
-    Ok(ResponseJson(OkUuid {
+    Ok(ResponseJson(OkStr {
         ok: true,
-        id: Some(merchant_id),
+        id: Some(merchant_id.to_string()),
     }))
 }
 

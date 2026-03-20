@@ -18,3 +18,9 @@ pub struct OkI32 {
     pub ok: bool,
     pub id: Option<i32>,
 }
+
+#[derive(Serialize, Clone, ToSchema, Response)]
+pub struct OkStr {
+    pub ok: bool,
+    pub id: Option<String>,
+}

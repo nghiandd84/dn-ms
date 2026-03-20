@@ -43,7 +43,6 @@ impl Into<MerchantData> for ModelOptionDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct MerchantForCreateRequest {
-    pub id: String,
     #[validate(length(min = 1, message = "business_name is required"))]
     pub business_name: String,
     #[validate(email(message = "email must be a valid email address"))]

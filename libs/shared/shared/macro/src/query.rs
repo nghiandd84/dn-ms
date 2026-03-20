@@ -263,11 +263,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         },
         "String" => quote! {
             #[tracing::instrument]
-            async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
-                unimplemented!("Not implemented")
-                
-            }
-            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
+            async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
                 let exists = Entity::find_by_id(id)
                     .one(Self::get_db())
                     .await?
@@ -275,10 +271,14 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 let model_option: ModelOptionDto = exists.into();
 
                 Ok(model_option)
-            }
-            async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
-                unimplemented!("Not implemented")
             } 
+            
+            async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+            }
+            async fn get_by_id_uuid(id: Uuid) -> Result<ModelOptionDto, DbErr> {
+                unimplemented!("Not implemented")
+            }
         },
         _ => quote! {},
     };

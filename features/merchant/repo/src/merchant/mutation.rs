@@ -18,7 +18,10 @@ impl MerchantMutation {
     pub fn create_merchant<'a>(
         data: MerchantForCreateDto,
     ) -> impl std::future::Future<Output = Result<String, DbErr>> + 'a {
-        MerchantMutationManager::create_str(data.into())
+        let mut model: Model = data.into();
+        let id = Uuid::new_v4().to_string();
+        model.id = "mch_".to_string() + &id.replace("-", "")[..16];
+        MerchantMutationManager::create_str(model)
     }
     pub fn bulk_create_merchants<'a>(
         data: Vec<MerchantForCreateDto>,
