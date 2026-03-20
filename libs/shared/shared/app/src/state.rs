@@ -67,7 +67,7 @@ where
     C: Clone + Serialize + DeserializeOwned,
     T: Clone,
 {
-    pub fn new(service_name: String, cache: Cache<String, C>, state: Option<T>) -> Self {
+    pub fn new(_service_name: String, cache: Cache<String, C>, state: Option<T>) -> Self {
         Self {
             cache,
             state,

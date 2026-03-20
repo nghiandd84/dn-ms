@@ -42,3 +42,37 @@ Content-Type: application/json
 
 ### Delete Merchant
 DELETE {{baseUrl}}/merchants/mch_2c60d3fe5aeb4736
+
+### ===== API KEYS =====
+
+### Create API Key
+POST {{baseUrl}}/api-keys
+Content-Type: application/json
+
+{
+  "environment": "production",
+  "api_key": "my-secret-api-key-value",
+  "merchant_id": "{{merchantId}}"
+}
+
+### Get API Key By ID
+@apiKeyId = 1
+GET {{baseUrl}}/api-keys/{{apiKeyId}}
+
+### Get API Keys by Merchant
+GET {{baseUrl}}/api-keys/merchant/{{merchantId}}
+
+### Get API Keys (filter/pagination)
+GET {{baseUrl}}/api-keys?page=1&size=20&order_name=created_at&order_direction=1
+
+### Update API Key
+PATCH {{baseUrl}}/api-keys/{{apiKeyId}}
+Content-Type: application/json
+
+{
+  "environment": "staging",
+  "api_key": "my-updated-api-key-value"
+}
+
+### Delete API Key
+DELETE {{baseUrl}}/api-keys/2

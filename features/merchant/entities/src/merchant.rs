@@ -47,6 +47,13 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}
 
+impl Related<super::api_key::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::api_key::Relation::Merchant.def().rev()
+    }
+}
+
+
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {
     async fn before_save<C>(mut self, _db: &C, insert: bool) -> Result<Self, DbErr>

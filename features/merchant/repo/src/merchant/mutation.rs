@@ -1,7 +1,7 @@
 use shared_shared_macro::Mutation;
 
 use features_merchant_entities::merchant::{
-    ActiveModel, Column, Entity, MerchantForCreateDto, MerchantForUpdateDto, Model, ModelOptionDto,
+    ActiveModel, Entity, MerchantForCreateDto, MerchantForUpdateDto, Model, ModelOptionDto,
 };
 
 use crate::merchant::util::assign;
