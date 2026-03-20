@@ -6,6 +6,7 @@ use axum::{
 use tracing::{instrument, Level};
 
 use features_merchant_model::{
+    api_key::ApiKeyData,
     merchant::{
         MerchantData, MerchantDataFilterParams, MerchantForCreateRequest, MerchantForUpdateRequest,
     },
@@ -23,7 +24,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
-use features_merchant_service::MerchantService;
+use features_merchant_service::{ApiKeyService, MerchantService};
 
 const TAG: &str = "merchant";
 
@@ -86,6 +87,21 @@ async fn filter_merchants(
 }
 
 #[utoipa::path(
+    get,
+    path = "/api-keys/merchant/{merchant_id}",
+    tag = TAG,
+    responses(
+        (status = 200, description = "API keys for merchant", body = QueryResultResponse<ApiKeyData>),
+    )
+)]
+async fn get_api_keys_by_merchant(
+    Path(merchant_id): Path<String>,
+) -> Result<ResponseJson<QueryResult<ApiKeyData>>> {
+    let items = ApiKeyService::get_api_keys_by_merchant_id(merchant_id).await?;
+    Ok(ResponseJson(items))
+}
+
+#[utoipa::path(
     patch,
     path = "/merchants/{merchant_id}",
     tag = TAG,
@@ -130,5 +146,9 @@ pub fn routes(app_state: &AppState<MerchantAppState, MerchantCacheState>) -> Rou
         .route("/merchants/{merchant_id}", get(get_merchant))
         .route("/merchants/{merchant_id}", patch(update_merchant))
         .route("/merchants/{merchant_id}", delete(delete_merchant))
+        .route(
+            "/merchants/{merchant_id}/api-keys",
+            get(get_api_keys_by_merchant),
+        )
         .with_state(app_state.clone())
 }

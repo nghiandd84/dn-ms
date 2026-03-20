@@ -36,7 +36,7 @@ impl ApiKeyQuery {
 
     pub async fn get_api_keys_by_merchant_id(
         merchant_id: String,
-    ) -> Result<Vec<ApiKeyData>, AppError> {
+    ) -> Result<QueryResult<ApiKeyData>, AppError> {
         let merchant_id_filter = FilterEnum::String(FilterParam {
             name: Column::MerchantId.to_string(),
             value: Some(merchant_id.clone()),
@@ -46,7 +46,11 @@ impl ApiKeyQuery {
         let filters = vec![merchant_id_filter];
         let result =
             ApiKeyQueryManager::filter(&Pagination::default(), &Order::default(), &filters).await?;
-        Ok(result.result.into_iter().map(|a| a.into()).collect())
+        let mapped_result = QueryResult {
+            total_page: result.total_page,
+            result: result.result.into_iter().map(|a| a.into()).collect(),
+        };
+        Ok(mapped_result)
     }
 
     pub async fn get_api_keys<'a>(

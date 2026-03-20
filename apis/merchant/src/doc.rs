@@ -16,12 +16,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::merchant::filter_merchants,
         crate::routes::merchant::update_merchant,
         crate::routes::merchant::delete_merchant,
+        crate::routes::merchant::get_api_keys_by_merchant,
         crate::routes::api_key::create_api_key,
         crate::routes::api_key::get_api_key,
         crate::routes::api_key::filter_api_keys,
         crate::routes::api_key::update_api_key,
         crate::routes::api_key::delete_api_key,
-        crate::routes::api_key::get_api_keys_by_merchant,
     ),
     tags(
         (name = "merchant", description = "Merchant management endpoints"),

@@ -38,7 +38,10 @@ async fn create_api_key(
     ValidJson(req): ValidJson<ApiKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let id = ApiKeyService::create_api_key(req).await?;
-    Ok(ResponseJson(OkI32 { ok: true, id: Some(id) }))
+    Ok(ResponseJson(OkI32 {
+        ok: true,
+        id: Some(id),
+    }))
 }
 
 #[utoipa::path(
@@ -49,26 +52,9 @@ async fn create_api_key(
         (status = 200, description = "API key retrieved", body = ApiKeyData),
     )
 )]
-async fn get_api_key(
-    Path(api_key_id): Path<i32>,
-) -> Result<ResponseJson<ApiKeyData>> {
+async fn get_api_key(Path(api_key_id): Path<i32>) -> Result<ResponseJson<ApiKeyData>> {
     let item = ApiKeyService::get_api_key_by_id(api_key_id).await?;
     Ok(ResponseJson(item))
-}
-
-#[utoipa::path(
-    get,
-    path = "/api-keys/merchant/{merchant_id}",
-    tag = TAG,
-    responses(
-        (status = 200, description = "API keys for merchant", body = [ApiKeyData]),
-    )
-)]
-async fn get_api_keys_by_merchant(
-    Path(merchant_id): Path<String>,
-) -> Result<ResponseJson<Vec<ApiKeyData>>> {
-    let items = ApiKeyService::get_api_keys_by_merchant_id(merchant_id).await?;
-    Ok(ResponseJson(items))
 }
 
 #[utoipa::path(
@@ -111,7 +97,10 @@ async fn update_api_key(
     ValidJson(req): ValidJson<ApiKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     ApiKeyService::update_api_key(api_key_id, req).await?;
-    Ok(ResponseJson(OkI32 { ok: true, id: Some(api_key_id) }))
+    Ok(ResponseJson(OkI32 {
+        ok: true,
+        id: Some(api_key_id),
+    }))
 }
 
 #[utoipa::path(
@@ -123,11 +112,12 @@ async fn update_api_key(
     )
 )]
 #[instrument(skip_all)]
-async fn delete_api_key(
-    Path(api_key_id): Path<i32>,
-) -> Result<ResponseJson<OkI32>> {
+async fn delete_api_key(Path(api_key_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     ApiKeyService::delete_api_key(api_key_id).await?;
-    Ok(ResponseJson(OkI32 { ok: true, id: Some(api_key_id) }))
+    Ok(ResponseJson(OkI32 {
+        ok: true,
+        id: Some(api_key_id),
+    }))
 }
 
 pub fn routes(app_state: &AppState<MerchantAppState, MerchantCacheState>) -> Router {
@@ -137,6 +127,5 @@ pub fn routes(app_state: &AppState<MerchantAppState, MerchantCacheState>) -> Rou
         .route("/api-keys/{api_key_id}", get(get_api_key))
         .route("/api-keys/{api_key_id}", patch(update_api_key))
         .route("/api-keys/{api_key_id}", delete(delete_api_key))
-        .route("/api-keys/merchant/{merchant_id}", get(get_api_keys_by_merchant))
         .with_state(app_state.clone())
 }

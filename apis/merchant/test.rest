@@ -31,6 +31,9 @@ Content-Type: application/json
 ### Get Merchant By ID
 GET {{baseUrl}}/merchants/{{merchantId}}
 
+### Get API Keys by Merchant
+GET {{baseUrl}}/merchants/{{merchantId}}/api-keys
+
 ### Update Merchant
 PATCH {{baseUrl}}/merchants/{{merchantId}}
 Content-Type: application/json
@@ -59,8 +62,7 @@ Content-Type: application/json
 @apiKeyId = 1
 GET {{baseUrl}}/api-keys/{{apiKeyId}}
 
-### Get API Keys by Merchant
-GET {{baseUrl}}/api-keys/merchant/{{merchantId}}
+
 
 ### Get API Keys (filter/pagination)
 GET {{baseUrl}}/api-keys?page=1&size=20&order_name=created_at&order_direction=1

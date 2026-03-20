@@ -57,7 +57,7 @@ impl ApiKeyService {
 
     pub async fn get_api_keys_by_merchant_id(
         merchant_id: String,
-    ) -> Result<Vec<ApiKeyData>, AppError> {
+    ) -> Result<QueryResult<ApiKeyData>, AppError> {
         ApiKeyQuery::get_api_keys_by_merchant_id(merchant_id).await
     }
 
