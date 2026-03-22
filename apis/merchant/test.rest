@@ -78,3 +78,41 @@ Content-Type: application/json
 
 ### Delete API Key
 DELETE {{baseUrl}}/api-keys/2
+
+### ===== WEBHOOKS =====
+
+@webhookId = a14ef300-5f23-4cd3-b424-f63ce27276f1
+
+### Get Webhooks 
+GET {{baseUrl}}/webhooks
+
+### Create Webhook
+POST {{baseUrl}}/webhooks
+Content-Type: application/json
+
+{
+  "merchant_id": "{{merchantId}}",
+  "url": "https://example.com/webhook",
+  "event_types": ["payment_succeeded", "payment_failed"],
+  "secret": "webhook-secret-key",
+  "status": "ACTIVE"
+}
+
+### Get Webhook By ID
+GET {{baseUrl}}/webhooks/{{webhookId}}
+
+### Get Webhooks (filter/pagination)
+GET {{baseUrl}}/webhooks?page=1&size=20&order_name=created_at&order_direction=1
+
+### Update Webhook
+PATCH {{baseUrl}}/webhooks/{{webhookId}}
+Content-Type: application/json
+
+{
+  "url": "https://example.com/updated-webhook",
+  "event_types": ["payment_succeeded"],
+  "status": "INACTIVE"
+}
+
+### Delete Webhook
+DELETE {{baseUrl}}/webhooks/1ba9e455-86dd-48b4-9955-48643497085c

@@ -22,6 +22,11 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::api_key::filter_api_keys,
         crate::routes::api_key::update_api_key,
         crate::routes::api_key::delete_api_key,
+        crate::routes::webhook::create_webhook,
+        crate::routes::webhook::get_webhook,
+        crate::routes::webhook::filter_webhooks,
+        crate::routes::webhook::update_webhook,
+        crate::routes::webhook::delete_webhook,
     ),
     tags(
         (name = "merchant", description = "Merchant management endpoints"),

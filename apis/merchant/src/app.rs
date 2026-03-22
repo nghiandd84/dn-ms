@@ -15,7 +15,7 @@ use features_merchant_migrations::{Migrator, MigratorTrait};
 use features_merchant_model::state::{MerchantAppState, MerchantCacheState};
 use features_merchant_stream::PRODUCER_KEY;
 
-use crate::{doc::ApiDoc, routes::{merchant::routes as merchant_routes, api_key::routes as api_key_routes}};
+use crate::{doc::ApiDoc, routes::{merchant::routes as merchant_routes, api_key::routes as api_key_routes, webhook::routes as webhook_routes}};
 
 struct MyApp<'a> {
     config: &'a AppConfig,
@@ -60,6 +60,7 @@ impl<'a> StartApp<MerchantAppState, MerchantCacheState> for MyApp<'a> {
         let all_routes = Router::new()
             .merge(merchant_routes(app_state))
             .merge(api_key_routes(app_state))
+            .merge(webhook_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
