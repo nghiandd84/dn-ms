@@ -1,0 +1,43 @@
+@baseUrl = http://localhost:5142
+@feeConfigId = fee_7993b79cadbc4612
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== FEE CONFIGURATIONS =====
+
+### Get All Fee Configurations
+GET {{baseUrl}}/fee-configurations
+
+### Create Fee Configuration
+POST {{baseUrl}}/fee-configurations
+Content-Type: application/json
+
+{
+  "merchant_id": "mch_123456789",
+  "pricing_model": "PERCENTAGE",
+  "percentage_rate": 2.5,
+  "fixed_amount": 0.0,
+  "min_fee": 0.1,
+  "max_fee": 100.0,
+  "tier_config": null,
+  "effective_from": "2023-01-01T00:00:00",
+  "effective_to": null
+}
+
+### Get Fee Configuration By ID
+GET {{baseUrl}}/fee-configurations/{{feeConfigId}}
+
+### Update Fee Configuration
+PATCH {{baseUrl}}/fee-configurations/{{feeConfigId}}
+Content-Type: application/json
+
+{
+  "percentage_rate": 3.0
+}
+
+### Delete Fee Configuration
+DELETE {{baseUrl}}/fee-configurations/{{feeConfigId}}
