@@ -26,6 +26,8 @@ export MERCHANT_PORT=5131
 export FEE_PORT=5141
 export PAYMENT_STRIPE_PORT=5121
 export NOTIFICATION_APP_PORT=4001
+# update varibale when startup
+# sudo nano ~/.bashrc
 
 echo "Kill current instances"
 

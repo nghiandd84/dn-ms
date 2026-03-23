@@ -5,21 +5,25 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use shared_shared_macro::Response;
+use shared_shared_data_core::{
+    filter::{FilterEnum, FilterParam},
+    filter_deserialize::*,
+};
+use shared_shared_macro::{ParamFilter, Response};
 
 use features_fee_entities::fee_configuration::{
     FeeConfigurationForCreateDto, FeeConfigurationForUpdateDto, ModelOptionDto,
 };
 
-#[derive(Serialize, Debug, ToSchema, Default, Response)]
+#[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct FeeConfigurationData {
     pub id: Option<Uuid>,
     pub merchant_id: Option<String>,
     pub pricing_model: Option<String>,
-    pub percentage_rate: Option<f64>,
-    pub fixed_amount: Option<f64>,
-    pub min_fee: Option<f64>,
-    pub max_fee: Option<f64>,
+    pub percentage_rate: Option<f32>,
+    pub fixed_amount: Option<f32>,
+    pub min_fee: Option<f32>,
+    pub max_fee: Option<f32>,
     pub tier_config: Option<Json>,
     pub effective_from: Option<DateTime>,
     pub effective_to: Option<DateTime>,
@@ -52,10 +56,10 @@ pub struct FeeConfigurationForCreateRequest {
     pub merchant_id: String,
     #[validate(length(min = 1, message = "pricing_model is required"))]
     pub pricing_model: String,
-    pub percentage_rate: Option<f64>,
-    pub fixed_amount: Option<f64>,
-    pub min_fee: Option<f64>,
-    pub max_fee: Option<f64>,
+    pub percentage_rate: Option<f32>,
+    pub fixed_amount: Option<f32>,
+    pub min_fee: Option<f32>,
+    pub max_fee: Option<f32>,
     pub tier_config: Option<Json>,
     pub effective_from: Option<DateTime>,
     pub effective_to: Option<DateTime>,
@@ -81,10 +85,10 @@ impl Into<FeeConfigurationForCreateDto> for FeeConfigurationForCreateRequest {
 pub struct FeeConfigurationForUpdateRequest {
     pub merchant_id: Option<String>,
     pub pricing_model: Option<String>,
-    pub percentage_rate: Option<f64>,
-    pub fixed_amount: Option<f64>,
-    pub min_fee: Option<f64>,
-    pub max_fee: Option<f64>,
+    pub percentage_rate: Option<f32>,
+    pub fixed_amount: Option<f32>,
+    pub min_fee: Option<f32>,
+    pub max_fee: Option<f32>,
     pub tier_config: Option<Json>,
     pub effective_from: Option<DateTime>,
     pub effective_to: Option<DateTime>,

@@ -44,10 +44,10 @@ pub struct Model {
     pub merchant_id: String,
     #[sea_orm(column_type = "String(StringLen::N(20))")]
     pub pricing_model: String, // PERCENTAGE, FIXED, TIERED, HYBRID
-    pub percentage_rate: f64,
-    pub fixed_amount: f64,
-    pub min_fee: f64,
-    pub max_fee: f64,
+    pub percentage_rate: f32,
+    pub fixed_amount: f32,
+    pub min_fee: f32,
+    pub max_fee: f32,
     pub tier_config: Json, // JSONB for tiered pricing
     // effective_from can be null for currently active configuration
     pub effective_from: DateTime,

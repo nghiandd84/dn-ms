@@ -8,8 +8,9 @@ use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
-    result::{OkStr, OkStrResponse, Result},
+    result::{OkStr, OkStrResponse, OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
     order::Order,
@@ -18,7 +19,8 @@ use shared_shared_data_core::{
 
 use features_fee_model::{
     fee_configuration::{
-        FeeConfigurationData, FeeConfigurationForCreateRequest, FeeConfigurationForUpdateRequest,
+        FeeConfigurationData, FeeConfigurationDataFilterParams, FeeConfigurationForCreateRequest,
+        FeeConfigurationForUpdateRequest,
     },
     state::{FeeAppState, FeeCacheState},
 };
@@ -32,17 +34,17 @@ const TAG: &str = "fee";
     tag = TAG,
     request_body = FeeConfigurationForCreateRequest,
     responses(
-        (status = 201, description = "Fee configuration created successfully", body = OkStrResponse),
+        (status = 201, description = "Fee configuration created successfully", body = OkUuidResponse),
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_fee_configuration(
     ValidJson(req): ValidJson<FeeConfigurationForCreateRequest>,
-) -> Result<ResponseJson<OkStr>> {
+) -> Result<ResponseJson<OkUuid>> {
     let id = FeeConfigurationService::create_fee_configuration(req).await?;
-    Ok(ResponseJson(OkStr {
+    Ok(ResponseJson(OkUuid {
         ok: true,
-        id: Some(id.to_string()),
+        id: Some(id),
     }))
 }
 
@@ -75,10 +77,11 @@ async fn get_fee_configuration(Path(id): Path<Uuid>) -> Result<ResponseJson<FeeC
 async fn filter_fee_configurations(
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
+    filter_params: FilterParams<FeeConfigurationDataFilterParams>,
 ) -> Result<ResponseJson<QueryResult<FeeConfigurationData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![]; // Add filters if needed
+    let filters = filter_params.0.all_filters();
     let result =
         FeeConfigurationService::get_fee_configurations(&pagination, &order, &filters).await?;
     Ok(ResponseJson(result))

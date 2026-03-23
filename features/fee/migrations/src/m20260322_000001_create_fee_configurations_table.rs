@@ -8,7 +8,7 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager
+        let _creat_table = manager
             .create_table(
                 Table::create()
                     .table(fee_configuration::Entity)
@@ -33,23 +33,19 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(fee_configuration::Column::PercentageRate)
-                            .double()
-                            .decimal_len(5, 2),
+                            .float()
                     )
                     .col(
                         ColumnDef::new(fee_configuration::Column::FixedAmount)
-                            .double()
-                            .decimal_len(10, 2),
+                            .float()
                     )
                     .col(
                         ColumnDef::new(fee_configuration::Column::MinFee)
-                            .double()
-                            .decimal_len(10, 2),
+                            .float()
                     )
                     .col(
                         ColumnDef::new(fee_configuration::Column::MaxFee)
-                            .double()
-                            .decimal_len(10, 2),
+                            .float()
                     )
                     .col(ColumnDef::new(fee_configuration::Column::TierConfig).json())
                     .col(
@@ -72,26 +68,50 @@ impl MigrationTrait for Migration {
                             .timestamp()
                             .default(Expr::current_timestamp()),
                     )
-                    .index(
-                        Index::create()
-                            .name("idx_merchant_id")
-                            .table(fee_configuration::Entity)
-                            .col(fee_configuration::Column::MerchantId),
-                    )
-                    .index(
-                        Index::create()
-                            .name("idx_effective_from")
-                            .table(fee_configuration::Entity)
-                            .col(fee_configuration::Column::EffectiveFrom),
-                    )
                     .to_owned(),
             )
-            .await
+            .await;
+        let _create_idx_merchant_id = manager
+            .create_index(
+                Index::create()
+                    .name("idx_merchant_id")
+                    .table(fee_configuration::Entity)
+                    .col(fee_configuration::Column::MerchantId)
+                    .to_owned(),
+            )
+            .await;
+        let _create_idx_effective_from = manager
+            .create_index(
+                Index::create()
+                    .name("idx_effective_from")
+                    .table(fee_configuration::Entity)
+                    .col(fee_configuration::Column::EffectiveFrom)
+                    .to_owned(),
+            )
+            .await;
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager
+        let _drop_idx_merchant_id = manager
+            .drop_index(
+                Index::drop()
+                    .name("idx_merchant_id")
+                    .table(fee_configuration::Entity)
+                    .to_owned(),
+            )
+            .await;
+        let _drop_idx_effective_from = manager
+            .drop_index(
+                Index::drop()
+                    .name("idx_effective_from")
+                    .table(fee_configuration::Entity)
+                    .to_owned(),
+            )
+            .await;
+        let _drop_table = manager
             .drop_table(Table::drop().table(fee_configuration::Entity).to_owned())
-            .await
+            .await;
+        Ok(())
     }
 }

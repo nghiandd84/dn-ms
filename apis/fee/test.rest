@@ -1,5 +1,5 @@
-@baseUrl = http://localhost:5142
-@feeConfigId = fee_7993b79cadbc4612
+@baseUrl = http://localhost:5141
+@feeConfigId = a21020c6-1496-467c-ad69-e1b352c6338c
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -12,20 +12,23 @@ GET {{baseUrl}}/swagger-ui/
 ### Get All Fee Configurations
 GET {{baseUrl}}/fee-configurations
 
+
+### Search Fee
+GET {{baseUrl}}/fee-configurations?percentage_rate=gt|3
+
+
 ### Create Fee Configuration
 POST {{baseUrl}}/fee-configurations
 Content-Type: application/json
 
 {
-  "merchant_id": "mch_123456789",
-  "pricing_model": "PERCENTAGE",
-  "percentage_rate": 2.5,
-  "fixed_amount": 0.0,
-  "min_fee": 0.1,
-  "max_fee": 100.0,
-  "tier_config": null,
   "effective_from": "2023-01-01T00:00:00",
-  "effective_to": null
+  "fixed_amount": 0.2,
+  "max_fee": 100.6,
+  "merchant_id": "mch_123456789",
+  "min_fee": 0.4,
+  "percentage_rate": 2.5,
+  "pricing_model": "PERCENTAGE"
 }
 
 ### Get Fee Configuration By ID
@@ -36,8 +39,18 @@ PATCH {{baseUrl}}/fee-configurations/{{feeConfigId}}
 Content-Type: application/json
 
 {
-  "percentage_rate": 3.0
+  "percentage_rate": 3.33,
+  "tier_config": {
+    "field1": 232,
+    "field2": "data 2",
+    "field3": {
+      "f3_a": {
+        "a1": "f3_a1_1",
+        "a2": "f3_a1_2"
+      }
+    }
+  }
 }
 
 ### Delete Fee Configuration
-DELETE {{baseUrl}}/fee-configurations/{{feeConfigId}}
+DELETE {{baseUrl}}/fee-configurations/d63de457-d2de-49ed-ba98-017b49afd515
