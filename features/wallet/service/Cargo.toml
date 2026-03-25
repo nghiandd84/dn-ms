@@ -1,0 +1,22 @@
+[package]
+name = "features-wallet-service"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_wallet_service"
+path = "src/lib.rs"
+
+[dependencies]
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+tracing = { workspace = true }
+uuid = { workspace = true }
+rust_decimal = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+
+features-wallet-entities = { workspace = true }
+features-wallet-model = { workspace = true }
+features-wallet-repo = { workspace = true }

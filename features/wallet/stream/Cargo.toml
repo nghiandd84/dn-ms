@@ -1,0 +1,15 @@
+[package]
+name = "features-wallet-stream"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "features_wallet_stream"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+rust_decimal = { workspace = true }

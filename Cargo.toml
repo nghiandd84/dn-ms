@@ -104,6 +104,13 @@ members = [
     "features/email-template/service", 
     "features/email-template/remote", 
 
+    "features/wallet/entities", 
+    "features/wallet/migrations", 
+    "features/wallet/model", 
+    "features/wallet/repo", 
+    "features/wallet/service", 
+    "features/wallet/stream", 
+
     "apis/auth", 
     "apis/profile", 
     "apis/translation",
@@ -115,6 +122,7 @@ members = [
     "apis/booking",
     "apis/merchant",
     "apis/fee",
+    "apis/wallet",
     "apis/notification",
     "apis/payment-core",
     "apis/paypments/stripe",
@@ -315,6 +323,15 @@ features-payments-stripe-model = { path = "./features/payments/stripe/model"}
 features-payments-stripe-repo = { path = "./features/payments/stripe/repo"}
 features-payments-stripe-service = { path = "./features/payments/stripe/service"}
 features-payments-stripe-stream = { path = "./features/payments/stripe/stream"}
+
+
+# Wallet Feature
+features-wallet-entities = { path = "./features/wallet/entities"}
+features-wallet-migrations = { path = "./features/wallet/migrations"}
+features-wallet-model = { path = "./features/wallet/model"}
+features-wallet-repo = { path = "./features/wallet/repo"}
+features-wallet-service = { path = "./features/wallet/service"}
+features-wallet-stream = { path = "./features/wallet/stream"}
 
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}

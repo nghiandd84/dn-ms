@@ -24,6 +24,7 @@ export BOOKING_PORT=5091
 export PAYMENT_CORE_PORT=5101
 export MERCHANT_PORT=5131
 export FEE_PORT=5141
+export WALLET_PORT=5151
 export PAYMENT_STRIPE_PORT=5121
 export NOTIFICATION_APP_PORT=4001
 # update varibale when startup
@@ -105,6 +106,12 @@ done
 # Kill Fee  port
 for i in {1..2}; do 
     fuser -k -15 514$i/tcp 
+done
+
+
+# Kill Wallet  port
+for i in {1..2}; do 
+    fuser -k -15 515$i/tcp 
 done
 
 # Kill Notification App port
@@ -278,6 +285,16 @@ for i in {1..2}; do
     echo "---  MERCHANT on port $PORT ---"
     # Execute the program
     MERCHANT_PORT=514$i $APP_DIRECTORY/api-fee  &
+done
+sleep 1s
+
+
+echo "------------ Start WALLET API ------------"
+for i in {1..2}; do
+    PORT=515$i
+    echo "---  WALLET on port $PORT ---"
+    # Execute the program
+    WALLET_PORT=515$i $APP_DIRECTORY/api-wallet  &
 done
 sleep 1s
 
