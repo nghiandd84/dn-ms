@@ -17,12 +17,13 @@ pub struct WalletForCreateRequest {
     #[validate(length(min = 1))]
     pub currency: String,
     #[serde(default)]
-    pub balance: Option<String>,
+    pub balance: Option<f32>,
+    pub user_id: Option<Uuid>, // Will be set by the service using authenticated user
 }
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct WalletForUpdateRequest {
-    pub balance: Option<String>,
+    pub balance: Option<f32>,
     pub currency: Option<String>,
     pub is_active: Option<bool>,
 }
@@ -42,7 +43,7 @@ pub struct WalletData {
     pub id: Option<Uuid>,
     pub user_id: Option<Uuid>,
     pub currency: Option<String>,
-    pub balance: Option<String>,
+    pub balance: Option<f32>,
     pub is_active: Option<bool>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
@@ -66,9 +67,11 @@ impl Into<WalletData> for ModelOptionDto {
 impl Into<WalletForCreateDto> for WalletForCreateRequest {
     fn into(self) -> WalletForCreateDto {
         WalletForCreateDto {
-            user_id: Uuid::nil(), // Will be set by the service using authenticated user
+            user_id: self
+                .user_id
+                .expect("Not provided user_id in WalletForCreateRequest"),
             currency: self.currency,
-            balance: self.balance.unwrap_or_else(|| "0".to_string()).into(),
+            balance: self.balance.unwrap_or_else(|| 0.0),
         }
     }
 }

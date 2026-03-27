@@ -7,28 +7,28 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
-#[sea_orm(table_name = "transactions")]
+#[sea_orm(table_name = "top_up_transactions")]
 #[dto(
-    name(TransactionForCreate),
-    columns(wallet_id, transaction_type, amount, currency, status, description)
+    name(TopUpTransactionForCreate),
+    columns(wallet_id, amount, method, payment_provider_id, payment_transaction_id, status)
 )]
 #[dto(
-    name(TransactionForUpdate),
-    columns(status, description),
+    name(TopUpTransactionForUpdate),
+    columns(status, completed_at),
     option
 )]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub wallet_id: Uuid,
-    pub transaction_type: String, // ENUM('DEPOSIT','WITHDRAWAL','TRANSFER','PAYMENT')
-    pub amount: f32,  // Using String for Decimal compatibility
-    pub currency: String,
-    pub status: String, // ENUM('INITIATED', 'PENDING','SUCCESS','FAILED','CANCELLED')
-    pub reference_id: String,
-    pub description: String,
+    pub amount: f32, 
+    pub method: String, // ENUM('CARD', 'UPI', 'BANK_TRANSFER', 'CASH')
+    pub payment_provider_id: String,
+    pub payment_transaction_id: String,
+    pub status: String, // ENUM('PENDING', 'SUCCESS', 'FAILED')
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    pub completed_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

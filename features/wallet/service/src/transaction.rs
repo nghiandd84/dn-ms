@@ -1,9 +1,8 @@
-use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::FilterEnum,
     order::Order,
     paging::{Pagination, QueryResult},
 };

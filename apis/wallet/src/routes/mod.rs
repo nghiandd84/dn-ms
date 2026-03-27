@@ -1,5 +1,3 @@
-pub mod wallet;
+pub mod top_up_transaction;
 pub mod transaction;
-pub mod mod_impl;
-
-pub use mod_impl::*;
+pub mod wallet;

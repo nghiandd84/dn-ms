@@ -1,0 +1,287 @@
+@baseUrl = http://localhost:5151
+@walletId = c6d7bac5-5304-4f2e-9e0b-63abe5a56c3f
+@topUpId = 12345678-1234-1234-1234-123456789abc
+@transactionId = 87654321-4321-4321-4321-210987654321
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== Wallets =====
+
+### Get All Wallets
+GET {{baseUrl}}/wallets
+
+### Search Wallets
+GET {{baseUrl}}/wallets?balance=gt|0.2&order_name=currency&order_direction=1
+
+### Create wallets
+POST {{baseUrl}}/wallets
+Content-Type: application/json
+
+{
+    "balance": 0,
+    "currency": "USD"
+}
+
+### Get Wallet By ID
+GET {{baseUrl}}/wallets/{{walletId}}
+
+### Update Wallet
+PATCH {{baseUrl}}/wallets/{{walletId}}
+Content-Type: application/json
+
+{
+  "is_active": true
+}
+
+### Delete Wallet
+DELETE {{baseUrl}}/wallets/dd7c55c7-82df-4987-b2e2-74466dd9b011
+
+### ===== Top-Up Transactions =====
+
+### Create Top-Up Transaction
+POST {{baseUrl}}/wallets/{{walletId}}/top-ups
+Content-Type: application/json
+
+{
+    "amount": 100.50,
+    "method": "CARD",
+    "payment_provider_id": "stripe_123",
+    "payment_transaction_id": "txn_abc123"
+}
+
+### Get Top-Up Transaction by ID
+GET {{baseUrl}}/top-ups/{{topUpId}}
+
+### Get All Top-Up Transactions
+GET {{baseUrl}}/top-ups
+
+### Get Top-Up Transactions for Wallet
+GET {{baseUrl}}/wallets/{{walletId}}/top-ups
+
+### Update Top-Up Transaction
+PATCH {{baseUrl}}/top-ups/{{topUpId}}
+Content-Type: application/json
+
+{
+    "status": "COMPLETED",
+    "completed_at": "2024-01-15T10:30:00"
+}
+
+### Delete Top-Up Transaction
+DELETE {{baseUrl}}/top-ups/{{topUpId}}
+
+### ===== Transactions =====
+
+### Create Transaction - Deposit
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "DEPOSIT",
+    "amount": 150.00,
+    "currency": "USD",
+    "reference_id": "dep_001",
+    "description": "Salary deposit"
+}
+
+### Create Transaction - Withdrawal
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "WITHDRAWAL",
+    "amount": -50.00,
+    "currency": "USD",
+    "reference_id": "wdr_001",
+    "description": "ATM withdrawal"
+}
+
+### Create Transaction - Payment
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "PAYMENT",
+    "amount": -25.50,
+    "currency": "USD",
+    "reference_id": "pay_001",
+    "description": "Online purchase"
+}
+
+### Create Transaction - Transfer
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "TRANSFER",
+    "amount": -100.00,
+    "currency": "USD",
+    "reference_id": "trf_001",
+    "description": "Transfer to savings account"
+}
+
+### Get Transaction by ID
+GET {{baseUrl}}/transactions/{{transactionId}}
+
+### Get All Transactions
+GET {{baseUrl}}/transactions
+
+### Get Transactions for Wallet
+GET {{baseUrl}}/wallets/{{walletId}}/transactions
+
+### Update Transaction
+PATCH {{baseUrl}}/transactions/{{transactionId}}
+Content-Type: application/json
+
+{
+    "status": "COMPLETED",
+    "description": "Updated transaction description"
+}
+
+### Delete Transaction
+DELETE {{baseUrl}}/transactions/{{transactionId}}
+
+### ===== Test Scenarios =====
+
+### Scenario: Complete Top-Up Flow
+# 1. Create a wallet
+POST {{baseUrl}}/wallets
+Content-Type: application/json
+
+{
+    "balance": 0,
+    "currency": "USD"
+}
+
+### 2. Create a top-up transaction for the wallet
+# @name createTopUp
+POST {{baseUrl}}/wallets/{{walletId}}/top-ups
+Content-Type: application/json
+
+{
+    "amount": 50.00,
+    "method": "BANK_TRANSFER",
+    "payment_provider_id": "bank_001",
+    "payment_transaction_id": "bt_123456"
+}
+
+### 3. Get the created top-up (use the ID from response)
+# @name getTopUp
+GET {{baseUrl}}/top-ups/{{$createTopUp.response.body.id}}
+
+### 4. Update the top-up status to completed
+PATCH {{baseUrl}}/top-ups/{{$createTopUp.response.body.id}}
+Content-Type: application/json
+
+{
+    "status": "COMPLETED"
+}
+
+### 5. Verify wallet balance was updated (this would require a wallet balance check endpoint)
+GET {{baseUrl}}/wallets/{{walletId}}
+
+### Scenario: Transaction Flow
+# 1. Create a deposit transaction
+# @name createDeposit
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "DEPOSIT",
+    "amount": 200.00,
+    "currency": "USD",
+    "reference_id": "dep_test_001",
+    "description": "Test deposit"
+}
+
+### 2. Get the created transaction
+GET {{baseUrl}}/transactions/{{$createDeposit.response.body.id}}
+
+### 3. Update transaction status
+PATCH {{baseUrl}}/transactions/{{$createDeposit.response.body.id}}
+Content-Type: application/json
+
+{
+    "status": "COMPLETED"
+}
+
+### 4. Create a withdrawal transaction
+# @name createWithdrawal
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "transaction_type": "WITHDRAWAL",
+    "amount": -75.00,
+    "currency": "USD",
+    "reference_id": "wdr_test_001",
+    "description": "Test withdrawal"
+}
+
+### 5. Update withdrawal status
+PATCH {{baseUrl}}/transactions/{{$createWithdrawal.response.body.id}}
+Content-Type: application/json
+
+{
+    "status": "COMPLETED"
+}
+
+### Scenario: Multiple Top-Ups
+# Create multiple top-ups for testing
+POST {{baseUrl}}/wallets/{{walletId}}/top-ups
+Content-Type: application/json
+
+{
+    "amount": 25.75,
+    "method": "UPI",
+    "payment_provider_id": "gpay_456",
+    "payment_transaction_id": "upi_txn_789"
+}
+
+###
+POST {{baseUrl}}/wallets/{{walletId}}/top-ups
+Content-Type: application/json
+
+{
+    "amount": 10.00,
+    "method": "CASH"
+}
+
+### List all top-ups with pagination
+GET {{baseUrl}}/top-ups?page=1&limit=10&order_name=created_at&order_direction=-1
+
+### Filter top-ups by status
+GET {{baseUrl}}/top-ups?status=eq|COMPLETED
+
+### Filter top-ups by method
+GET {{baseUrl}}/top-ups?method=eq|CARD
+
+### Scenario: Transaction Filtering and Pagination
+### List all transactions with pagination
+GET {{baseUrl}}/transactions?page=1&limit=5&order_name=created_at&order_direction=-1
+
+### Filter transactions by type
+GET {{baseUrl}}/transactions?transaction_type=eq|DEPOSIT
+
+### Filter transactions by status
+GET {{baseUrl}}/transactions?status=eq|COMPLETED
+
+### Filter transactions by amount range
+GET {{baseUrl}}/transactions?amount=gt|0
+
+### Filter transactions by currency
+GET {{baseUrl}}/transactions?currency=eq|USD
+
+### Filter transactions by wallet
+GET {{baseUrl}}/transactions?wallet_id=eq|{{walletId}}
+

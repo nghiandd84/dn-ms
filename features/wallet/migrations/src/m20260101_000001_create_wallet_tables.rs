@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use features_wallet_entities::{wallet, transaction};
+use features_wallet_entities::{transaction, wallet};
 
 pub struct Migration;
 
@@ -34,9 +34,9 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(wallet::Column::Balance)
-                            .string()
+                            .float()
                             .not_null()
-                            .default("0"),
+                            .default(0.0),
                     )
                     .col(
                         ColumnDef::new(wallet::Column::IsActive)
@@ -48,13 +48,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(wallet::Column::CreatedAt)
                             .date_time()
                             .not_null()
-                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                            .default(Expr::current_timestamp()),
                     )
                     .col(
                         ColumnDef::new(wallet::Column::UpdatedAt)
                             .date_time()
                             .not_null()
-                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                            .default(Expr::current_timestamp()),
                     )
                     .to_owned(),
             )
@@ -72,7 +72,11 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(transaction::Column::WalletId).uuid().not_null())
+                    .col(
+                        ColumnDef::new(transaction::Column::WalletId)
+                            .uuid()
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(transaction::Column::TransactionType)
                             .string()
@@ -80,7 +84,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(transaction::Column::Amount)
-                            .string()
+                            .float()
                             .not_null(),
                     )
                     .col(
@@ -108,13 +112,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(transaction::Column::CreatedAt)
                             .date_time()
                             .not_null()
-                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                            .default(Expr::current_timestamp()),
                     )
                     .col(
                         ColumnDef::new(transaction::Column::UpdatedAt)
                             .date_time()
                             .not_null()
-                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                            .default(Expr::current_timestamp()),
                     )
                     .to_owned(),
             )
@@ -127,7 +131,7 @@ impl MigrationTrait for Migration {
         manager
             .drop_table(Table::drop().table(transaction::Entity).to_owned())
             .await?;
-        
+
         manager
             .drop_table(Table::drop().table(wallet::Entity).to_owned())
             .await?;

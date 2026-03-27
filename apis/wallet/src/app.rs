@@ -11,7 +11,7 @@ use features_wallet_model::state::{WalletAppState, WalletCacheState};
 
 use crate::{
     doc::ApiDoc,
-    routes::{wallet::routes as wallet_routes, transaction::routes as transaction_routes},
+    routes::{wallet::routes as wallet_routes, transaction::routes as transaction_routes, top_up_transaction::routes as top_up_transaction_routes},
 };
 
 struct MyApp<'a> {
@@ -37,6 +37,7 @@ impl<'a> StartApp<WalletAppState, WalletCacheState> for MyApp<'a> {
         let all_routes = Router::new()
             .merge(wallet_routes(app_state))
             .merge(transaction_routes(app_state))
+            .merge(top_up_transaction_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }

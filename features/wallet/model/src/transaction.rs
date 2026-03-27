@@ -18,7 +18,7 @@ use features_wallet_entities::transaction::{
 pub struct TransactionForCreateRequest {
     pub wallet_id: Uuid,
     pub transaction_type: String, // DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT
-    pub amount: String,
+    pub amount: f32,
     pub currency: String,
     pub reference_id: Option<String>,
     pub description: Option<String>,
@@ -45,7 +45,7 @@ pub struct TransactionData {
     pub id: Option<Uuid>,
     pub wallet_id: Option<Uuid>,
     pub transaction_type: Option<String>,
-    pub amount: Option<String>,
+    pub amount: Option<f32>,
     pub currency: Option<String>,
     pub status: Option<String>,
     pub reference_id: Option<String>,

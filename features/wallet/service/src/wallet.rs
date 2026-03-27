@@ -1,15 +1,13 @@
-use sea_orm::Iden;
 use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::FilterEnum,
     order::Order,
     paging::{Pagination, QueryResult},
 };
 use shared_shared_data_error::app::AppError;
 
-use features_wallet_entities::wallet::Column;
 use features_wallet_model::wallet::{WalletData, WalletForCreateRequest, WalletForUpdateRequest};
 use features_wallet_repo::wallet::{WalletMutation, WalletQuery};
 
@@ -17,7 +15,6 @@ pub struct WalletService {}
 
 impl WalletService {
     pub async fn create_wallet<'a>(
-        user_id: Uuid,
         wallet_request: WalletForCreateRequest,
     ) -> Result<Uuid, AppError> {
         let create_dto = wallet_request.into();
@@ -37,7 +34,9 @@ impl WalletService {
         WalletQuery::get_wallet_by_id(wallet_id).await
     }
 
-    pub async fn get_wallet_by_user_id<'a>(user_id: Uuid) -> Result<QueryResult<WalletData>, AppError> {
+    pub async fn get_wallet_by_user_id<'a>(
+        user_id: Uuid,
+    ) -> Result<QueryResult<WalletData>, AppError> {
         WalletQuery::get_wallet_by_user_id(user_id).await
     }
 

@@ -40,11 +40,8 @@ const TAG: &str = "transaction";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_transaction(
-    ValidJson(mut req): ValidJson<TransactionForCreateRequest>,
+    ValidJson(req): ValidJson<TransactionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    // Get wallet_id from authenticated user's wallet context
-    let wallet_id = Uuid::nil(); // TODO: Get from context
-                                 // req.wallet_id = wallet_id;
     let transaction_id = TransactionService::create_transaction(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -65,31 +62,6 @@ async fn get_transaction(
 ) -> Result<ResponseJson<TransactionData>> {
     let transaction = TransactionService::get_transaction_by_id(transaction_id).await?;
     Ok(ResponseJson(transaction))
-}
-
-#[utoipa::path(
-    get,
-    path = "/wallets/{wallet_id}/transactions",
-    tag = TAG,
-    params(
-        Order,
-        Pagination
-    ),
-    responses(
-        (status = 200, description = "Wallet transactions", body = QueryResultResponse<TransactionData>),
-    )
-)]
-#[instrument(level = Level::INFO, skip_all)]
-async fn get_wallet_transactions(
-    Path(wallet_id): Path<Uuid>,
-    query_pagination: Query<Pagination>,
-    query_order: Query<Order>,
-) -> Result<ResponseJson<QueryResult<TransactionData>>> {
-    let pagination = query_pagination.0;
-    let order = query_order.0;
-    let result =
-        TransactionService::get_transactions_by_wallet_id(wallet_id, &pagination, &order).await?;
-    Ok(ResponseJson(result))
 }
 
 #[utoipa::path(
