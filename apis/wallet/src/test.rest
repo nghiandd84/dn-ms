@@ -266,6 +266,116 @@ GET {{baseUrl}}/top-ups?status=eq|COMPLETED
 ### Filter top-ups by method
 GET {{baseUrl}}/top-ups?method=eq|CARD
 
+### ===== P2P Transfer =====
+
+### Create P2P Transfer
+POST {{baseUrl}}/p2p-transfers
+Content-Type: application/json
+
+{
+    "from_wallet_id": "{{walletId}}",
+    "to_wallet_id": "c6d7bac5-5304-4f2e-9e0b-63abe5a56c3f",
+    "amount": 20.00
+}
+
+@p2pTransferId = 
+### Get P2P Transfer by ID
+GET {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
+
+### Get All P2P Transfers
+GET {{baseUrl}}/p2p-transfers
+
+### Get Wallet P2P Transfers
+GET {{baseUrl}}/wallets/{{walletId}}/p2p-transfers
+
+### Update P2P Transfer
+PATCH {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
+Content-Type: application/json
+
+{
+    "status": "SUCCESS",
+    "completed_at": "2024-01-15T11:00:00"
+}
+
+### Delete P2P Transfer
+DELETE {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
+
+### ===== Withdrawal =====
+
+@withdrawalId = 
+
+### Create Withdrawal
+POST {{baseUrl}}/wallets/{{walletId}}/withdrawals
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "amount": 48.75,
+    "payment_device_id": null
+}
+
+### Get Withdrawal by ID
+GET {{baseUrl}}/withdrawals/{{withdrawalId}}
+
+### Get All Withdrawals
+GET {{baseUrl}}/withdrawals
+
+### Get Wallet Withdrawals
+GET {{baseUrl}}/wallets/{{walletId}}/withdrawals
+
+### Update Withdrawal
+PATCH {{baseUrl}}/withdrawals/{{withdrawalId}}
+Content-Type: application/json
+
+{
+    "status": "SUCCESS",
+    "completed_at": "2024-01-15T11:15:00"
+}
+
+### Delete Withdrawal
+DELETE {{baseUrl}}/withdrawals/{{withdrawalId}}
+
+### ===== P2P + Withdrawal Scenarios =====
+
+### Scenario: Transfer + Withdrawal Combo
+# 1. Create p2p transfer
+# @name createTransfer
+POST {{baseUrl}}/p2p-transfers
+Content-Type: application/json
+
+{
+    "from_wallet_id": "{{walletId}}",
+    "to_wallet_id": "c6d7bac5-5304-4f2e-9e0b-63abe5a56c3f",
+    "amount": 30.00
+}
+
+### 2. Complete p2p transfer
+PATCH {{baseUrl}}/p2p-transfers/{{$createTransfer.response.body.id}}
+Content-Type: application/json
+
+{
+    "status": "SUCCESS"
+}
+
+### 3. Create withdrawal
+# @name createWithdrawal
+POST {{baseUrl}}/wallets/{{walletId}}/withdrawals
+Content-Type: application/json
+
+{
+    "wallet_id": "{{walletId}}",
+    "amount": 15.00,
+    "payment_device_id": null
+}
+
+### 4. Complete withdrawal
+PATCH {{baseUrl}}/withdrawals/{{$createWithdrawal.response.body.id}}
+Content-Type: application/json
+
+{
+    "status": "SUCCESS"
+}
+
 ### Scenario: Transaction Filtering and Pagination
 ### List all transactions with pagination
 GET {{baseUrl}}/transactions?page=1&limit=5&order_name=created_at&order_direction=-1

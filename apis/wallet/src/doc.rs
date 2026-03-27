@@ -29,6 +29,16 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::transaction::filter_transactions,
         crate::routes::transaction::update_transaction,
         crate::routes::transaction::delete_transaction,
+        crate::routes::p2p_transfer::create_p2p_transfer,
+        crate::routes::p2p_transfer::get_p2p_transfer,
+        crate::routes::p2p_transfer::filter_p2p_transfers,
+        crate::routes::p2p_transfer::update_p2p_transfer,
+        crate::routes::p2p_transfer::delete_p2p_transfer,
+        crate::routes::withdrawal::create_withdrawal,
+        crate::routes::withdrawal::get_withdrawal,
+        crate::routes::withdrawal::filter_withdrawals,
+        crate::routes::withdrawal::update_withdrawal,
+        crate::routes::withdrawal::delete_withdrawal
     ),
     tags(
         (name = "wallet", description = "Wallet management endpoints"),
