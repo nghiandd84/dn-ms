@@ -10,6 +10,7 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.currency, model_option.currency);
     set_if_some!(active_model.balance, model_option.balance);
     set_if_some!(active_model.is_active, model_option.is_active);
+    set_if_some!(active_model.version, model_option.version);
     set_if_some!(active_model.created_at, model_option.created_at);
     set_if_some!(active_model.updated_at, model_option.updated_at);
 

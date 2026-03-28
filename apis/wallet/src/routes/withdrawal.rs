@@ -1,11 +1,10 @@
-use axum::{extract::{Path, Query}, routing::{delete, get, patch, post}, Router};
+use axum::{
+    extract::{Path, Query},
+    routing::{delete, get, patch, post},
+    Router,
+};
 use tracing::{instrument, Level};
 use uuid::Uuid;
-
-use features_wallet_model::{
-    state::{WalletAppState, WalletCacheState},
-    withdrawal::{WithdrawalData, WithdrawalDataFilterParams, WithdrawalForCreateRequest, WithdrawalForUpdateRequest},
-};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -17,7 +16,15 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+use shared_shared_extractor::IdempotencyKey;
 
+use features_wallet_model::{
+    state::{WalletAppState, WalletCacheState},
+    withdrawal::{
+        WithdrawalData, WithdrawalDataFilterParams, WithdrawalForCreateRequest,
+        WithdrawalForUpdateRequest,
+    },
+};
 use features_wallet_service::WithdrawalService;
 
 const TAG: &str = "withdrawal";
@@ -33,12 +40,17 @@ const TAG: &str = "withdrawal";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_withdrawal(
+    idempotency_key: IdempotencyKey,
     Path(wallet_id): Path<Uuid>,
     ValidJson(mut req): ValidJson<WithdrawalForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
+    tracing::debug!("idempotency_key: {:?}", idempotency_key);
     req.wallet_id = wallet_id;
     let withdrawal_id = WithdrawalService::create_withdrawal(req).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(withdrawal_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(withdrawal_id),
+    }))
 }
 
 #[utoipa::path(
@@ -49,9 +61,7 @@ async fn create_withdrawal(
         (status = 200, description = "Withdrawal retrieved", body = WithdrawalData),
     )
 )]
-async fn get_withdrawal(
-    Path(withdrawal_id): Path<Uuid>,
-) -> Result<ResponseJson<WithdrawalData>> {
+async fn get_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJson<WithdrawalData>> {
     let withdrawal = WithdrawalService::get_withdrawal_by_id(withdrawal_id).await?;
     Ok(ResponseJson(withdrawal))
 }
@@ -95,7 +105,8 @@ async fn get_wallet_withdrawals(
 ) -> Result<ResponseJson<QueryResult<WithdrawalData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let result = WithdrawalService::get_withdrawals_by_wallet_id(wallet_id, &pagination, &order).await?;
+    let result =
+        WithdrawalService::get_withdrawals_by_wallet_id(wallet_id, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -110,11 +121,15 @@ async fn get_wallet_withdrawals(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_withdrawal(
+    idempotency_key: IdempotencyKey,
     Path(withdrawal_id): Path<Uuid>,
     ValidJson(req): ValidJson<WithdrawalForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     WithdrawalService::update_withdrawal(withdrawal_id, req).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(withdrawal_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(withdrawal_id),
+    }))
 }
 
 #[utoipa::path(
@@ -126,18 +141,22 @@ async fn update_withdrawal(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_withdrawal(
-    Path(withdrawal_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     WithdrawalService::delete_withdrawal(withdrawal_id).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(withdrawal_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(withdrawal_id),
+    }))
 }
 
 pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router {
     Router::new()
         .route("/wallets/{wallet_id}/withdrawals", post(create_withdrawal))
         .route("/withdrawals", get(filter_withdrawals))
-        .route("/wallets/{wallet_id}/withdrawals", get(get_wallet_withdrawals))
+        .route(
+            "/wallets/{wallet_id}/withdrawals",
+            get(get_wallet_withdrawals),
+        )
         .route("/withdrawals/{withdrawal_id}", get(get_withdrawal))
         .route("/withdrawals/{withdrawal_id}", patch(update_withdrawal))
         .route("/withdrawals/{withdrawal_id}", delete(delete_withdrawal))

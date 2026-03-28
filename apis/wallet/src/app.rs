@@ -17,6 +17,7 @@ use crate::{
         top_up_transaction::routes as top_up_transaction_routes,
         p2p_transfer::routes as p2p_transfer_routes,
         withdrawal::routes as withdrawal_routes,
+        idempotency::routes as idempotency_routes,
     },
 };
 
@@ -46,6 +47,7 @@ impl<'a> StartApp<WalletAppState, WalletCacheState> for MyApp<'a> {
             .merge(top_up_transaction_routes(app_state))
             .merge(p2p_transfer_routes(app_state))
             .merge(withdrawal_routes(app_state))
+            .merge(idempotency_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }

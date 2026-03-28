@@ -1,7 +1,7 @@
 use shared_shared_macro::Mutation;
 
 use features_wallet_entities::wallet::{
-    ActiveModel, WalletForCreateDto, WalletForUpdateDto, Column, Entity, Model, ModelOptionDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, WalletForCreateDto, WalletForUpdateDto,
 };
 
 use crate::wallet::util::assign;

@@ -262,7 +262,6 @@ WALLET_JWT_SECRET=your_jwt_secret
 ### Utilities
 - `utoipa` - OpenAPI documentation
 - `validator` - Data validation
-- `rust_decimal` - Precise decimal arithmetic for financial amounts
 - `async-trait` - Async trait support
 
 ## Events (Stream)

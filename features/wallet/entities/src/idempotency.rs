@@ -7,19 +7,20 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
-#[sea_orm(table_name = "wallets")]
-#[dto(name(WalletForCreate), columns(user_id, currency, balance))]
-#[dto(name(WalletForUpdate), columns(balance, currency, is_active), option)]
+#[sea_orm(table_name = "idempotency_keys")]
+#[dto(name(IdempotencyKeyForCreate), columns(key, endpoint, request_hash, response_body, response_status, state, expires_at))]
+#[dto(name(IdempotencyKeyForUpdate), columns(response_body, response_status, state, expires_at), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub user_id: Uuid,
-    pub currency: String,
-    pub balance: f32,
-    pub is_active: bool,
-    pub version: i32,  // For optimistic locking
+    pub key: String,
+    pub endpoint: String,
+    pub request_hash: String,
+    pub response_body: serde_json::Value,
+    pub response_status: i32,
+    pub state: String,
     pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub expires_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -35,7 +36,6 @@ impl ActiveModelBehavior for ActiveModel {
         if insert {
             self.created_at = ActiveValue::Set(current_time);
         }
-        self.updated_at = ActiveValue::Set(current_time);
         Ok(self)
     }
 }

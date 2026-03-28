@@ -38,7 +38,13 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::withdrawal::get_withdrawal,
         crate::routes::withdrawal::filter_withdrawals,
         crate::routes::withdrawal::update_withdrawal,
-        crate::routes::withdrawal::delete_withdrawal
+        crate::routes::withdrawal::delete_withdrawal,
+        crate::routes::idempotency::create_idempotency_key,
+        crate::routes::idempotency::get_idempotency_keys,
+        crate::routes::idempotency::get_idempotency_key_by_id,
+        crate::routes::idempotency::update_idempotency_key,
+        crate::routes::idempotency::delete_idempotency_key,
+        crate::routes::idempotency::get_idempotency_key_by_key,
     ),
     tags(
         (name = "wallet", description = "Wallet management endpoints"),

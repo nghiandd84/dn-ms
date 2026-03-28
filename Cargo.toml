@@ -17,7 +17,8 @@ members = [
     "libs/shared/shared/auth",
     "libs/shared/shared/config",
 
-    
+
+    "libs/shared/shared/extractor",
     "libs/shared/shared/macro",
     "libs/shared/shared/macro-rule",
     "libs/shared/shared/middleware",
@@ -185,13 +186,13 @@ redis = { version = "0.32.7", features = ["tokio-comp", "tokio-native-tls-comp"]
 reqwest = { version = "0.12", features = ["json"] }
 reqwest-middleware = { version = "0.4"}
 reqwest-retry = { version = "0.7"}
-rust_decimal = { version = "1.37.1" }
 sea-orm = { version = "2.0.0-rc.31" }
 sea-orm-migration = { version = "2.0.0-rc.31" }
 serde = { version = "1.0.223", features = ["derive"] }
 serde_json = "1.0.139"
 serde_qs = { version = "0.15.0" }
 serde_yaml = "0.9.34"
+sha2 = { version =  "0.10" }
 sqlx = { version = "0.8.3", features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"] }
 syn = "2.0"
 thiserror = { version="2" }
@@ -224,6 +225,7 @@ shared-shared-app = { path = "./libs/shared/shared/app"}
 shared-shared-observability = { path = "./libs/shared/shared/observability"}
 shared-shared-auth = { path = "./libs/shared/shared/auth"}
 shared-shared-config = { path = "./libs/shared/shared/config"}
+shared-shared-extractor = { path = "./libs/shared/shared/extractor"}
 shared-shared-macro = { path = "./libs/shared/shared/macro"}
 shared-shared-macro-rule = { path = "./libs/shared/shared/macro-rule"}
 shared-shared-middleware = { path = "./libs/shared/shared/middleware"}

@@ -6,14 +6,6 @@ use axum::{
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
-use features_wallet_model::{
-    state::{WalletAppState, WalletCacheState},
-    top_up_transaction::{
-        TopUpTransactionData, TopUpTransactionDataFilterParams, TopUpTransactionForCreateRequest,
-        TopUpTransactionForUpdateRequest,
-    },
-};
-
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -24,7 +16,15 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+use shared_shared_extractor::IdempotencyKey;
 
+use features_wallet_model::{
+    state::{WalletAppState, WalletCacheState},
+    top_up_transaction::{
+        TopUpTransactionData, TopUpTransactionDataFilterParams, TopUpTransactionForCreateRequest,
+        TopUpTransactionForUpdateRequest,
+    },
+};
 use features_wallet_service::TopUpTransactionService;
 
 const TAG: &str = "top_up";
@@ -40,6 +40,7 @@ const TAG: &str = "top_up";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_top_up_transaction(
+    idempotency_key: IdempotencyKey,
     Path(wallet_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -103,6 +104,7 @@ async fn filter_top_up_transactions(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_top_up_transaction(
+    idempotency_key: IdempotencyKey,
     Path(top_up_transaction_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

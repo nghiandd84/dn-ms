@@ -16,7 +16,6 @@ utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
 serde = { workspace = true }
 uuid = { workspace = true }
 tracing = { workspace = true }
-rust_decimal = { workspace = true }
 
 shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }

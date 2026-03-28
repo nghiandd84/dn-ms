@@ -3,7 +3,6 @@ use shared_shared_macro::RemoteService;
 use uuid::Uuid;
 
 use features_auth_model::authentication::{AuthLoginData, AuthRegisterData};
-use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]

@@ -5,7 +5,6 @@ use shared_shared_data_core::{
 use shared_shared_macro::RemoteService;
 
 use features_email_template_model::template_placeholder::TemplatePlaceholderData;
-use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(email_template_service))]

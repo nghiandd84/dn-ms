@@ -3,6 +3,7 @@ pub mod transaction;
 pub mod top_up_transaction;
 pub mod p2p_transfer;
 pub mod withdrawal;
+pub mod idempotency;
 
 pub use wallet::WalletQuery;
 pub use wallet::WalletMutation;
@@ -14,3 +15,5 @@ pub use p2p_transfer::P2pTransferQuery;
 pub use p2p_transfer::P2pTransferMutation;
 pub use withdrawal::WithdrawalQuery;
 pub use withdrawal::WithdrawalMutation;
+pub use idempotency::IdempotencyQuery;
+pub use idempotency::IdempotencyMutation;

@@ -12,6 +12,8 @@ use crate::{
 pub enum AppError {
     #[error("Authentication error: {0}")]
     Auth(AuthError),
+    #[error("Duplicate entry: {0}")]
+    DuplicateEntry(String),
     #[error("Password error: {0}")]
     Password(PasswordError),
     #[error("Token error: {0}")]
@@ -45,6 +47,12 @@ impl AppError {
             Auth(auth_error) => (
                 auth_error.get_status_code(),
                 ClientError::AuthError(auth_error.clone()),
+            ),
+            DuplicateEntry(entity) => (
+                StatusCode::CONFLICT,
+                ClientError::EntityNotFound {
+                    entity: entity.clone(),
+                },
             ),
             JsonRejection => (StatusCode::BAD_REQUEST, ClientError::JsonRejection),
             EntityNotFound { entity } => (

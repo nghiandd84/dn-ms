@@ -302,7 +302,7 @@ DELETE {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
 
 ### ===== Withdrawal =====
 
-@withdrawalId = 
+@withdrawalId = a432c498-16a1-4db7-b171-9a974c098321
 
 ### Create Withdrawal
 POST {{baseUrl}}/wallets/{{walletId}}/withdrawals
@@ -311,7 +311,7 @@ Content-Type: application/json
 {
     "wallet_id": "{{walletId}}",
     "amount": 48.75,
-    "payment_device_id": null
+    "payment_device_id": "c6d7bac5-5304-4f2e-9e0b-63ab75856c3f"
 }
 
 ### Get Withdrawal by ID

@@ -63,6 +63,7 @@ async fn delete_by_id(
     auth: Auth<CanDeleteBaker>,
     Path(baker_id): Path<i32>,
 ) -> Result<ResponseJson<OkI32>> {
+    let _mask = auth.mask;
     BakerMutation::delete(baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }

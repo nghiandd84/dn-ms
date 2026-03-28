@@ -112,7 +112,7 @@ pub fn remote_service(input: TokenStream) -> TokenStream {
                 debug!("Calling API: {} with method {}", endpoint, method);
 
                 let client: ClientWithMiddleware = ClientBuilder::new(Client::new())
-                    .with(RequestTracingMiddleware)
+                    .with(shared_shared_middleware::RequestTracingMiddleware)
                     .build();
 
                 let tenant = Context::current()

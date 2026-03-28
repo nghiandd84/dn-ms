@@ -45,6 +45,7 @@ pub struct WalletData {
     pub currency: Option<String>,
     pub balance: Option<f32>,
     pub is_active: Option<bool>,
+    pub version: Option<i32>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
 }
@@ -57,9 +58,9 @@ impl Into<WalletData> for ModelOptionDto {
             currency: self.currency,
             balance: self.balance,
             is_active: self.is_active,
+            version: self.version,
             created_at: self.created_at,
             updated_at: self.updated_at,
-            ..Default::default()
         }
     }
 }

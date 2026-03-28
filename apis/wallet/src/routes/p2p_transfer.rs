@@ -1,11 +1,10 @@
-use axum::{extract::{Path, Query}, routing::{delete, get, patch, post}, Router};
+use axum::{
+    extract::{Path, Query},
+    routing::{delete, get, patch, post},
+    Router,
+};
 use tracing::{instrument, Level};
 use uuid::Uuid;
-
-use features_wallet_model::{
-    state::{WalletAppState, WalletCacheState},
-    p2p_transfer::{P2pTransferData, P2pTransferDataFilterParams, P2pTransferForCreateRequest, P2pTransferForUpdateRequest},
-};
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
@@ -17,7 +16,15 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+use shared_shared_extractor::IdempotencyKey;
 
+use features_wallet_model::{
+    p2p_transfer::{
+        P2pTransferData, P2pTransferDataFilterParams, P2pTransferForCreateRequest,
+        P2pTransferForUpdateRequest,
+    },
+    state::{WalletAppState, WalletCacheState},
+};
 use features_wallet_service::P2pTransferService;
 
 const TAG: &str = "p2p_transfer";
@@ -33,10 +40,14 @@ const TAG: &str = "p2p_transfer";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_p2p_transfer(
+    idempotency_key: IdempotencyKey,
     ValidJson(req): ValidJson<P2pTransferForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let transfer_id = P2pTransferService::create_p2p_transfer(req).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(transfer_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(transfer_id),
+    }))
 }
 
 #[utoipa::path(
@@ -93,7 +104,8 @@ async fn get_wallet_p2p_transfers(
 ) -> Result<ResponseJson<QueryResult<P2pTransferData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let result = P2pTransferService::get_p2p_transfers_by_wallet_id(wallet_id, &pagination, &order).await?;
+    let result =
+        P2pTransferService::get_p2p_transfers_by_wallet_id(wallet_id, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -108,11 +120,15 @@ async fn get_wallet_p2p_transfers(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_p2p_transfer(
+    idempotency_key: IdempotencyKey,
     Path(p2p_transfer_id): Path<Uuid>,
     ValidJson(req): ValidJson<P2pTransferForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     P2pTransferService::update_p2p_transfer(p2p_transfer_id, req).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(p2p_transfer_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(p2p_transfer_id),
+    }))
 }
 
 #[utoipa::path(
@@ -124,20 +140,30 @@ async fn update_p2p_transfer(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_p2p_transfer(
-    Path(p2p_transfer_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_p2p_transfer(Path(p2p_transfer_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     P2pTransferService::delete_p2p_transfer(p2p_transfer_id).await?;
-    Ok(ResponseJson(OkUuid { ok: true, id: Some(p2p_transfer_id) }))
+    Ok(ResponseJson(OkUuid {
+        ok: true,
+        id: Some(p2p_transfer_id),
+    }))
 }
 
 pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router {
     Router::new()
         .route("/p2p-transfers", post(create_p2p_transfer))
         .route("/p2p-transfers", get(filter_p2p_transfers))
-        .route("/wallets/{wallet_id}/p2p-transfers", get(get_wallet_p2p_transfers))
+        .route(
+            "/wallets/{wallet_id}/p2p-transfers",
+            get(get_wallet_p2p_transfers),
+        )
         .route("/p2p-transfers/{p2p_transfer_id}", get(get_p2p_transfer))
-        .route("/p2p-transfers/{p2p_transfer_id}", patch(update_p2p_transfer))
-        .route("/p2p-transfers/{p2p_transfer_id}", delete(delete_p2p_transfer))
+        .route(
+            "/p2p-transfers/{p2p_transfer_id}",
+            patch(update_p2p_transfer),
+        )
+        .route(
+            "/p2p-transfers/{p2p_transfer_id}",
+            delete(delete_p2p_transfer),
+        )
         .with_state(app_state.clone())
 }

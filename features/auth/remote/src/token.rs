@@ -2,7 +2,6 @@ use serde_json::json;
 
 use shared_shared_auth::claim::{AccessTokenStruct, ClaimSubject};
 use shared_shared_macro::RemoteService;
-use shared_shared_middleware::RequestTracingMiddleware;
 
 #[derive(Debug, RemoteService)]
 #[remote(name(auth_service))]
