@@ -1,3 +1,3 @@
-mod indempotency_key;
+mod idempotency_key;
 
-pub use indempotency_key::IdempotencyKey;
+pub use idempotency_key::IdempotencyKey;

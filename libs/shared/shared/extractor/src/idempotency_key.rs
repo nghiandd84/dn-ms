@@ -1,7 +1,13 @@
 use axum::extract::FromRequestParts;
 use axum::http::{request::Parts, uri::Uri, Method, StatusCode};
+use axum::response::{IntoResponse, Response};
+use serde::{de::DeserializeOwned, Serialize};
 use sha2::{Digest, Sha256};
-use tracing::debug;
+use std::time::Duration;
+use tracing::{debug, error};
+
+use shared_shared_app::state::AppState;
+use shared_shared_data_error::app::AppError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdempotencyKeySource {
@@ -14,6 +20,9 @@ pub struct IdempotencyKey {
     pub key: String,
     pub source: IdempotencyKeySource,
 }
+
+static CACHE_KEY_PREFIX: &str = "idempotency_key:";
+static CACHE_KEY_TTL: Duration = Duration::from_secs(10);
 
 impl IdempotencyKey {
     pub fn value(&self) -> &str {
@@ -71,25 +80,38 @@ impl IdempotencyKey {
 }
 
 #[derive(Debug)]
-pub struct IdempotencyKeyRejection;
+pub struct IdempotencyKeyRejection {
+    pub key: String,
+}
 
-impl axum::response::IntoResponse for IdempotencyKeyRejection {
-    fn into_response(self) -> axum::response::Response {
+impl IdempotencyKeyRejection {
+    pub fn new(key: String) -> Self {
+        Self { key }
+    }
+}
+
+impl IntoResponse for IdempotencyKeyRejection {
+    fn into_response(self) -> Response {
+        error!("Idempotency error: {:?}", self);
         (
             StatusCode::BAD_REQUEST,
-            "Missing or invalid idempotency key",
+            AppError::DuplicateEntry("Missing or invalid idempotency key".to_string()),
         )
             .into_response()
     }
 }
 
-impl<S> FromRequestParts<S> for IdempotencyKey
+impl<T, C> FromRequestParts<AppState<T, C>> for IdempotencyKey
 where
-    S: Send + Sync,
+    T: Clone + Sync,
+    C: Clone + DeserializeOwned + Serialize + Default + Sync,
 {
     type Rejection = IdempotencyKeyRejection;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState<T, C>,
+    ) -> Result<Self, Self::Rejection> {
         let method = parts.method.clone();
         let uri = parts.uri.clone();
 
@@ -100,7 +122,32 @@ where
             .and_then(IdempotencyKey::from_client_header);
 
         if let Some(key) = x_key {
-            // TODO save key.value into redis with short expiration to prevent replay attack
+            // Check if key already exists in cache (replay attack prevention)
+            let cache_key = format!("{}{}", CACHE_KEY_PREFIX, key.key);
+            match state.cache.get(&cache_key) {
+                Ok(Some(_)) => {
+                    debug!(
+                        "Idempotency key already used (replay attack detected): {}",
+                        key.key
+                    );
+                    return Err(IdempotencyKeyRejection::new(key.key));
+                }
+                Ok(None) => {
+                    // Key not in cache, save it for 5 seconds
+                    if let Err(e) = state
+                        .cache
+                        .insert(cache_key, C::default(), Some(CACHE_KEY_TTL))
+                    {
+                        debug!("Failed to cache idempotency key: {:?}", e);
+                        // Continue anyway - don't fail the request due to cache issues
+                    }
+                }
+                Err(e) => {
+                    debug!("Failed to check idempotency key in cache: {:?}", e);
+                    // Continue anyway - don't fail the request due to cache issues
+                }
+            }
+
             debug!("Using client-provided idempotency key: {}", key.key);
             return Ok(key);
         }
@@ -113,8 +160,34 @@ where
             .or_else(|| parts.headers.get("x-user-id").and_then(|v| v.to_str().ok()));
 
         let key = IdempotencyKey::deterministic(&method, &uri, user_id);
+
+        // Check if deterministic key already exists in cache
+        let cache_key = format!("{}{}", CACHE_KEY_PREFIX, key.key);
+        match state.cache.get(&cache_key) {
+            Ok(Some(_)) => {
+                debug!("Deterministic idempotency key already used: {}", key.key);
+                return Err(IdempotencyKeyRejection::new(key.key));
+            }
+            Ok(None) => {
+                // Key not in cache, save it for 5 seconds
+                if let Err(e) = state
+                    .cache
+                    .insert(cache_key, C::default(), Some(CACHE_KEY_TTL))
+                {
+                    debug!("Failed to cache deterministic idempotency key: {:?}", e);
+                    // Continue anyway - don't fail the request due to cache issues
+                }
+            }
+            Err(e) => {
+                debug!(
+                    "Failed to check deterministic idempotency key in cache: {:?}",
+                    e
+                );
+                // Continue anyway - don't fail the request due to cache issues
+            }
+        }
+
         debug!("Generated deterministic idempotency key: {}", key.key);
-        // TODO save key.value into redis with short expiration to prevent replay attack
         Ok(key)
     }
 }
@@ -124,6 +197,13 @@ mod tests {
     use super::*;
     use axum::http::{Method, Uri};
     use http::{HeaderValue, Request};
+    use shared_shared_app::state::AppState;
+    use shared_shared_data_cache::cache::Cache;
+
+    fn set_up_state() -> AppState<(), ()> {
+        let cache = Cache::new("redis://127.0.0.1/", "idempotency_test").unwrap();
+        AppState::new("idempotency_test".to_string(), cache, None)
+    }
 
     #[test]
     fn test_from_client_header() {
@@ -167,7 +247,8 @@ mod tests {
             .headers
             .insert("x-idempotency-key", HeaderValue::from_static("abc123"));
 
-        let id = IdempotencyKey::from_request_parts(&mut parts, &())
+        let state = set_up_state();
+        let id = IdempotencyKey::from_request_parts(&mut parts, &state)
             .await
             .unwrap();
         assert_eq!(id.key, "abc123");
@@ -188,7 +269,8 @@ mod tests {
             HeaderValue::from_static("accesses=XYZ,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7"),
         );
 
-        let id = IdempotencyKey::from_request_parts(&mut parts, &())
+        let state = set_up_state();
+        let id = IdempotencyKey::from_request_parts(&mut parts, &state)
             .await
             .unwrap();
         assert_eq!(id.source, IdempotencyKeySource::Deterministic);
