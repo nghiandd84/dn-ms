@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use shared_shared_extractor::IdempotencyCacheType;
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WalletAppState {}
 
@@ -10,4 +12,20 @@ impl Default for WalletAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum WalletCacheState {}
+#[serde(untagged)]
+pub enum WalletCacheState {
+    Default,
+    IdempotencyValue(bool),
+}
+
+impl Default for WalletCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+
+impl IdempotencyCacheType for WalletCacheState {
+    fn default_idempotency_value() -> Self {
+        WalletCacheState::IdempotencyValue(true)
+    }
+}

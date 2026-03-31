@@ -5,7 +5,15 @@ use uuid::Uuid;
 use crate::types::{ClientSender, Clients};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub enum NotificationCacheState {}
+pub enum NotificationCacheState {
+    Default,
+}
+
+impl Default for NotificationCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}
 
 #[derive(Clone)]
 pub struct NotificationState {

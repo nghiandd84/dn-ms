@@ -13,18 +13,18 @@ use crate::event_task::producer::Producer;
 
 pub struct AppState<T, C = ()>
 where
-    C: Clone + Serialize + DeserializeOwned,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
     pub cache: Cache<String, C>,
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
-    pub permissions_map: Arc<Mutex<HashMap<String, Vec<(String, u32)>>>>
+    pub permissions_map: Arc<Mutex<HashMap<String, Vec<(String, u32)>>>>,
 }
 
 impl<T, C> Clone for AppState<T, C>
 where
-    C: Clone + Serialize + DeserializeOwned,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
     fn clone(&self) -> Self {
@@ -32,14 +32,14 @@ where
             cache: self.cache.clone(),
             state: self.state.clone(),
             producer: self.producer.clone(),
-            permissions_map: self.permissions_map.clone()
+            permissions_map: self.permissions_map.clone(),
         }
     }
 }
 
 impl<T, C> StatePermission for AppState<T, C>
 where
-    C: Clone + Serialize + DeserializeOwned,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
     fn get_permission_map(&self, role_name: String, resource_name: String) -> u32 {
@@ -64,7 +64,7 @@ where
 
 impl<T, C> AppState<T, C>
 where
-    C: Clone + Serialize + DeserializeOwned,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
     pub fn new(_service_name: String, cache: Cache<String, C>, state: Option<T>) -> Self {
@@ -72,7 +72,7 @@ where
             cache,
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),
-            permissions_map: Arc::new(Mutex::new(HashMap::new()))
+            permissions_map: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 

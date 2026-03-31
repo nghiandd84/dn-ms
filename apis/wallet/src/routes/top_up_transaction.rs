@@ -40,7 +40,7 @@ const TAG: &str = "top_up";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_top_up_transaction(
-    idempotency_key: IdempotencyKey,
+    // idempotency_key: IdempotencyKey,
     Path(wallet_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -104,7 +104,7 @@ async fn filter_top_up_transactions(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_top_up_transaction(
-    idempotency_key: IdempotencyKey,
+    // idempotency_key: IdempotencyKey,
     Path(top_up_transaction_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

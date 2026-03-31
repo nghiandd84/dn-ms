@@ -10,4 +10,12 @@ impl Default for ProfileAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum ProfileCacheState {}
+pub enum ProfileCacheState {
+    Default
+}
+
+impl Default for ProfileCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

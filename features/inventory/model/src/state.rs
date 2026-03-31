@@ -10,4 +10,12 @@ impl Default for InventoryAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum InventoryCacheState {}
+pub enum InventoryCacheState {
+    Default
+}
+
+impl Default for InventoryCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

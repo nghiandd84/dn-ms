@@ -10,4 +10,12 @@ impl Default for PaymentsStripeAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum PaymentsStripeCacheState {}
+pub enum PaymentsStripeCacheState {
+    Default,
+}
+
+impl Default for PaymentsStripeCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

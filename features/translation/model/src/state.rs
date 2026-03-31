@@ -10,4 +10,12 @@ impl Default for TranslationAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum TranslationCacheState {}
+pub enum TranslationCacheState {
+    Default
+}
+
+impl Default for TranslationCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

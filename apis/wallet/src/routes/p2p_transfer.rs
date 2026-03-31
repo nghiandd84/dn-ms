@@ -120,7 +120,7 @@ async fn get_wallet_p2p_transfers(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_p2p_transfer(
-    idempotency_key: IdempotencyKey,
+    // idempotency_key: IdempotencyKey,
     Path(p2p_transfer_id): Path<Uuid>,
     ValidJson(req): ValidJson<P2pTransferForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

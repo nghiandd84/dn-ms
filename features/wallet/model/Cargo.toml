@@ -21,6 +21,7 @@ shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-auth =  { workspace = true }
 shared-shared-data-error =  { workspace = true }
+shared-shared-extractor =  { workspace = true }
 shared-shared-macro = { workspace = true }
 
 features-wallet-entities = { workspace = true }

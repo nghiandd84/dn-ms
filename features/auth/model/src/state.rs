@@ -14,4 +14,11 @@ impl Default for AuthAppState {
 pub enum AuthCacheState {
     AccessToken(Uuid),
     RefreshToken(Uuid),
+    Default
+}
+
+impl Default for AuthCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
 }

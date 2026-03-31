@@ -10,4 +10,12 @@ impl Default for FeeAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum FeeCacheState {}
+pub enum FeeCacheState {
+    Default
+}
+
+impl Default for FeeCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

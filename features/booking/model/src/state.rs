@@ -10,4 +10,13 @@ impl Default for BookingAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum BookingCacheState {}
+pub enum BookingCacheState {
+    Default,
+}
+
+impl Default for BookingCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+

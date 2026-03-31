@@ -22,7 +22,7 @@ pub struct IdempotencyKey {
 }
 
 static CACHE_KEY_PREFIX: &str = "idempotency_key:";
-static CACHE_KEY_TTL: Duration = Duration::from_secs(10);
+static CACHE_KEY_TTL: Duration = Duration::from_secs(20); // 20 seconds
 
 impl IdempotencyKey {
     pub fn value(&self) -> &str {
@@ -61,10 +61,10 @@ impl IdempotencyKey {
     pub fn deterministic(method: &Method, uri: &Uri, user_id: Option<&str>) -> Self {
         let normalized_key = format!(
             "{}|{}|{}|{}",
+            user_id.unwrap_or("anonymous"),
             method.as_str(),
             uri.path(),
             uri.query().unwrap_or(""),
-            user_id.unwrap_or("")
         );
         tracing::debug!("Normalized key for idempotency: {}", normalized_key);
         let mut hasher = Sha256::new();
@@ -77,6 +77,9 @@ impl IdempotencyKey {
             source: IdempotencyKeySource::Deterministic,
         }
     }
+}
+pub trait IdempotencyCacheType {
+    fn default_idempotency_value() -> Self;
 }
 
 #[derive(Debug)]
@@ -104,7 +107,7 @@ impl IntoResponse for IdempotencyKeyRejection {
 impl<T, C> FromRequestParts<AppState<T, C>> for IdempotencyKey
 where
     T: Clone + Sync,
-    C: Clone + DeserializeOwned + Serialize + Default + Sync,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync + IdempotencyCacheType,
 {
     type Rejection = IdempotencyKeyRejection;
 
@@ -134,10 +137,11 @@ where
                 }
                 Ok(None) => {
                     // Key not in cache, save it for 5 seconds
-                    if let Err(e) = state
-                        .cache
-                        .insert(cache_key, C::default(), Some(CACHE_KEY_TTL))
-                    {
+                    if let Err(e) = state.cache.insert(
+                        cache_key,
+                        C::default_idempotency_value(),
+                        Some(CACHE_KEY_TTL),
+                    ) {
                         debug!("Failed to cache idempotency key: {:?}", e);
                         // Continue anyway - don't fail the request due to cache issues
                     }
@@ -170,10 +174,11 @@ where
             }
             Ok(None) => {
                 // Key not in cache, save it for 5 seconds
-                if let Err(e) = state
-                    .cache
-                    .insert(cache_key, C::default(), Some(CACHE_KEY_TTL))
-                {
+                if let Err(e) = state.cache.insert(
+                    cache_key,
+                    C::default_idempotency_value(),
+                    Some(CACHE_KEY_TTL),
+                ) {
                     debug!("Failed to cache deterministic idempotency key: {:?}", e);
                     // Continue anyway - don't fail the request due to cache issues
                 }
@@ -199,6 +204,12 @@ mod tests {
     use http::{HeaderValue, Request};
     use shared_shared_app::state::AppState;
     use shared_shared_data_cache::cache::Cache;
+
+    impl IdempotencyCacheType for () {
+        fn default_idempotency_value() -> Self {
+            ()
+        }
+    }
 
     fn set_up_state() -> AppState<(), ()> {
         let cache = Cache::new("redis://127.0.0.1/", "idempotency_test").unwrap();

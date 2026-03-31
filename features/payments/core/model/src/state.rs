@@ -10,4 +10,12 @@ impl Default for PaymentsCoreAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum PaymentsCoreCacheState {}
+pub enum PaymentsCoreCacheState {
+    Default
+}
+
+impl Default for PaymentsCoreCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

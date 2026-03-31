@@ -10,4 +10,12 @@ impl Default for EventAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum EventCacheState {}
+pub enum EventCacheState {
+    Default
+}
+
+impl Default for EventCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}

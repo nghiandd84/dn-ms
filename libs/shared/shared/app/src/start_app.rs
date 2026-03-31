@@ -23,7 +23,7 @@ use crate::state::AppState;
 
 pub trait StartApp<T, C = ()>
 where
-    C: Clone + Serialize + DeserializeOwned,
+    C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
     fn routes(&self, app_state: &AppState<T, C>) -> Router;

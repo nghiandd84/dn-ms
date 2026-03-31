@@ -44,7 +44,6 @@ async fn create_withdrawal(
     Path(wallet_id): Path<Uuid>,
     ValidJson(mut req): ValidJson<WithdrawalForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    tracing::debug!("idempotency_key: {:?}", idempotency_key);
     req.wallet_id = wallet_id;
     let withdrawal_id = WithdrawalService::create_withdrawal(req).await?;
     Ok(ResponseJson(OkUuid {

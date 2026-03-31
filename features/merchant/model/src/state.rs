@@ -10,4 +10,12 @@ impl Default for MerchantAppState {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub enum MerchantCacheState {}
+pub enum MerchantCacheState {
+    Default
+}
+
+impl Default for MerchantCacheState {
+    fn default() -> Self {
+        Self::Default
+    }
+}
