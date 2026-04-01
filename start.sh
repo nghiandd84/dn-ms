@@ -284,7 +284,7 @@ for i in {1..2}; do
     PORT=514$i
     echo "---  MERCHANT on port $PORT ---"
     # Execute the program
-    MERCHANT_PORT=514$i $APP_DIRECTORY/api-fee  &
+    FEE_PORT=514$i $APP_DIRECTORY/api-fee  &
 done
 sleep 1s
 

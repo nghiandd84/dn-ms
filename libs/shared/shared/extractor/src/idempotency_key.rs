@@ -21,7 +21,7 @@ pub struct IdempotencyKey {
     pub source: IdempotencyKeySource,
 }
 
-static CACHE_KEY_PREFIX: &str = "idempotency_key:";
+static CACHE_KEY_PREFIX: &str = "idempotency:";
 static CACHE_KEY_TTL: Duration = Duration::from_secs(20); // 20 seconds
 
 impl IdempotencyKey {
@@ -144,6 +144,9 @@ where
                     ) {
                         debug!("Failed to cache idempotency key: {:?}", e);
                         // Continue anyway - don't fail the request due to cache issues
+                    } else {
+                        debug!("Cached client-provided idempotency key: {}", key.key);
+                        // TODO: Save idempotency key and response in persistent store for longer-term caching and retrieval
                     }
                 }
                 Err(e) => {
@@ -202,6 +205,7 @@ mod tests {
     use super::*;
     use axum::http::{Method, Uri};
     use http::{HeaderValue, Request};
+    use sea_orm::DatabaseConnection;
     use shared_shared_app::state::AppState;
     use shared_shared_data_cache::cache::Cache;
 
@@ -213,7 +217,8 @@ mod tests {
 
     fn set_up_state() -> AppState<(), ()> {
         let cache = Cache::new("redis://127.0.0.1/", "idempotency_test").unwrap();
-        AppState::new("idempotency_test".to_string(), cache, None)
+        let db = DatabaseConnection::default();
+        AppState::new(&db, cache, None)
     }
 
     #[test]

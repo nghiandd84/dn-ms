@@ -1,7 +1,8 @@
 use axum::{
     extract::{Path, Query},
+    middleware::from_fn,
     routing::{delete, get, patch, post},
-    Router,
+    Extension, Router,
 };
 use tracing::{instrument, Level};
 use uuid::Uuid;
@@ -17,6 +18,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 use shared_shared_extractor::IdempotencyKey;
+use shared_shared_middleware::{deprecation_tracking_middleware, DeprecationConfig};
 
 use features_wallet_model::{
     state::{WalletAppState, WalletCacheState},
@@ -44,6 +46,8 @@ async fn create_withdrawal(
     Path(wallet_id): Path<Uuid>,
     ValidJson(mut req): ValidJson<WithdrawalForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
+    // TODO: We should ideally use the full request URI (including query params) as the endpoint for idempotency, but axum's current extractor system doesn't provide an easy way to get the full URI in this context. For now, we'll just use the path.
+    // IdempotencyService::check_or_create(idempotency_key.value(), uri.into()).await?;
     req.wallet_id = wallet_id;
     let withdrawal_id = WithdrawalService::create_withdrawal(req).await?;
     Ok(ResponseJson(OkUuid {
@@ -150,7 +154,13 @@ async fn delete_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJs
 
 pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router {
     Router::new()
-        .route("/wallets/{wallet_id}/withdrawals", post(create_withdrawal))
+        .route(
+            "/wallets/{wallet_id}/withdrawals",
+            post(create_withdrawal).layer(Extension(DeprecationConfig {
+                endpoint_name: "v1_create_withdrawal",
+                suggested_url: "/v2/wallets/{wallet_id}/withdrawals",
+            })),
+        )
         .route("/withdrawals", get(filter_withdrawals))
         .route(
             "/wallets/{wallet_id}/withdrawals",
@@ -159,5 +169,13 @@ pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router 
         .route("/withdrawals/{withdrawal_id}", get(get_withdrawal))
         .route("/withdrawals/{withdrawal_id}", patch(update_withdrawal))
         .route("/withdrawals/{withdrawal_id}", delete(delete_withdrawal))
+        .layer(from_fn(deprecation_tracking_middleware))
         .with_state(app_state.clone())
 }
+
+/*
+.layer(from_fn(deprecation_tracking_middleware))
+                .layer(Extension(DeprecationConfig {
+                    endpoint_name: "v1_create_withdrawal",
+                    suggested_url: "/v2/wallets/{wallet_id}/withdrawals",
+                }) */

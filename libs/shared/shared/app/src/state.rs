@@ -1,9 +1,9 @@
+use sea_orm::DatabaseConnection;
+use serde::{de::DeserializeOwned, Serialize};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
-
-use serde::{de::DeserializeOwned, Serialize};
 use tracing::error;
 
 use shared_shared_auth::permission::StatePermission;
@@ -16,6 +16,7 @@ where
     C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
+    pub write_db: DatabaseConnection,
     pub cache: Cache<String, C>,
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
@@ -29,6 +30,7 @@ where
 {
     fn clone(&self) -> Self {
         Self {
+            write_db: self.write_db.clone(),
             cache: self.cache.clone(),
             state: self.state.clone(),
             producer: self.producer.clone(),
@@ -67,8 +69,9 @@ where
     C: Clone + Serialize + DeserializeOwned + Default + Sync,
     T: Clone,
 {
-    pub fn new(_service_name: String, cache: Cache<String, C>, state: Option<T>) -> Self {
+    pub fn new(write_db: &DatabaseConnection, cache: Cache<String, C>, state: Option<T>) -> Self {
         Self {
+            write_db: write_db.clone(),
             cache,
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),

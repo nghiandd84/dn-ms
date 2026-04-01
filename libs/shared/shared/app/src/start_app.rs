@@ -128,8 +128,8 @@ where
                 service_port,
             )
             .await?;
-
-            let mut app_state = AppState::new(service_name.clone(), cache, state);
+            let db_write_connection = db_write.get_connection();
+            let mut app_state = AppState::new(&db_write_connection, cache, state);
 
             let axum_layer = OtelAxumLayer::default().filter(|str| {
                 let prefixs = vec!["/healthchecker", "/swagger-ui", "/api-docs"];

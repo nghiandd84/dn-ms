@@ -9,6 +9,7 @@ name = "features_wallet_service"
 path = "src/lib.rs"
 
 [dependencies]
+axum = { workspace = true }
 sea-orm = { workspace = true , features = ["sqlx-postgres"]}
 tracing = { workspace = true }
 uuid = { workspace = true }
