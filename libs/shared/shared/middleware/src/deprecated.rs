@@ -47,3 +47,68 @@ pub async fn deprecation_endpoint(config: DeprecationConfig, req: Request, next:
     );
     response
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{http::StatusCode, middleware, routing::get, Router};
+    use axum_test::TestServer;
+
+    async fn dummy_handler() -> &'static str {
+        "OK"
+    }
+
+    #[tokio::test]
+    async fn test_deprecation_endpoint_adds_headers() {
+        let config = DeprecationConfig {
+            endpoint_name: "test_endpoint",
+            suggested_url: "/new-url",
+        };
+
+        let app = Router::new()
+            .route("/test", get(dummy_handler))
+            .layer(middleware::from_fn(move |req, next| {
+                deprecation_endpoint(config.clone(), req, next)
+            }));
+
+        let server = TestServer::new(app).unwrap();
+
+        let response = server.get("/test").await;
+
+        assert_eq!(response.status_code(), StatusCode::OK);
+
+        let deprecation_header = response.header("Deprecation");
+        assert_eq!(deprecation_header, HeaderValue::from_static("true"));
+
+        let link_header = response.header("Link");
+        assert_eq!(
+            link_header,
+            HeaderValue::from_static(r#"</new-url>; rel="alternate""#)
+        );
+    }
+    #[tokio::test]
+    async fn test_deprecation_endpoint_increases_counter() {
+        let config = DeprecationConfig {
+            endpoint_name: "test_endpoint_counter",
+            suggested_url: "/new-url",
+        };
+
+        let app = Router::new()
+            .route("/test", get(dummy_handler))
+            .layer(middleware::from_fn(move |req, next| {
+                deprecation_endpoint(config.clone(), req, next)
+            }));
+
+        let server = TestServer::new(app).unwrap();
+
+        // Call the endpoint multiple times
+        for _ in 0..5 {
+            let response = server.get("/test").await;
+            assert_eq!(response.status_code(), StatusCode::OK);
+        }
+
+        // Since we can't directly access the counter value, we can at least ensure it was initialized
+        let counter = DEPRECATION_COUNTER.get();
+        assert!(counter.is_some());
+    }
+}

@@ -21,3 +21,8 @@ tracing-opentelemetry = { workspace = true }
 
 shared-shared-macro = { workspace = true}
 
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tower = { workspace = true, features = ["util"] }
+axum-test = "17.1"
+
