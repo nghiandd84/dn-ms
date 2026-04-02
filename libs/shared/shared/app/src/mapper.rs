@@ -17,6 +17,9 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
         "main_response_mapper: path: {}, method: {}",
         path, _req_method
     );
+    let headers = res.headers().clone();
+    debug!("Response headers: {:#?}", headers);
+
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
     match client_status_error {
@@ -39,9 +42,9 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
               },
               "status" : 0
             });
-            // log -> uuid, http_path, http_method, res, error
-            // let _ = log_request(uuid, uri, req_method, error_body.clone(), 0).await;
-            (status_code, Json(error_body)).into_response()
+            let mut response = (status_code, Json(error_body)).into_response();
+            *response.headers_mut() = headers.clone();
+            response
         }
         None => {
             if uri.path().starts_with("/swagger-ui/")
@@ -53,6 +56,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
             }
 
             let status = res.status();
+
             let body = to_bytes(res.into_body(), usize::MAX)
                 .await
                 .unwrap_or_default();
@@ -63,7 +67,10 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
               "status" : 1,
               "data" : data
             });
-            (status, Json(json_response)).into_response()
+            // Return headers as well
+            let mut response = (status, Json(json_response)).into_response();
+            *response.headers_mut() = headers.clone();
+            response
         }
     }
 }

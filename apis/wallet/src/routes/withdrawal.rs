@@ -2,7 +2,7 @@ use axum::{
     extract::{Path, Query},
     middleware::from_fn,
     routing::{delete, get, patch, post},
-    Extension, Router,
+    Router,
 };
 use tracing::{instrument, Level};
 use uuid::Uuid;
@@ -18,7 +18,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 use shared_shared_extractor::IdempotencyKey;
-use shared_shared_middleware::{deprecation_tracking_middleware, DeprecationConfig};
+use shared_shared_middleware::{deprecation_endpoint, DeprecationConfig};
 
 use features_wallet_model::{
     state::{WalletAppState, WalletCacheState},
@@ -156,9 +156,15 @@ pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router 
     Router::new()
         .route(
             "/wallets/{wallet_id}/withdrawals",
-            post(create_withdrawal).layer(Extension(DeprecationConfig {
-                endpoint_name: "v1_create_withdrawal",
-                suggested_url: "/v2/wallets/{wallet_id}/withdrawals",
+            post(create_withdrawal).layer(from_fn(move |req, next| {
+                deprecation_endpoint(
+                    DeprecationConfig {
+                        endpoint_name: "v1_create_withdrawal",
+                        suggested_url: "/v2/wallets/{wallet_id}/withdrawals",
+                    },
+                    req,
+                    next,
+                )
             })),
         )
         .route("/withdrawals", get(filter_withdrawals))
@@ -169,13 +175,5 @@ pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router 
         .route("/withdrawals/{withdrawal_id}", get(get_withdrawal))
         .route("/withdrawals/{withdrawal_id}", patch(update_withdrawal))
         .route("/withdrawals/{withdrawal_id}", delete(delete_withdrawal))
-        .layer(from_fn(deprecation_tracking_middleware))
         .with_state(app_state.clone())
 }
-
-/*
-.layer(from_fn(deprecation_tracking_middleware))
-                .layer(Extension(DeprecationConfig {
-                    endpoint_name: "v1_create_withdrawal",
-                    suggested_url: "/v2/wallets/{wallet_id}/withdrawals",
-                }) */
