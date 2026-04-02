@@ -13,8 +13,8 @@ axum = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 utoipa = { workspace = true, features = ["chrono", "axum_extras"] }
 utoipa-swagger-ui = { workspace = true, features = ["axum"] }
-
 async-trait = { workspace = true }
+sha2 = { workspace = true }
 chrono = { version = "0.4.39", features = ["serde"] }
 dotenv = { workspace = true }
 tracing = { workspace = true }

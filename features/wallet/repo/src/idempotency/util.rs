@@ -9,7 +9,6 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.key, model_option.key);
     set_if_some!(active_model.endpoint, model_option.endpoint);
     set_if_some!(active_model.request_hash, model_option.request_hash);
-    set_if_some!(active_model.response_body, model_option.response_body);
     set_if_some!(active_model.response_status, model_option.response_status);
     set_if_some!(active_model.state, model_option.state);
     set_if_some!(active_model.created_at, model_option.created_at);

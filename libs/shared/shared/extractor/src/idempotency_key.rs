@@ -22,7 +22,7 @@ pub struct IdempotencyKey {
 }
 
 static CACHE_KEY_PREFIX: &str = "idempotency:";
-static CACHE_KEY_TTL: Duration = Duration::from_secs(20); // 20 seconds
+static CACHE_KEY_TTL: Duration = Duration::from_secs(10); // 10 seconds
 
 impl IdempotencyKey {
     pub fn value(&self) -> &str {
@@ -46,7 +46,7 @@ impl IdempotencyKey {
             .next()
     }
 
-    pub fn from_client_header(header_value: &str) -> Option<Self> {
+    fn from_client_header(header_value: &str) -> Option<Self> {
         let trimmed = header_value.trim();
         if trimmed.is_empty() {
             return None;
@@ -58,7 +58,7 @@ impl IdempotencyKey {
         })
     }
 
-    pub fn deterministic(method: &Method, uri: &Uri, user_id: Option<&str>) -> Self {
+    fn deterministic(method: &Method, uri: &Uri, user_id: Option<&str>) -> Self {
         let normalized_key = format!(
             "{}|{}|{}|{}",
             user_id.unwrap_or("anonymous"),
@@ -76,6 +76,33 @@ impl IdempotencyKey {
             key,
             source: IdempotencyKeySource::Deterministic,
         }
+    }
+
+    pub fn get_idempotency_key(parts: &Parts) -> Self {
+        let method = parts.method.clone();
+        let uri = parts.uri.clone();
+
+        let x_key = parts
+            .headers
+            .get("x-idempotency-key")
+            .and_then(|v| v.to_str().ok())
+            .and_then(IdempotencyKey::from_client_header);
+
+        if let Some(key) = x_key {
+            debug!("Using client-provided idempotency key: {}", key.key);
+            return key;
+        }
+
+        let user_id = parts
+            .headers
+            .get("baggage")
+            .and_then(|v| v.to_str().ok())
+            .and_then(IdempotencyKey::parse_user_id_from_baggage)
+            .or_else(|| parts.headers.get("x-user-id").and_then(|v| v.to_str().ok()));
+
+        let key = IdempotencyKey::deterministic(&method, &uri, user_id);
+        debug!("Generated deterministic idempotency key: {}", key.key);
+        key
     }
 }
 pub trait IdempotencyCacheType {
@@ -115,64 +142,16 @@ where
         parts: &mut Parts,
         state: &AppState<T, C>,
     ) -> Result<Self, Self::Rejection> {
-        let method = parts.method.clone();
-        let uri = parts.uri.clone();
+        let key = IdempotencyKey::get_idempotency_key(parts);
 
-        let x_key = parts
-            .headers
-            .get("x-idempotency-key")
-            .and_then(|v| v.to_str().ok())
-            .and_then(IdempotencyKey::from_client_header);
-
-        if let Some(key) = x_key {
-            // Check if key already exists in cache (replay attack prevention)
-            let cache_key = format!("{}{}", CACHE_KEY_PREFIX, key.key);
-            match state.cache.get(&cache_key) {
-                Ok(Some(_)) => {
-                    debug!(
-                        "Idempotency key already used (replay attack detected): {}",
-                        key.key
-                    );
-                    return Err(IdempotencyKeyRejection::new(key.key));
-                }
-                Ok(None) => {
-                    // Key not in cache, save it for 5 seconds
-                    if let Err(e) = state.cache.insert(
-                        cache_key,
-                        C::default_idempotency_value(),
-                        Some(CACHE_KEY_TTL),
-                    ) {
-                        debug!("Failed to cache idempotency key: {:?}", e);
-                        // Continue anyway - don't fail the request due to cache issues
-                    } else {
-                        debug!("Cached client-provided idempotency key: {}", key.key);
-                        // TODO: Save idempotency key and response in persistent store for longer-term caching and retrieval
-                    }
-                }
-                Err(e) => {
-                    debug!("Failed to check idempotency key in cache: {:?}", e);
-                    // Continue anyway - don't fail the request due to cache issues
-                }
-            }
-
-            debug!("Using client-provided idempotency key: {}", key.key);
-            return Ok(key);
-        }
-
-        let user_id = parts
-            .headers
-            .get("baggage")
-            .and_then(|v| v.to_str().ok())
-            .and_then(IdempotencyKey::parse_user_id_from_baggage)
-            .or_else(|| parts.headers.get("x-user-id").and_then(|v| v.to_str().ok()));
-
-        let key = IdempotencyKey::deterministic(&method, &uri, user_id);
-
-        // Check if deterministic key already exists in cache
+        // Check if key already exists in cache (replay attack prevention)
         let cache_key = format!("{}{}", CACHE_KEY_PREFIX, key.key);
         match state.cache.get(&cache_key) {
             Ok(Some(_)) => {
-                debug!("Deterministic idempotency key already used: {}", key.key);
+                debug!(
+                    "Idempotency key already used (replay attack detected): {}",
+                    key.key
+                );
                 return Err(IdempotencyKeyRejection::new(key.key));
             }
             Ok(None) => {
@@ -182,21 +161,21 @@ where
                     C::default_idempotency_value(),
                     Some(CACHE_KEY_TTL),
                 ) {
-                    debug!("Failed to cache deterministic idempotency key: {:?}", e);
+                    debug!("Failed to cache idempotency key: {:?}", e);
                     // Continue anyway - don't fail the request due to cache issues
+                } else {
+                    debug!("Cached client-provided idempotency key: {}", key.key);
+                    // TODO: Save idempotency key and response in persistent store for longer-term caching and retrieval
                 }
             }
             Err(e) => {
-                debug!(
-                    "Failed to check deterministic idempotency key in cache: {:?}",
-                    e
-                );
+                debug!("Failed to check idempotency key in cache: {:?}", e);
                 // Continue anyway - don't fail the request due to cache issues
             }
         }
 
-        debug!("Generated deterministic idempotency key: {}", key.key);
-        Ok(key)
+        debug!("Using client-provided idempotency key: {}", key.key);
+        return Ok(key);
     }
 }
 

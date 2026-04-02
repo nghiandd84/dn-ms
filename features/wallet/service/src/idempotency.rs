@@ -1,4 +1,3 @@
-use axum::http::request::Parts;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -17,49 +16,6 @@ use features_wallet_repo::idempotency::{IdempotencyMutation, IdempotencyQuery};
 pub struct IdempotencyService;
 
 impl IdempotencyService {
-    const DEFAULT_TTL_HOURS: i64 = 24;
-
-    /// Check if key exists and return cached response or process
-    pub async fn check_or_create(key: &str, endpoint: &str) -> Result<IdempotencyState, AppError> {
-        match IdempotencyMutation::create_if_not_exists(
-            key,
-            endpoint,
-            "PENDING",
-            None,
-            Self::DEFAULT_TTL_HOURS,
-        )
-        .await
-        {
-            Ok(_) => {
-                // Insert succeeded, we own this request
-                Ok(IdempotencyState::Process)
-            }
-            Err(_) => {
-                // Key already exists, fetch it
-                let existing = IdempotencyQuery::get_idempotency_key_by_key(key).await?;
-
-                match existing.state.as_deref() {
-                    Some("PENDING") => {
-                        // Another request in progress
-                        Err(AppError::DuplicateEntry(
-                            "Request already in progress. Please retry.".to_string(),
-                        ))
-                    }
-                    Some("COMPLETED") => {
-                        // Return cached response
-                        Ok(IdempotencyState::ReturnCached(
-                            existing
-                                .response_body
-                                .and_then(|v| serde_json::to_string(&v).ok())
-                                .unwrap_or_default(),
-                        ))
-                    }
-                    _ => Err(AppError::Internal("Unknown idempotency state".to_string())),
-                }
-            }
-        }
-    }
-
     /// Mark request as completed and store response
     pub async fn complete(key: &str, status: u16, response_body: &str) -> Result<(), AppError> {
         let result = IdempotencyMutation::update_completed(key, status as i32, response_body).await;

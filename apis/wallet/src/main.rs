@@ -2,6 +2,7 @@ use app::start_app;
 
 mod app;
 mod doc;
+mod middleware;
 mod routes;
 
 #[tokio::main]

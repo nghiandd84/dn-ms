@@ -8,15 +8,21 @@ use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "idempotency_keys")]
-#[dto(name(IdempotencyKeyForCreate), columns(key, endpoint, request_hash, response_body, response_status, state, expires_at))]
-#[dto(name(IdempotencyKeyForUpdate), columns(response_body, response_status, state, expires_at), option)]
+#[dto(
+    name(IdempotencyKeyForCreate),
+    columns(key, endpoint, request_hash, response_status, state, expires_at)
+)]
+#[dto(
+    name(IdempotencyKeyForUpdate),
+    columns(response_status, state, expires_at),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub key: String,
     pub endpoint: String,
     pub request_hash: String,
-    pub response_body: serde_json::Value,
     pub response_status: i32,
     pub state: String,
     pub created_at: DateTime,

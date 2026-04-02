@@ -25,18 +25,38 @@ impl MigrationTrait for Migration {
                             .extra("DEFAULT public.uuid_generate_v4()"),
                     )
                     .col(ColumnDef::new(idempotency::Column::Key).string().not_null())
-                    .col(ColumnDef::new(idempotency::Column::Endpoint).string().not_null())
-                    .col(ColumnDef::new(idempotency::Column::RequestHash).text().null())
-                    .col(ColumnDef::new(idempotency::Column::ResponseBody).json().null())
-                    .col(ColumnDef::new(idempotency::Column::ResponseStatus).integer().null())
+                    .col(
+                        ColumnDef::new(idempotency::Column::Endpoint)
+                            .string()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(idempotency::Column::RequestHash)
+                            .text()
+                            .null(),
+                    )
+                    .col(
+                        ColumnDef::new(idempotency::Column::ResponseStatus)
+                            .integer()
+                            .null(),
+                    )
                     .col(
                         ColumnDef::new(idempotency::Column::State)
                             .string()
                             .not_null()
                             .default("PENDING"),
                     )
-                    .col(ColumnDef::new(idempotency::Column::CreatedAt).date_time().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(idempotency::Column::ExpiresAt).date_time().null())
+                    .col(
+                        ColumnDef::new(idempotency::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(idempotency::Column::ExpiresAt)
+                            .date_time()
+                            .null(),
+                    )
                     .to_owned(),
             )
             .await?;

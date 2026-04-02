@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{middleware::from_fn, Router};
 use tracing::debug;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -11,13 +11,12 @@ use features_wallet_model::state::{WalletAppState, WalletCacheState};
 
 use crate::{
     doc::ApiDoc,
+    middleware::idempotency_tracking_middleware,
     routes::{
-        wallet::routes as wallet_routes,
-        transaction::routes as transaction_routes,
+        idempotency::routes as idempotency_routes, p2p_transfer::routes as p2p_transfer_routes,
         top_up_transaction::routes as top_up_transaction_routes,
-        p2p_transfer::routes as p2p_transfer_routes,
+        transaction::routes as transaction_routes, wallet::routes as wallet_routes,
         withdrawal::routes as withdrawal_routes,
-        idempotency::routes as idempotency_routes,
     },
 };
 
@@ -48,18 +47,15 @@ impl<'a> StartApp<WalletAppState, WalletCacheState> for MyApp<'a> {
             .merge(p2p_transfer_routes(app_state))
             .merge(withdrawal_routes(app_state))
             .merge(idempotency_routes(app_state))
-            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+            .layer(from_fn(idempotency_tracking_middleware));
+
         all_routes
     }
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig::new(
-        "WALLET".to_string(),
-        Some("wallet".to_string()),
-        true,
-        true,
-    );
+    let app_config = AppConfig::new("WALLET".to_string(), Some("wallet".to_string()), true, true);
 
     let mut my_app = MyApp {
         config: &app_config,

@@ -18,6 +18,7 @@ pub struct IdempotencyKeyForCreateRequest {
     pub request_hash: String,
     pub state: String,
     pub expires_at: Option<DateTime>,
+    pub response_status: i32,
 }
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
@@ -34,7 +35,6 @@ pub struct IdempotencyKeyData {
     pub key: Option<String>,
     pub endpoint: Option<String>,
     pub request_hash: Option<String>,
-    pub response_body: Option<serde_json::Value>,
     pub response_status: Option<i32>,
     pub state: Option<String>,
     pub created_at: Option<DateTime>,
@@ -48,7 +48,6 @@ impl Into<IdempotencyKeyData> for ModelOptionDto {
             key: self.key,
             endpoint: self.endpoint,
             request_hash: self.request_hash,
-            response_body: self.response_body,
             response_status: self.response_status,
             state: self.state,
             created_at: self.created_at,
@@ -64,6 +63,8 @@ impl Into<IdempotencyKeyForCreateDto> for IdempotencyKeyForCreateRequest {
             endpoint: self.endpoint,
             request_hash: self.request_hash,
             state: self.state,
+            expires_at: self.expires_at.unwrap(),
+            response_status: self.response_status,
             ..Default::default() // response_body, response_status, expires_at will be set later
         }
     }
@@ -72,7 +73,6 @@ impl Into<IdempotencyKeyForCreateDto> for IdempotencyKeyForCreateRequest {
 impl Into<IdempotencyKeyForUpdateDto> for IdempotencyKeyForUpdateRequest {
     fn into(self) -> IdempotencyKeyForUpdateDto {
         IdempotencyKeyForUpdateDto {
-            response_body: self.response_body,
             response_status: self.response_status,
             state: self.state,
             expires_at: self.expires_at,

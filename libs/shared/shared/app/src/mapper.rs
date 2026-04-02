@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     body::to_bytes,
-    http::{Method, Uri},
+    http::{HeaderValue, Method, Uri},
     response::{IntoResponse, Response},
     Json,
 };
@@ -18,7 +18,6 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
         path, _req_method
     );
     let headers = res.headers().clone();
-    debug!("Response headers: {:#?}", headers);
 
     let app_error = res.extensions().get::<Arc<AppError>>().map(Arc::as_ref);
     let client_status_error = app_error.map(|e| e.status_and_error());
@@ -62,6 +61,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
                 .unwrap_or_default();
             let body_string = String::from_utf8(body.to_vec()).unwrap_or_default();
             let data: Value = serde_json::from_str(&body_string).unwrap_or(Value::Null);
+            
 
             let json_response = json!({
               "status" : 1,

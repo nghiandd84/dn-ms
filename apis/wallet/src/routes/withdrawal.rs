@@ -4,7 +4,7 @@ use axum::{
     routing::{delete, get, patch, post},
     Router,
 };
-use tracing::{instrument, Level};
+use tracing::{debug, instrument, Level};
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
@@ -46,10 +46,14 @@ async fn create_withdrawal(
     Path(wallet_id): Path<Uuid>,
     ValidJson(mut req): ValidJson<WithdrawalForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    // TODO: We should ideally use the full request URI (including query params) as the endpoint for idempotency, but axum's current extractor system doesn't provide an easy way to get the full URI in this context. For now, we'll just use the path.
-    // IdempotencyService::check_or_create(idempotency_key.value(), uri.into()).await?;
+    debug!(
+        "Idempotency key for create withdrawal: {}",
+        idempotency_key.key
+    );
+
     req.wallet_id = wallet_id;
     let withdrawal_id = WithdrawalService::create_withdrawal(req).await?;
+
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(withdrawal_id),
