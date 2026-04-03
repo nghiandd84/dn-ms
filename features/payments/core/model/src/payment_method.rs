@@ -52,14 +52,41 @@ impl Into<PaymentMethodData> for ModelOptionDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct PaymentMethodForCreateRequest {
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "payment_method_display_name_length",
+        message = "display_name must be between 1 and 100 characters"
+    ))]
     pub display_name: String,
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "payment_method_provider_name_length",
+        message = "provider_name must be between 1 and 100 characters"
+    ))]
     pub provider_name: String,
     pub provider_config: Json,
     pub supported_countries: Vec<String>,
     pub supported_currencies: Vec<String>,
+    #[validate(range(
+        min = 0,
+        code = "payment_method_priority_non_negative",
+        message = "priority must be non-negative"
+    ))]
     pub priority: i32,
     pub is_active: bool,
+    #[validate(range(
+        min = 0.0,
+        max = 100.0,
+        code = "payment_method_fee_percentage_range",
+        message = "fee_percentage must be between 0 and 100"
+    ))]
     pub fee_percentage: f32,
+    #[validate(url(
+        code = "payment_method_icon_url_invalid",
+        message = "icon_url must be a valid URL"
+    ))]
     pub icon_url: String,
 }
 

@@ -52,9 +52,32 @@ impl Into<BookingData> for ModelOptionDto {
 pub struct BookingForCreateRequest {
     pub event_id: Uuid,
     pub user_id: Uuid,
+    #[validate(range(
+        min = 0.01,
+        code = "booking_total_amount_positive",
+        message = "total_amount must be greater than 0"
+    ))]
     pub total_amount: f32,
+    #[validate(length(
+        min = 3,
+        max = 3,
+        code = "booking_currency_length",
+        message = "currency must be a 3-letter ISO code"
+    ))]
     pub currency: String,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "booking_status_length",
+        message = "status must be between 1 and 50 characters"
+    ))]
     pub status: String,
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "booking_reference_length",
+        message = "booking_reference must be between 1 and 100 characters"
+    ))]
     pub booking_reference: String,
 }
 

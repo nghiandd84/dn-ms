@@ -10,7 +10,7 @@ use shared_shared_data_core::{
 use shared_shared_macro::{ParamFilter, Response};
 
 use features_booking_entities::booking_seat::{
-    ModelOptionDto, BookingSeatForCreateDto, BookingSeatForUpdateDto,
+    BookingSeatForCreateDto, BookingSeatForUpdateDto, ModelOptionDto,
 };
 
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
@@ -37,6 +37,11 @@ impl Into<BookingSeatData> for ModelOptionDto {
 pub struct BookingSeatForCreateRequest {
     pub booking_id: Uuid,
     pub seat_id: Uuid,
+    #[validate(range(
+        min = 0.01,
+        code = "booking_seat_price_positive",
+        message = "price must be greater than 0"
+    ))]
     pub price: f32,
 }
 

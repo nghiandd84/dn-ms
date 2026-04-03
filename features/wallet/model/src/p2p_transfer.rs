@@ -18,6 +18,11 @@ use features_wallet_entities::p2p_transfer::{
 pub struct P2pTransferForCreateRequest {
     pub from_wallet_id: Uuid,
     pub to_wallet_id: Uuid,
+    #[validate(range(
+        min = 0.01,
+        code = "p2p_transfer_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: f32,
 }
 

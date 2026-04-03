@@ -11,6 +11,11 @@ use features_bakery_entities::order::{ModelOptionDto, OrderForCreateDto};
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 #[schema(example = json!({"total":1.0,"bakery_id":1,"customer_id":1,"placed_at":"2023-10-01T00:00:00"}))]
 pub struct OrderForCreateRequest {
+    #[validate(range(
+        min = 0.01,
+        code = "order_total_positive",
+        message = "total must be greater than 0"
+    ))]
     pub total: f64,
     pub bakery_id: i32,
     pub customer_id: i32,

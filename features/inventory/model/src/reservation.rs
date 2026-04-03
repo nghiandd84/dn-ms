@@ -45,6 +45,12 @@ pub struct ReservationForCreateRequest {
     pub event_id: Uuid,
     pub user_id: Uuid,
     pub expires_at: DateTime,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "reservation_status_length",
+        message = "status must be between 1 and 50 characters"
+    ))]
     pub status: String,
 }
 

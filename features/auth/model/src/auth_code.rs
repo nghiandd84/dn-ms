@@ -23,7 +23,7 @@ pub struct AuthCodeForCreateRequest {
     #[validate(length(
         min = 1,
         max = 1204,
-        code = "redirect_uri",
+        code = "redirect_uri_length",
         message = "the length of redirect_uri must be between 1 and 1204"
     ))]
     pub redirect_uri: Option<String>,

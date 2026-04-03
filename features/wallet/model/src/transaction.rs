@@ -17,10 +17,37 @@ use features_wallet_entities::transaction::{
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct TransactionForCreateRequest {
     pub wallet_id: Uuid,
-    pub transaction_type: String, // DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "transaction_type_length",
+        message = "transaction_type must be between 1 and 50 characters"
+    ))]
+    pub transaction_type: String,
+    #[validate(range(
+        min = 0.01,
+        code = "transaction_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: f32,
+    #[validate(length(
+        min = 1,
+        max = 10,
+        code = "transaction_currency_length",
+        message = "currency must be between 1 and 10 characters"
+    ))]
     pub currency: String,
+    #[validate(length(
+        max = 255,
+        code = "reference_id_length",
+        message = "reference_id must not exceed 255 characters"
+    ))]
     pub reference_id: Option<String>,
+    #[validate(length(
+        max = 1000,
+        code = "transaction_description_length",
+        message = "description must not exceed 1000 characters"
+    ))]
     pub description: Option<String>,
 }
 
@@ -38,7 +65,6 @@ impl Into<TransactionForUpdateDto> for TransactionForUpdateRequest {
         }
     }
 }
-
 
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct TransactionData {

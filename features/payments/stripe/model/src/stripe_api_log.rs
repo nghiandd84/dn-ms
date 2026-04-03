@@ -6,7 +6,9 @@ use validator::Validate;
 
 use shared_shared_macro::Response;
 
-use features_payments_stripe_entities::stripe_api_log::{ModelOptionDto, StripeApiLogForCreateDto, StripeApiLogForUpdateDto};
+use features_payments_stripe_entities::stripe_api_log::{
+    ModelOptionDto, StripeApiLogForCreateDto, StripeApiLogForUpdateDto,
+};
 
 #[derive(Serialize, Debug, ToSchema, Default, Response)]
 pub struct StripeApiLogData {
@@ -41,12 +43,36 @@ impl From<ModelOptionDto> for StripeApiLogData {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct StripeApiLogForCreateRequest {
+    #[validate(length(
+        min = 1,
+        max = 500,
+        code = "stripe_api_log_endpoint_length",
+        message = "endpoint must be between 1 and 500 characters"
+    ))]
     pub endpoint: String,
+    #[validate(length(
+        min = 1,
+        max = 20,
+        code = "stripe_api_log_method_length",
+        message = "method must be between 1 and 20 characters"
+    ))]
     pub method: String,
     pub request_body: Option<String>,
     pub response_body: Option<String>,
+    #[validate(range(
+        min = 100,
+        max = 599,
+        code = "stripe_api_log_status_code_range",
+        message = "status_code must be a valid HTTP status code"
+    ))]
     pub status_code: i32,
     pub error_message: Option<String>,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "stripe_api_log_request_id_length",
+        message = "stripe_request_id must be between 1 and 255 characters"
+    ))]
     pub stripe_request_id: String,
 }
 

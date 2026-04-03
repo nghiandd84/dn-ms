@@ -11,11 +11,12 @@ use features_bakery_entities::customer::{CustomerForCreateDto, ModelOptionDto};
 pub struct CustomerForCreateRequest {
     #[validate(length(
         min = 1,
-        max = 16,
+        max = 128,
         code = "name_length",
-        message = "the length of email must be between 1 and 50"
+        message = "the length of name must be between 1 and 128"
     ))]
     pub name: String,
+    #[validate(length(max = 1000, message = "notes must not exceed 1000 characters"))]
     pub notes: Option<String>,
 }
 

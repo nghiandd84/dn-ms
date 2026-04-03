@@ -49,11 +49,46 @@ impl Into<PaymentData> for ModelOptionDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct PaymentForCreateRequest {
+    #[validate(range(
+        min = 1,
+        code = "payment_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: i64,
+    #[validate(length(
+        min = 3,
+        max = 3,
+        code = "payment_currency_length",
+        message = "currency must be a 3-letter ISO code"
+    ))]
     pub currency: String,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "payment_gateway_transaction_id_length",
+        message = "gateway_transaction_id must be between 1 and 255 characters"
+    ))]
     pub gateway_transaction_id: String,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "payment_idempotency_key_length",
+        message = "idempotency_key must be between 1 and 255 characters"
+    ))]
     pub idempotency_key: String,
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "payment_provider_name_length",
+        message = "provider_name must be between 1 and 100 characters"
+    ))]
     pub provider_name: String,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "payment_transaction_id_length",
+        message = "transaction_id must be between 1 and 255 characters"
+    ))]
     pub transaction_id: String,
     pub user_id: Uuid,
 }

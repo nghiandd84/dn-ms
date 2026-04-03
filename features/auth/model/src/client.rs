@@ -31,12 +31,7 @@ pub struct ClientForCreateRequest {
     ))]
     pub client_key: Option<String>,
 
-    #[validate(length(
-        min = 0,
-        max = 512,
-        code = "email",
-        message = "the length of email must be between 0 and 512"
-    ))]
+    #[validate(email(message = "email must be a valid email address"))]
     pub email: Option<String>,
 
     #[validate(length(
@@ -46,7 +41,13 @@ pub struct ClientForCreateRequest {
         message = "the length of description must be between 0 and 512"
     ))]
     pub description: Option<String>,
+    #[validate(length(min = 1, code = "redirect_uris", message = "redirect_uris must contain at least one URI"))]
     pub redirect_uris: Vec<String>,
+    #[validate(length(
+        min = 1,
+        code = "allowed_grants",
+        message = "allowed_grants must contain at least one grant type"
+    ))]
     pub allowed_grants: Vec<String>,
 }
 

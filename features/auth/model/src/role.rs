@@ -43,16 +43,16 @@ impl Into<RoleForCreateDto> for RoleForCreateRequest {
 pub struct RoleForUpdateRequest {
     #[validate(length(
         min = 1,
-        max = 16,
+        max = 50,
         code = "name_length",
-        message = "the length of email must be between 1 and 50"
+        message = "the length of name must be between 1 and 50"
     ))]
     pub name: String,
     #[validate(length(
         min = 1,
         max = 250,
         code = "description_length",
-        message = "the length of first_name must be between 1 and 250"
+        message = "the length of description must be between 1 and 250"
     ))]
     pub description: String,
 

@@ -12,11 +12,17 @@ use features_bakery_entities::bakery::{BakeryForCreateDto, ModelOptionDto};
 pub struct BakeryForCreateRequest {
     #[validate(length(
         min = 1,
-        max = 16,
+        max = 128,
         code = "name_length",
-        message = "the length of email must be between 1 and 50"
+        message = "the length of name must be between 1 and 128"
     ))]
     pub name: String,
+    #[validate(range(
+        min = 0.0,
+        max = 100.0,
+        code = "bakery_profit_margin_range",
+        message = "profit_margin must be between 0 and 100"
+    ))]
     pub profit_margin: f64,
 }
 

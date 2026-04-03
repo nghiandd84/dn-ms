@@ -13,11 +13,41 @@ use features_wallet_entities::idempotency::{
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct IdempotencyKeyForCreateRequest {
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "idempotency_key_length",
+        message = "key must be between 1 and 255 characters"
+    ))]
     pub key: String,
+    #[validate(length(
+        min = 1,
+        max = 500,
+        code = "idempotency_endpoint_length",
+        message = "endpoint must be between 1 and 500 characters"
+    ))]
     pub endpoint: String,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "idempotency_request_hash_length",
+        message = "request_hash must be between 1 and 255 characters"
+    ))]
     pub request_hash: String,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "idempotency_state_length",
+        message = "state must be between 1 and 50 characters"
+    ))]
     pub state: String,
     pub expires_at: Option<DateTime>,
+    #[validate(range(
+        min = 100,
+        max = 599,
+        code = "idempotency_response_status_range",
+        message = "response_status must be a valid HTTP status code"
+    ))]
     pub response_status: i32,
 }
 

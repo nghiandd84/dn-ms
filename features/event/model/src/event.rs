@@ -50,7 +50,18 @@ pub struct EventForCreateRequest {
     ))]
     pub event_name: String,
     pub event_date: DateTime,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "event_venue_name_length",
+        message = "venue_name must be between 1 and 255 characters"
+    ))]
     pub venue_name: String,
+    #[validate(range(
+        min = 1,
+        code = "event_total_seats_positive",
+        message = "total_seats must be greater than 0"
+    ))]
     pub total_seats: u32,
     pub status: Option<String>,
     pub sale_start_time: Option<DateTime>,

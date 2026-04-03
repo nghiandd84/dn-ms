@@ -10,11 +10,18 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::{ParamFilter, Response};
 
-use features_wallet_entities::withdrawal::{ModelOptionDto, WithdrawalForCreateDto, WithdrawalForUpdateDto};
+use features_wallet_entities::withdrawal::{
+    ModelOptionDto, WithdrawalForCreateDto, WithdrawalForUpdateDto,
+};
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct WithdrawalForCreateRequest {
     pub wallet_id: Uuid,
+    #[validate(range(
+        min = 0.01,
+        code = "withdrawal_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: f32,
     pub payment_device_id: Uuid,
 }

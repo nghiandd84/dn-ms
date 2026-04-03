@@ -47,11 +47,45 @@ impl From<ModelOptionDto> for StripeRefundData {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct StripeRefundForCreateRequest {
     pub payment_id: Uuid,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "stripe_refund_id_length",
+        message = "stripe_refund_id must be between 1 and 255 characters"
+    ))]
     pub stripe_refund_id: String,
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "stripe_payment_intent_id_length",
+        message = "stripe_payment_intent_id must be between 1 and 255 characters"
+    ))]
     pub stripe_payment_intent_id: String,
+    #[validate(range(
+        min = 1,
+        code = "stripe_refund_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: i64,
+    #[validate(length(
+        min = 3,
+        max = 3,
+        code = "stripe_refund_currency_length",
+        message = "currency must be a 3-letter ISO code"
+    ))]
     pub currency: String,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "stripe_refund_status_length",
+        message = "status must be between 1 and 50 characters"
+    ))]
     pub status: String,
+    #[validate(length(
+        max = 500,
+        code = "stripe_refund_reason_length",
+        message = "reason must not exceed 500 characters"
+    ))]
     pub reason: Option<String>,
     pub metadata: Option<Json>,
 }

@@ -9,7 +9,17 @@ use features_bakery_entities::lineitem::{LineitemForCreateDto, ModelOptionDto};
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 #[schema(example = json!({"price":1.0,"quantity":1,"order_id":1,"cake_id":1}))]
 pub struct LineitemForCreateRequest {
+    #[validate(range(
+        min = 0.01,
+        code = "lineitem_price_positive",
+        message = "price must be greater than 0"
+    ))]
     pub price: f64,
+    #[validate(range(
+        min = 1,
+        code = "lineitem_quantity_positive",
+        message = "quantity must be greater than 0"
+    ))]
     pub quantity: i32,
     pub order_id: i32,
     pub cake_id: i32,

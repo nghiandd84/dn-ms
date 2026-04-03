@@ -14,9 +14,9 @@ use features_bakery_entities::bakery::ModelOptionDto as BakeryModelOptionDto;
 pub struct BakerForCreateRequest {
     #[validate(length(
         min = 1,
-        max = 16,
+        max = 128,
         code = "name_length",
-        message = "the length of email must be between 1 and 50"
+        message = "the length of name must be between 1 and 128"
     ))]
     pub name: String,
     pub contact_details: Json,

@@ -53,10 +53,36 @@ impl Into<SeatData> for ModelOptionDto {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct SeatForCreateRequest {
     pub event_id: Uuid,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "seat_number_length",
+        message = "seat_number must be between 1 and 50 characters"
+    ))]
     pub seat_number: String,
+    #[validate(length(
+        max = 50,
+        code = "seat_section_length",
+        message = "section must not exceed 50 characters"
+    ))]
     pub section: Option<String>,
+    #[validate(length(
+        max = 50,
+        code = "seat_row_number_length",
+        message = "row_number must not exceed 50 characters"
+    ))]
     pub row_number: Option<String>,
+    #[validate(length(
+        max = 50,
+        code = "seat_type_length",
+        message = "seat_type must not exceed 50 characters"
+    ))]
     pub seat_type: Option<String>,
+    #[validate(range(
+        min = 0.0,
+        code = "seat_price_non_negative",
+        message = "price must be non-negative"
+    ))]
     pub price: f32,
 }
 

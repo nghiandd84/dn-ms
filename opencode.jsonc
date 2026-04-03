@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "autoupdate": true,
+  "watcher": {
+    "ignore": ["target/**", "logs/**", "node_modules/**", ".git/**"]
+  },
+  "formatter": {
+    "cargo-fmt": {
+      "command": ["cargo", "fmt", "--", "--check"],
+      "format": ["cargo", "fmt"],
+      "extensions": [".rs"],
+      "description": "Format Rust code with cargo fmt"
+    }
+  },
+  "command": {
+    "test": {
+      "template": "Run cargo test for the crate that contains the file $ARGUMENTS. If no file is specified, run cargo test for the entire workspace.",
+      "description": "Run Rust tests"
+    },
+    "clippy": {
+      "template": "Run cargo clippy on the workspace and fix any warnings or errors.",
+      "description": "Run Rust linter"
+    },
+    "build": {
+      "template": "Run cargo build to compile the workspace.",
+      "description": "Build Rust workspace"
+    }
+  }
+}

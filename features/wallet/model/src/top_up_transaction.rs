@@ -16,11 +16,31 @@ use features_wallet_entities::top_up_transaction::{
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct TopUpTransactionForCreateRequest {
+    #[validate(range(
+        min = 0.01,
+        code = "top_up_amount_positive",
+        message = "amount must be greater than 0"
+    ))]
     pub amount: f32,
-    #[validate(length(min = 1))]
-    pub method: String, // CARD, UPI, BANK_TRANSFER, CASH
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "top_up_method_length",
+        message = "method must be between 1 and 50 characters"
+    ))]
+    pub method: String,
+    #[validate(length(
+        max = 255,
+        code = "payment_provider_id_length",
+        message = "payment_provider_id must not exceed 255 characters"
+    ))]
     #[serde(default)]
     pub payment_provider_id: Option<String>,
+    #[validate(length(
+        max = 255,
+        code = "payment_transaction_id_length",
+        message = "payment_transaction_id must not exceed 255 characters"
+    ))]
     #[serde(default)]
     pub payment_transaction_id: Option<String>,
 }

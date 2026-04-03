@@ -42,8 +42,24 @@ impl Into<PaymentMethodLimitData> for ModelOptionDto {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct PaymentMethodLimitForCreateRequest {
     pub payment_method_id: Uuid,
+    #[validate(length(
+        min = 3,
+        max = 3,
+        code = "payment_method_limit_currency_length",
+        message = "currency must be a 3-letter ISO code"
+    ))]
     pub currency: String,
+    #[validate(range(
+        min = 0,
+        code = "payment_method_limit_min_amount_non_negative",
+        message = "min_amount must be non-negative"
+    ))]
     pub min_amount: i64,
+    #[validate(range(
+        min = 1,
+        code = "payment_method_limit_max_amount_positive",
+        message = "max_amount must be greater than 0"
+    ))]
     pub max_amount: i64,
 }
 

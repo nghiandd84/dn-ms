@@ -9,7 +9,9 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::{ParamFilter, Response};
 
-use features_merchant_entities::merchant::{ModelOptionDto, MerchantForCreateDto, MerchantForUpdateDto};
+use features_merchant_entities::merchant::{
+    MerchantForCreateDto, MerchantForUpdateDto, ModelOptionDto,
+};
 
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct MerchantData {
@@ -43,13 +45,45 @@ impl Into<MerchantData> for ModelOptionDto {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct MerchantForCreateRequest {
-    #[validate(length(min = 1, message = "business_name is required"))]
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "merchant_business_name_length",
+        message = "business_name must be between 1 and 255 characters"
+    ))]
     pub business_name: String,
-    #[validate(email(message = "email must be a valid email address"))]
+    #[validate(email(
+        code = "merchant_email_invalid",
+        message = "email must be a valid email address"
+    ))]
     pub email: String,
+    #[validate(length(
+        min = 1,
+        max = 20,
+        code = "merchant_phone_length",
+        message = "phone must be between 1 and 20 characters"
+    ))]
     pub phone: String,
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "merchant_business_type_length",
+        message = "business_type must be between 1 and 100 characters"
+    ))]
     pub business_type: String,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "merchant_kyc_status_length",
+        message = "kyc_status must be between 1 and 50 characters"
+    ))]
     pub kyc_status: String,
+    #[validate(length(
+        min = 1,
+        max = 50,
+        code = "merchant_status_length",
+        message = "status must be between 1 and 50 characters"
+    ))]
     pub status: String,
 }
 

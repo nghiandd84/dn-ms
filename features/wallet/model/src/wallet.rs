@@ -14,11 +14,21 @@ use features_wallet_entities::wallet::{ModelOptionDto, WalletForCreateDto, Walle
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]
 pub struct WalletForCreateRequest {
-    #[validate(length(min = 1))]
+    #[validate(length(
+        min = 1,
+        max = 10,
+        code = "currency_length",
+        message = "currency must be between 1 and 10 characters"
+    ))]
     pub currency: String,
+    #[validate(range(
+        min = 0.0,
+        code = "balance_non_negative",
+        message = "balance must be non-negative"
+    ))]
     #[serde(default)]
     pub balance: Option<f32>,
-    pub user_id: Option<Uuid>, // Will be set by the service using authenticated user
+    pub user_id: Option<Uuid>,
 }
 
 #[derive(Debug, Validate, Deserialize, ToSchema)]

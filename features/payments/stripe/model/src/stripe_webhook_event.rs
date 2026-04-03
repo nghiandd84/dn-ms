@@ -40,10 +40,27 @@ impl From<ModelOptionDto> for StripeWebhookEventData {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct StripeWebhookEventForCreateRequest {
+    #[validate(length(
+        min = 1,
+        max = 255,
+        code = "stripe_event_id_length",
+        message = "stripe_event_id must be between 1 and 255 characters"
+    ))]
     pub stripe_event_id: String,
+    #[validate(length(
+        min = 1,
+        max = 100,
+        code = "webhook_event_type_length",
+        message = "event_type must be between 1 and 100 characters"
+    ))]
     pub event_type: String,
     pub event_data: Json,
     pub processed: Option<bool>,
+    #[validate(length(
+        max = 2000,
+        code = "webhook_processing_error_length",
+        message = "processing_error must not exceed 2000 characters"
+    ))]
     pub processing_error: Option<String>,
 }
 
