@@ -1374,7 +1374,7 @@ services:
       RUST_LOG: ${RUST_LOG:-info}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     volumes:
-      - ./gateway/dn-config.yaml:/app/config/dn-config.yaml:ro
+      - ./gateway/config.yaml:/app/config/config.yaml:ro
       - gateway-logs:/var/log/dn-gateway
     ports:
       - "6000:6000"
