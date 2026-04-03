@@ -163,7 +163,7 @@ services:
 
   migrations-auth:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/auth/Dockerfile
     container_name: dn-ms-migrations-auth
     command: ["./target/release/migrations_auth", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "auth"]
@@ -175,7 +175,7 @@ services:
 
   migrations-bakery:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/bakery/Dockerfile
     container_name: dn-ms-migrations-bakery
     command: ["./target/release/migrations_bakery", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "bakery"]
@@ -187,7 +187,7 @@ services:
 
   migrations-booking:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/booking/Dockerfile
     container_name: dn-ms-migrations-booking
     command: ["./target/release/migrations_booking", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "booking"]
@@ -199,7 +199,7 @@ services:
 
   migrations-email-template:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/email-template/Dockerfile
     container_name: dn-ms-migrations-email-template
     command: ["./target/release/migrations_email_template", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "email_template"]
@@ -211,7 +211,7 @@ services:
 
   migrations-event:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/event/Dockerfile
     container_name: dn-ms-migrations-event
     command: ["./target/release/migrations_event", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "event"]
@@ -223,7 +223,7 @@ services:
 
   migrations-fee:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/fee/Dockerfile
     container_name: dn-ms-migrations-fee
     command: ["./target/release/migrations_fee", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "fee"]
@@ -235,7 +235,7 @@ services:
 
   migrations-inventory:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/inventory/Dockerfile
     container_name: dn-ms-migrations-inventory
     command: ["./target/release/migrations_inventory", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "inventory"]
@@ -247,7 +247,7 @@ services:
 
   migrations-merchant:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/merchant/Dockerfile
     container_name: dn-ms-migrations-merchant
     command: ["./target/release/migrations_merchant", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "merchant"]
@@ -259,7 +259,7 @@ services:
 
   migrations-payments-core:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/payments-core/Dockerfile
     container_name: dn-ms-migrations-payments-core
     command: ["./target/release/migrations_payments_core", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "payments_core"]
@@ -271,7 +271,7 @@ services:
 
   migrations-payments-stripe:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/payments-stripe/Dockerfile
     container_name: dn-ms-migrations-payments-stripe
     command: ["./target/release/migrations_payments_stripe", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "payments_stripe"]
@@ -283,7 +283,7 @@ services:
 
   migrations-profiles:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/profiles/Dockerfile
     container_name: dn-ms-migrations-profiles
     command: ["./target/release/migrations_profiles", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "profiles"]
@@ -295,7 +295,7 @@ services:
 
   migrations-translation:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/translation/Dockerfile
     container_name: dn-ms-migrations-translation
     command: ["./target/release/migrations_translation", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "translation"]
@@ -307,7 +307,7 @@ services:
 
   migrations-wallet:
     build:
-      context: .
+      context: ..
       dockerfile: docker/migrations/wallet/Dockerfile
     container_name: dn-ms-migrations-wallet
     command: ["./target/release/migrations_wallet", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "wallet"]
@@ -323,7 +323,7 @@ services:
 
   api-auth-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/auth/Dockerfile
     container_name: dn-ms-api-auth-1
     environment:
@@ -362,7 +362,7 @@ services:
 
   api-auth-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/auth/Dockerfile
     container_name: dn-ms-api-auth-2
     environment:
@@ -401,7 +401,7 @@ services:
 
   api-bakery-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/bakery/Dockerfile
     container_name: dn-ms-api-bakery-1
     environment:
@@ -434,7 +434,7 @@ services:
 
   api-bakery-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/bakery/Dockerfile
     container_name: dn-ms-api-bakery-2
     environment:
@@ -467,7 +467,7 @@ services:
 
   api-email-template-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/email-template/Dockerfile
     container_name: dn-ms-api-email-template-1
     environment:
@@ -501,7 +501,7 @@ services:
 
   api-email-template-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/email-template/Dockerfile
     container_name: dn-ms-api-email-template-2
     environment:
@@ -535,7 +535,7 @@ services:
 
   api-email-template-default:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/email-template/Dockerfile
     container_name: dn-ms-api-email-template-default
     environment:
@@ -569,7 +569,7 @@ services:
 
   api-notification-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/notification/Dockerfile
     container_name: dn-ms-api-notification-1
     environment:
@@ -604,7 +604,7 @@ services:
 
   api-notification-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/notification/Dockerfile
     container_name: dn-ms-api-notification-2
     environment:
@@ -639,7 +639,7 @@ services:
 
   api-profile-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/profile/Dockerfile
     container_name: dn-ms-api-profile-1
     environment:
@@ -672,7 +672,7 @@ services:
 
   api-profile-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/profile/Dockerfile
     container_name: dn-ms-api-profile-2
     environment:
@@ -705,7 +705,7 @@ services:
 
   api-translation-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/translation/Dockerfile
     container_name: dn-ms-api-translation-1
     environment:
@@ -738,7 +738,7 @@ services:
 
   api-translation-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/translation/Dockerfile
     container_name: dn-ms-api-translation-2
     environment:
@@ -771,7 +771,7 @@ services:
 
   api-event-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/event/Dockerfile
     container_name: dn-ms-api-event-1
     environment:
@@ -810,7 +810,7 @@ services:
 
   api-event-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/event/Dockerfile
     container_name: dn-ms-api-event-2
     environment:
@@ -849,7 +849,7 @@ services:
 
   api-inventory-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/inventory/Dockerfile
     container_name: dn-ms-api-inventory-1
     environment:
@@ -884,7 +884,7 @@ services:
 
   api-inventory-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/inventory/Dockerfile
     container_name: dn-ms-api-inventory-2
     environment:
@@ -919,7 +919,7 @@ services:
 
   api-booking-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/booking/Dockerfile
     container_name: dn-ms-api-booking-1
     environment:
@@ -952,7 +952,7 @@ services:
 
   api-booking-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/booking/Dockerfile
     container_name: dn-ms-api-booking-2
     environment:
@@ -985,7 +985,7 @@ services:
 
   api-payment-core-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/payment-core/Dockerfile
     container_name: dn-ms-api-payment-core-1
     environment:
@@ -1020,7 +1020,7 @@ services:
 
   api-payment-core-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/payment-core/Dockerfile
     container_name: dn-ms-api-payment-core-2
     environment:
@@ -1055,7 +1055,7 @@ services:
 
   api-stripe-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/stripe/Dockerfile
     container_name: dn-ms-api-stripe-1
     environment:
@@ -1092,7 +1092,7 @@ services:
 
   api-stripe-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/stripe/Dockerfile
     container_name: dn-ms-api-stripe-2
     environment:
@@ -1129,7 +1129,7 @@ services:
 
   api-merchant-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/merchant/Dockerfile
     container_name: dn-ms-api-merchant-1
     environment:
@@ -1166,7 +1166,7 @@ services:
 
   api-merchant-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/merchant/Dockerfile
     container_name: dn-ms-api-merchant-2
     environment:
@@ -1203,7 +1203,7 @@ services:
 
   api-fee-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/fee/Dockerfile
     container_name: dn-ms-api-fee-1
     environment:
@@ -1240,7 +1240,7 @@ services:
 
   api-fee-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/fee/Dockerfile
     container_name: dn-ms-api-fee-2
     environment:
@@ -1277,7 +1277,7 @@ services:
 
   api-wallet-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/wallet/Dockerfile
     container_name: dn-ms-api-wallet-1
     environment:
@@ -1314,7 +1314,7 @@ services:
 
   api-wallet-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apis/wallet/Dockerfile
     container_name: dn-ms-api-wallet-2
     environment:
@@ -1355,7 +1355,7 @@ services:
 
   app-gateway:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apps/gateway/Dockerfile
     container_name: dn-ms-app-gateway
     environment:
@@ -1417,7 +1417,7 @@ services:
 
   app-notification-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apps/notification/Dockerfile
     container_name: dn-ms-app-notification-1
     environment:
@@ -1457,7 +1457,7 @@ services:
 
   app-notification-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apps/notification/Dockerfile
     container_name: dn-ms-app-notification-2
     environment:
@@ -1497,7 +1497,7 @@ services:
 
   auth-notification-1:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apps/auth-notification/Dockerfile
     container_name: dn-ms-auth-notification-1
     environment:
@@ -1542,7 +1542,7 @@ services:
 
   auth-notification-2:
     build:
-      context: .
+      context: ..
       dockerfile: docker/apps/auth-notification/Dockerfile
     container_name: dn-ms-auth-notification-2
     environment:
