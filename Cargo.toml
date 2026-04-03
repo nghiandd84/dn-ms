@@ -76,6 +76,12 @@ members = [
     "features/translation/repo", 
     "features/translation/service", 
 
+    "features/lookup/entities", 
+    "features/lookup/model", 
+    "features/lookup/repo", 
+    "features/lookup/service", 
+    "features/lookup/migrations", 
+
     "features/notification/model", 
     "features/notification/stream", 
 
@@ -124,6 +130,7 @@ members = [
     "apis/merchant",
     "apis/fee",
     "apis/wallet",
+    "apis/lookup",
     "apis/notification",
     "apis/payment-core",
     "apis/paypments/stripe",
@@ -334,6 +341,13 @@ features-wallet-model = { path = "./features/wallet/model"}
 features-wallet-repo = { path = "./features/wallet/repo"}
 features-wallet-service = { path = "./features/wallet/service"}
 features-wallet-stream = { path = "./features/wallet/stream"}
+
+# Lookup feature
+features-lookup-entities = { path = "./features/lookup/entities"}
+features-lookup-model = { path = "./features/lookup/model"}
+features-lookup-repo = { path = "./features/lookup/repo"}
+features-lookup-service = { path = "./features/lookup/service"}
+features-lookup-migrations = { path = "./features/lookup/migrations"}
 
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}

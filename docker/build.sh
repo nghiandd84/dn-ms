@@ -88,6 +88,7 @@ declare -A APIS=(
     [api-merchant]="docker/apis/merchant/Dockerfile"
     [api-fee]="docker/apis/fee/Dockerfile"
     [api-wallet]="docker/apis/wallet/Dockerfile"
+    [api-lookup]="docker/apis/lookup/Dockerfile"
 )
 
 declare -A APPS=(
@@ -110,6 +111,7 @@ declare -A MIGRATIONS=(
     [migrations-profiles]="docker/migrations/profiles/Dockerfile"
     [migrations-translation]="docker/migrations/translation/Dockerfile"
     [migrations-wallet]="docker/migrations/wallet/Dockerfile"
+    [migrations-lookup]="docker/migrations/lookup/Dockerfile"
 )
 
 build_image() {

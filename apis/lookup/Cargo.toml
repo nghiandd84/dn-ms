@@ -1,0 +1,25 @@
+[package]
+name = "apis-lookup"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api-lookup"
+path = "src/main.rs"
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+features-lookup-model = { workspace = true }
+features-lookup-service = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-data-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-extractor = { workspace = true }
+shared-shared-middleware = { workspace = true }
+shared-shared-observability = { workspace = true }

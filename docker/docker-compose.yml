@@ -317,6 +317,18 @@ services:
     networks:
       - dn-ms-network
 
+  migrations-lookup:
+    build:
+      context: ..
+      dockerfile: docker/migrations/lookup/Dockerfile
+    container_name: dn-ms-migrations-lookup
+    command: ["./target/release/migrations_lookup", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "lookup"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dn-ms-network
+
   # ═══════════════════════════════════════════════════════════
   # API SERVICES
   # ═══════════════════════════════════════════════════════════
@@ -1349,6 +1361,72 @@ services:
     networks:
       - dn-ms-network
 
+  api-lookup-1:
+    build:
+      context: ..
+      dockerfile: docker/apis/lookup/Dockerfile
+    container_name: dn-ms-api-lookup-1
+    environment:
+      LOOKUP_PORT: 5161
+      LOOKUP_DATABASE_READ_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      LOOKUP_DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      LOOKUP_DATABASE_SCHEME: lookup
+      LOOKUP_REDIS_URL: redis://:${REDIS_PASSWORD:-Redis!123}@redis:6379
+      ERROR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ERROR_KAFKA_TOPIC: error_log
+      RUST_LOG: ${RUST_LOG:-debug}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      HTTP_PROTOCOL: http
+      CONSUL_HTTP_ADDR: http://consul:8500
+    ports:
+      - "5161:5161"
+    depends_on:
+      migrations-lookup:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - dn-ms-network
+
+  api-lookup-2:
+    build:
+      context: ..
+      dockerfile: docker/apis/lookup/Dockerfile
+    container_name: dn-ms-api-lookup-2
+    environment:
+      LOOKUP_PORT: 5162
+      LOOKUP_DATABASE_READ_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      LOOKUP_DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      LOOKUP_DATABASE_SCHEME: lookup
+      LOOKUP_REDIS_URL: redis://:${REDIS_PASSWORD:-Redis!123}@redis:6379
+      ERROR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ERROR_KAFKA_TOPIC: error_log
+      RUST_LOG: ${RUST_LOG:-debug}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      HTTP_PROTOCOL: http
+      CONSUL_HTTP_ADDR: http://consul:8500
+    ports:
+      - "5162:5162"
+    depends_on:
+      migrations-lookup:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - dn-ms-network
+
   # ═══════════════════════════════════════════════════════════
   # APP SERVICES
   # ═══════════════════════════════════════════════════════════
@@ -1409,6 +1487,8 @@ services:
       - api-fee-2
       - api-wallet-1
       - api-wallet-2
+      - api-lookup-1
+      - api-lookup-2
       - app-notification-1
       - app-notification-2
       - otel-collector

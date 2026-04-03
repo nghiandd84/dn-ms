@@ -52,6 +52,8 @@ gateways:
         filter: stripe_router_filter
       - upstream: notification
         filter: notification_router_filter
+      - upstream: lookup
+        filter: lookup_router_filter
 
     upstreams:
       - name: auth
@@ -309,6 +311,23 @@ gateways:
             sni: null
             weight: 1
 
+      - name: lookup
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: api-lookup-1
+              port: 5161
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: api-lookup-2
+              port: 5162
+            tls: false
+            sni: null
+            weight: 2
+
     interceptors:
       # Auth
       - name: auth_request_id
@@ -458,6 +477,14 @@ gateways:
         config:
           allowed_domains: localhost
 
+      # Lookup
+      - name: lookup_cors
+        type: cors
+        enabled: true
+        filter: lookup_router_filter
+        config:
+          allowed_domains: localhost
+
       # App Notification
       - name: app_notification_request_id
         type: request_id
@@ -526,3 +553,7 @@ gateways:
         path:
           operator: start_with
           value: /api/notification
+      - name: lookup_router_filter
+        path:
+          operator: start_with
+          value: /lookup

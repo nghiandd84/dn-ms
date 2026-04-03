@@ -1,0 +1,18 @@
+[package]
+name = "features-lookup-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_lookup_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_lookup"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+sea-orm-migration = { workspace = true }
+features-lookup-entities = { workspace = true }
