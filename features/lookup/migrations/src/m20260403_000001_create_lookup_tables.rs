@@ -1,5 +1,3 @@
-use std::f32::consts::E;
-
 use sea_orm_migration::prelude::*;
 
 use features_lookup_entities::{lookup_item, lookup_item_translation, lookup_type};

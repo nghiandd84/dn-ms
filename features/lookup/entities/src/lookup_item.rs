@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sea_orm::{entity::prelude::*, ActiveValue, ConnectionTrait};
 use serde::{Deserialize, Serialize};
-use serde_json::Value as Json;
 use uuid::Uuid;
 
 use shared_shared_macro::Dto;

@@ -11,7 +11,7 @@ impl Default for LookupAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum LookupCacheState {
-    Default
+    Default,
 }
 
 impl Default for LookupCacheState {

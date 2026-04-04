@@ -1,4 +1,4 @@
-use sea_orm_migration::prelude::*;
+pub use sea_orm_migration::prelude::{async_trait, MigrationTrait, MigratorTrait};
 
 mod m20260403_000001_create_lookup_tables;
 

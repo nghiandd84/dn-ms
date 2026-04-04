@@ -61,7 +61,7 @@ pub struct LookupItemWithTranslations {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct LookupItemForCreateRequest {
-    pub lookup_type_id: Uuid,
+    pub lookup_type_id: Option<Uuid>,
     #[validate(length(
         min = 1,
         max = 50,
@@ -101,7 +101,7 @@ pub struct LookupItemForCreateRequest {
 impl Into<LookupItemForCreateDto> for LookupItemForCreateRequest {
     fn into(self) -> LookupItemForCreateDto {
         LookupItemForCreateDto {
-            lookup_type_id: self.lookup_type_id,
+            lookup_type_id: self.lookup_type_id.unwrap_or_default(),
             code: self.code,
             name: self.name,
             url: self.url.unwrap_or_default(),

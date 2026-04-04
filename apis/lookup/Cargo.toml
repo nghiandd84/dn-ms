@@ -1,5 +1,5 @@
 [package]
-name = "apis-lookup"
+name = "api-lookup"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -13,9 +13,11 @@ axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 utoipa = { workspace = true }
+uuid = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
-features-lookup-model = { workspace = true }
-features-lookup-service = { workspace = true }
+
+
+shared-shared-config = { workspace = true }
 shared-shared-app = { workspace = true }
 shared-shared-data-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
@@ -23,3 +25,7 @@ shared-shared-data-error = { workspace = true }
 shared-shared-extractor = { workspace = true }
 shared-shared-middleware = { workspace = true }
 shared-shared-observability = { workspace = true }
+
+features-lookup-model = { workspace = true }
+features-lookup-migrations = { workspace = true }
+features-lookup-service = { workspace = true }
