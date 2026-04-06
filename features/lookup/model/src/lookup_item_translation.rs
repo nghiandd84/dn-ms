@@ -54,7 +54,7 @@ pub struct LookupItemTranslationForCreateRequest {
         message = "name must be between 1 and 200 characters"
     ))]
     pub name: String,
-    pub lookup_item_id: Uuid,
+    pub lookup_item_id: Option<Uuid>,
 }
 
 impl Into<LookupItemTranslationForCreateDto> for LookupItemTranslationForCreateRequest {
@@ -62,7 +62,7 @@ impl Into<LookupItemTranslationForCreateDto> for LookupItemTranslationForCreateR
         LookupItemTranslationForCreateDto {
             locale: self.locale,
             name: self.name,
-            lookup_item_id: self.lookup_item_id,
+            lookup_item_id: self.lookup_item_id.unwrap_or_default(),
         }
     }
 }

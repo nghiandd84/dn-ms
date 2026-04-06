@@ -12,7 +12,9 @@ use features_lookup_model::state::{LookupAppState, LookupCacheState};
 use crate::{
     doc::ApiDoc,
     routes::{
-        lookup_item::routes as lookup_item_routes, lookup_type::routes as lookup_type_routes,
+        lookup_item::routes as lookup_item_routes,
+        lookup_item_translation::routes as lookup_item_translation_routes,
+        lookup_type::routes as lookup_type_routes,
     },
 };
 
@@ -39,6 +41,7 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
         let all_routes = Router::new()
             .merge(lookup_type_routes(app_state))
             .merge(lookup_item_routes(app_state))
+            .merge(lookup_item_translation_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
@@ -53,7 +56,7 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
 
     my_app.start_app(None).await?;
 
-    debug!("Inventory app stopped");
+    debug!("Lookup app stopped");
 
     Ok(())
 }

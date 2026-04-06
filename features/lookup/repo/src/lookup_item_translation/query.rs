@@ -52,25 +52,27 @@ impl LookupItemTranslationQuery {
 
     pub async fn get_translations_by_item_id(
         lookup_item_id: Uuid,
-    ) -> Result<Vec<LookupItemTranslationData>, AppError> {
+        pagination: &Pagination,
+        order: &Order,
+        filters: &Vec<FilterEnum>,
+    ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
         let lookup_type_param: FilterParam<Uuid> = FilterParam {
             name: Column::LookupItemId.to_string(),
             operator: FilterOperator::Equal,
             value: Some(lookup_item_id),
             raw_value: lookup_item_id.to_string(),
         };
+        let mut filters = filters.clone();
+        filters.push(FilterEnum::Uuid(lookup_type_param));
 
-        let pagination = Pagination::new(1, 1000);
-        let order = Order::default();
+        let result =
+            LookupItemTranslationQueryManager::filter(&pagination, &order, &filters).await?;
 
-        let result = LookupItemTranslationQueryManager::filter(
-            &pagination,
-            &order,
-            &vec![FilterEnum::Uuid(lookup_type_param)],
-        )
-        .await?;
-
-        Ok(result.result.into_iter().map(|item| item.into()).collect())
+        let mapped_result = QueryResult {
+            total_page: result.total_page,
+            result: result.result.into_iter().map(|m| m.into()).collect(),
+        };
+        Ok(mapped_result)
     }
 
     pub async fn get_translation_by_item_id_locale(

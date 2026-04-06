@@ -38,6 +38,15 @@ impl LookupItemTranslationService {
         LookupItemTranslationQuery::get_translation_by_id(id).await
     }
 
+    pub async fn search_translations_by_item_id(
+        item_id: Uuid,
+        filters: &Vec<FilterEnum>,
+        pagination: &Pagination,
+        order: &Order,
+    ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
+        LookupItemTranslationQuery::get_translations_by_item_id(item_id, pagination, order, filters).await
+    }
+
     pub async fn get_translations(
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,

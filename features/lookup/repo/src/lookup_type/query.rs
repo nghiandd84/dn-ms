@@ -44,7 +44,7 @@ impl LookupTypeQuery {
         };
         let filters = vec![FilterEnum::String(code_param)];
 
-        let pagination = Pagination::new(1, 1);
+        let pagination = Pagination::default();
         let order = Order::default();
 
         let result = LookupTypeQueryManager::filter(&pagination, &order, &filters).await?;

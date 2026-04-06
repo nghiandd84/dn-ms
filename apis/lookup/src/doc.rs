@@ -14,6 +14,10 @@ use utoipa::OpenApi;
         crate::routes::lookup_item::create_lookup_item,
         crate::routes::lookup_item::update_lookup_item,
         crate::routes::lookup_item::delete_lookup_item,
+        crate::routes::lookup_item_translation::get_translations,
+        crate::routes::lookup_item_translation::create_translation,
+        crate::routes::lookup_item_translation::update_translation,
+        crate::routes::lookup_item_translation::delete_translation,
     ),
    
     tags(
@@ -22,7 +26,3 @@ use utoipa::OpenApi;
     )
 )]
 pub struct ApiDoc;
-
-pub fn open_api() -> utoipa::openapi::OpenApi {
-    ApiDoc::openapi()
-}

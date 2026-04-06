@@ -109,7 +109,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(lookup_item::Column::Tenants)
                             .array(ColumnType::String(StringLen::N(50)))
                             .not_null()
-                            .default("ARRAY[]::VARCHAR[]"),
+                            .default("{}"),
                     )
                     .col(
                         ColumnDef::new(lookup_item::Column::IsActive)

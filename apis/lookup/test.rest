@@ -1,0 +1,125 @@
+@baseUrl = http://localhost:5161
+@typeCode = CURENCY
+@lookupTypeId = e9f22a1f-6530-4da5-b0fe-dd279bfa2df9
+@itemId = 67cf1fe1-9dd3-490d-b016-bf8a72800330
+@locale = en-US
+@translationId = 9a9c558c-a7f0-4603-a612-77b7ac4ea5b6
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== LOOKUP TYPES =====
+
+### Get All Lookup Types
+GET {{baseUrl}}/lookup-types
+
+### Search Lookup Types
+GET {{baseUrl}}/lookup-types?code=li|currency&order_name=code&order_direction=1
+
+### Create Lookup Type
+POST {{baseUrl}}/lookup-types
+Content-Type: application/json
+
+{
+  "code": "{{typeCode}}",
+  "name": "Lookup Currency",
+  "description": "Currency types"
+}
+
+### Get Lookup Type By Code
+GET {{baseUrl}}/lookup-types/{{lookupTypeId}}
+
+### Update Lookup Type
+PATCH {{baseUrl}}/lookup-types/{{lookupTypeId}}
+Content-Type: application/json
+
+{
+  "description": "Updated currency types"
+}
+
+### Delete Lookup Type
+DELETE {{baseUrl}}/lookup-types/1ff10782-b14a-4b16-a253-d23667e669b6
+
+
+### ===== LOOKUP ITEMS =====
+
+### Get All Lookup Items
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items
+
+### Search Lookup Items
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items?code=li|USD&order_name=sort_other&order_direction=1
+
+### Create Lookup Item
+POST {{baseUrl}}/lookup-types/{{typeCode}}/items
+Content-Type: application/json
+
+{
+  "code": "USD",
+  "name": "US Dollar NEW",
+  "sort_order": 1
+}
+
+### Get Lookup Item By ID
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}
+
+### Update Lookup Item
+PATCH {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}
+Content-Type: application/json
+
+{
+  "name": "American Dollar",
+  "sort_order": 2
+}
+
+### Delete Lookup Item
+DELETE {{baseUrl}}/lookup-types/{{typeCode}}/items/7b57d17a-1f70-4563-be55-34219ede5941
+
+
+### ===== LOOKUP ITEM TRANSLATIONS =====
+
+### Get All Translations
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations
+
+### Search Translations
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations?locale=li|vi&order_name=name&order_direction=1
+
+### Create Translation
+POST {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations
+Content-Type: application/json
+
+{
+  "locale": "{{locale}}",
+  "name": "Đô la Mỹ"
+}
+
+### Update Translation
+PATCH {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations/{{translationId}}
+Content-Type: application/json
+
+{
+  "name": "Đô la Hoa Kỳ"
+}
+
+### Delete Translation
+DELETE {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations/c77dc4a3-7bc0-4372-99b7-cf5abfbb6f65
+
+### Create Translation (VI)
+POST {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations
+Content-Type: application/json
+
+{
+  "locale": "vi",
+  "name": "Đô la Mỹ"
+}
+
+### Create Translation (FR)
+POST {{baseUrl}}/lookup-types/{{typeCode}}/items/{{itemId}}/translations
+Content-Type: application/json
+
+{
+  "locale": "fr",
+  "name": "Dollar américain"
+}
