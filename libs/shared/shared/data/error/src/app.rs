@@ -2,6 +2,7 @@ use axum::{http::StatusCode, response::IntoResponse};
 use serde::Serialize;
 use std::{fmt::Debug, sync::Arc};
 use thiserror::Error;
+use tracing::debug;
 
 use crate::{
     auth::{AuthError, TokenError},
@@ -40,9 +41,10 @@ impl IntoResponse for AppError {
     }
 }
 
+use self::AppError::*;
 impl AppError {
     pub fn status_and_error(&self) -> (StatusCode, ClientError) {
-        use self::AppError::*;
+        debug!("Mapping AppError to ClientError: {:?}", self);
         match self {
             Auth(auth_error) => (
                 auth_error.get_status_code(),

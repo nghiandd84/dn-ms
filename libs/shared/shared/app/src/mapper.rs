@@ -7,7 +7,7 @@ use axum::{
     Json,
 };
 use serde_json::{json, to_value, Value};
-use tracing::debug;
+use tracing::{debug, error};
 
 use shared_shared_data_error::app::AppError;
 
@@ -27,7 +27,7 @@ pub async fn main_response_mapper(uri: Uri, _req_method: Method, res: Response) 
     let client_status_error = app_error.map(|e| e.status_and_error());
     match client_status_error {
         Some((status_code, client_error)) => {
-            debug!(
+            error!(
                 "Mapping AppError to client response: status_code: {}, client_error: {:?}",
                 status_code, client_error
             );

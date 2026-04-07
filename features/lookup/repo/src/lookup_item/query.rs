@@ -1,3 +1,4 @@
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -65,6 +66,7 @@ impl LookupItemQuery {
         filters.push(FilterEnum::Uuid(type_param));
 
         let result = LookupItemQueryManager::filter(pagination, order, &filters).await?;
+        debug!("Raw query result: {:?}", result);
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

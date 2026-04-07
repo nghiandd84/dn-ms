@@ -13,6 +13,7 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.query_param_one, model_option.query_param_one);
     set_if_some!(active_model.query_param_two, model_option.query_param_two);
     set_if_some!(active_model.tenants, model_option.tenants);
+    set_if_some!(active_model.meta, model_option.meta);
     set_if_some!(active_model.is_active, model_option.is_active);
     set_if_some!(active_model.sort_order, model_option.sort_order);
     set_if_some!(active_model.created_at, model_option.created_at);

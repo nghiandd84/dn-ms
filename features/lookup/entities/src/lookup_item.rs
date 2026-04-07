@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sea_orm::{entity::prelude::*, ActiveValue, ConnectionTrait};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use uuid::Uuid;
 
 use shared_shared_macro::Dto;
@@ -20,6 +21,7 @@ use super::lookup_type;
         query_param_one,
         query_param_two,
         tenants,
+        meta,
         is_active,
         sort_order
     )
@@ -33,6 +35,7 @@ use super::lookup_type;
         query_param_one,
         query_param_two,
         tenants,
+        meta,
         is_active,
         sort_order
     ),
@@ -48,6 +51,7 @@ pub struct Model {
     pub query_param_one: String,
     pub query_param_two: String,
     pub tenants: Vec<String>,
+    pub meta: Value,
     pub is_active: bool,
     pub sort_order: i32,
     pub created_at: DateTime,

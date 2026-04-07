@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use utoipa::{IntoParams, ToSchema};
 
 use shared_shared_macro::ResponseGeneric;
@@ -8,13 +8,32 @@ pub struct QueryResult<T> {
     pub total_page: u64,
     pub result: Vec<T>,
 }
+
+fn deserialize_page_size<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Option<u64> = Option::deserialize(deserializer)?;
+    if let Some(size) = value {
+        if size > 20 {
+            return Err(serde::de::Error::custom(
+                "page_size must be less than or equal to 20",
+            ));
+        }
+    }
+    Ok(value)
+}
+
 #[derive(Deserialize, Debug, IntoParams)]
 #[into_params(parameter_in = Query)]
 pub struct Pagination {
     #[serde(default = "default_page")]
     #[param(value_type = Option<u64>)]
     pub page: Option<u64>,
-    #[serde(default = "default_page_size")]
+    #[serde(
+        default = "default_page_size",
+        deserialize_with = "deserialize_page_size"
+    )]
     #[param(value_type = Option<u64>)]
     pub page_size: Option<u64>,
 }

@@ -49,6 +49,10 @@ DELETE {{baseUrl}}/lookup-types/1ff10782-b14a-4b16-a253-d23667e669b6
 ### Get All Lookup Items
 GET {{baseUrl}}/lookup-types/{{typeCode}}/items
 
+### GET COUNTRY Items 
+GET {{baseUrl}}/lookup-types/COUNTRY/items?page_size=19
+
+
 ### Search Lookup Items
 GET {{baseUrl}}/lookup-types/{{typeCode}}/items?code=li|USD&order_name=sort_other&order_direction=1
 

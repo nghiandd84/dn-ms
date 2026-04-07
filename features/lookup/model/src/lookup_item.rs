@@ -27,6 +27,7 @@ pub struct LookupItemData {
     pub query_param_one: Option<String>,
     pub query_param_two: Option<String>,
     pub tenants: Option<VecString>,
+    pub meta: Option<Json>,
     pub is_active: Option<bool>,
     pub sort_order: Option<i32>,
     pub created_at: Option<DateTime>,
@@ -44,6 +45,7 @@ impl Into<LookupItemData> for ModelOptionDto {
             query_param_one: self.query_param_one,
             query_param_two: self.query_param_two,
             tenants: self.tenants,
+            meta: self.meta,
             is_active: self.is_active,
             sort_order: self.sort_order,
             created_at: self.created_at,
@@ -95,6 +97,7 @@ pub struct LookupItemForCreateRequest {
     ))]
     pub query_param_two: Option<String>,
     pub tenants: Option<VecString>,
+    pub meta: Option<Json>,
     pub sort_order: Option<i32>,
 }
 
@@ -108,6 +111,7 @@ impl Into<LookupItemForCreateDto> for LookupItemForCreateRequest {
             query_param_one: self.query_param_one.unwrap_or_default(),
             query_param_two: self.query_param_two.unwrap_or_default(),
             tenants: self.tenants.unwrap_or_default(),
+            meta: self.meta.unwrap_or_default(),
             is_active: true,
             sort_order: self.sort_order.unwrap_or(0),
         }
@@ -149,6 +153,7 @@ pub struct LookupItemForUpdateRequest {
     ))]
     pub query_param_two: Option<String>,
     pub tenants: Option<VecString>,
+    pub meta: Option<Json>,
     pub is_active: Option<bool>,
     pub sort_order: Option<i32>,
 }
@@ -162,6 +167,7 @@ impl Into<LookupItemForUpdateDto> for LookupItemForUpdateRequest {
             query_param_one: self.query_param_one,
             query_param_two: self.query_param_two,
             tenants: self.tenants,
+            meta: self.meta,
             is_active: self.is_active,
             sort_order: self.sort_order,
         }
