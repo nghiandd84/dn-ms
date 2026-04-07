@@ -1,5 +1,6 @@
 use axum::{
     extract::{Path, Query},
+    middleware::from_fn_with_state,
     routing::{delete, get, patch, post},
     Router,
 };
@@ -26,6 +27,8 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+
+use crate::middleware::cache_lookup_items_middleware;
 
 const TAG: &str = "lookup-item";
 
@@ -143,7 +146,10 @@ pub async fn delete_lookup_item(
 
 pub fn routes(app_state: &AppState<LookupAppState, LookupCacheState>) -> Router {
     Router::new()
-        .route("/lookup-types/{type_code}/items", get(get_lookup_items))
+        .route(
+            "/lookup-types/{type_code}/items",
+            get(get_lookup_items).layer(from_fn_with_state(app_state.clone(), cache_lookup_items_middleware)),
+        )
         .route("/lookup-types/{type_code}/items", post(create_lookup_item))
         .route("/lookup-types/{type_code}/items/{id}", get(get_lookup_item))
         .route(
