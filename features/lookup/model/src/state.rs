@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::lookup_item::LookupItemData;
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct LookupAppState {}
 
