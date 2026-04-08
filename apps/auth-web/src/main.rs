@@ -1,7 +1,7 @@
 use dioxus::{logger::tracing::debug, prelude::*};
 use dioxus_i18n::prelude::*;
 use serde::{Deserialize, Serialize};
-use unic_langid::{LanguageIdentifier, langid};
+use unic_langid::{LanguageIdentifier};
 
 // Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
@@ -18,12 +18,17 @@ mod ui;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
+#[cfg(feature = "server")]
 const COUNTER_KEY: &str = "counter";
+
+
+#[cfg(feature = "server")]
+use unic_langid::langid;
 
 #[derive(Default, Deserialize, Serialize, Debug)]
 struct Counter(usize);
 
-fn App() -> Element {
+fn app() -> Element {
     debug!("Rendering App component...");
     let context = use_server_future(|| async move {
         let state = get_request_context().await;
@@ -31,8 +36,7 @@ fn App() -> Element {
             debug!("Error getting request context: {:?}", state.err());
             return Context::default();
         }
-        let state = state.unwrap();
-        state
+        state.unwrap()
     })?()
     .unwrap_or_default();
     use_context_provider(|| context.clone());
@@ -99,7 +103,7 @@ fn main() {
         let app_state = std::sync::Arc::new(AppState::new("Auth Web Application"));
 
         // Create a new router for our app using the `router` function
-        let mut server_router = dioxus::server::router(App);
+        let mut server_router = dioxus::server::router(app);
 
         // add a simple route
         server_router = server_router.route(
@@ -207,6 +211,6 @@ fn main() {
     #[cfg(not(feature = "server"))]
     {
         debug!("Rendering App on web...");
-        dioxus::launch(App);
+        dioxus::launch(app);
     }
 }

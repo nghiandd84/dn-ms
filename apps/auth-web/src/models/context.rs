@@ -13,6 +13,7 @@ pub struct Context {
 }
 
 impl Context {
+    #[cfg(feature = "server")]
     pub fn new(accept_language: Languages) -> Self {
         Self { accept_language }
     }
@@ -34,18 +35,13 @@ pub async fn get_request_context() -> Result<Context, ServerFnError> {
 
 // TODO duplicate code with libs/shared/shared/data/core/src/language.rs
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub enum Languages {
     #[serde(rename = "en-US")]
+    #[default]
     EnUs,
     #[serde(rename = "vi-VN")]
     ViVn,
-}
-
-impl Default for Languages {
-    fn default() -> Self {
-        Languages::EnUs
-    }
 }
 
 impl Languages {
@@ -64,6 +60,7 @@ impl Languages {
     }
 }
 
+#[cfg(feature = "server")]
 pub fn extract_language(accept_language: &str) -> Languages {
     if accept_language.to_lowercase().contains("vi") {
         Languages::ViVn

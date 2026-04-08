@@ -13,7 +13,7 @@ impl Database {
     pub fn new(db_url_path: Option<String>, scheme: Option<String>) -> Self {
         let database_path = db_url_path.unwrap_or("DATABASE_URL".to_string());
         let con_str = std::env::var(&database_path)
-            .expect(format!("Environment variable '{}' not set", database_path).as_str());
+            .unwrap_or_else(|_| panic!("Environment variable '{}' not set", database_path));
         let min_connections = std::env::var("DB_MIN_CONNECTIONS")
             .unwrap_or("5".to_string())
             .parse::<u32>()

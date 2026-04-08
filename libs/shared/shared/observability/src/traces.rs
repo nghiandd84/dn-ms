@@ -14,11 +14,9 @@ pub fn init_otel_traces(service_name: String) -> SdkTracerProvider {
         .with_attribute(KeyValue::new("service.version", "1.0"))
         .build();
 
-    let trace_provider = SdkTracerProvider::builder()
+    SdkTracerProvider::builder()
         // .with_span_processor
         .with_batch_exporter(exporter)
         .with_resource(resouce)
-        .build();
-
-    trace_provider
+        .build()
 }

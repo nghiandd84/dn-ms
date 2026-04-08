@@ -1,16 +1,18 @@
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "server")]
 use tracing::instrument;
 
 use crate::{models::context::Context, routes::Route, ui::TextWithLink};
 
 #[component]
 pub fn Login(state: String) -> Element {
-    let mut email = use_signal(|| String::new());
-    let mut password = use_signal(|| String::new());
+    let mut email = use_signal(String::new);
+    let mut password = use_signal(String::new);
     let state_signal = use_signal(|| state.clone());
-    let mut error_msg = use_signal(|| String::new());
+    let mut error_msg = use_signal(String::new);
     let navigator = use_navigator();
 
     let context = use_context::<Context>();
@@ -46,7 +48,7 @@ pub fn Login(state: String) -> Element {
                 },
                 Err(e) => {
                   debug!("Login failed: {:?}", e);
-                  error_msg.set(format!("Login failed"));
+                  error_msg.set("Login failed".to_string());
                 }
             }
         },

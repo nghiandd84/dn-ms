@@ -1,8 +1,13 @@
 use dioxus::{fullstack::Redirect, prelude::*};
-use dioxus_i18n::{prelude::*, t};
+use dioxus_i18n::prelude::*;
 use unic_langid::LanguageIdentifier;
 
-use crate::models::request::{RequestParams, RequestScreen};
+#[cfg(feature = "server")]
+use crate::models::request::RequestScreen;
+#[cfg(feature = "server")]
+use dioxus_i18n::t;
+
+use crate::models::request::RequestParams;
 use crate::{
     models::context::{Context, Languages},
     routes::Route,

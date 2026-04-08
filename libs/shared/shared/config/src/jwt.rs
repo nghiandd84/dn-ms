@@ -23,6 +23,12 @@ pub struct Jwt {
     pub api_id: String,
 }
 
+impl Default for Jwt {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Jwt {
     pub fn new() -> Self {
         let key_dir = env::var("KEY_DIR").unwrap_or(String::from("./keys"));

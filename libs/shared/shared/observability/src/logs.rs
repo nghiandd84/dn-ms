@@ -22,17 +22,16 @@ pub fn init_rolling_file_appender(service_name: String) -> RollingFileAppender {
     let port = env::var(format!("{}_PORT", service_name.clone()))
         .unwrap_or_else(|_| default_port.to_string())
         .parse::<u16>()
-        .unwrap_or_else(|_| default_port);
+        .unwrap_or(default_port);
     let log_dir = env::var("RUST_LOG_DIRECTORY").unwrap_or_else(|_| "./logs".to_string());
     let log_dir = format!("{}/{}", log_dir, service_name.to_lowercase());
     std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
 
     let log_file_name = format!("{}_{}.log", service_name, port).to_lowercase();
-    let log_appender = RollingFileAppender::builder()
+
+    RollingFileAppender::builder()
         .rotation(Rotation::DAILY)
         .filename_suffix(log_file_name)
         .build(log_dir)
-        .expect("Failed to create log appender");
-
-    log_appender
+        .expect("Failed to create log appender")
 }

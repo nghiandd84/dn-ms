@@ -43,7 +43,7 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
                         .path
                         .segments
                         .last()
-                        .map_or(false, |seg| seg.ident == "Option") =>
+                        .is_some_and(|seg| seg.ident == "Option") =>
                 {
                     if let syn::PathArguments::AngleBracketed(args) =
                         &type_path.path.segments.last().unwrap().arguments
@@ -65,10 +65,10 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
 
     let builder_fields = fields.clone().into_iter().map(|(name, ty)| {
         let ty_str = ty.to_token_stream().to_string();
-        let ty_str = ty_str.replace('<', "").replace('>', "");
+        let ty_str = ty_str.replace(['<', '>'], "");
         let ty_str = ty_str.replace(' ', "");
         let ty_str_lower = ty_str.to_lowercase();
-        if FILTER_TYPES.iter().find(|&&x| x == ty_str_lower).is_none() {
+        if !FILTER_TYPES.iter().any(|&x| x == ty_str_lower) {
             let param_filter_name = format_ident!("{}FilterParams", ty_str);
             quote! {
                 pub #name: Option<#param_filter_name>
@@ -93,7 +93,7 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
         let field_name_quote = quote! {#field_name_str};
         let ty_str = ty.to_token_stream().to_string();
         let ty_str_lower = ty_str.to_lowercase();
-        if FILTER_TYPES.iter().find(|&&x| x == ty_str_lower).is_none() {
+        if !FILTER_TYPES.iter().any(|&x| x == ty_str_lower) {
             let field_name_quote = quote! {#field_name_str};
             quote! {
                 if self.#name.is_some() {

@@ -6,10 +6,10 @@ use crate::{routes::Route, ui::TextWithLink};
 
 #[component]
 pub fn SignUp(state: String) -> Element {
-    let mut email = use_signal(|| String::new());
-    let mut password = use_signal(|| String::new());
+    let mut email = use_signal(String::new);
+    let mut password = use_signal(String::new);
     let state_signal = use_signal(|| state.clone());
-    let mut error_msg = use_signal(|| String::new());
+    let mut error_msg = use_signal(String::new);
     let navigator = use_navigator();
     let link_to_login = Route::SignUp {
         state: state.clone(),
@@ -44,7 +44,7 @@ pub fn SignUp(state: String) -> Element {
                 },
                 Err(e) => {
                   debug!("Login failed: {:?}", e);
-                  error_msg.set(format!("Login failed"));
+                  error_msg.set("Login failed".to_string());
                 }
             }
         },

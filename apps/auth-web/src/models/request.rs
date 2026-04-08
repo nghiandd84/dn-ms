@@ -24,6 +24,8 @@ pub struct LoginRequest {
     pub state: String,
 }
 
+#[cfg(feature = "server")]
+
 pub struct LoginResponse {
     pub id_token: String,
     pub redirect_uri: String,
