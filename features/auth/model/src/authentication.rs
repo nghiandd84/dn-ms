@@ -99,14 +99,11 @@ pub struct AuthLoginRequest {
     pub state: Option<String>,
 }
 
-
 #[derive(Serialize, Deserialize, Clone, ToSchema, Response, Debug)]
 pub struct AuthLoginData {
     pub id_token: String,
     pub redirect_uri: String,
 }
-
-
 
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema, Validate)]
 pub struct AuthRegisterRequest {
@@ -119,7 +116,6 @@ pub struct AuthRegisterRequest {
     #[validate(required(code = "language_required", message = "language is required"))]
     pub language: Option<String>,
 }
-
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Response, Debug)]
 pub struct AuthRegisterData {

@@ -17,7 +17,7 @@ pub struct Model {
     pub currency: String,
     pub balance: f32,
     pub is_active: bool,
-    pub version: i32,  // For optimistic locking
+    pub version: i32, // For optimistic locking
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

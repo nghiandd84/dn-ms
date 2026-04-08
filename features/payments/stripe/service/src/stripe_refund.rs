@@ -10,13 +10,17 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 
 use features_payments_stripe_entities::stripe_refund::Column;
-use features_payments_stripe_model::stripe_refund::{StripeRefundData, StripeRefundForCreateRequest, StripeRefundForUpdateRequest};
+use features_payments_stripe_model::stripe_refund::{
+    StripeRefundData, StripeRefundForCreateRequest, StripeRefundForUpdateRequest,
+};
 use features_payments_stripe_repo::stripe_refund::{StripeRefundMutation, StripeRefundQuery};
 
 pub struct StripeRefundService {}
 
 impl StripeRefundService {
-    pub async fn create_refund(refund_request: StripeRefundForCreateRequest) -> Result<Uuid, AppError> {
+    pub async fn create_refund(
+        refund_request: StripeRefundForCreateRequest,
+    ) -> Result<Uuid, AppError> {
         let refund_id = StripeRefundMutation::create_refund(refund_request.into()).await;
         let id = match refund_id {
             Ok(id) => id,
@@ -31,9 +35,10 @@ impl StripeRefundService {
     pub async fn bulk_create_refunds(
         refund_requests: Vec<StripeRefundForCreateRequest>,
     ) -> Result<Vec<Uuid>, AppError> {
-        let refund_ids =
-            StripeRefundMutation::bulk_create_refunds(refund_requests.into_iter().map(|r| r.into()).collect())
-                .await;
+        let refund_ids = StripeRefundMutation::bulk_create_refunds(
+            refund_requests.into_iter().map(|r| r.into()).collect(),
+        )
+        .await;
         match refund_ids {
             Ok(ids) => Ok(ids),
             Err(e) => {

@@ -29,7 +29,6 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await
-
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {

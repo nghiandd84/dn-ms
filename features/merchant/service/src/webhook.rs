@@ -16,7 +16,9 @@ use features_merchant_repo::webhook::{WebhookMutation, WebhookQuery};
 pub struct WebhookService;
 
 impl WebhookService {
-    pub async fn create_webhook(webhook_request: WebhookForCreateRequest) -> Result<Uuid, AppError> {
+    pub async fn create_webhook(
+        webhook_request: WebhookForCreateRequest,
+    ) -> Result<Uuid, AppError> {
         // TODO: Add URL validation (https only, no private IPs, etc.)
         let webhook_id = WebhookMutation::create_webhook(webhook_request.into()).await;
         match webhook_id {

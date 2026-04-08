@@ -4,10 +4,7 @@ use serde::Serialize;
 use shared_shared_macro::Dto;
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Default, Dto)]
 #[sea_orm(table_name = "customer")]
-#[dto(
-    name(CustomerForCreate),
-    columns(name, notes)
-)]
+#[dto(name(CustomerForCreate), columns(name, notes))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,

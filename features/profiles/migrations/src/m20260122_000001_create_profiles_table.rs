@@ -42,11 +42,7 @@ impl MigrationTrait for Migration {
                             .string_len(100)
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(profile::Column::Bio)
-                            .text()
-                            .null(),
-                    )
+                    .col(ColumnDef::new(profile::Column::Bio).text().null())
                     .col(
                         ColumnDef::new(profile::Column::AvatarUrl)
                             .string()

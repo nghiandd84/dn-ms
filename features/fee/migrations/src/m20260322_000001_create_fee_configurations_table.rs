@@ -31,22 +31,10 @@ impl MigrationTrait for Migration {
                             .string_len(20)
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(fee_configuration::Column::PercentageRate)
-                            .float()
-                    )
-                    .col(
-                        ColumnDef::new(fee_configuration::Column::FixedAmount)
-                            .float()
-                    )
-                    .col(
-                        ColumnDef::new(fee_configuration::Column::MinFee)
-                            .float()
-                    )
-                    .col(
-                        ColumnDef::new(fee_configuration::Column::MaxFee)
-                            .float()
-                    )
+                    .col(ColumnDef::new(fee_configuration::Column::PercentageRate).float())
+                    .col(ColumnDef::new(fee_configuration::Column::FixedAmount).float())
+                    .col(ColumnDef::new(fee_configuration::Column::MinFee).float())
+                    .col(ColumnDef::new(fee_configuration::Column::MaxFee).float())
                     .col(ColumnDef::new(fee_configuration::Column::TierConfig).json())
                     .col(
                         ColumnDef::new(fee_configuration::Column::EffectiveFrom)

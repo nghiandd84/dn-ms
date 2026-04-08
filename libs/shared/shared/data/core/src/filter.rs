@@ -93,7 +93,7 @@ impl FilterEnum {
             FilterEnum::I32(ref mut param) => {
                 param.name = prefix.clone();
             }
-             FilterEnum::I64(ref mut param) => {
+            FilterEnum::I64(ref mut param) => {
                 param.name = prefix.clone();
             }
             FilterEnum::I8(ref mut param) => {

@@ -1,4 +1,3 @@
-
 use shared_shared_macro::Mutation;
 
 use features_inventory_entities::seat::{

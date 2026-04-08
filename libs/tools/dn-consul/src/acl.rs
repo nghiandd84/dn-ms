@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::errors::ConsulError;
 use crate::ACLPolicy;
 use crate::ACLToken;
 use crate::Consul;
@@ -7,12 +8,11 @@ use crate::CreateACLPolicyRequest;
 use crate::CreateACLTokenPayload;
 use crate::Function;
 use crate::Result;
-use crate::errors::ConsulError;
 
 use http::Method;
+use http_body_util::combinators::BoxBody;
 use http_body_util::Empty;
 use http_body_util::Full;
-use http_body_util::combinators::BoxBody;
 
 use hyper::body::Buf;
 use hyper::body::Bytes;

@@ -59,9 +59,7 @@ async fn create_event(
         (status = 200, description = "Event retrieved successfully", body = EventData),
     )
 )]
-async fn get_event(
-    Path(event_id): Path<Uuid>,
-) -> Result<ResponseJson<EventData>> {
+async fn get_event(Path(event_id): Path<Uuid>) -> Result<ResponseJson<EventData>> {
     let event = EventService::get_event_by_id(event_id).await?;
     Ok(ResponseJson(event))
 }
@@ -125,9 +123,7 @@ async fn update_event(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_event(
-    Path(event_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_event(Path(event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     EventService::delete_event(event_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

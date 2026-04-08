@@ -39,7 +39,7 @@ pub struct Model {
     pub event_date: DateTime,
     #[sea_orm(column_type = "String(StringLen::N(255))", nullable)]
     pub venue_name: String,
-    pub total_seats: u32,     
+    pub total_seats: u32,
     // 'UPCOMING','ON_SALE','SOLD_OUT','CANCELLED'
     #[sea_orm(column_type = "String(StringLen::N(100))")]
     pub status: String,
@@ -47,7 +47,6 @@ pub struct Model {
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
-
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}

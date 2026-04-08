@@ -1,5 +1,8 @@
 use axum::extract::ws::Message;
-use std::{collections::HashMap, sync::{Arc, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 use tracing::{debug, error};
 
 use features_notification_model::state::NotificationState;

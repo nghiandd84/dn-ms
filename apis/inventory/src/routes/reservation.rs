@@ -124,9 +124,7 @@ async fn update_reservation(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_reservation(
-    Path(reservation_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_reservation(Path(reservation_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ReservationService::delete_reservation(reservation_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

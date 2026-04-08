@@ -1,5 +1,3 @@
-
-
 use axum::http::Response;
 use axum::{extract::MatchedPath, http, http::Request};
 use std::env;
@@ -14,7 +12,8 @@ use opentelemetry::global;
 use opentelemetry::metrics::{Histogram, UpDownCounter};
 use opentelemetry::KeyValue;
 use opentelemetry_semantic_conventions::metric::{
-    HTTP_SERVER_ACTIVE_REQUESTS, HTTP_SERVER_REQUEST_BODY_SIZE, HTTP_SERVER_REQUEST_DURATION, HTTP_SERVER_RESPONSE_BODY_SIZE,
+    HTTP_SERVER_ACTIVE_REQUESTS, HTTP_SERVER_REQUEST_BODY_SIZE, HTTP_SERVER_REQUEST_DURATION,
+    HTTP_SERVER_RESPONSE_BODY_SIZE,
 };
 
 use tower::{Layer, Service};
@@ -111,7 +110,9 @@ impl PathSkipper {
     /// not work here.  For a variant that works, consult the
     /// [PathSkipper::new_with_fn] method.
     pub fn new(skip: fn(&str) -> bool) -> Self {
-        Self { skip: Arc::new(skip) }
+        Self {
+            skip: Arc::new(skip),
+        }
     }
 
     /// Dynamic variant of [PathSkipper::new].
@@ -177,9 +178,7 @@ impl HttpMetricsLayerBuilder {
     }
 
     pub fn build(self) -> HttpMetricsLayer {
-        let provider = self.provider.unwrap_or_else(|| {
-            global::meter_provider()
-        });
+        let provider = self.provider.unwrap_or_else(|| global::meter_provider());
 
         let meter = provider.meter_with_scope(
             opentelemetry::InstrumentationScope::builder(env!("CARGO_PKG_NAME"))
@@ -191,7 +190,9 @@ impl HttpMetricsLayerBuilder {
             .duration_buckets
             .unwrap_or_else(|| HTTP_REQ_DURATION_HISTOGRAM_BUCKETS.to_vec());
 
-        let size_buckets = self.size_buckets.unwrap_or_else(|| HTTP_REQ_SIZE_HISTOGRAM_BUCKETS.to_vec());
+        let size_buckets = self
+            .size_buckets
+            .unwrap_or_else(|| HTTP_REQ_SIZE_HISTOGRAM_BUCKETS.to_vec());
 
         let req_duration = meter
             .f64_histogram(HTTP_SERVER_REQUEST_DURATION)
@@ -382,9 +383,15 @@ where
             // 3. Host identifier of the Host header
             KeyValue::new("server.address", this.host.clone()),
         ];
-        this.state.metric.req_body_size.record(*this.req_body_size, &labels);
+        this.state
+            .metric
+            .req_body_size
+            .record(*this.req_body_size, &labels);
 
-        this.state.metric.res_body_size.record(res_body_size, &labels);
+        this.state
+            .metric
+            .res_body_size
+            .record(res_body_size, &labels);
 
         this.state.metric.req_duration.record(latency, &labels);
 

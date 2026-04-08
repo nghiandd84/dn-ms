@@ -1,4 +1,3 @@
-
 use features_auth_entities::user;
 use sea_orm_migration::prelude::*;
 

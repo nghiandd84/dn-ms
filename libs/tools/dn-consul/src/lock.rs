@@ -1,12 +1,12 @@
 use http::Method;
-use http_body_util::{Full, combinators::BoxBody};
+use http_body_util::{combinators::BoxBody, Full};
 use hyper::body::Buf;
 use hyper::body::Bytes;
 
 use crate::{
-    Consul, CreateOrUpdateKeyRequest, CreateSessionRequest, LockRequest, LockWatchRequest,
-    ReadKeyRequest, ReadKeyResponse, ResponseMeta, Result, SessionResponse, errors::ConsulError,
-    utils,
+    errors::ConsulError, utils, Consul, CreateOrUpdateKeyRequest, CreateSessionRequest,
+    LockRequest, LockWatchRequest, ReadKeyRequest, ReadKeyResponse, ResponseMeta, Result,
+    SessionResponse,
 };
 
 /// Represents a lock against Consul.

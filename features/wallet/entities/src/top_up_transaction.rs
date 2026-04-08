@@ -10,18 +10,21 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "top_up_transactions")]
 #[dto(
     name(TopUpTransactionForCreate),
-    columns(wallet_id, amount, method, payment_provider_id, payment_transaction_id, status)
+    columns(
+        wallet_id,
+        amount,
+        method,
+        payment_provider_id,
+        payment_transaction_id,
+        status
+    )
 )]
-#[dto(
-    name(TopUpTransactionForUpdate),
-    columns(status, completed_at),
-    option
-)]
+#[dto(name(TopUpTransactionForUpdate), columns(status, completed_at), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub wallet_id: Uuid,
-    pub amount: f32, 
+    pub amount: f32,
     pub method: String, // ENUM('CARD', 'UPI', 'BANK_TRANSFER', 'CASH')
     pub payment_provider_id: String,
     pub payment_transaction_id: String,

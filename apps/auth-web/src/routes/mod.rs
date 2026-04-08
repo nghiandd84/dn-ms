@@ -3,14 +3,14 @@ use dioxus::prelude::*;
 mod error;
 mod home;
 mod login;
-mod signup;
 mod root;
+mod signup;
 
 pub use error::ErrorPage;
 pub use home::Home;
 pub use login::Login;
-pub use signup::SignUp;
 pub use root::Root;
+pub use signup::SignUp;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]

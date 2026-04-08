@@ -51,7 +51,6 @@ where
     Ok(Some(result))
 }
 
-
 // VecUuid
 pub fn default_none_vecuuid() -> Option<FilterParam<Vec<Uuid>>> {
     None
@@ -73,7 +72,12 @@ where
     let result: FilterParam<Vec<Uuid>> = FilterParam {
         name: r.name,
         operator: r.operator,
-        value: Some(value.split(',').map(|s| Uuid::parse_str(s.trim()).unwrap()).collect()),
+        value: Some(
+            value
+                .split(',')
+                .map(|s| Uuid::parse_str(s.trim()).unwrap())
+                .collect(),
+        ),
         raw_value: r.raw_value,
     };
     Ok(Some(result))
@@ -94,7 +98,6 @@ where
     parse_filter_param::<i32, _>(&value, 0, |s| s.parse::<i32>().unwrap())
         .map_err(serde::de::Error::custom)
 }
-
 
 // I64
 pub fn default_none_i64() -> Option<FilterParam<i64>> {
@@ -127,7 +130,6 @@ where
     parse_filter_param::<u32, _>(&value, 0, |s| s.parse::<u32>().unwrap())
         .map_err(serde::de::Error::custom)
 }
-
 
 // F32
 pub fn default_none_f32() -> Option<FilterParam<f32>> {

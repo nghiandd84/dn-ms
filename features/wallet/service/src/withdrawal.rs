@@ -8,21 +8,23 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 
-use features_wallet_model::withdrawal::{WithdrawalData, WithdrawalForCreateRequest, WithdrawalForUpdateRequest};
+use features_wallet_model::withdrawal::{
+    WithdrawalData, WithdrawalForCreateRequest, WithdrawalForUpdateRequest,
+};
 use features_wallet_repo::withdrawal::{WithdrawalMutation, WithdrawalQuery};
 
 pub struct WithdrawalService;
 
 impl WithdrawalService {
-    pub async fn create_withdrawal(
-        request: WithdrawalForCreateRequest,
-    ) -> Result<Uuid, AppError> {
+    pub async fn create_withdrawal(request: WithdrawalForCreateRequest) -> Result<Uuid, AppError> {
         let withdrawal_id = WithdrawalMutation::create_withdrawal(request.into()).await;
         match withdrawal_id {
             Ok(id) => Ok(id),
             Err(e) => {
                 debug!("Error creating withdrawal: {:?}", e);
-                Err(AppError::Internal("Failed to create withdrawal".to_string()))
+                Err(AppError::Internal(
+                    "Failed to create withdrawal".to_string(),
+                ))
             }
         }
     }
@@ -56,7 +58,9 @@ impl WithdrawalService {
             Ok(q) => Ok(q),
             Err(e) => {
                 debug!("Error updating withdrawal: {:?}", e);
-                Err(AppError::Internal("Failed to update withdrawal".to_string()))
+                Err(AppError::Internal(
+                    "Failed to update withdrawal".to_string(),
+                ))
             }
         }
     }
@@ -67,7 +71,9 @@ impl WithdrawalService {
             Ok(q) => Ok(q),
             Err(e) => {
                 debug!("Error deleting withdrawal: {:?}", e);
-                Err(AppError::Internal("Failed to delete withdrawal".to_string()))
+                Err(AppError::Internal(
+                    "Failed to delete withdrawal".to_string(),
+                ))
             }
         }
     }

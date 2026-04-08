@@ -10,7 +10,10 @@ use super::lookup_item;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "lookup_item_translations")]
-#[dto(name(LookupItemTranslationForCreate), columns(lookup_item_id, locale, name))]
+#[dto(
+    name(LookupItemTranslationForCreate),
+    columns(lookup_item_id, locale, name)
+)]
 #[dto(name(LookupItemTranslationForUpdate), columns(name), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]

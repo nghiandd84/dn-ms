@@ -53,7 +53,6 @@ impl Related<super::api_key::Entity> for Entity {
     }
 }
 
-
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {
     async fn before_save<C>(mut self, _db: &C, insert: bool) -> Result<Self, DbErr>

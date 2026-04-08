@@ -41,7 +41,11 @@ pub struct ClientForCreateRequest {
         message = "the length of description must be between 0 and 512"
     ))]
     pub description: Option<String>,
-    #[validate(length(min = 1, code = "redirect_uris", message = "redirect_uris must contain at least one URI"))]
+    #[validate(length(
+        min = 1,
+        code = "redirect_uris",
+        message = "redirect_uris must contain at least one URI"
+    ))]
     pub redirect_uris: Vec<String>,
     #[validate(length(
         min = 1,

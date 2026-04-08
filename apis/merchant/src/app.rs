@@ -15,7 +15,13 @@ use features_merchant_migrations::{Migrator, MigratorTrait};
 use features_merchant_model::state::{MerchantAppState, MerchantCacheState};
 use features_merchant_stream::PRODUCER_KEY;
 
-use crate::{doc::ApiDoc, routes::{merchant::routes as merchant_routes, api_key::routes as api_key_routes, webhook::routes as webhook_routes}};
+use crate::{
+    doc::ApiDoc,
+    routes::{
+        api_key::routes as api_key_routes, merchant::routes as merchant_routes,
+        webhook::routes as webhook_routes,
+    },
+};
 
 struct MyApp<'a> {
     config: &'a AppConfig,
@@ -74,7 +80,9 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         true,
     );
 
-    let mut app = MyApp { config: &app_config };
+    let mut app = MyApp {
+        config: &app_config,
+    };
     app.start_app(Some(MerchantAppState::default())).await?;
 
     debug!("Merchant app stopped");

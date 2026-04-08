@@ -6,7 +6,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 use features_translation_entities::translation_version::{
-    ModelOptionDto, TranslationVersionForCreateDto, TranslationVersionForUpdateDto
+    ModelOptionDto, TranslationVersionForCreateDto, TranslationVersionForUpdateDto,
 };
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
@@ -61,7 +61,6 @@ pub struct TranslationVersionData {
     pub created_by: Option<Uuid>,
     pub created_at: Option<DateTime>,
 }
-
 
 impl Into<TranslationVersionData> for ModelOptionDto {
     fn into(self) -> TranslationVersionData {

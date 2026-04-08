@@ -1,11 +1,11 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EventError {
     NotFoundClient { user_id: Uuid },
-    FailedToProcessPayment
+    FailedToProcessPayment,
 }
 
 impl fmt::Display for EventError {
@@ -13,7 +13,7 @@ impl fmt::Display for EventError {
         match self {
             EventError::NotFoundClient { user_id } => {
                 write!(f, "Client not found for user_id: {}", user_id)
-            },
+            }
             EventError::FailedToProcessPayment => {
                 write!(f, "Failed to process payment")
             }

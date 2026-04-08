@@ -2,8 +2,8 @@ use serde::Serialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use shared_shared_macro::Response;
 use shared_shared_data_error::app::AppError;
+use shared_shared_macro::Response;
 
 pub type Result<T> = core::result::Result<T, AppError>;
 

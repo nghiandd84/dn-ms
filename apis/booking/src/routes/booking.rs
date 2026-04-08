@@ -56,9 +56,7 @@ async fn create_booking(
         (status = 200, description = "Booking retrieved successfully", body = BookingData),
     )
 )]
-async fn get_booking(
-    Path(booking_id): Path<Uuid>,
-) -> Result<ResponseJson<BookingData>> {
+async fn get_booking(Path(booking_id): Path<Uuid>) -> Result<ResponseJson<BookingData>> {
     let booking = BookingService::get_booking_by_id(booking_id).await?;
     Ok(ResponseJson(booking))
 }
@@ -118,9 +116,7 @@ async fn update_booking(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_booking(
-    Path(booking_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_booking(Path(booking_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     BookingService::delete_booking(booking_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

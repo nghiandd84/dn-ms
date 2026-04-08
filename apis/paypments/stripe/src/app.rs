@@ -20,7 +20,12 @@ use features_payments_stripe_model::state::{PaymentsStripeAppState, PaymentsStri
 use crate::{
     consumers::event_consumer::handler::handle_event_consumer_message,
     doc::ApiDoc,
-    routes::{stripe_payment_intent::routes as payment_intent_routes, stripe_refund::routes as refund_routes, stripe_webhook_event::routes as webhook_event_routes, stripe_api_log::routes as api_log_routes},
+    routes::{
+        stripe_api_log::routes as api_log_routes,
+        stripe_payment_intent::routes as payment_intent_routes,
+        stripe_refund::routes as refund_routes,
+        stripe_webhook_event::routes as webhook_event_routes,
+    },
 };
 
 struct MyApp<'a> {
@@ -85,7 +90,10 @@ impl<'a> StartApp<PaymentsStripeAppState, PaymentsStripeCacheState> for MyApp<'a
         }
     }
 
-    fn routes(&self, app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
+    fn routes(
+        &self,
+        app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>,
+    ) -> Router {
         let all_routes = Router::new()
             .merge(payment_intent_routes(app_state))
             .merge(refund_routes(app_state))

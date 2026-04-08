@@ -9,8 +9,14 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.display_name, model_option.display_name);
     set_if_some!(active_model.provider_name, model_option.provider_name);
     set_if_some!(active_model.provider_config, model_option.provider_config);
-    set_if_some!(active_model.supported_countries, model_option.supported_countries);
-    set_if_some!(active_model.supported_currencies, model_option.supported_currencies);
+    set_if_some!(
+        active_model.supported_countries,
+        model_option.supported_countries
+    );
+    set_if_some!(
+        active_model.supported_currencies,
+        model_option.supported_currencies
+    );
     set_if_some!(active_model.priority, model_option.priority);
     set_if_some!(active_model.is_active, model_option.is_active);
     set_if_some!(active_model.fee_percentage, model_option.fee_percentage);

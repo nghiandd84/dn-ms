@@ -38,8 +38,11 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(true),
                     )
-                    
-                    .col(ColumnDef::new(email_templates::Column::UserId).uuid().not_null())
+                    .col(
+                        ColumnDef::new(email_templates::Column::UserId)
+                            .uuid()
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(email_templates::Column::CreatedAt)
                             .timestamp()

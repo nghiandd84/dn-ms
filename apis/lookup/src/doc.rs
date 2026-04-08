@@ -1,6 +1,5 @@
 use utoipa::OpenApi;
 
-
 #[derive(OpenApi)]
 #[openapi(
     paths(
@@ -19,7 +18,6 @@ use utoipa::OpenApi;
         crate::routes::lookup_item_translation::update_translation,
         crate::routes::lookup_item_translation::delete_translation,
     ),
-   
     tags(
         (name = "lookup-type", description = "Lookup type management"),
         (name = "lookup-item", description = "Lookup item management"),

@@ -16,13 +16,19 @@ use features_fee_repo::fee_configuration::{FeeConfigurationMutation, FeeConfigur
 pub struct FeeConfigurationService;
 
 impl FeeConfigurationService {
-    pub async fn create_fee_configuration(fee_configuration_request: FeeConfigurationForCreateRequest) -> Result<Uuid, AppError> {
-        let fee_configuration_id = FeeConfigurationMutation::create_fee_configuration(fee_configuration_request.into()).await;
+    pub async fn create_fee_configuration(
+        fee_configuration_request: FeeConfigurationForCreateRequest,
+    ) -> Result<Uuid, AppError> {
+        let fee_configuration_id =
+            FeeConfigurationMutation::create_fee_configuration(fee_configuration_request.into())
+                .await;
         match fee_configuration_id {
             Ok(id) => Ok(id),
             Err(e) => {
                 debug!("Error creating fee configuration: {:?}", e);
-                Err(AppError::Internal("Failed to create fee configuration".to_string()))
+                Err(AppError::Internal(
+                    "Failed to create fee configuration".to_string(),
+                ))
             }
         }
     }
@@ -31,12 +37,18 @@ impl FeeConfigurationService {
         fee_configuration_id: Uuid,
         fee_configuration_request: FeeConfigurationForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result = FeeConfigurationMutation::update_fee_configuration(fee_configuration_id, fee_configuration_request.into()).await;
+        let result = FeeConfigurationMutation::update_fee_configuration(
+            fee_configuration_id,
+            fee_configuration_request.into(),
+        )
+        .await;
         match result {
             Ok(updated) => Ok(updated),
             Err(e) => {
                 debug!("Error updating fee configuration: {:?}", e);
-                Err(AppError::Internal("Failed to update fee configuration".to_string()))
+                Err(AppError::Internal(
+                    "Failed to update fee configuration".to_string(),
+                ))
             }
         }
     }
@@ -47,12 +59,16 @@ impl FeeConfigurationService {
             Ok(deleted) => Ok(deleted),
             Err(e) => {
                 debug!("Error deleting fee configuration: {:?}", e);
-                Err(AppError::Internal("Failed to delete fee configuration".to_string()))
+                Err(AppError::Internal(
+                    "Failed to delete fee configuration".to_string(),
+                ))
             }
         }
     }
 
-    pub async fn get_fee_configuration_by_id(fee_configuration_id: Uuid) -> Result<FeeConfigurationData, AppError> {
+    pub async fn get_fee_configuration_by_id(
+        fee_configuration_id: Uuid,
+    ) -> Result<FeeConfigurationData, AppError> {
         FeeConfigurationQuery::get_fee_configuration_by_id(fee_configuration_id).await
     }
 

@@ -65,14 +65,11 @@ impl<'a> StartApp<FeeAppState, FeeCacheState> for MyApp<'a> {
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig::new(
-        "FEE".to_string(),
-        Some("fee".to_string()),
-        true,
-        true,
-    );
+    let app_config = AppConfig::new("FEE".to_string(), Some("fee".to_string()), true, true);
 
-    let mut app = MyApp { config: &app_config };
+    let mut app = MyApp {
+        config: &app_config,
+    };
     app.start_app(Some(FeeAppState::default())).await?;
 
     debug!("Fee app stopped");

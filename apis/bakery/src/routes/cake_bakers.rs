@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path},
+    extract::Path,
     routing::{delete, post},
     Router,
 };
@@ -46,9 +46,7 @@ async fn create(
         (status = 200, description = "Cake Baker is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(
-    Path((cake_id, baker_id)): Path<(i32, i32)>,
-) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(Path((cake_id, baker_id)): Path<(i32, i32)>) -> Result<ResponseJson<OkI32>> {
     CakeBakerMutation::delete(cake_id, baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }

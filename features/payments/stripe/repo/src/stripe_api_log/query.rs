@@ -8,7 +8,9 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
 
-use features_payments_stripe_entities::stripe_api_log::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_payments_stripe_entities::stripe_api_log::{
+    ActiveModel, Column, Entity, ModelOptionDto,
+};
 use features_payments_stripe_model::stripe_api_log::StripeApiLogData;
 
 #[derive(Query)]

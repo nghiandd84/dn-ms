@@ -10,13 +10,7 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "stripe_webhook_events")]
 #[dto(
     name(StripeWebhookEventForCreate),
-    columns(
-        stripe_event_id,
-        event_type,
-        event_data,
-        processed,
-        processing_error
-    )
+    columns(stripe_event_id, event_type, event_data, processed, processing_error)
 )]
 #[dto(
     name(StripeWebhookEventForUpdate),

@@ -2,8 +2,8 @@ use dn_consul::{
     Config, Consul, DeregisterEntityPayload, RegisterEntityCheck, RegisterEntityPayload,
     RegisterEntityService,
 };
-use tracing::info;
 use std::collections::HashMap;
+use tracing::info;
 
 static NODE_ID: &str = "dn-ms";
 

@@ -7,8 +7,10 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_stripe_model::{
-    stripe_api_log::{StripeApiLogData, StripeApiLogForCreateRequest, StripeApiLogForUpdateRequest},
     state::{PaymentsStripeAppState, PaymentsStripeCacheState},
+    stripe_api_log::{
+        StripeApiLogData, StripeApiLogForCreateRequest, StripeApiLogForUpdateRequest,
+    },
 };
 
 use shared_shared_app::state::AppState;
@@ -53,9 +55,7 @@ async fn create_api_log(
         (status = 200, description = "API log retrieved successfully", body = StripeApiLogData),
     )
 )]
-async fn get_api_log(
-    Path(api_log_id): Path<Uuid>,
-) -> Result<ResponseJson<StripeApiLogData>> {
+async fn get_api_log(Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<StripeApiLogData>> {
     let api_log = StripeApiLogService::get_api_log_by_id(api_log_id).await?;
     Ok(ResponseJson(api_log))
 }
@@ -114,9 +114,7 @@ async fn update_api_log(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_api_log(
-    Path(api_log_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_api_log(Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeApiLogService::delete_api_log(api_log_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

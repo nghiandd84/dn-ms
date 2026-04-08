@@ -8,7 +8,9 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 
-use features_wallet_model::p2p_transfer::{P2pTransferData, P2pTransferForCreateRequest, P2pTransferForUpdateRequest};
+use features_wallet_model::p2p_transfer::{
+    P2pTransferData, P2pTransferForCreateRequest, P2pTransferForUpdateRequest,
+};
 use features_wallet_repo::p2p_transfer::{P2pTransferMutation, P2pTransferQuery};
 
 pub struct P2pTransferService;
@@ -22,7 +24,9 @@ impl P2pTransferService {
             Ok(id) => Ok(id),
             Err(e) => {
                 debug!("Error creating p2p transfer: {:?}", e);
-                Err(AppError::Internal("Failed to create p2p transfer".to_string()))
+                Err(AppError::Internal(
+                    "Failed to create p2p transfer".to_string(),
+                ))
             }
         }
     }
@@ -56,7 +60,9 @@ impl P2pTransferService {
             Ok(q) => Ok(q),
             Err(e) => {
                 debug!("Error updating p2p transfer: {:?}", e);
-                Err(AppError::Internal("Failed to update p2p transfer".to_string()))
+                Err(AppError::Internal(
+                    "Failed to update p2p transfer".to_string(),
+                ))
             }
         }
     }
@@ -67,7 +73,9 @@ impl P2pTransferService {
             Ok(q) => Ok(q),
             Err(e) => {
                 debug!("Error deleting p2p transfer: {:?}", e);
-                Err(AppError::Internal("Failed to delete p2p transfer".to_string()))
+                Err(AppError::Internal(
+                    "Failed to delete p2p transfer".to_string(),
+                ))
             }
         }
     }

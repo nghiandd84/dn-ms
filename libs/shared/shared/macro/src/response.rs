@@ -19,8 +19,6 @@ pub fn response_json(input: TokenStream) -> TokenStream {
     output.into()
 }
 
-
-
 pub fn response_json_generic(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;

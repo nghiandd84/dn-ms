@@ -14,13 +14,7 @@ impl EmailTemplateService {
 
         let url = format!("{}?key=eq|{}", email_template_endpoint, key);
 
-        let res = Self::call_api(
-            url,
-            reqwest::Method::GET,
-            None,
-            HashMap::new(),
-        )
-        .await;
+        let res = Self::call_api(url, reqwest::Method::GET, None, HashMap::new()).await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             return Err(err_msg);

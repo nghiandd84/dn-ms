@@ -5,7 +5,7 @@ use syn::{parse_macro_input, punctuated::Punctuated, DeriveInput, Meta, Token};
 pub fn query_impl(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
-    
+
     let mut key_type_str: String = String::new();
 
     let mut query_datas: Vec<String> = Vec::new();
@@ -55,8 +55,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
     let function_quotes = query_datas.iter().map(|column_name| {
         let fn_name = format_ident!("filter_condition_{}", column_name.to_lowercase());
         let column_name = format_ident!("{}", column_name);
-        quote! { 
-            
+        quote! {
             fn #fn_name (column: #column_name, filter_enum: &FilterEnum) -> Condition {
                 match filter_enum {
                     FilterEnum::Bool(filter) => match filter.operator {
@@ -220,10 +219,9 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     _ => Condition::all(),
                 }
             }
-            
         }
     });
-    
+
     let get_by_id_quote = match key_type_str.as_str() {
         "Uuid" => quote! {
             #[tracing::instrument]
@@ -259,7 +257,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
             }
             async fn get_by_id_str(id: String) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
-            } 
+            }
         },
         "String" => quote! {
             #[tracing::instrument]
@@ -271,8 +269,8 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 let model_option: ModelOptionDto = exists.into();
 
                 Ok(model_option)
-            } 
-            
+            }
+
             async fn get_by_id_i32(id: i32) -> Result<ModelOptionDto, DbErr> {
                 unimplemented!("Not implemented")
             }
@@ -282,10 +280,9 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         },
         _ => quote! {},
     };
-     
 
     let expanded = quote! {
-        
+
         use std::str::FromStr;
         use sea_orm::{
             ConnectionTrait, DbConn, DbErr,
@@ -296,44 +293,13 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         };
         use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, order::OrderDirection};
         use shared_shared_config::db::DB_READ;
-        
+
 
         impl #name {
             fn compute_pages_number(num_items: u64, page_size: u64) -> u64 {
                 (num_items / page_size) + (num_items % page_size > 0) as u64
             }
 
-            // fn get_db<'a>() -> &'a DbConn {
-            //     let db: &DbConn = DB_READ.get().expect("DB_READ is not initialized");
-            //     db
-            // }
-
-            /*
-            async fn get_num_items(db: &DbConn, query: &SelectStatement) -> Result<u64, DbErr> {
-                
-                let stmt = SelectStatement::new()
-                    .expr(sea_orm::prelude::Expr::cust("COUNT(*) AS num_items"))
-                    .from_subquery(
-                        query
-                            .clone()
-                            .reset_limit()
-                            .reset_offset()
-                            .clear_order_by()
-                            .to_owned(),
-                        Alias::new("sub_query"),
-                    )
-                    .to_owned();
-                let stmt = db.get_database_backend().build(&stmt);
-                
-                // let num_items = match db.query_one(stmt).await? {
-                //     Some(res) => res.try_get::<i64>("", "num_items")? as u64,
-                //     None => 0,
-                // };
-                // Ok(num_items)
-            }
-            */
-
-            
             fn build_query(order: &Order, filters: &Vec<FilterEnum>) -> Select<Entity> {
                 let default_order = Entity::find().order_by(Column::CreatedAt, SeaOrder::Desc);
 
@@ -350,14 +316,14 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     }
                     _ => default_order,
                 };
-                
+
                 let condition = Self::build_filter_condition(filters);
                 let select = select.filter(condition);
 
                 select
             }
-            
-            #(#function_quotes)*  
+
+            #(#function_quotes)*
         }
 
         impl #name {
@@ -368,12 +334,12 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         }
 
 
-        
+
         impl QueryManager<ActiveModel, ModelOptionDto> for #name {
-            
+
             #get_by_id_quote
 
-            
+
             #[tracing::instrument]
             async fn filter(
                 pagination: &Pagination,
@@ -395,8 +361,8 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     result: result,
                 };
                 Ok(page_result)
-            }           
-            
+            }
+
         }
 
     };

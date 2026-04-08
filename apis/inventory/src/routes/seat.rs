@@ -54,9 +54,7 @@ async fn create_seat(
         (status = 200, description = "Seat retrieved successfully", body = SeatData),
     )
 )]
-async fn get_seat(
-    Path(seat_id): Path<Uuid>,
-) -> Result<ResponseJson<SeatData>> {
+async fn get_seat(Path(seat_id): Path<Uuid>) -> Result<ResponseJson<SeatData>> {
     let seat = SeatService::get_seat_by_id(seat_id).await?;
     Ok(ResponseJson(seat))
 }
@@ -116,9 +114,7 @@ async fn update_seat(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_seat(
-    Path(seat_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_seat(Path(seat_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     SeatService::delete_seat(seat_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

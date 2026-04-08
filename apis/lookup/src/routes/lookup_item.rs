@@ -148,7 +148,10 @@ pub fn routes(app_state: &AppState<LookupAppState, LookupCacheState>) -> Router 
     Router::new()
         .route(
             "/lookup-types/{type_code}/items",
-            get(get_lookup_items).layer(from_fn_with_state(app_state.clone(), cache_lookup_items_middleware)),
+            get(get_lookup_items).layer(from_fn_with_state(
+                app_state.clone(),
+                cache_lookup_items_middleware,
+            )),
         )
         .route("/lookup-types/{type_code}/items", post(create_lookup_item))
         .route("/lookup-types/{type_code}/items/{id}", get(get_lookup_item))

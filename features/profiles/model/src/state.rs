@@ -11,7 +11,7 @@ impl Default for ProfileAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum ProfileCacheState {
-    Default
+    Default,
 }
 
 impl Default for ProfileCacheState {

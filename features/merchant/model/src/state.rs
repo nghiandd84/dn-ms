@@ -11,7 +11,7 @@ impl Default for MerchantAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum MerchantCacheState {
-    Default
+    Default,
 }
 
 impl Default for MerchantCacheState {

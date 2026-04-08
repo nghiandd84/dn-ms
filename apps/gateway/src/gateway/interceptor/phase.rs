@@ -36,7 +36,7 @@ impl fmt::Display for Phase {
             Phase::UpstreamPeerSelection => "upstream_peer_selection",
             Phase::PreUpstreamRequest => "pre_upstream_request",
             Phase::PostUpstreamResponse => "post_upstream_response",
-            Phase::PreDownstreamResponse => "pre_downstream_response"
+            Phase::PreDownstreamResponse => "pre_downstream_response",
         };
         write!(f, "{}", phase_str)
     }

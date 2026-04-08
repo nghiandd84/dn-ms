@@ -13,7 +13,6 @@ use pingora::{
 use std::{sync::Arc, time::Duration};
 use tracing::debug;
 
-
 use shared_shared_observability::init_log_trace_metric;
 
 use config::{app_config::load_app_config, dn_config::DnConfig, proxy::http::Proxy};

@@ -63,7 +63,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_user_preferences_profile_id")
                             .from(user_preference::Entity, user_preference::Column::ProfileId)
-                            .to(profile::Entity, profile::Column::Id)
+                            .to(profile::Entity, profile::Column::Id),
                     )
                     .to_owned(),
             )

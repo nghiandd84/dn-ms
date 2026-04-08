@@ -4,7 +4,9 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use features_profiles_entities::social_link::{SocialLinkForCreateDto, SocialLinkForUpdateDto, ModelOptionDto};
+use features_profiles_entities::social_link::{
+    ModelOptionDto, SocialLinkForCreateDto, SocialLinkForUpdateDto,
+};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct SocialLinkForCreateRequest {

@@ -24,10 +24,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::body::to_bytes;
     use axum::body::Body;
     use axum::http::Request as HttpRequest;
     use axum::response::Response as AxumResponse;
-    use axum::body::to_bytes;
     use serde::{Deserialize, Serialize};
     use validator::Validate;
 
@@ -39,7 +39,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_response_json_into_response() {
-        let payload = TestPayload { name: "Alice".to_string() };
+        let payload = TestPayload {
+            name: "Alice".to_string(),
+        };
         let response_json = ResponseJson(payload.clone());
         let response: AxumResponse = response_json.into_response();
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
@@ -49,7 +51,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_valid_json_success() {
-        let payload = TestPayload { name: "Bob".to_string() };
+        let payload = TestPayload {
+            name: "Bob".to_string(),
+        };
         let json = serde_json::to_string(&payload).unwrap();
         let req = HttpRequest::builder()
             .method("POST")
@@ -63,7 +67,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_valid_json_validation_error() {
-        let payload = TestPayload { name: "".to_string() }; // invalid: name too short
+        let payload = TestPayload {
+            name: "".to_string(),
+        }; // invalid: name too short
         let json = serde_json::to_string(&payload).unwrap();
         let req = HttpRequest::builder()
             .method("POST")

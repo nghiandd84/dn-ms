@@ -53,15 +53,16 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
         _ => panic!("This macro only works on structs"),
     };
 
-    let option_fields = fields.iter()
-    // .filter(|field| {
-    //     field.ident.as_ref().unwrap().to_string() != "id"
-    // })
-    .map(|field| {
-        let name = &field.ident;
-        let ty = &field.ty;
-        quote! { pub #name: Option<#ty> }
-    });
+    let option_fields = fields
+        .iter()
+        // .filter(|field| {
+        //     field.ident.as_ref().unwrap().to_string() != "id"
+        // })
+        .map(|field| {
+            let name = &field.ident;
+            let ty = &field.ty;
+            quote! { pub #name: Option<#ty> }
+        });
 
     let model_option_quotes = fields.iter().map(|field| {
         let name = &field.ident;

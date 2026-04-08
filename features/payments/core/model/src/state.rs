@@ -11,7 +11,7 @@ impl Default for PaymentsCoreAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum PaymentsCoreCacheState {
-    Default
+    Default,
 }
 
 impl Default for PaymentsCoreCacheState {

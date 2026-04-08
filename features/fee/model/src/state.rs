@@ -11,7 +11,7 @@ impl Default for FeeAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum FeeCacheState {
-    Default
+    Default,
 }
 
 impl Default for FeeCacheState {

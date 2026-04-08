@@ -8,7 +8,11 @@ use shared_shared_macro::Dto;
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "roles")]
 #[dto(name(RoleForCreate), columns(name, description, client_id, is_default))]
-#[dto(name(RoleForUpdate), columns(name, description, client_id, is_default), option)]
+#[dto(
+    name(RoleForUpdate),
+    columns(name, description, client_id, is_default),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
@@ -34,8 +38,6 @@ impl Related<super::access::Entity> for Entity {
         Relation::Access.def()
     }
 }
-
-
 
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {

@@ -106,7 +106,6 @@ impl EmailTemplateData {
     pub fn get_id(&self) -> Option<i32> {
         self.id
     }
-        
 }
 
 impl Into<EmailTemplateData> for ModelOptionDto {

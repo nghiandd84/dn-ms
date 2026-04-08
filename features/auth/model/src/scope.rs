@@ -33,7 +33,6 @@ impl Into<ScopeForCreateDto> for ScopeForCreateRequest {
     }
 }
 
-
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct ScopeForUpdateRequest {
     #[validate(length(

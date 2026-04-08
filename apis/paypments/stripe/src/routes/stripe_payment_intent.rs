@@ -7,8 +7,11 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_stripe_model::{
-    stripe_payment_intent::{StripePaymentIntentData, StripePaymentIntentForCreateRequest, StripePaymentIntentForUpdateRequest},
     state::{PaymentsStripeAppState, PaymentsStripeCacheState},
+    stripe_payment_intent::{
+        StripePaymentIntentData, StripePaymentIntentForCreateRequest,
+        StripePaymentIntentForUpdateRequest,
+    },
 };
 
 use shared_shared_app::state::AppState;
@@ -56,7 +59,8 @@ async fn create_payment_intent(
 async fn get_payment_intent(
     Path(payment_intent_id): Path<Uuid>,
 ) -> Result<ResponseJson<StripePaymentIntentData>> {
-    let payment_intent = StripePaymentIntentService::get_payment_intent_by_id(payment_intent_id).await?;
+    let payment_intent =
+        StripePaymentIntentService::get_payment_intent_by_id(payment_intent_id).await?;
     Ok(ResponseJson(payment_intent))
 }
 
@@ -80,7 +84,8 @@ async fn filter_payment_intents(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = vec![]; // TODO: Add filter support
-    let result = StripePaymentIntentService::get_payment_intents(&filters, &pagination, &order).await?;
+    let result =
+        StripePaymentIntentService::get_payment_intents(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -128,8 +133,17 @@ pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheSt
     Router::new()
         .route("/stripe/payment-intents", post(create_payment_intent))
         .route("/stripe/payment-intents", get(filter_payment_intents))
-        .route("/stripe/payment-intents/{payment_intent_id}", get(get_payment_intent))
-        .route("/stripe/payment-intents/{payment_intent_id}", patch(update_payment_intent))
-        .route("/stripe/payment-intents/{payment_intent_id}", delete(delete_payment_intent))
+        .route(
+            "/stripe/payment-intents/{payment_intent_id}",
+            get(get_payment_intent),
+        )
+        .route(
+            "/stripe/payment-intents/{payment_intent_id}",
+            patch(update_payment_intent),
+        )
+        .route(
+            "/stripe/payment-intents/{payment_intent_id}",
+            delete(delete_payment_intent),
+        )
         .with_state(app_state.clone())
 }

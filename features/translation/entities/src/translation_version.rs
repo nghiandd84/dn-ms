@@ -40,7 +40,6 @@ pub enum Relation {
     TranslationKey,
 }
 
-
 impl Related<super::translation_key::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::TranslationKey.def()

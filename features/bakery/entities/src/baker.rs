@@ -34,8 +34,6 @@ pub enum Relation {
     Bakery,
 }
 
-
-
 impl Related<super::bakery::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Bakery.def()
@@ -69,7 +67,6 @@ impl Linked for BakedForCustomer {
         ]
     }
 }
-
 
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {

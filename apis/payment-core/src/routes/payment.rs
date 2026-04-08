@@ -56,9 +56,7 @@ pub async fn create_payment(
         (status = 200, description = "Payment retrieved successfully", body = PaymentData),
     )
 )]
-pub async fn get_payment(
-    Path(payment_id): Path<Uuid>,
-) -> Result<ResponseJson<PaymentData>> {
+pub async fn get_payment(Path(payment_id): Path<Uuid>) -> Result<ResponseJson<PaymentData>> {
     let payment = PaymentService::get_payment_by_id(payment_id).await?;
     Ok(ResponseJson(payment))
 }
@@ -118,9 +116,7 @@ pub async fn update_payment(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-pub async fn delete_payment(
-    Path(payment_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+pub async fn delete_payment(Path(payment_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     PaymentService::delete_payment(payment_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

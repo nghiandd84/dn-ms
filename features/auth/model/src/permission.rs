@@ -4,7 +4,9 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use features_auth_entities::permission::{ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto};
+use features_auth_entities::permission::{
+    ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto,
+};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct PermissionForCreateRequest {
@@ -28,7 +30,6 @@ impl Into<PermissionForCreateDto> for PermissionForCreateRequest {
         }
     }
 }
-
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct PermissionForUpdateRequest {

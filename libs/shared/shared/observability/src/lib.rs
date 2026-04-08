@@ -22,7 +22,7 @@ use crate::traces::init_otel_traces;
 
 pub fn init_log_trace_metric(
     service_name: String,
-) -> Result<(SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider ), Box<dyn std::error::Error>> {
+) -> Result<(SdkLoggerProvider, SdkTracerProvider, SdkMeterProvider), Box<dyn std::error::Error>> {
     // Set up tracing with Kafka error layer
     let kafka_server_env = "ERROR_KAFKA_BOOTSTRAP_SERVERS".to_string();
     let kafka_bootstrap_servers = std::env::var(&kafka_server_env)

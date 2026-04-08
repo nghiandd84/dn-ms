@@ -28,7 +28,10 @@ impl InterceptorBuilder for CorsInterceptorBuilder {
             .get("allowed_domains")
             .and_then(|v| {
                 let domains = v.parse::<String>().ok();
-                debug!("Parsing allowed_domains for CorsInterceptor: {}", domains.as_deref().unwrap_or(""));
+                debug!(
+                    "Parsing allowed_domains for CorsInterceptor: {}",
+                    domains.as_deref().unwrap_or("")
+                );
                 domains
             })
             .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())

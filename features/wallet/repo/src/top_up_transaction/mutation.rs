@@ -1,7 +1,8 @@
 use shared_shared_macro::Mutation;
 
 use features_wallet_entities::top_up_transaction::{
-    ActiveModel, TopUpTransactionForCreateDto, TopUpTransactionForUpdateDto, Column, Entity, Model, ModelOptionDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, TopUpTransactionForCreateDto,
+    TopUpTransactionForUpdateDto,
 };
 
 use crate::top_up_transaction::util::assign;

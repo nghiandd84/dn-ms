@@ -1,8 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input,  Data, DeriveInput,  Fields, ItemFn};
-
-
+use syn::{parse_macro_input, Data, DeriveInput, Fields, ItemFn};
 
 pub fn make_answer(_item: TokenStream) -> TokenStream {
     "fn answer() -> u32 { 42 }".parse().unwrap()
@@ -43,7 +41,6 @@ pub fn derive_builder(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
     let _attrs = &input.attrs;
-   
 
     let builder_name = format_ident!("{}Builder", name);
 
@@ -110,4 +107,3 @@ pub fn derive_builder(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
-

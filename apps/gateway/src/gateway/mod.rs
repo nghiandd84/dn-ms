@@ -4,10 +4,10 @@ use pingora::{server::configuration::ServerConf, services::listening::Service};
 use pingora_proxy::{http_proxy_service_with_name, HttpProxy};
 use state::GatewayStateStore;
 
-pub mod state;
 pub mod interceptor;
 pub mod interceptor_builder;
 pub mod interceptors;
+pub mod state;
 
 use super::Proxy;
 

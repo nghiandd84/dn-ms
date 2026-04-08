@@ -10,19 +10,28 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 
 use features_payments_stripe_entities::stripe_webhook_event::Column;
-use features_payments_stripe_model::stripe_webhook_event::{StripeWebhookEventData, StripeWebhookEventForCreateRequest, StripeWebhookEventForUpdateRequest};
-use features_payments_stripe_repo::stripe_webhook_event::{StripeWebhookEventMutation, StripeWebhookEventQuery};
+use features_payments_stripe_model::stripe_webhook_event::{
+    StripeWebhookEventData, StripeWebhookEventForCreateRequest, StripeWebhookEventForUpdateRequest,
+};
+use features_payments_stripe_repo::stripe_webhook_event::{
+    StripeWebhookEventMutation, StripeWebhookEventQuery,
+};
 
 pub struct StripeWebhookEventService {}
 
 impl StripeWebhookEventService {
-    pub async fn create_webhook_event(webhook_event_request: StripeWebhookEventForCreateRequest) -> Result<Uuid, AppError> {
-        let webhook_event_id = StripeWebhookEventMutation::create_webhook_event(webhook_event_request.into()).await;
+    pub async fn create_webhook_event(
+        webhook_event_request: StripeWebhookEventForCreateRequest,
+    ) -> Result<Uuid, AppError> {
+        let webhook_event_id =
+            StripeWebhookEventMutation::create_webhook_event(webhook_event_request.into()).await;
         let id = match webhook_event_id {
             Ok(id) => id,
             Err(e) => {
                 debug!("Error creating webhook event: {:?}", e);
-                return Err(AppError::Internal("Failed to create webhook event".to_string()));
+                return Err(AppError::Internal(
+                    "Failed to create webhook event".to_string(),
+                ));
             }
         };
         Ok(id)
@@ -31,9 +40,13 @@ impl StripeWebhookEventService {
     pub async fn bulk_create_webhook_events(
         webhook_event_requests: Vec<StripeWebhookEventForCreateRequest>,
     ) -> Result<Vec<Uuid>, AppError> {
-        let webhook_event_ids =
-            StripeWebhookEventMutation::bulk_create_webhook_events(webhook_event_requests.into_iter().map(|r| r.into()).collect())
-                .await;
+        let webhook_event_ids = StripeWebhookEventMutation::bulk_create_webhook_events(
+            webhook_event_requests
+                .into_iter()
+                .map(|r| r.into())
+                .collect(),
+        )
+        .await;
         match webhook_event_ids {
             Ok(ids) => Ok(ids),
             Err(e) => {
@@ -45,7 +58,9 @@ impl StripeWebhookEventService {
         }
     }
 
-    pub async fn get_webhook_event_by_id(webhook_event_id: Uuid) -> Result<StripeWebhookEventData, AppError> {
+    pub async fn get_webhook_event_by_id(
+        webhook_event_id: Uuid,
+    ) -> Result<StripeWebhookEventData, AppError> {
         StripeWebhookEventQuery::get_webhook_event_by_id(webhook_event_id).await
     }
 
@@ -78,12 +93,18 @@ impl StripeWebhookEventService {
         webhook_event_id: Uuid,
         webhook_event_request: StripeWebhookEventForUpdateRequest,
     ) -> Result<bool, AppError> {
-        let result = StripeWebhookEventMutation::update_webhook_event(webhook_event_id, webhook_event_request.into()).await;
+        let result = StripeWebhookEventMutation::update_webhook_event(
+            webhook_event_id,
+            webhook_event_request.into(),
+        )
+        .await;
         match result {
             Ok(success) => Ok(success),
             Err(e) => {
                 debug!("Error updating webhook event: {:?}", e);
-                Err(AppError::Internal("Failed to update webhook event".to_string()))
+                Err(AppError::Internal(
+                    "Failed to update webhook event".to_string(),
+                ))
             }
         }
     }
@@ -94,7 +115,9 @@ impl StripeWebhookEventService {
             Ok(success) => Ok(success),
             Err(e) => {
                 debug!("Error deleting webhook event: {:?}", e);
-                Err(AppError::Internal("Failed to delete webhook event".to_string()))
+                Err(AppError::Internal(
+                    "Failed to delete webhook event".to_string(),
+                ))
             }
         }
     }

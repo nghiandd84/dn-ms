@@ -49,6 +49,5 @@ use shared_shared_app::doc::JwtSecurityAddon;
         (name = "social-link", description = "Social link management operations"),
     ),
     modifiers(&JwtSecurityAddon)
-    
 )]
 pub struct ApiDoc;

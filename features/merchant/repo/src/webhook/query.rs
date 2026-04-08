@@ -46,7 +46,8 @@ impl WebhookQuery {
         });
         let filters = vec![merchant_id_filter];
         let result =
-            WebhookQueryManager::filter(&Pagination::default(), &Order::default(), &filters).await?;
+            WebhookQueryManager::filter(&Pagination::default(), &Order::default(), &filters)
+                .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|w| w.into()).collect(),

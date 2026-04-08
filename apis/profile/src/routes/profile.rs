@@ -36,9 +36,7 @@ const TAG: &str = "profile";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_profile(
-    Json(req): Json<ProfileForCreateRequest>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn create_profile(Json(req): Json<ProfileForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let profile_id = ProfileService::create_profile(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -54,9 +52,7 @@ async fn create_profile(
         (status = 200, description = "Profile retrieved successfully", body = ProfileData),
     )
 )]
-async fn get_profile(
-    Path(profile_id): Path<Uuid>,
-) -> Result<ResponseJson<ProfileData>> {
+async fn get_profile(Path(profile_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
     let profile = ProfileService::get_profile_by_id(profile_id).await?;
     Ok(ResponseJson(profile))
 }
@@ -69,9 +65,7 @@ async fn get_profile(
         (status = 200, description = "Profile retrieved by user ID", body = ProfileData),
     )
 )]
-async fn get_profile_by_user_id(
-    Path(user_id): Path<Uuid>,
-) -> Result<ResponseJson<ProfileData>> {
+async fn get_profile_by_user_id(Path(user_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
     let profile = ProfileService::get_profile_by_user_id(user_id).await?;
     Ok(ResponseJson(profile))
 }
@@ -129,9 +123,7 @@ async fn update_profile(
         (status = 200, description = "Profile deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_profile(
-    Path(profile_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_profile(Path(profile_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ProfileService::delete_profile(profile_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

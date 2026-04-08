@@ -1,3 +1,2 @@
-pub mod seat;
 pub mod reservation;
-
+pub mod seat;

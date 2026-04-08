@@ -32,8 +32,6 @@ pub async fn get_request_context() -> Result<Context, ServerFnError> {
     Ok(Context::default())
 }
 
-
-
 // TODO duplicate code with libs/shared/shared/data/core/src/language.rs
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

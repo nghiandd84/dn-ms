@@ -14,7 +14,7 @@ impl Default for AuthAppState {
 pub enum AuthCacheState {
     AccessToken(Uuid),
     RefreshToken(Uuid),
-    Default
+    Default,
 }
 
 impl Default for AuthCacheState {

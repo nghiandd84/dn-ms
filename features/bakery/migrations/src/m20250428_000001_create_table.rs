@@ -129,11 +129,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(order::Column::Total)
-                            .double()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(order::Column::Total).double().not_null())
                     .col(ColumnDef::new(order::Column::BakeryId).integer().not_null())
                     .col(
                         ColumnDef::new(order::Column::CustomerId)
@@ -187,11 +183,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(cake::Column::Name).string().not_null())
-                    .col(
-                        ColumnDef::new(cake::Column::Price)
-                            .double()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(cake::Column::Price).double().not_null())
                     .col(ColumnDef::new(cake::Column::BakeryId).integer())
                     .col(
                         ColumnDef::new(cake::Column::CreatedAt)
@@ -284,11 +276,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(lineitem::Column::Price)
-                            .double()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(lineitem::Column::Price).double().not_null())
                     .col(
                         ColumnDef::new(lineitem::Column::Quantity)
                             .integer()

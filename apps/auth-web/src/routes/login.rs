@@ -96,7 +96,7 @@ pub fn Login(state: String) -> Element {
               TextWithLink {
                   id: "login.dont_have_account",
                   to: signup_url,
-                  class: "not-have-account" 
+                  class: "not-have-account"
               }
             }
           }

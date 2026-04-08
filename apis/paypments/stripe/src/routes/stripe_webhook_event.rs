@@ -7,8 +7,11 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_stripe_model::{
-    stripe_webhook_event::{StripeWebhookEventData, StripeWebhookEventForCreateRequest, StripeWebhookEventForUpdateRequest},
     state::{PaymentsStripeAppState, PaymentsStripeCacheState},
+    stripe_webhook_event::{
+        StripeWebhookEventData, StripeWebhookEventForCreateRequest,
+        StripeWebhookEventForUpdateRequest,
+    },
 };
 
 use shared_shared_app::state::AppState;
@@ -56,7 +59,8 @@ async fn create_webhook_event(
 async fn get_webhook_event(
     Path(webhook_event_id): Path<Uuid>,
 ) -> Result<ResponseJson<StripeWebhookEventData>> {
-    let webhook_event = StripeWebhookEventService::get_webhook_event_by_id(webhook_event_id).await?;
+    let webhook_event =
+        StripeWebhookEventService::get_webhook_event_by_id(webhook_event_id).await?;
     Ok(ResponseJson(webhook_event))
 }
 
@@ -80,7 +84,8 @@ async fn filter_webhook_events(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = vec![]; // TODO: Add filter support
-    let result = StripeWebhookEventService::get_webhook_events(&filters, &pagination, &order).await?;
+    let result =
+        StripeWebhookEventService::get_webhook_events(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -114,9 +119,7 @@ async fn update_webhook_event(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_webhook_event(
-    Path(webhook_event_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_webhook_event(Path(webhook_event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeWebhookEventService::delete_webhook_event(webhook_event_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -128,8 +131,17 @@ pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheSt
     Router::new()
         .route("/stripe/webhook-events", post(create_webhook_event))
         .route("/stripe/webhook-events", get(filter_webhook_events))
-        .route("/stripe/webhook-events/{webhook_event_id}", get(get_webhook_event))
-        .route("/stripe/webhook-events/{webhook_event_id}", patch(update_webhook_event))
-        .route("/stripe/webhook-events/{webhook_event_id}", delete(delete_webhook_event))
+        .route(
+            "/stripe/webhook-events/{webhook_event_id}",
+            get(get_webhook_event),
+        )
+        .route(
+            "/stripe/webhook-events/{webhook_event_id}",
+            patch(update_webhook_event),
+        )
+        .route(
+            "/stripe/webhook-events/{webhook_event_id}",
+            delete(delete_webhook_event),
+        )
         .with_state(app_state.clone())
 }

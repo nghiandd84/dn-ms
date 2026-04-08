@@ -17,7 +17,9 @@ use shared_shared_data_core::{
 };
 
 use features_wallet_model::{
-    idempotency::{IdempotencyKeyData, IdempotencyKeyForCreateRequest, IdempotencyKeyForUpdateRequest},
+    idempotency::{
+        IdempotencyKeyData, IdempotencyKeyForCreateRequest, IdempotencyKeyForUpdateRequest,
+    },
     state::{WalletAppState, WalletCacheState},
 };
 use features_wallet_service::IdempotencyService;
@@ -137,6 +139,9 @@ pub fn routes(app_state: &AppState<WalletAppState, WalletCacheState>) -> Router 
         .route("/idempotency-keys/{id}", get(get_idempotency_key_by_id))
         .route("/idempotency-keys/{id}", put(update_idempotency_key))
         .route("/idempotency-keys/{id}", delete(delete_idempotency_key))
-        .route("/idempotency-keys/key/{key}", get(get_idempotency_key_by_key))
+        .route(
+            "/idempotency-keys/key/{key}",
+            get(get_idempotency_key_by_key),
+        )
         .with_state(app_state.clone())
 }

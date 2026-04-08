@@ -11,6 +11,6 @@ pub use filter::{Filter, PathFilter};
 pub use gateway_config::*;
 pub use inet_address::InetAddress;
 pub use interceptor_config::*;
+pub use interceptor_config::*;
 pub use router_config::RouterConfig;
 pub use upstream_config::*;
-pub use interceptor_config::*;

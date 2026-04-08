@@ -10,13 +10,17 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 
 use features_payments_stripe_entities::stripe_api_log::Column;
-use features_payments_stripe_model::stripe_api_log::{StripeApiLogData, StripeApiLogForCreateRequest, StripeApiLogForUpdateRequest};
+use features_payments_stripe_model::stripe_api_log::{
+    StripeApiLogData, StripeApiLogForCreateRequest, StripeApiLogForUpdateRequest,
+};
 use features_payments_stripe_repo::stripe_api_log::{StripeApiLogMutation, StripeApiLogQuery};
 
 pub struct StripeApiLogService {}
 
 impl StripeApiLogService {
-    pub async fn create_api_log(api_log_request: StripeApiLogForCreateRequest) -> Result<Uuid, AppError> {
+    pub async fn create_api_log(
+        api_log_request: StripeApiLogForCreateRequest,
+    ) -> Result<Uuid, AppError> {
         let api_log_id = StripeApiLogMutation::create_api_log(api_log_request.into()).await;
         let id = match api_log_id {
             Ok(id) => id,
@@ -31,9 +35,10 @@ impl StripeApiLogService {
     pub async fn bulk_create_api_logs(
         api_log_requests: Vec<StripeApiLogForCreateRequest>,
     ) -> Result<Vec<Uuid>, AppError> {
-        let api_log_ids =
-            StripeApiLogMutation::bulk_create_api_logs(api_log_requests.into_iter().map(|r| r.into()).collect())
-                .await;
+        let api_log_ids = StripeApiLogMutation::bulk_create_api_logs(
+            api_log_requests.into_iter().map(|r| r.into()).collect(),
+        )
+        .await;
         match api_log_ids {
             Ok(ids) => Ok(ids),
             Err(e) => {

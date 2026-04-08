@@ -12,17 +12,13 @@ use shared_shared_macro::Dto;
     name(TransactionForCreate),
     columns(wallet_id, transaction_type, amount, currency, status, description)
 )]
-#[dto(
-    name(TransactionForUpdate),
-    columns(status, description),
-    option
-)]
+#[dto(name(TransactionForUpdate), columns(status, description), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub wallet_id: Uuid,
     pub transaction_type: String, // ENUM('DEPOSIT','WITHDRAWAL','TRANSFER','PAYMENT')
-    pub amount: f32,  // Using String for Decimal compatibility
+    pub amount: f32,              // Using String for Decimal compatibility
     pub currency: String,
     pub status: String, // ENUM('INITIATED', 'PENDING','SUCCESS','FAILED','CANCELLED')
     pub reference_id: String,

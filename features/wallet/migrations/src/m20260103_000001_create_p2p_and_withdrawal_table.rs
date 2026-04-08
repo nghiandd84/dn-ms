@@ -25,13 +25,44 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(p2p_transfer::Column::FromWalletId).uuid().not_null())
-                    .col(ColumnDef::new(p2p_transfer::Column::ToWalletId).uuid().not_null())
-                    .col(ColumnDef::new(p2p_transfer::Column::Amount).float().not_null())
-                    .col(ColumnDef::new(p2p_transfer::Column::Status).string().not_null().default("PENDING"))
-                    .col(ColumnDef::new(p2p_transfer::Column::CreatedAt).date_time().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(p2p_transfer::Column::UpdatedAt).date_time().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(p2p_transfer::Column::CompletedAt).date_time().null())
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::FromWalletId)
+                            .uuid()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::ToWalletId)
+                            .uuid()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::Amount)
+                            .float()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::Status)
+                            .string()
+                            .not_null()
+                            .default("PENDING"),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(p2p_transfer::Column::CompletedAt)
+                            .date_time()
+                            .null(),
+                    )
                     .to_owned(),
             )
             .await;
@@ -78,13 +109,44 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(withdrawal::Column::WalletId).uuid().not_null())
-                    .col(ColumnDef::new(withdrawal::Column::Amount).float().not_null())
-                    .col(ColumnDef::new(withdrawal::Column::PaymentDeviceId).uuid().null())
-                    .col(ColumnDef::new(withdrawal::Column::Status).string().not_null().default("PENDING"))
-                    .col(ColumnDef::new(withdrawal::Column::CreatedAt).date_time().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(withdrawal::Column::UpdatedAt).date_time().not_null().default(Expr::current_timestamp()))
-                    .col(ColumnDef::new(withdrawal::Column::CompletedAt).date_time().null())
+                    .col(
+                        ColumnDef::new(withdrawal::Column::WalletId)
+                            .uuid()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::Amount)
+                            .float()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::PaymentDeviceId)
+                            .uuid()
+                            .null(),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::Status)
+                            .string()
+                            .not_null()
+                            .default("PENDING"),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        ColumnDef::new(withdrawal::Column::CompletedAt)
+                            .date_time()
+                            .null(),
+                    )
                     .to_owned(),
             )
             .await;

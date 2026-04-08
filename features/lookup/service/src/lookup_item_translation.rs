@@ -44,7 +44,8 @@ impl LookupItemTranslationService {
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
-        LookupItemTranslationQuery::get_translations_by_item_id(item_id, pagination, order, filters).await
+        LookupItemTranslationQuery::get_translations_by_item_id(item_id, pagination, order, filters)
+            .await
     }
 
     pub async fn get_translations(

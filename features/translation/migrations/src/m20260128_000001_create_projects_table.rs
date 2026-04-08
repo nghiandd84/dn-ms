@@ -24,11 +24,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(project::Column::UserId)
-                            .uuid()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(project::Column::UserId).uuid().not_null())
                     .col(
                         ColumnDef::new(project::Column::Name)
                             .string()

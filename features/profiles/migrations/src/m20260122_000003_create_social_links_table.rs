@@ -57,7 +57,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk_social_links_profile_id")
                             .from(social_link::Entity, social_link::Column::ProfileId)
-                            .to(profile::Entity, profile::Column::Id)
+                            .to(profile::Entity, profile::Column::Id),
                     )
                     .to_owned(),
             )

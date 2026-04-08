@@ -6,7 +6,7 @@ pub enum InterceptorType {
     RequestId,
     Cors,
     RateLimiter,
-    TokenAuth
+    TokenAuth,
 }
 
 impl InterceptorType {

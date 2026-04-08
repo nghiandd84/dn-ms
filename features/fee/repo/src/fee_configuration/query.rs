@@ -30,7 +30,9 @@ impl FeeConfigurationQueryManager {
 pub struct FeeConfigurationQuery;
 
 impl FeeConfigurationQuery {
-    pub async fn get_fee_configuration_by_id(fee_configuration_id: Uuid) -> Result<FeeConfigurationData, AppError> {
+    pub async fn get_fee_configuration_by_id(
+        fee_configuration_id: Uuid,
+    ) -> Result<FeeConfigurationData, AppError> {
         let model = FeeConfigurationQueryManager::get_by_id_uuid(fee_configuration_id).await?;
         Ok(model.into())
     }
@@ -45,8 +47,12 @@ impl FeeConfigurationQuery {
             operator: shared_shared_data_core::filter::FilterOperator::Equal,
         });
         let filters = vec![merchant_id_filter];
-        let result =
-            FeeConfigurationQueryManager::filter(&Pagination::default(), &Order::default(), &filters).await?;
+        let result = FeeConfigurationQueryManager::filter(
+            &Pagination::default(),
+            &Order::default(),
+            &filters,
+        )
+        .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|f| f.into()).collect(),

@@ -59,7 +59,7 @@ pub fn Root() -> Element {
     rsx! {
         div {
             class: "flex flex-col justify-center items-center bg-slate-50 min-h-screen",
-           
+
             div {
                 class: "mb-5",
                 button { class:"m-5",  onclick: change_to_english, "English" }

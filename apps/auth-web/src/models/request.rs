@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum RequestScreen {
@@ -18,12 +17,11 @@ pub struct RequestParams {
     pub screen: RequestScreen,
 }
 
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
-    pub state: String
+    pub state: String,
 }
 
 pub struct LoginResponse {
@@ -31,10 +29,9 @@ pub struct LoginResponse {
     pub redirect_uri: String,
 }
 
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct RegisterRequest {
     pub email: String,
     pub password: String,
-    pub state: String
+    pub state: String,
 }

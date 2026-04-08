@@ -7,8 +7,8 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use features_payments_stripe_model::{
-    stripe_refund::{StripeRefundData, StripeRefundForCreateRequest, StripeRefundForUpdateRequest},
     state::{PaymentsStripeAppState, PaymentsStripeCacheState},
+    stripe_refund::{StripeRefundData, StripeRefundForCreateRequest, StripeRefundForUpdateRequest},
 };
 
 use shared_shared_app::state::AppState;
@@ -53,9 +53,7 @@ async fn create_refund(
         (status = 200, description = "Refund retrieved successfully", body = StripeRefundData),
     )
 )]
-async fn get_refund(
-    Path(refund_id): Path<Uuid>,
-) -> Result<ResponseJson<StripeRefundData>> {
+async fn get_refund(Path(refund_id): Path<Uuid>) -> Result<ResponseJson<StripeRefundData>> {
     let refund = StripeRefundService::get_refund_by_id(refund_id).await?;
     Ok(ResponseJson(refund))
 }
@@ -114,9 +112,7 @@ async fn update_refund(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_refund(
-    Path(refund_id): Path<Uuid>,
-) -> Result<ResponseJson<OkUuid>> {
+async fn delete_refund(Path(refund_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeRefundService::delete_refund(refund_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

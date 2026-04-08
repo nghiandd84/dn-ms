@@ -64,7 +64,10 @@ where
         .subscribe(&[&topic])
         .expect("Can't subscribe to specified topic");
 
-    debug!("Kafka consumer subscribed to topic {} by group {}", topic, group);
+    debug!(
+        "Kafka consumer subscribed to topic {} by group {}",
+        topic, group
+    );
 
     // Wrap handler in Arc so it can be cloned into spawned tasks safely
     let handler = std::sync::Arc::new(handler);

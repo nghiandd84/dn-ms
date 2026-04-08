@@ -15,4 +15,3 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
 
     active_model
 }
-

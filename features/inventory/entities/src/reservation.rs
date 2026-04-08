@@ -24,7 +24,7 @@ pub struct Model {
     pub event_id: Uuid,
     pub user_id: Uuid,
     pub expires_at: DateTime,
-    pub status: String,             // ENUM('ACTIVE','CONFIRMED','EXPIRED','CANCELLED') DEFAULT 'ACTIVE'
+    pub status: String, // ENUM('ACTIVE','CONFIRMED','EXPIRED','CANCELLED') DEFAULT 'ACTIVE'
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

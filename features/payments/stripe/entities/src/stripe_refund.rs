@@ -21,11 +21,7 @@ use shared_shared_macro::Dto;
         metadata
     )
 )]
-#[dto(
-    name(StripeRefundForUpdate),
-    columns(status, metadata),
-    option
-)]
+#[dto(name(StripeRefundForUpdate), columns(status, metadata), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,

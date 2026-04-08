@@ -1,5 +1,7 @@
 use uuid::Uuid;
 
+use features_lookup_entities::lookup_type::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_lookup_model::lookup_type::LookupTypeData;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
@@ -7,8 +9,6 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
-use features_lookup_entities::lookup_type::{ActiveModel, Column, Entity, ModelOptionDto};
-use features_lookup_model::lookup_type::LookupTypeData;
 
 #[derive(Query)]
 #[query(key_type(Uuid))]

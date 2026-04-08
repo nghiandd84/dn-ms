@@ -5,10 +5,7 @@ use shared_shared_macro::Dto;
 
 #[derive(Clone, Debug, PartialEq, Default, DeriveEntityModel, Dto)]
 #[sea_orm(table_name = "cakes_bakers")]
-#[dto(
-    name(CakeBakerForCreate),
-    columns(cake_id, baker_id)
-)]
+#[dto(name(CakeBakerForCreate), columns(cake_id, baker_id))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub cake_id: i32,

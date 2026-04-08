@@ -1,6 +1,4 @@
 pub mod event;
 pub mod state;
 
-pub use event::{
-    EventData, EventForCreateRequest, EventForUpdateRequest, EventDataFilterParams,
-};
+pub use event::{EventData, EventDataFilterParams, EventForCreateRequest, EventForUpdateRequest};

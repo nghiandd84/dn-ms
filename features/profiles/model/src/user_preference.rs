@@ -4,7 +4,9 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use features_profiles_entities::user_preference::{UserPreferenceForCreateDto, UserPreferenceForUpdateDto, ModelOptionDto};
+use features_profiles_entities::user_preference::{
+    ModelOptionDto, UserPreferenceForCreateDto, UserPreferenceForUpdateDto,
+};
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct UserPreferenceForCreateRequest {

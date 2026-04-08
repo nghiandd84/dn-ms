@@ -11,7 +11,7 @@ impl Default for TranslationAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum TranslationCacheState {
-    Default
+    Default,
 }
 
 impl Default for TranslationCacheState {

@@ -11,7 +11,7 @@ impl Default for EventAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum EventCacheState {
-    Default
+    Default,
 }
 
 impl Default for EventCacheState {

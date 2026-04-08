@@ -11,7 +11,7 @@ impl Default for InventoryAppState {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum InventoryCacheState {
-    Default
+    Default,
 }
 
 impl Default for InventoryCacheState {

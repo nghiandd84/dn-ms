@@ -8,7 +8,10 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.id, model_option.id);
     set_if_some!(active_model.payment_id, model_option.payment_id);
     set_if_some!(active_model.stripe_refund_id, model_option.stripe_refund_id);
-    set_if_some!(active_model.stripe_payment_intent_id, model_option.stripe_payment_intent_id);
+    set_if_some!(
+        active_model.stripe_payment_intent_id,
+        model_option.stripe_payment_intent_id
+    );
     set_if_some!(active_model.amount, model_option.amount);
     set_if_some!(active_model.currency, model_option.currency);
     set_if_some!(active_model.status, model_option.status);

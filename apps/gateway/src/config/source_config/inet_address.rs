@@ -7,7 +7,6 @@ pub struct InetAddress {
 }
 
 impl InetAddress {
-    
     pub fn get_formatted_address(&self) -> String {
         format!("{}:{}", self.host, self.port)
     }

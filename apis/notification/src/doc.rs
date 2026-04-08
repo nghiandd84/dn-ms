@@ -11,7 +11,6 @@ use shared_shared_app::doc::JwtSecurityAddon;
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
-        
     ),
     tags(
         (name = "Rust REST API", description = "Email Template in Rust Endpoints")
