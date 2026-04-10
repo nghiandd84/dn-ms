@@ -22,7 +22,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(idempotency::Column::Id)
                             .uuid()
                             .primary_key()
-                            .extra("DEFAULT public.uuid_generate_v4()"),
+                            .extra("DEFAULT gen_random_uuid()"),
                     )
                     .col(ColumnDef::new(idempotency::Column::Key).string().not_null())
                     .col(

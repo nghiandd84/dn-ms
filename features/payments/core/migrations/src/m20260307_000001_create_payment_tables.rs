@@ -45,7 +45,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(payment_method::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -119,7 +119,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(payment_method_limit::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -181,7 +181,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(payment::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -254,7 +254,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(payment_attempt::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )

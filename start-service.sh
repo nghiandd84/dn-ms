@@ -1,16 +1,16 @@
 # Start postgres database
-sudo service postgresql start
+# sudo service postgresql start
 
 # Start redis server . Password: Redis!123
-sudo service redis-server start
+# sudo service redis-server start
 
 #Kafka start . Password: kafka/Kafka@123
-sudo service zookeeper start
-sleep 5s
-sudo service kafka start
-sleep 5s
-sudo service consul start
-sleep 5s
+# sudo service zookeeper start
+# sleep 5s
+# sudo service kafka start
+# sleep 5s
+# sudo service consul start
+# sleep 5s
 # Connect consul UI
 # http://localhost:8500/ui
 # Create topic if not exists
@@ -29,3 +29,6 @@ sleep 5s
 # Create proxy on window to connect to kafka
 # netsh interface portproxy add v4tov4 listenport=9092 listenaddress=0.0.0.0 connectport=9092 connectaddress=172.25.43.223
 # TODO implement service discovery https://medium.com/@patrickkoss/how-to-build-a-service-discovery-and-leader-election-with-zookeeper-in-rust-1fcffd9c889d
+
+# Remove artifacts older than 30 days: cargo sweep --time 30
+# Remove artifacts from all projects in a folder: cargo sweep --recursive

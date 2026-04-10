@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(lookup_type::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -69,7 +69,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(lookup_item::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -155,7 +155,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(lookup_item_translation::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )

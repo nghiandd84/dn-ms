@@ -352,6 +352,11 @@ features-lookup-migrations = { path = "./features/lookup/migrations"}
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}
 
+[profile.dev]
+debug = 0 # No debug info, smallest size
+# OR
+#split-debuginfo = "unpacked" # Keeps symbols out of the binary (macOS/Linux)
+
 [profile.release]
 opt-level = "z"      # Optimize for size
 lto = true           # Enable Link Time Optimization

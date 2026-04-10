@@ -19,16 +19,16 @@ export NOTIFICATION_PORT=5041
 export PROFILE_PORT=5051
 export TRANSLATION_PORT=5061
 export EVENT_PORT=5071
-export INVENTORY_PORT=5081
 export BOOKING_PORT=5091
 export PAYMENT_CORE_PORT=5101
 export MERCHANT_PORT=5131
 export FEE_PORT=5141
 export WALLET_PORT=5151
 export LOOKUP_PORT=5161
+export INVENTORY_PORT=5171
 export PAYMENT_STRIPE_PORT=5121
 export NOTIFICATION_APP_PORT=4001
-export KAFKA_CLUSTER_ID=yimqoROMQUaZ0TsAUbouFQ
+#export KAFKA_CLUSTER_ID=I-vULn-DS7yWYemeCtBj_A
 export OTEL_VERSION=0.96.0
 # update varibale when startup
 # sudo nano ~/.bashrc
@@ -83,7 +83,7 @@ done
 
 # Kill Inventory port
 for i in {1..2}; do 
-    fuser -k -15 508$i/tcp 
+    fuser -k -15 517$i/tcp 
 done
 
 # Kill Booking port
@@ -240,10 +240,10 @@ sleep 1s
 
 echo "------------ Start INVENTORY API ------------"
 for i in {1..2}; do
-    PORT=508$i
+    PORT=517$i
     echo "--- INVENTORY on port $PORT ---"
     # Execute the program
-    INVENTORY_PORT=508$i $APP_DIRECTORY/api-inventory  &
+    INVENTORY_PORT=517$i $APP_DIRECTORY/api-inventory  &
 done
 sleep 1s
 

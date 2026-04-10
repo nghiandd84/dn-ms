@@ -16,7 +16,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(webhook::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .primary_key(),
                     )
                     .col(

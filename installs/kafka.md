@@ -27,6 +27,7 @@ KAFKA_CLUSTER_ID=$(/opt/kafka/bin/kafka-storage.sh random-uuid)
 Format the Storage Directory:
 ```
 /opt/kafka/bin/kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c /opt/kafka/config/kraft/server.properties
+#/opt/kafka/bin/kafka-storage.sh format -t $KAFKA_CLUSTER_ID -c /opt/kafka/config/kraft/server.properties
 ```
 
 # Step 4: Create the systemd Service
@@ -55,6 +56,9 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
+
+Check log.dirs in file /opt/kafka/config/kraft/server.properties . it will delete after reset wsl
+log.dirs=/home/nddnghia/kafka-data/kraft-combined-logs
 
 # Step 5: Start and Enable
 ```

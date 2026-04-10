@@ -13,16 +13,27 @@ impl MigrationName for Migration {
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let _drop_profile = manager
-            .alter_table(
-                Table::alter()
-                    .table(user::Entity)
-                    .drop_column("first_name")
-                    .drop_column("last_name")
-                    .to_owned(),
-            )
-            .await?;
-
+        if manager.has_column("users", "first_name").await? {
+            manager
+                .alter_table(
+                    Table::alter()
+                        .table(Alias::new("users"))
+                        .drop_column(Alias::new("first_name"))
+                        .to_owned(),
+                )
+                .await?;
+        }
+        
+        if manager.has_column("users", "last_name").await? {
+            manager
+                .alter_table(
+                    Table::alter()
+                        .table(Alias::new("users"))
+                        .drop_column(Alias::new("last_name"))
+                        .to_owned(),
+                )
+                .await?;
+        }
         Ok(())
     }
 

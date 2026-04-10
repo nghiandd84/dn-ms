@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(seat::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -87,7 +87,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(reservation::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )

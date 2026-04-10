@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(p2p_transfer::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -105,7 +105,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(withdrawal::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )

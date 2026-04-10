@@ -22,7 +22,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(permission::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
@@ -65,7 +65,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(role_permission::Column::Id)
                             .uuid()
-                            .extra("DEFAULT public.uuid_generate_v4()")
+                            .extra("DEFAULT gen_random_uuid()")
                             .not_null()
                             .primary_key(),
                     )
