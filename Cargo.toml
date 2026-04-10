@@ -352,7 +352,12 @@ features-lookup-migrations = { path = "./features/lookup/migrations"}
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}
 
-[profile]
+[profile.release]
+opt-level = "z"      # Optimize for size
+lto = true           # Enable Link Time Optimization
+codegen-units = 1    # Reduce parallel code generation (better compression)
+panic = "abort"      # Removes stack unwinding code
+strip = true         # Automatically strip symbols/debug info
 
 [profile.wasm-dev]
 inherits = "dev"

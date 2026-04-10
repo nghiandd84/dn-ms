@@ -1,83 +1,127 @@
-# 1. Download the zip file (using a common version, e.g., 1.18.0)
-CONSUL_VERSION="1.20.0" # You can update this to the latest stable version
-wget "https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip"
-
-# 2. Unzip the file
-sudo apt-get install unzip
-unzip "consul_${CONSUL_VERSION}_linux_amd64.zip"
-
-# 3. Move the binary to a directory in your PATH (e.g., /usr/local/bin)
-sudo mv consul /usr/local/bin/
-
-# 4. Clean up the downloaded files
-rm "consul_${CONSUL_VERSION}_linux_amd64.zip"
-
-# Run the following command to ensure Consul is correctly installed and in your path:
-consul --version
-
-2. Configure Consul as a Service (Systemd)
-# Create the Consul configuration directory
-sudo mkdir -p /etc/consul.d
-
-# Create the data directory
-sudo mkdir -p /opt/consul/data
-
-# Create a dedicated user for Consul for security best practices
-sudo useradd --system --home /etc/consul.d --no-create-home --shell /bin/false consul
-
-# Set ownership of the data directory to the consul user
-sudo chown -R consul:consul /opt/consul
-
-Step 4: Create the Configuration File
-
-sudo nano /etc/consul.d/consul.hcl
-
-Paste the following configuration:
+# Install Consul
 ```
-# /etc/consul.d/consul.hcl
+# Install dependencies
+sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
 
-datacenter = "wsl-dc1"
-data_dir = "/opt/consul/data"
-client_addr = "0.0.0.0" # Allows access from Windows (localhost)
-ui = true # Enables the web UI
-server = true # Run the agent in server mode
-bootstrap_expect = 1 # Start a single-node cluster
-performance {
-  raft_multiplier = 1 # Better responsiveness in a development environment
+# Add the HashiCorp GPG key
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Add the official repository
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Update and install
+sudo apt-get update && sudo apt-get install consul
+```
+
+# Start Consul in "Dev Mode" (Quickest Start)
+```
+consul agent -dev
+```
+
+# Configure as a "Production-Style" Server
+Create the Config File
+Create a file at /etc/consul.d/server.hcl:
+```
+# Basic Server Config
+server = true
+bootstrap_expect = 1  # For local testing, we only expect 1 server
+data_dir = "/opt/consul"
+log_level = "INFO"
+
+# Networking
+bind_addr = "0.0.0.0" # Listen on all interfaces
+client_addr = "0.0.0.0"
+
+# Enable the Web UI
+ui_config {
+  enabled = true
+}
+
+# Connect (Service Mesh) - useful for your Rust services later
+connect {
+  enabled = true
 }
 ```
 
-Step 5: Create the Systemd Service File
+Setup Permissions and Start
+```
+# Ensure the data directory exists
+sudo mkdir -p /opt/consul
+sudo chown -R consul:consul /opt/consul
 
+# Start the agent with the config
+sudo consul agent -config-dir=/etc/consul.d
+```
+
+Config WSL as service
+
+# Step 1. Enable systemd in WSL
+
+Open your WSL terminal and run:
+```
+sudo nano /etc/wsl.conf
+```
+Add this line
+```
+[boot]
+systemd=true
+```
+# Step 2. Create a Dedicated Consul User
+```
+sudo groupadd --system consul
+sudo useradd -s /sbin/nologin --system -g consul consul
+```
+
+# Step 3: Set up Directories & Configuration
+1. Create directories:
+```
+sudo mkdir -p /etc/consul.d
+sudo mkdir -p /var/lib/consul
+sudo chown -R consul:consul /etc/consul.d /var/lib/consul
+```
+2. Create the configuration file:
+```
+sudo nano /etc/consul.d/consul.hcl
+```
+
+# Step 4: Create the systemd Service File
+Create the service unit file:
+```
 sudo nano /etc/systemd/system/consul.service
-
+```
+Paste the following content:
 ```
 [Unit]
-Description=Consul Agent
+Description="HashiCorp Consul - A network service mesh"
+Documentation=https://www.consul.io/
 Requires=network-online.target
 After=network-online.target
 
 [Service]
 User=consul
 Group=consul
-PIDFile=/run/consul.pid
-ExecStart=/usr/local/bin/consul agent -config-dir=/etc/consul.d -dev
-ExecReload=/bin/kill -HUP $MAINPID
-KillSignal=SIGINT
-TimeoutStopSec=5
+ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+Restart=on-failure
 LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Step 6: Reload and Start the Service
-
-# Reload the systemd configuration
+# Step 5: Start and Enable
+```
+# Reload the systemd manager to see the new service
 sudo systemctl daemon-reload
 
-# Enable Consul to start on boot
+# Enable it to start on boot
 sudo systemctl enable consul
 
-# Start the Consul service
+# Start it now
 sudo systemctl start consul
+```
+Verify it's running
+```
+sudo systemctl status consul
+```

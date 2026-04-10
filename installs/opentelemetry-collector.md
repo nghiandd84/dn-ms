@@ -1,46 +1,69 @@
-1. Download
-# Update package list
-sudo apt-get update
-
-# Install wget if you don't have it
-sudo apt-get install -y wget
-
-# Download the latest CONTRIB version (Example uses v0.130.1 - replace with the latest)
-COLLECTOR_VERSION=0.130.1 
-wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${COLLECTOR_VERSION}/otelcol-contrib_${COLLECTOR_VERSION}_linux_amd64.deb
-# https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.130.1/otelcol-contrib_0.130.1_linux_amd64.deb
-
-2. Install 
-# Install the package
-sudo dpkg -i otelcol-contrib_${COLLECTOR_VERSION}_linux_amd64.deb
+# Step 1: Install otelcol-contrib
 ```
-Selecting previously unselected package otelcol-contrib.
-(Reading database ... 77579 files and directories currently installed.)
-Preparing to unpack otelcol-contrib_0.130.1_linux_amd64.deb ...
-Unpacking otelcol-contrib (0.130.1) ...
-Setting up otelcol-contrib (0.130.1) ..
-Created symlink /etc/systemd/system/multi-user.target.wants/otelcol-contrib.service → /lib/systemd/system/otelcol-contrib.service.
+# Define version (using 0.96.0 as a stable 2026-era baseline)
+OTEL_VERSION="0.96.0"
+
+# Download the DEB package
+wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
+
+# Install it
+sudo dpkg -i otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
 ```
 
-# Fix any potential dependency issues
-sudo apt-get install -f
-
-3. Configure the Collector
-# Open the configuration file for editing (e.g., using nano)
+# Step 2: Configure Integration with Jaeger
+Open the config file
+```
 sudo nano /etc/otelcol-contrib/config.yaml
+```
 
+Replace the file content with this bridge configuration:
+```
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4319
+      http:
+        endpoint: 0.0.0.0:4320
 
-# Start service
-sudo systemctl start otelcol-contrib
+processors:
+  batch:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
 
-# Enable auto start
+exporters:
+  # This points to your Jaeger v2 instance
+  otlp/jaeger:
+    endpoint: "localhost:4317" 
+    tls:
+      insecure: true
+
+  # Useful for debugging: prints spans to your console logs
+  debug:
+    verbosity: normal
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/jaeger, debug]
+```
+
+# Step 3: Start and Enable the Collector
+```
+# Enable the service
 sudo systemctl enable otelcol-contrib
 
-# Check status
+# Start the service
+sudo systemctl start otelcol-contrib
+
+# Verify it is healthy
 sudo systemctl status otelcol-contrib
+```
 
-# View logs
-sudo journalctl -u otelcol-contrib -f
-
-# Restart
-sudo systemctl restart otelcol-contrib
+# Step 4: Verify the Data Flow
+To confirm everything is connected:
+Check the Collector logs: sudo journalctl -u otelcol-contrib -f
+Check the Jaeger UI: http://localhost:16686

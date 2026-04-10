@@ -1,42 +1,37 @@
-1. Download
-# Set the version (e.g., v1.75.0 - check for the current latest)
-JAEGER_VERSION="1.75.0" 
-JAEGER_TAR="jaeger-${JAEGER_VERSION}-linux-amd64.tar.gz"
+# Step 1: Download Jaeger v2
 
-# Download the file
-wget https://github.com/jaegertracing/jaeger/releases/download/v${JAEGER_VERSION}/${JAEGER_TAR}
+```
+# Create directory
+sudo mkdir -p /opt/jaeger
 
-# Extract the archive
-tar -xvzf ${JAEGER_TAR}
+# Download the latest Linux binary (v2.17.0 as of early 2026)
+wget https://github.com/jaegertracing/jaeger/releases/download/v2.17.0/jaeger-2.17.0-linux-amd64.tar.gz
 
-# Move the executable to a standard binary path
-sudo mv jaeger-${JAEGER_VERSION}-linux-amd64/jaeger-all-in-one /usr/local/bin/jaeger-all-in-one
+# Extract and move the binary
+tar -xzf jaeger-2.17.0-linux-amd64.tar.gz
+sudo mv jaeger-2.17.0-linux-amd64/jaeger /usr/bin/jaeger
+```
 
-# Make sure it's executable
-sudo chmod +x /usr/local/bin/jaeger-all-in-one
+# Step 2: Create the systemd Service
+Create file
+```
+sudo nano /etc/systemd/system/jaeger.service
+```
 
-2. Create the Systemd Service File
-
-# Create file
-sudo nano /etc/systemd/system/jaeger-all-in-one.service
+Paste the following configuration:
 ```
 [Unit]
-Description=Jaeger All-in-One Tracing Service
-After=network.target
+Description=Jaeger v2 All-in-One Tracing
+Documentation=https://www.jaegertracing.io/
+Wants=network-online.target
+After=network-online.target
 
 [Service]
-# The user/group to run as (optional, for security)
-User=nghiandd
-Group=nghiandd
-
-# The executable command and arguments
-# --collector.otlp.enabled=true enables the OTLP receiver (Port 4317 gRPC, 4318 HTTP)
-# The Jaeger UI is available at port 16686
-ExecStart=/usr/local/bin/jaeger-all-in-one --collector.otlp.enabled=true 
-
-# Restart the service if it fails
-Restart=always
-
+User=root
+# In Jaeger v2, we use --set to configure internal components
+ExecStart=/usr/bin/jaeger --set=extensions.jaeger_storage.backends.primary_store.memory.max_traces=50000
+Restart=on-failure
+# Removed obsolete Syslog settings; systemd now handles this via journald automatically
 StandardOutput=journal
 StandardError=journal
 
@@ -44,25 +39,12 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-3. Enable and Start the Service 
-# Reload the systemd manager configuration:
+# Step 3: Start and Verify
+```
 sudo systemctl daemon-reload
+sudo systemctl enable jaeger
+sudo systemctl start jaeger
 
-# Enable the service (to start on boot):
-sudo systemctl enable jaeger-all-in-one
+# Verify it is healthy
+sudo systemctl status jaeger
 ```
-Created symlink /etc/systemd/system/multi-user.target.wants/jaeger-all-in-one.service → /etc/systemd/system/jaeger-all-in-one.service.
-```
-
-# Start the service now:
-sudo systemctl start jaeger-all-in-one
-
-# Check the status and logs:
-sudo systemctl status jaeger-all-in-one
-sudo journalctl -u jaeger-all-in-one -f
-
-4. Verification
-
-http://localhost:16686 (Jaeger Web UI)
-localhost:4317
-

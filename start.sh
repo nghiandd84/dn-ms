@@ -28,6 +28,8 @@ export WALLET_PORT=5151
 export LOOKUP_PORT=5161
 export PAYMENT_STRIPE_PORT=5121
 export NOTIFICATION_APP_PORT=4001
+export KAFKA_CLUSTER_ID=yimqoROMQUaZ0TsAUbouFQ
+export OTEL_VERSION=0.96.0
 # update varibale when startup
 # sudo nano ~/.bashrc
 
