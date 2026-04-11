@@ -16,8 +16,9 @@ axum = { workspace = true }
 chrono = { workspace = true }
 jsonwebtoken = { workspace = true, features = ["rust_crypto"] }
 serde = { workspace = true }
+opentelemetry = { workspace = true }
 tracing = { workspace = true }
-utoipa = { workspace = true }
+utoipa = { workspace = true, features = ["uuid"] }
 uuid = { workspace = true, features = ["serde", "v4"] }
 
 shared-shared-data-auth = { workspace = true }

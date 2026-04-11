@@ -78,12 +78,7 @@ impl Interceptor for TokenAuthInterceptor {
                 }
             };
             debug!("Access token result: {:?}", access_token);
-            // Update baggae context of span_context
-            let mut baggage = Baggage::new();
-            let _ = baggage.insert("user_id", access_token.user_id.to_string());
-            let _ = baggage.insert("client_id", access_token.client_id.to_string());
-            let _ = baggage.insert("accesses", access_token.access_to_string());
-            let updated_span_context = span_context.with_baggage(baggage);
+            let updated_span_context = span_context.with_baggage(access_token.to_baggage());
             session.set_us_req_header("Authorization".to_string(), vec![]);
             session.set_span_context(updated_span_context.clone());
             debug!(

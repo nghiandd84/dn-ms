@@ -2,13 +2,17 @@
 
 use shared_shared_auth::{
     define_resource_perms,
-    permission::{DELETE, READ, UPDATE},
+    permission::{ADMIN, CREATE, DELETE, READ, UPDATE},
     ResourcePermission,
 };
 
 // BAKER Permission
+const BAKER_RESOURCE: &str = "BAKERY_BAKER";
+
 define_resource_perms! {
-    CanDeleteBaker  => (DELETE, "BAKERY_BAKER"),
-    CanUpdateBaker  => (UPDATE, "BAKERY_BAKER"),
-    CanReadBaker => (READ, "BAKERY_BAKER")
+    CanDeleteBaker  => (DELETE, BAKER_RESOURCE),
+    CanUpdateBaker  => (UPDATE, BAKER_RESOURCE),
+    CanReadBaker => (READ, BAKER_RESOURCE),
+    CanCreateBaker => (CREATE, BAKER_RESOURCE),
+    CanManageBaker => (ADMIN, BAKER_RESOURCE)
 }
