@@ -128,7 +128,7 @@ async fn get_wallet_withdrawals(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_withdrawal(
-    idempotency_key: IdempotencyKey,
+    _idempotency_key: IdempotencyKey,
     Path(withdrawal_id): Path<Uuid>,
     ValidJson(req): ValidJson<WithdrawalForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

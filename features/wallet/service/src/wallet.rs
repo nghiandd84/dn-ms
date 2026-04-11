@@ -1,4 +1,4 @@
-use tracing::{debug, warn};
+use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{

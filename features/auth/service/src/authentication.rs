@@ -41,7 +41,7 @@ impl AuthenticationRequestService {
 
     pub async fn login<'a>(request: AuthLoginRequest) -> Result<AuthLoginData> {
         // Get request data from request.state\
-        let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|e| AppError::Unknown)?;
+        let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|_| AppError::Unknown)?;
         let request_code_data = AuthenticationRequestQuery::get(state_id).await;
         if request_code_data.is_err() {
             return Err(AppError::EntityNotFound {

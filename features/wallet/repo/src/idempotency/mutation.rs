@@ -34,11 +34,11 @@ impl IdempotencyMutation {
     }
 
     pub async fn create_if_not_exists(
-        key: &str,
-        endpoint: &str,
-        state: &str,
-        request_hash: Option<&str>,
-        ttl_hours: i64,
+        _key: &str,
+        _endpoint: &str,
+        _state: &str,
+        _request_hash: Option<&str>,
+        _ttl_hours: i64,
     ) -> Result<bool, DbErr> {
         // TOTO: This would need access to the database connection
 
@@ -51,9 +51,9 @@ impl IdempotencyMutation {
     }
 
     pub async fn update_completed(
-        key: &str,
-        status: i32,
-        response_body: &str,
+        _key: &str,
+        _status: i32,
+        _response_body: &str,
     ) -> Result<bool, DbErr> {
         // This would need access to the database connection
         // For now, return a placeholder implementation

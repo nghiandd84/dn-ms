@@ -5,7 +5,6 @@ use dotenv::dotenv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::env;
-use std::sync::{Arc, Mutex};
 use tokio::signal;
 use tracing::{debug, info};
 

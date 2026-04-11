@@ -2,7 +2,7 @@ use features_event_entities::event;
 use sea_orm_migration::prelude::*;
 
 // Import the Postgres-specific Type extension
-use sea_orm_migration::prelude::sea_query::extension::postgres::Type;
+// use sea_orm_migration::prelude::sea_query::extension::postgres::Type;
 
 pub struct Migration;
 

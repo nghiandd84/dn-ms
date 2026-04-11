@@ -357,6 +357,9 @@ debug = 0 # No debug info, smallest size
 # OR
 #split-debuginfo = "unpacked" # Keeps symbols out of the binary (macOS/Linux)
 
+incremental = false
+
+
 [profile.release]
 opt-level = "z"      # Optimize for size
 lto = true           # Enable Link Time Optimization

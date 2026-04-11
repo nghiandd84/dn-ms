@@ -8,7 +8,7 @@ echo "Start DN-MS"
 echo "Argument 1 is $1"
 
 APP_DIRECTORY=./target/debug
-RUST_LOG_DIRECTORY=/home/nghiandd/Training/dn-ms/logs
+RUST_LOG_DIRECTORY=./logs
 CURRENT_DATE=$(date +%Y%m%d)
 
 export AUTH_PORT=5011
@@ -312,12 +312,12 @@ for i in {1..2}; do
     PORT=516$i
     echo "---  LOOKUP on port $PORT ---"
     # Execute the program
-    WALLET_PORT=516$i $APP_DIRECTORY/api-lookup  &
+    LOOKUP_PORT=516$i $APP_DIRECTORY/api-lookup  &
 done
 sleep 1s
 
 echo "------------ Start Auth-Server ------------"
-IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/web/auth-web >> $RUST_LOG_DIRECTORY/auth-server.log &
+IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/web/server >> $RUST_LOG_DIRECTORY/auth-server.log &
 
 echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"

@@ -40,7 +40,7 @@ const TAG: &str = "p2p_transfer";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_p2p_transfer(
-    idempotency_key: IdempotencyKey,
+    _idempotency_key: IdempotencyKey,
     ValidJson(req): ValidJson<P2pTransferForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let transfer_id = P2pTransferService::create_p2p_transfer(req).await?;

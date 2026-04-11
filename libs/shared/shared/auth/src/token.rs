@@ -4,7 +4,7 @@ use jsonwebtoken::{
     Validation,
 };
 use std::str::FromStr;
-use tracing::{debug, error};
+use tracing::error;
 use uuid::Uuid;
 
 use crate::claim::{AccessTokenStruct, ClaimSubject, Claims, RefreshTokenStruct, UserAccessData};

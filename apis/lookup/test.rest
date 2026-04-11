@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:5161
 @typeCode = CURENCY
-@lookupTypeId = e9f22a1f-6530-4da5-b0fe-dd279bfa2df9
+@lookupTypeId = abdd7c30-b682-4b83-b9e9-de042ec2aade
 @itemId = 67cf1fe1-9dd3-490d-b016-bf8a72800330
 @locale = en-US
 @translationId = 9a9c558c-a7f0-4603-a612-77b7ac4ea5b6
