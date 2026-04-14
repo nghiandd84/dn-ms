@@ -177,6 +177,7 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     FilterEnum::String(filter) => match filter.operator {
                         FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
                         FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
+                        FilterOperator::StartWith => Condition::any().add(column.starts_with(filter.value.as_deref().unwrap_or_default())),
                         FilterOperator::Like => {
                             Condition::any().add(column.contains(filter.value.as_deref().unwrap_or_default()))
                         }

@@ -1,5 +1,6 @@
 use sea_orm::DatabaseConnection;
 use serde::{de::DeserializeOwned, Serialize};
+use shared_shared_data_error::auth::AuthError;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -62,6 +63,12 @@ where
             None => 0,
         }
     }
+
+    async fn pull_permission(&self) -> Result<(), AuthError> {
+        // TODO: Implement the logic to poll permissions from the database and update the permissions_map
+
+        Ok(())
+    }
 }
 
 impl<T, C> AppState<T, C>
@@ -81,6 +88,17 @@ where
 
     pub fn get_state(&self) -> Option<&T> {
         self.state.as_ref()
+    }
+
+    pub fn set_permission_map(&mut self, role_name: String, permissions: Vec<(String, u32)>) {
+        let mut permission_map = match self.permissions_map.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => {
+                error!("Failed to acquire lock on permissions map: {}", poisoned);
+                return;
+            }
+        };
+        permission_map.insert(role_name, permissions);
     }
 
     pub fn get_producer(&self, key: String) -> Option<Producer> {

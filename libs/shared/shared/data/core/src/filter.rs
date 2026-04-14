@@ -15,6 +15,7 @@ pub enum FilterOperator {
     GreaterEqual,
     In,
     NotIn,
+    StartWith,
 }
 impl<'de> Deserialize<'de> for FilterOperator {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -34,6 +35,7 @@ impl<'de> Deserialize<'de> for FilterOperator {
             "gte" => Ok(FilterOperator::GreaterEqual),
             "in" => Ok(FilterOperator::In),
             "nin" => Ok(FilterOperator::NotIn),
+            "sw" => Ok(FilterOperator::StartWith),
             _ => Err(serde::de::Error::custom("Invalid filter operator value")),
         }
     }
@@ -146,6 +148,7 @@ pub fn convert_filter_param_to_query_string<T>(filter: &FilterParam<T>) -> Strin
         FilterOperator::GreaterEqual => "gte",
         FilterOperator::In => "in",
         FilterOperator::NotIn => "nin",
+        FilterOperator::StartWith => "sw",
     };
     format!("{}={}|{}", filter.name, operator_str, filter.raw_value)
 }

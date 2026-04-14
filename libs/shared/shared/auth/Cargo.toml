@@ -10,7 +10,6 @@ name = "shared_shared_auth"
 path = "src/lib.rs"
 
 [dependencies]
-
 async-trait = { workspace = true }
 axum = { workspace = true }
 chrono = { workspace = true }
@@ -24,3 +23,8 @@ uuid = { workspace = true, features = ["serde", "v4"] }
 shared-shared-data-auth = { workspace = true }
 shared-shared-data-error = { workspace = true }
 shared-shared-macro = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+http = { workspace = true }
+

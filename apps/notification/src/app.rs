@@ -1,6 +1,7 @@
 use axum::{routing::get, Router};
 use features_notification_stream::message::NotificationMessage;
-use std::sync::{Arc, RwLock};
+use tokio::{spawn, time::interval};
+use std::{sync::{Arc, RwLock}, time::Duration};
 use tracing::{debug, error};
 
 use shared_shared_app::{
@@ -109,8 +110,8 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
 
     let notification_state = Arc::new(RwLock::new(NotificationState::new(new_clients())));
 
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+    spawn(async move {
+        let mut interval = interval(Duration::from_secs(60));
         loop {
             interval.tick().await;
             debug!("Interval task running...");

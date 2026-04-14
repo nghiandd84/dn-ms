@@ -26,6 +26,8 @@ shared-shared-extractor = { workspace = true }
 shared-shared-middleware = { workspace = true }
 shared-shared-observability = { workspace = true }
 
+features-auth-remote = { workspace = true }
+
 features-lookup-model = { workspace = true }
 features-lookup-migrations = { workspace = true }
 features-lookup-service = { workspace = true }

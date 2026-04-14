@@ -227,3 +227,14 @@ Content-Type: application/json
     "client_id": "{{clientId}}",
     "token": "{{AccessToken}}"
 }
+
+
+
+### Test
+GET {{baseUrl}}/permissions?resource=sw|LOOKUP&page=1&page_size=20
+Content-Type: application/json
+
+### GET PERMISION of Service AUTH
+GET {{baseUrl}}/permissions?resource=sw|AUTH&page=1&page_size=20
+Content-Type: application/json
+baggage: accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000

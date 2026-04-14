@@ -34,7 +34,7 @@ impl DnConfig {
     pub fn from_args(app_config: &AppConfig) -> Self {
         let directory_path = app_config.dp.as_str();
         let config_path = Path::new(directory_path).join("config/config.yaml");
-        print!("Loading config from path: {:?}", config_path);
+        debug!("Loading config from path: {:?}", config_path);
         let raw_config = fs::read_to_string(&config_path).unwrap();
         let config = Config::builder()
             .add_source(File::from_str(raw_config.as_str(), FileFormat::Yaml))

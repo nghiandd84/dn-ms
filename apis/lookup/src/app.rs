@@ -1,9 +1,15 @@
+use std::time::Duration;
+
 use axum::Router;
+use features_auth_remote::PermissionService;
+use tokio::{spawn, time::interval};
 use tracing::debug;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use shared_shared_app::{config::AppConfig, start_app::StartApp, state::AppState};
+use shared_shared_app::{
+    config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
+};
 use shared_shared_config::db::Database;
 
 use features_lookup_migrations::{Migrator, MigratorTrait};
@@ -45,10 +51,59 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
+
+    fn custom_handler(
+        &self,
+        app_state: &mut AppState<LookupAppState, LookupCacheState>,
+    ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        async {
+            spawn(async move {
+                let service_key = "LOOKUP".to_string();
+
+                let mut interval = interval(Duration::from_secs(30));
+                loop {
+                    interval.tick().await;
+                    debug!("Interval task running ...");
+                    debug!(
+                        "Call API Permission to get permission by service name: {}",
+                        service_key
+                    );
+                    let consul_client = get_consul_client().unwrap();
+                    PermissionService::update_remote(&consul_client).await;
+                    let all_permissions =
+                        PermissionService::get_roles_by_service_name(service_key.clone()).await;
+                    debug!(
+                        "Permissions for service {}: {:?}",
+                        service_key, all_permissions
+                    );
+                    /*
+                    for (role_name, permissions) in all_permissions {
+                        let perm = permissions.iter().fold(0, |acc, perm| acc | perm.mask);
+                        debug!("Role: {}, Permissions mask: {}", role_name, perm);
+                        app_state.set_permission_map(
+                            role_name,
+                            permissions
+                                .iter()
+                                .map(|perm| (perm.resource.clone(), perm.mask))
+                                .collect(),
+                        );
+                    }
+                    */
+                }
+            });
+            Ok(())
+        }
+    }
 }
 
 pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
-    let app_config = AppConfig::new("LOOKUP".to_string(), Some("lookup".to_string()), true, true);
+    let service_key = "LOOKUP".to_string();
+    let app_config = AppConfig::new(
+        service_key.to_string(),
+        Some("lookup".to_string()),
+        true,
+        true,
+    );
 
     let mut my_app = MyApp {
         config: &app_config,
