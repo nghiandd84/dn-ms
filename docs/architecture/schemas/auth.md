@@ -1,3 +1,144 @@
+# Auth Microservice Database Schema
+
+## Entity Relationship Diagram (Mermaid)
+
+```mermaid
+erDiagram
+	users {
+		uuid id PK
+		varchar email UNIQUE
+		boolean confirmed
+		boolean two_factor_enabled
+		smallint version
+		text password
+		timestamp created_at
+		timestamp updated_at
+		boolean is_active
+		varchar language
+	}
+	access {
+		uuid id PK
+		uuid user_id FK
+		uuid role_id FK
+		varchar key
+		timestamp created_at
+		timestamp updated_at
+	}
+	active_codes {
+		uuid id PK
+		varchar code UNIQUE
+		boolean is_used
+		timestamp expiration_time
+		timestamp created_at
+		timestamp updated_at
+		uuid user_id FK
+	}
+	auth_codes {
+		uuid id PK
+		varchar code UNIQUE
+		uuid client_id FK
+		uuid user_id FK
+		varchar redirect_uri
+		varchar[] scopes
+		timestamp expires_at
+		timestamp created_at
+		timestamp updated_at
+	}
+	authentication_requests {
+		uuid id PK
+		uuid client_id FK
+		varchar[] scopes
+		varchar response_type
+		varchar redirect_uri
+		varchar state
+		timestamp expires_at
+		timestamp created_at
+		timestamp updated_at
+	}
+	client_scopes {
+		uuid id PK
+		uuid client_id FK
+		uuid scope_id FK
+		timestamp created_at
+		timestamp updated_at
+	}
+	clients {
+		uuid id PK
+		varchar client_secret
+		varchar name UNIQUE
+		varchar description
+		varchar[] redirect_uris
+		varchar[] allowed_grants
+		timestamp created_at
+		timestamp updated_at
+		varchar client_key
+		varchar email
+	}
+	permissions {
+		uuid id PK
+		varchar resource UNIQUE
+		varchar description
+		integer mask
+		timestamp created_at
+		timestamp updated_at
+	}
+	role_permissions {
+		uuid id PK
+		uuid role_id FK
+		uuid permission_id FK
+		timestamp created_at
+		timestamp updated_at
+	}
+	roles {
+		uuid id PK
+		varchar name UNIQUE
+		varchar description
+		timestamp created_at
+		timestamp updated_at
+		uuid client_id FK
+		boolean is_default
+	}
+	scopes {
+		uuid id PK
+		varchar name UNIQUE
+		varchar description
+		timestamp created_at
+		timestamp updated_at
+	}
+	seaql_migrations {
+		varchar version PK
+		bigint applied_at
+	}
+	tokens {
+		uuid id PK
+		varchar access_token UNIQUE
+		varchar refresh_token UNIQUE
+		uuid user_id FK
+		uuid client_id FK
+		varchar[] scopes
+		timestamp access_token_expires_at
+		timestamp refresh_token_expires_at
+		timestamp revoked_at
+		timestamp created_at
+		timestamp updated_at
+	}
+    
+	users ||--o{ access : "has access"
+	users ||--o{ active_codes : "has codes"
+	users ||--o{ auth_codes : "has auth codes"
+	users ||--o{ tokens : "has tokens"
+	access ||--o{ roles : "has role"
+	roles ||--o{ role_permissions : "has permissions"
+	permissions ||--o{ role_permissions : "is assigned"
+	clients ||--o{ auth_codes : "issues codes"
+	clients ||--o{ client_scopes : "has scopes"
+	clients ||--o{ tokens : "issues tokens"
+	clients ||--o{ roles : "has roles"
+	scopes ||--o{ client_scopes : "is assigned"
+	auth_codes ||--o{ authentication_requests : "requests"
+	tokens ||--o{ users : "belongs to"
+	tokens ||--o{ clients : "issued by"
+```
 ## Database Schema (auth)
 
 ### Tables
@@ -145,18 +286,3 @@
 | updated_at          | timestamp | CURRENT_TIMESTAMP | NOT NULL            |
 | is_active           | boolean   | false             | NOT NULL            |
 | language            | varchar   | 'en-US'           | NOT NULL            |
-
-### Indexes & Constraints
-
-- PK = Primary Key
-- FK = Foreign Key
-- UNIQUE = Unique Constraint
-
-### Foreign Keys (selected)
-
-- auth_codes.client_id → clients.id (ON DELETE CASCADE)
-- auth_codes.user_id → users.id (ON DELETE CASCADE)
-- client_scopes.client_id → clients.id (ON DELETE CASCADE)
-- client_scopes.scope_id → scopes.id (ON DELETE CASCADE)
-- tokens.client_id → clients.id (ON DELETE CASCADE)
-- tokens.user_id → users.id (ON DELETE CASCADE)
