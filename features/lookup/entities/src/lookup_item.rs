@@ -58,6 +58,7 @@ pub struct Model {
     pub updated_at: DateTime,
 }
 
+
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
@@ -66,6 +67,12 @@ pub enum Relation {
         to = "lookup_type::Column::Id"
     )]
     LookupType,
+}
+
+impl Related<lookup_type::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LookupType.def()
+    }
 }
 
 #[async_trait]

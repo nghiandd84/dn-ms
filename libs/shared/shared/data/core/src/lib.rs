@@ -1,5 +1,6 @@
 pub mod deserialize;
 pub mod filter;
+pub mod query_params;
 pub mod filter_deserialize;
 pub mod language;
 pub mod mutation;

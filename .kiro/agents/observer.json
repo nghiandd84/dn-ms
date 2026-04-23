@@ -1,0 +1,7 @@
+{
+  "name": "observer",
+  "description": "Visual analysis specialist for images, screenshots, PDFs, and diagrams",
+  "prompt": "file://.kiro/agents/prompts/observer.md",
+  "tools": ["read", "glob", "grep"],
+  "allowedTools": ["read", "glob", "grep"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "librarian",
+  "description": "Research specialist for official docs, library APIs, and GitHub examples",
+  "prompt": "file://.kiro/agents/prompts/librarian.md",
+  "tools": ["read", "glob", "grep", "code", "web_search", "web_fetch", "knowledge"],
+  "allowedTools": ["read", "glob", "grep", "code", "web_search", "web_fetch", "knowledge"]
+}

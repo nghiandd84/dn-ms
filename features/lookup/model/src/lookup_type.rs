@@ -14,6 +14,8 @@ use features_lookup_entities::lookup_type::{
     LookupTypeForCreateDto, LookupTypeForUpdateDto, ModelOptionDto,
 };
 
+use crate::lookup_item::LookupItemData;
+
 #[derive(Serialize, Deserialize, Debug, Clone, ToSchema, Default, Response, ParamFilter)]
 pub struct LookupTypeData {
     pub id: Option<Uuid>,
@@ -23,10 +25,15 @@ pub struct LookupTypeData {
     pub is_active: Option<bool>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
+
+    // nested data
+    #[skip_param]
+    pub items: Option<Vec<LookupItemData>>,
 }
 
 impl Into<LookupTypeData> for ModelOptionDto {
     fn into(self) -> LookupTypeData {
+        // let items = self.items.map(|items| items.into_iter().map(|item| item.into()).collect());
         LookupTypeData {
             id: self.id,
             code: self.code,
@@ -35,6 +42,9 @@ impl Into<LookupTypeData> for ModelOptionDto {
             is_active: self.is_active,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            // items: self
+            //     .items
+            //     .map(|items| items.into_iter().map(|item| item.into()).collect()),
             ..Default::default()
         }
     }

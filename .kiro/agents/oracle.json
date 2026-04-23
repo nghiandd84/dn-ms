@@ -1,0 +1,8 @@
+{
+  "name": "oracle",
+  "description": "Senior architect and strategic advisor for deep reasoning on high-stakes decisions",
+  "prompt": "file://.kiro/agents/prompts/oracle.md",
+  "tools": ["read", "glob", "grep", "code"],
+  "allowedTools": ["read", "glob", "grep", "code"],
+  "resources": ["file://Cargo.toml"]
+}

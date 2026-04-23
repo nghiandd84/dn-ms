@@ -45,7 +45,7 @@ pub fn derive_builder(input: TokenStream) -> TokenStream {
     proc_example::derive_builder(input)
 }
 
-#[proc_macro_derive(ParamFilter)]
+#[proc_macro_derive(ParamFilter, attributes(skip_param))]
 pub fn param_filter_macro_derive_impl(input: TokenStream) -> TokenStream {
     filter::filter_macro_derive_impl(input)
 }

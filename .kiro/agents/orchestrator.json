@@ -1,0 +1,9 @@
+{
+  "name": "orchestrator",
+  "description": "AI coding orchestrator that routes tasks to specialist agents",
+  "prompt": "file://.kiro/agents/prompts/orchestrator.md",
+  "tools": ["read", "write", "glob", "grep", "code", "shell", "subagent", "todo_list", "web_search", "web_fetch", "knowledge"],
+  "allowedTools": ["read", "glob", "grep", "code", "subagent", "todo_list", "knowledge"],
+  "resources": ["file://Cargo.toml"],
+  "welcomeMessage": "What do you need built?"
+}

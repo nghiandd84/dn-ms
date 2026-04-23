@@ -1,0 +1,5 @@
+{
+  "knowledge.indexType": "Best",
+  "chat.enableKnowledge": true,
+  "chat.defaultAgent": "orchestrator"
+}

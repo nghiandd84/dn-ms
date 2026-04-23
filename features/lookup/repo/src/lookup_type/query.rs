@@ -1,7 +1,7 @@
+use serde::de;
+use tracing::debug;
 use uuid::Uuid;
 
-use features_lookup_entities::lookup_type::{ActiveModel, Column, Entity, ModelOptionDto};
-use features_lookup_model::lookup_type::LookupTypeData;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
@@ -9,6 +9,10 @@ use shared_shared_data_core::{
 };
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
+
+use features_lookup_entities::lookup_item::{Column as ItemColumn, Entity as ItemEntity};
+use features_lookup_entities::lookup_type::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_lookup_model::lookup_type::LookupTypeData;
 
 #[derive(Query)]
 #[query(key_type(Uuid))]
@@ -30,8 +34,25 @@ impl LookupTypeQueryManager {
 pub struct LookupTypeQuery;
 
 impl LookupTypeQuery {
-    pub async fn get_lookup_type_by_id(id: Uuid) -> Result<LookupTypeData, AppError> {
-        let model = LookupTypeQueryManager::get_by_id_uuid(id).await?;
+    pub async fn get_lookup_type_by_id(
+        id: Uuid,
+        includes: Vec<String>,
+    ) -> Result<LookupTypeData, AppError> {
+        debug!(
+            "Getting lookup_type by id: {}, includes: {:?}",
+            id, includes
+        );
+        let (lookup_type_model, items) = Entity::find_by_id(id)
+            .find_with_related(ItemEntity)
+            .all(LookupTypeQueryManager::get_db())
+            .await?
+            .into_iter()
+            .next()
+            .ok_or_else(|| DbErr::RecordNotFound("Not found".to_string()))?;
+
+        let mut model: ModelOptionDto = lookup_type_model.into();
+        model.items = items.into_iter().map(|item| item.into()).collect();
+        debug!("Mapped lookup_type model: {:?}", model);
         Ok(model.into())
     }
 

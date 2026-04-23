@@ -1,0 +1,7 @@
+{
+  "name": "explorer",
+  "description": "Codebase search specialist for discovering and mapping what exists",
+  "prompt": "file://.kiro/agents/prompts/explorer.md",
+  "tools": ["read", "glob", "grep", "code"],
+  "allowedTools": ["read", "glob", "grep", "code"]
+}

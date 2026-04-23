@@ -1,0 +1,8 @@
+{
+  "name": "councillor",
+  "description": "Council member providing independent read-only analysis and solutions",
+  "prompt": "file://.kiro/agents/prompts/councillor.md",
+  "tools": ["read", "glob", "grep", "code"],
+  "allowedTools": ["read", "glob", "grep", "code"],
+  "resources": ["file://Cargo.toml"]
+}

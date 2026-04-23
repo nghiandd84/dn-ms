@@ -30,7 +30,7 @@ Content-Type: application/json
 }
 
 ### Get Lookup Type By Code
-GET {{baseUrl}}/lookup-types/{{lookupTypeId}}
+GET {{baseUrl}}/lookup-types/{{lookupTypeId}}?includes=items
 
 ### Update Lookup Type
 PATCH {{baseUrl}}/lookup-types/{{lookupTypeId}}
@@ -47,7 +47,7 @@ DELETE {{baseUrl}}/lookup-types/1ff10782-b14a-4b16-a253-d23667e669b6
 ### ===== LOOKUP ITEMS =====
 
 ### Get All Lookup Items
-GET {{baseUrl}}/lookup-types/{{typeCode}}/items
+GET {{baseUrl}}/lookup-types/{{typeCode}}/items?order_name=sort_order&order_direction=1
 
 ### GET COUNTRY Items 
 GET {{baseUrl}}/lookup-types/COUNTRY/items?page_size=20

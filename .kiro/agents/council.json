@@ -1,0 +1,7 @@
+{
+  "name": "council",
+  "description": "Multi-model consensus engine for high-stakes architectural decisions",
+  "prompt": "file://.kiro/agents/prompts/council.md",
+  "tools": ["subagent", "read", "glob", "grep", "code"],
+  "allowedTools": ["subagent", "read", "glob", "grep", "code"]
+}

@@ -15,6 +15,7 @@ use shared_shared_data_app::{
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 
 use features_lookup_model::{
@@ -78,8 +79,11 @@ pub async fn get_lookup_types(
         (status = 200, description = "Lookup type", body = LookupTypeData),
     )
 )]
-pub async fn get_lookup_type(Path(id): Path<Uuid>) -> Result<ResponseJson<LookupTypeData>> {
-    let result = LookupTypeService::get_lookup_type_by_id(id).await?;
+pub async fn get_lookup_type(
+    Path(id): Path<Uuid>,
+    Query(query_params): Query<QueryParams>,
+) -> Result<ResponseJson<LookupTypeData>> {
+    let result = LookupTypeService::get_lookup_type_by_id(id, query_params).await?;
     Ok(ResponseJson(result))
 }
 

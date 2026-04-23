@@ -17,7 +17,7 @@ const FILTER_TYPES: [&str; 15] = [
     "datetime",
     "vecstring",
     "vecuuid",
-    "jsonvalue",
+    "jsonvalue"
 ];
 
 pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
@@ -35,6 +35,10 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
 
     let fields: Vec<_> = fields
         .iter()
+        .filter(|field| {
+            // Check if any attribute on the field is "skip_param"
+            !field.attrs.iter().any(|attr| attr.path().is_ident("skip_param"))
+        })
         .map(|field| {
             let name = &field.ident;
             let ty = match &field.ty {

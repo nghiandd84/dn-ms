@@ -10,4 +10,4 @@ This folder contains guides for development environment setup, Rust usage, and o
 ## Getting Started
 - Add onboarding guides for new developers.
 - Document common development workflows here.
-- See `docs/dev/installs/` for detailed infrastructure and service setup guides.
+- See `.kiro/docs/dev/installs/` for detailed infrastructure and service setup guides.

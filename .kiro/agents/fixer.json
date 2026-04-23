@@ -1,0 +1,8 @@
+{
+  "name": "fixer",
+  "description": "Fast execution specialist for well-defined code edits and tasks",
+  "prompt": "file://.kiro/agents/prompts/fixer.md",
+  "tools": ["read", "write", "glob", "grep", "code", "shell"],
+  "allowedTools": ["read", "glob", "grep", "code"],
+  "resources": ["file://Cargo.toml"]
+}

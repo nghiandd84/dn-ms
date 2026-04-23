@@ -6,6 +6,10 @@ use uuid::Uuid;
 
 use shared_shared_macro::Dto;
 
+use crate::lookup_item;
+
+use crate::lookup_item::Model as LookupModel;
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "lookup_types")]
 #[dto(name(LookupTypeForCreate), columns(code, name, description))]
@@ -24,10 +28,23 @@ pub struct Model {
     pub is_active: bool,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    pub items: Vec<LookupModel>,
 }
 
+
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "lookup_item::Entity")]
+    LookupItem,
+}
+
+impl Related<lookup_item::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LookupItem.def()
+    }
+}
 
 #[async_trait]
 impl ActiveModelBehavior for ActiveModel {

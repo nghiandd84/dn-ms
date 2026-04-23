@@ -1,0 +1,7 @@
+{
+  "name": "designer",
+  "description": "Rust API and template specialist for clean, well-structured APIs",
+  "prompt": "file://.kiro/agents/prompts/designer.md",
+  "tools": ["read", "write", "glob", "grep", "code", "shell", "web_search"],
+  "allowedTools": ["read", "glob", "grep", "code"]
+}

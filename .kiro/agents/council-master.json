@@ -1,0 +1,7 @@
+{
+  "name": "council-master",
+  "description": "Synthesizes councillor responses into optimal final answers",
+  "prompt": "file://.kiro/agents/prompts/council-master.md",
+  "tools": ["read", "glob", "grep", "code"],
+  "allowedTools": ["read", "glob", "grep", "code"]
+}

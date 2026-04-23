@@ -61,7 +61,7 @@ This guide provides step-by-step instructions to set up the development environm
   sudo apt-get update && sudo apt-get install consul
   ```
 - Start in dev mode: `consul agent -dev`
-- For production, see `/etc/consul.d/server.hcl` example in `docs/dev/installs/consult.md`
+- For production, see `/etc/consul.d/server.hcl` example in `.kiro/docs/dev/installs/consult.md`
 
 ---
 
@@ -84,7 +84,7 @@ This guide provides step-by-step instructions to set up the development environm
   wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
   sudo dpkg -i otelcol-contrib_${OTEL_VERSION}_linux_amd64.deb
   ```
-- Configure: `/etc/otelcol-contrib/config.yaml` (see `docs/dev/installs/opentelemetry-collector.md`)
+- Configure: `/etc/otelcol-contrib/config.yaml` (see `.kiro/docs/dev/installs/opentelemetry-collector.md`)
 
 ### OpenObserve (optional)
 - Download and install:
@@ -120,7 +120,7 @@ This guide provides step-by-step instructions to set up the development environm
 - Run all database migrations for every microservice:
   ```bash
   export DATABASE_URL=postgresql://dn_ms:password123@127.0.0.1:5432/dn_ms
-  bash docs/dev/generate_all_schemas.sh
+  bash .kiro/docs/dev/generate_all_schemas.sh
   ```
 - For manual migration steps, see migrations.md
 
@@ -133,6 +133,6 @@ This guide provides step-by-step instructions to set up the development environm
 
 ---
 
-- See `docs/dev/installs/` for detailed service setup
+- See `.kiro/docs/dev/installs/` for detailed service setup
 - See `AGENTS.md` for project conventions
-- See `docs/dev/README.md` for more developer guides
+- See `.kiro/docs/dev/README.md` for more developer guides
