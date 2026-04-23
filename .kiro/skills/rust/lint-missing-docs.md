@@ -43,6 +43,19 @@ pub trait Handler {  // WARN: missing documentation for a trait
 }
 ```
 
+## Bad
+
+```rust
+#![warn(missing_docs)]
+
+pub struct User {       // WARN: missing documentation
+    pub name: String,   // WARN: missing documentation
+    pub age: u32,       // WARN: missing documentation
+}
+
+pub fn process() { }   // WARN: missing documentation
+```
+
 ## Good
 
 ```rust

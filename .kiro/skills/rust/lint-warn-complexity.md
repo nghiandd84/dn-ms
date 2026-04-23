@@ -6,6 +6,40 @@
 
 The `clippy::complexity` lint group identifies unnecessarily complex code that can be simplified. Complex code is harder to read, maintain, and often hides bugs. Clippy suggests cleaner alternatives.
 
+## Bad
+
+```rust
+// Manual Option::map
+match option {
+    Some(x) => Some(x + 1),
+    None => None,
+}
+
+// Redundant identity match
+match result {
+    Ok(ok) => Ok(ok),
+    Err(err) => Err(err),
+}
+
+// Clone on Copy type
+let x: i32 = 5;
+let y = x.clone();
+```
+
+## Good
+
+```rust
+// Use Option::map
+option.map(|x| x + 1);
+
+// Return directly
+result
+
+// Copy directly
+let x: i32 = 5;
+let y = x;
+```
+
 ## Configuration
 
 ```rust

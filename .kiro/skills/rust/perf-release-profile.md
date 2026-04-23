@@ -6,6 +6,26 @@
 
 The default release profile prioritizes compile speed over runtime performance. For production binaries, tuning the release profile can yield significant performance improvements (10-40% in some cases) at the cost of longer compile times.
 
+## Bad
+
+```toml
+# Default release profile — leaves performance on the table
+[profile.release]
+# Uses defaults: lto = false, codegen-units = 16
+```
+
+## Good
+
+```toml
+# Tuned for maximum runtime performance
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+```
+
 ## Default Profile
 
 ```toml

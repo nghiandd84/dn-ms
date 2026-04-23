@@ -6,6 +6,42 @@
 
 Clippy's correctness lints catch code that is outright wrong - logic errors, undefined behavior, or code that doesn't do what you think. These should always be errors, not warnings.
 
+## Bad
+
+```rust
+// NaN comparison - always false
+if x == f64::NAN {
+    println!("is nan");
+}
+
+// Infinite iterator without bound
+for x in std::iter::repeat(1) {
+    println!("{}", x);
+}
+
+// Approximate constant
+let pi = 3.14;
+```
+
+## Good
+
+```rust
+#![deny(clippy::correctness)]
+
+// Correct NaN check
+if x.is_nan() {
+    println!("is nan");
+}
+
+// Bounded iterator
+for x in std::iter::repeat(1).take(10) {
+    println!("{}", x);
+}
+
+// Use standard constant
+let pi = std::f64::consts::PI;
+```
+
 ## Setup
 
 ```rust

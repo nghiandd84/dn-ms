@@ -6,6 +6,33 @@
 
 Property-based testing generates random inputs to verify that properties hold across all possible values, not just hand-picked examples. Proptest finds edge cases you wouldn't think to test manually—empty strings, integer overflows, unicode edge cases.
 
+## Bad
+
+```rust
+#[test]
+fn test_reverse() {
+    assert_eq!(reverse("hello"), "olleh");
+    assert_eq!(reverse(""), "");
+    assert_eq!(reverse("a"), "a");
+    // Only 3 hand-picked cases — misses unicode, long strings, etc.
+}
+```
+
+## Good
+
+```rust
+use proptest::prelude::*;
+
+proptest! {
+    #[test]
+    fn test_reverse_reverse_is_identity(s in ".*") {
+        let reversed: String = s.chars().rev().collect();
+        let double_reversed: String = reversed.chars().rev().collect();
+        assert_eq!(s, double_reversed); // Holds for ALL strings
+    }
+}
+```
+
 ## Setup
 
 ```toml

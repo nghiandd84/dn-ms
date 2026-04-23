@@ -6,6 +6,35 @@
 
 SIMD (Single Instruction, Multiple Data) processes multiple values per instruction—4x, 8x, or more speedup for suitable algorithms. Rust's portable SIMD (nightly) and crates like `wide` provide cross-platform vectorization without architecture-specific intrinsics. For stable Rust, let LLVM auto-vectorize or use platform-specific crates.
 
+## Bad
+
+```rust
+// Scalar loop — processes one element at a time
+fn sum(data: &[f32]) -> f32 {
+    let mut total = 0.0;
+    for i in 0..data.len() {
+        total += data[i]; // Index-based, harder to autovectorize
+    }
+    total
+}
+```
+
+## Good
+
+```rust
+// Iterator-based — LLVM can autovectorize this to SIMD
+fn sum(data: &[f32]) -> f32 {
+    data.iter().sum()
+}
+
+// Explicit chunks for guaranteed vectorization opportunity
+fn add_arrays(a: &[f32], b: &[f32], out: &mut [f32]) {
+    for ((x, y), o) in a.iter().zip(b).zip(out.iter_mut()) {
+        *o = x + y;
+    }
+}
+```
+
 ## Autovectorization (Stable)
 
 ```rust

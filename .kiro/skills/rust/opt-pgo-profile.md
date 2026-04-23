@@ -6,6 +6,27 @@
 
 PGO uses real runtime behavior to guide compiler optimization decisions. By profiling actual workloads, the compiler learns which code paths are hot, optimizing them aggressively while deprioritizing cold paths. This can yield 10-30% performance improvements beyond standard optimizations.
 
+## Bad
+
+```bash
+# Default release build — no profile-guided optimization
+cargo build --release
+```
+
+## Good
+
+```bash
+# 1. Build instrumented binary
+RUSTFLAGS="-Cprofile-generate=/tmp/pgo-data" cargo build --release
+
+# 2. Run representative workloads to collect profile data
+./target/release/my_app < typical_workload.txt
+
+# 3. Merge and rebuild with profile data
+llvm-profdata merge -o /tmp/pgo-data/merged.profdata /tmp/pgo-data
+RUSTFLAGS="-Cprofile-use=/tmp/pgo-data/merged.profdata" cargo build --release
+```
+
 ## The PGO Process
 
 1. **Instrument**: Build with profiling instrumentation

@@ -6,6 +6,38 @@
 
 The `clippy::cargo` lint group checks Cargo.toml for issues that affect publishing and dependency management. For crates intended for crates.io, these checks help ensure a professional, well-configured package.
 
+## Bad
+
+```toml
+[package]
+name = "my-crate"
+version = "0.1.0"
+# Missing: description, license, repository
+
+[dependencies]
+serde = "*"          # Wildcard version
+tokio = "*"          # Wildcard version
+```
+
+## Good
+
+```toml
+[package]
+name = "my-crate"
+version = "0.1.0"
+edition = "2021"
+description = "A short description of what this crate does"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/user/my-crate"
+
+[dependencies]
+serde = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+
+[lints.clippy]
+cargo = "warn"
+```
+
 ## Configuration
 
 ```toml

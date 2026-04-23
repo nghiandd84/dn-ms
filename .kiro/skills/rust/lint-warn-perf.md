@@ -6,6 +6,34 @@
 
 The `clippy::perf` lint group catches performance anti-patterns—inefficient allocations, unnecessary copies, suboptimal API usage. While not all performance issues are critical, avoiding obvious inefficiencies is good practice.
 
+## Bad
+
+```rust
+// String pattern instead of char
+s.starts_with("x");
+s.contains("a");
+
+// Unnecessary allocation for iteration
+for x in vec![1, 2, 3] { }
+
+// Inefficient to_vec
+let v = slice.iter().cloned().collect::<Vec<_>>();
+```
+
+## Good
+
+```rust
+// Char pattern - faster
+s.starts_with('x');
+s.contains('a');
+
+// Array - no allocation
+for x in [1, 2, 3] { }
+
+// Direct to_vec
+let v = slice.to_vec();
+```
+
 ## Configuration
 
 ```rust

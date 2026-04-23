@@ -1,6 +1,6 @@
 ---
 name: verification
-description: Evidence before claims — run verification commands before any completion/success statement. Trigger when about to claim 'done', 'fixed', 'passing', 'complete', 'works now', before committing, creating PRs, or moving to next task. Also trigger when expressing satisfaction like 'great', 'perfect', or any positive assessment of work state without fresh evidence.
+description: Use when about to claim 'done', 'fixed', 'passing', 'complete', 'works now', before committing, creating PRs, or moving to next task. Also trigger when expressing satisfaction like 'great', 'perfect', or any positive assessment of work state without fresh evidence.
 ---
 
 # Verification Before Completion

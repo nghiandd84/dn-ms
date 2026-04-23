@@ -6,6 +6,41 @@
 
 The `clippy::style` lint group enforces idiomatic Rust patterns. While not bugs, style violations make code harder to read and maintain. Consistent style helps teams work together and makes code easier to review.
 
+## Bad
+
+```rust
+// len() == 0 instead of is_empty()
+if data.len() == 0 { return; }
+
+// Explicit return at end
+fn add(a: i32, b: i32) -> i32 {
+    return a + b;
+}
+
+// Match instead of if let
+match option {
+    Some(x) => do_something(x),
+    None => {},
+}
+```
+
+## Good
+
+```rust
+// Idiomatic emptiness check
+if data.is_empty() { return; }
+
+// Implicit return
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+// if let for single-arm match
+if let Some(x) = option {
+    do_something(x);
+}
+```
+
 ## Configuration
 
 ```rust

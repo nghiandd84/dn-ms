@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Use when the user asks to commit changes, create a git commit, or mentions "/commit". Supports auto-detecting type/scope, generating conventional commit messages, interactive commits, and intelligent file staging.
+description: Use when the user asks to commit changes, create a git commit, or mentions "/commit"
 ---
 
 # Git Commit with Conventional Commits

@@ -90,6 +90,21 @@ impl MyCollection<T> {
 }
 ```
 
+## Good
+
+```rust
+impl<T> MyCollection<T> {
+    fn iter(&self) -> impl Iterator<Item = &T> { }
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> { }
+}
+
+impl<T> IntoIterator for MyCollection<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<T>;
+    fn into_iter(self) -> Self::IntoIter { }
+}
+```
+
 ## Additional Iterator Methods
 
 ```rust

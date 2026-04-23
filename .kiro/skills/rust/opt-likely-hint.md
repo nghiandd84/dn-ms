@@ -6,6 +6,42 @@
 
 Modern CPUs predict branches to speculatively execute code. Mispredictions cause pipeline stalls (10-20 cycles). Helping the compiler understand which branches are likely allows it to generate optimal code layout and branch hints, improving performance in hot paths.
 
+## Bad
+
+```rust
+fn process(data: Option<&Data>) -> Result<i32, Error> {
+    // No hints — compiler can't distinguish hot vs cold paths
+    if data.is_none() {
+        return Err(Error::Missing);
+    }
+    if data.unwrap().is_corrupted() {
+        return Err(Error::Corrupt);
+    }
+    Ok(data.unwrap().compute())
+}
+```
+
+## Good
+
+```rust
+fn process(data: Option<&Data>) -> Result<i32, Error> {
+    // Early return signals unlikely path
+    let data = match data {
+        None => return Err(Error::Missing),
+        Some(d) => d,
+    };
+    if data.is_corrupted() {
+        return cold_corrupt_error(data);
+    }
+    Ok(data.compute())
+}
+
+#[cold]
+fn cold_corrupt_error(data: &Data) -> Result<i32, Error> {
+    Err(Error::Corrupt)
+}
+```
+
 ## Stable Rust: Code Structure Hints
 
 ```rust

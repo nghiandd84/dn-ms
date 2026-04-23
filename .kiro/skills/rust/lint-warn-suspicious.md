@@ -6,6 +6,33 @@
 
 The `clippy::suspicious` lint group catches code patterns that are syntactically valid but almost always wrong. These are potential bugs that deserve investigation. Enabling this group as a warning helps catch mistakes early.
 
+## Bad
+
+```rust
+// Operator precedence trap
+let bits = 1 << 4 + 1;  // Means 1 << 5, not (1 << 4) + 1
+
+// Assignment in condition
+if (x = 5) { }
+
+// Double negation (not pre-decrement)
+let value = --x;  // -(-x), not x -= 1
+```
+
+## Good
+
+```rust
+// Explicit precedence with parentheses
+let bits = (1 << 4) + 1;
+
+// Comparison in condition
+if x == 5 { }
+
+// Explicit negation or mutation
+let value = -(-x);  // If intended
+x -= 1;             // If decrement intended
+```
+
 ## Configuration
 
 ```rust

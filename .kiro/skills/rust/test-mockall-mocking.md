@@ -6,6 +6,38 @@
 
 Unit tests should isolate the code under test from external dependencies (databases, APIs, file systems). Mockall generates mock implementations of traits, allowing you to control and verify behavior without real dependencies.
 
+## Bad
+
+```rust
+#[test]
+fn test_user_service() {
+    let db = PostgresDatabase::connect("localhost:5432"); // Real DB needed
+    let service = UserService::new(db);
+    let user = service.find_user(42); // Slow, flaky, requires setup
+    assert!(user.is_some());
+}
+```
+
+## Good
+
+```rust
+#[automock]
+trait Database {
+    fn get_user(&self, id: u64) -> Option<User>;
+}
+
+#[test]
+fn test_user_service() {
+    let mut mock = MockDatabase::new();
+    mock.expect_get_user()
+        .with(eq(42))
+        .returning(|_| Some(User { id: 42, name: "Alice".into() }));
+
+    let service = UserService::new(mock); // No real DB needed
+    assert_eq!(service.find_user(42).unwrap().name, "Alice");
+}
+```
+
 ## Setup
 
 ```toml

@@ -6,6 +6,32 @@
 
 Criterion provides statistically rigorous benchmarking with warmup, multiple iterations, outlier detection, and comparison between runs. It's far more reliable than simple timing with `Instant::now()`.
 
+## Bad
+
+```rust
+fn bench_fibonacci() {
+    let start = std::time::Instant::now();
+    let result = fibonacci(20);
+    let elapsed = start.elapsed();
+    println!("took: {:?}", elapsed); // No warmup, single sample, no statistics
+}
+```
+
+## Good
+
+```rust
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+
+fn bench_fibonacci(c: &mut Criterion) {
+    c.bench_function("fib 20", |b| {
+        b.iter(|| fibonacci(black_box(20)))
+    });
+}
+
+criterion_group!(benches, bench_fibonacci);
+criterion_main!(benches);
+```
+
 ## Setup
 
 ```toml

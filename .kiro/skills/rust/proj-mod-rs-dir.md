@@ -6,6 +6,32 @@
 
 Rust offers two styles for multi-file modules. The `mod.rs` style is clearer for larger modules and aligns with how most Rust projects are structured. Choose one style consistently.
 
+## Bad
+
+```
+src/
+├── user.rs             # Adjacent file style
+├── user/
+│   └── model.rs
+├── order/
+│   ├── mod.rs          # mod.rs style — inconsistent!
+│   └── item.rs
+└── lib.rs
+```
+
+## Good
+
+```
+src/
+├── user/
+│   ├── mod.rs          # Consistent mod.rs style throughout
+│   └── model.rs
+├── order/
+│   ├── mod.rs
+│   └── item.rs
+└── lib.rs
+```
+
 ## Two Styles
 
 ### Style 1: mod.rs (Recommended for larger modules)

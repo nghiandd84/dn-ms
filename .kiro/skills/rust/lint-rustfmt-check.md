@@ -6,6 +6,32 @@
 
 Consistent formatting eliminates style debates and makes diffs cleaner. Running `cargo fmt --check` in CI ensures all code follows the same format. This catches formatting issues before merge, not after.
 
+## Bad
+
+```rust
+fn  process( x:i32,y :i32 )->i32{
+  let result=x+y;
+    if result>0{
+      result
+  }else{
+        0
+    }
+}
+```
+
+## Good
+
+```rust
+fn process(x: i32, y: i32) -> i32 {
+    let result = x + y;
+    if result > 0 {
+        result
+    } else {
+        0
+    }
+}
+```
+
 ## CI Configuration
 
 ### GitHub Actions

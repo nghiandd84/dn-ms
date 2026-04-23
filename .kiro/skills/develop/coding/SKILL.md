@@ -1,6 +1,6 @@
 ---
 name: coding
-description: Enforces coding best practices: deep-read before modify, LSP-first navigation, TDD red-green-refactor, minimal changes, self-review, verification. Trigger when writing code, modifying source files, fixing bugs, refactoring, or when user says 'implement', 'fix this', 'add feature', 'refactor', 'modify', 'update code'.
+description: Use when writing code, modifying source files, fixing bugs, refactoring, or when user says 'implement', 'fix this', 'add feature', 'refactor', 'modify', 'update code'
 ---
 
 # Coding — Write Code Right
