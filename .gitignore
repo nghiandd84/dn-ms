@@ -6,3 +6,4 @@
 /apis/**/target
 Cargo.lock
 expand.rs
+tarpaulin-report.html

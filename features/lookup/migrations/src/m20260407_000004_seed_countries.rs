@@ -45,6 +45,7 @@ impl MigrationTrait for Migration {
             is_active: Set(true),
             created_at: Set(Utc::now().naive_utc()),
             updated_at: Set(Utc::now().naive_utc()),
+            tenant_id: NotSet,
         };
 
         let inserted_lookup_type = lookup_type::Entity::insert(lookup_type_model)
