@@ -19,4 +19,14 @@ pub trait QueryManager<AM, MD> {
         order: &Order,
         filter: &Vec<FilterEnum>,
     ) -> impl std::future::Future<Output = Result<QueryResult<MD>, DbErr>>;
+
+    fn filter_with_related_entities(
+        pagination: &Pagination,
+        order: &Order,
+        filter: &Vec<FilterEnum>,
+        includes: &Vec<String>,
+    ) -> impl std::future::Future<Output = Result<QueryResult<MD>, DbErr>> {
+        let _ = includes;
+        Self::filter(pagination, order, filter)
+    }
 }

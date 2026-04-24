@@ -4,7 +4,8 @@ use uuid::Uuid;
 use shared_shared_data_core::{
     filter::FilterEnum,
     order::Order,
-    paging::{Pagination, QueryResult}, query_params::QueryParams,
+    paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_data_error::app::AppError;
 
@@ -35,15 +36,29 @@ impl LookupTypeService {
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
+        query_params: QueryParams,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
-        LookupTypeQuery::get_lookup_types(tenant_id, pagination, order, filters).await
+        LookupTypeQuery::get_lookup_types(
+            tenant_id,
+            pagination,
+            order,
+            filters,
+            query_params.includes(),
+        )
+        .await
     }
 
-    pub async fn get_lookup_type_by_id(id: Uuid, query_params: QueryParams) -> Result<LookupTypeData, AppError> {
+    pub async fn get_lookup_type_by_id(
+        id: Uuid,
+        query_params: QueryParams,
+    ) -> Result<LookupTypeData, AppError> {
         LookupTypeQuery::get_lookup_type_by_id(id, query_params.includes()).await
     }
 
-    pub async fn get_lookup_type_by_code(tenant_id: &str, code: &str) -> Result<LookupTypeData, AppError> {
+    pub async fn get_lookup_type_by_code(
+        tenant_id: &str,
+        code: &str,
+    ) -> Result<LookupTypeData, AppError> {
         LookupTypeQuery::get_lookup_type_by_code(tenant_id, code).await
     }
 

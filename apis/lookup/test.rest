@@ -16,6 +16,12 @@ GET {{baseUrl}}/swagger-ui/
 ### Get All Lookup Types
 GET {{baseUrl}}/lookup-types
 
+### Search Lookup Types and include items
+GET {{baseUrl}}/lookup-types?code=li|{{typeCode}}&includes=items
+
+### Search Lookup Types 
+GET {{baseUrl}}/lookup-types?code=li|{{typeCode}}
+
 ### Search Lookup Types
 GET {{baseUrl}}/lookup-types?code=li|currency&order_name=code&order_direction=1
 

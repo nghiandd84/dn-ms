@@ -15,7 +15,7 @@ pub fn make_answer(input: TokenStream) -> TokenStream {
     proc_example::make_answer(input)
 }
 
-#[proc_macro_derive(Query, attributes(query_filter, query))]
+#[proc_macro_derive(Query, attributes(query_filter, query, query_related))]
 pub fn query_derive(input: TokenStream) -> TokenStream {
     query::query_impl(input)
 }

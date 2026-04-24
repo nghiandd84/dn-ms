@@ -16,6 +16,7 @@ use features_lookup_model::lookup_type::LookupTypeData;
 #[derive(Query)]
 #[query(key_type(Uuid))]
 #[query_filter(column_name(Column))]
+#[query_related(entity(ItemEntity), field(items), name("items"))]
 struct LookupTypeQueryManager;
 
 impl LookupTypeQueryManager {
@@ -41,18 +42,26 @@ impl LookupTypeQuery {
             "Getting lookup_type by id: {}, includes: {:?}",
             id, includes
         );
-        let (lookup_type_model, items) = Entity::find_by_id(id)
-            .find_with_related(ItemEntity)
-            .all(LookupTypeQueryManager::get_db())
-            .await?
-            .into_iter()
-            .next()
-            .ok_or_else(|| DbErr::RecordNotFound("Not found".to_string()))?;
+        if includes.contains(&"items".to_string()) {
+            debug!("Including related items for lookup_type id: {}", id);
+            let (lookup_type_model, items) = Entity::find_by_id(id)
+                .find_with_related(ItemEntity)
+                .all(LookupTypeQueryManager::get_db())
+                .await?
+                .into_iter()
+                .next()
+                .ok_or_else(|| DbErr::RecordNotFound("Not found".to_string()))?;
 
-        let mut model: ModelOptionDto = lookup_type_model.into();
-        model.items = items.into_iter().map(|item| item.into()).collect();
-        debug!("Mapped lookup_type model: {:?}", model);
-        Ok(model.into())
+            let mut model: ModelOptionDto = lookup_type_model.into();
+            model.items = Some(items.into_iter().map(|item| item.into()).collect());
+            debug!("Mapped lookup_type model: {:?}", model);
+            Ok(model.into())
+        } else {
+            debug!("Not including related items for lookup_type id: {}", id);
+            let lookup_type_model = LookupTypeQueryManager::get_by_id_uuid(id).await?;
+            debug!("Found lookup_type model: {:?}", lookup_type_model);
+            Ok(lookup_type_model.into())
+        }
     }
 
     pub async fn get_lookup_type_by_code(
@@ -95,9 +104,10 @@ impl LookupTypeQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
+        includes: Vec<String>,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
         let mut filters = filters.clone();
-
+        debug!("Getting lookup_types for tenant_id: {}, includes: {:?}, filters: {:?}, pagination: {:?}, order: {:?}", tenant_id, includes, filters, pagination, order);
         if !tenant_id.is_empty() {
             filters.push(FilterEnum::String(FilterParam {
                 name: Column::TenantId.to_string(),
@@ -107,7 +117,11 @@ impl LookupTypeQuery {
             }));
         }
 
-        let result = LookupTypeQueryManager::filter(pagination, order, &filters).await?;
+        let result = if !includes.is_empty() {
+            LookupTypeQueryManager::filter_with_related_entities(pagination, order, &filters, &includes).await?
+        } else {
+            LookupTypeQueryManager::filter(pagination, order, &filters).await?
+        };
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),
