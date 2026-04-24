@@ -24,3 +24,4 @@ shared-shared-data-error = { workspace = true }
 http = { workspace = true }
 tokio = { workspace = true }
 sea-orm = { workspace = true }
+serde = { workspace = true }

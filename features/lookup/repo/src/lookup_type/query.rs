@@ -56,14 +56,26 @@ impl LookupTypeQuery {
         Ok(model.into())
     }
 
-    pub async fn get_lookup_type_by_code(code: &str) -> Result<LookupTypeData, AppError> {
+    pub async fn get_lookup_type_by_code(
+        tenant_id: &str,
+        code: &str,
+    ) -> Result<LookupTypeData, AppError> {
         let code_param: FilterParam<String> = FilterParam {
             name: Column::Code.to_string(),
             operator: FilterOperator::Equal,
             value: Some(code.to_string()),
             raw_value: code.to_string(),
         };
-        let filters = vec![FilterEnum::String(code_param)];
+        let mut filters = vec![FilterEnum::String(code_param)];
+
+        if !tenant_id.is_empty() {
+            filters.push(FilterEnum::String(FilterParam {
+                name: Column::TenantId.to_string(),
+                operator: FilterOperator::Equal,
+                value: Some(tenant_id.to_string()),
+                raw_value: tenant_id.to_string(),
+            }));
+        }
 
         let pagination = Pagination::default();
         let order = Order::default();
@@ -80,11 +92,23 @@ impl LookupTypeQuery {
     }
 
     pub async fn get_lookup_types(
+        tenant_id: &str,
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
-        let result = LookupTypeQueryManager::filter(pagination, order, filters).await?;
+        let mut filters = filters.clone();
+
+        if !tenant_id.is_empty() {
+            filters.push(FilterEnum::String(FilterParam {
+                name: Column::TenantId.to_string(),
+                operator: FilterOperator::Equal,
+                value: Some(tenant_id.to_string()),
+                raw_value: tenant_id.to_string(),
+            }));
+        }
+
+        let result = LookupTypeQueryManager::filter(pagination, order, &filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

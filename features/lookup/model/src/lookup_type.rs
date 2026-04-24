@@ -19,6 +19,7 @@ use crate::lookup_item::LookupItemData;
 #[derive(Serialize, Deserialize, Debug, Clone, ToSchema, Default, Response, ParamFilter)]
 pub struct LookupTypeData {
     pub id: Option<Uuid>,
+    pub tenant_id: Option<String>,
     pub code: Option<String>,
     pub name: Option<String>,
     pub description: Option<String>,
@@ -33,18 +34,15 @@ pub struct LookupTypeData {
 
 impl Into<LookupTypeData> for ModelOptionDto {
     fn into(self) -> LookupTypeData {
-        // let items = self.items.map(|items| items.into_iter().map(|item| item.into()).collect());
         LookupTypeData {
             id: self.id,
+            tenant_id: self.tenant_id,
             code: self.code,
             name: self.name,
             description: self.description,
             is_active: self.is_active,
             created_at: self.created_at,
             updated_at: self.updated_at,
-            // items: self
-            //     .items
-            //     .map(|items| items.into_iter().map(|item| item.into()).collect()),
             ..Default::default()
         }
     }
@@ -72,11 +70,15 @@ pub struct LookupTypeForCreateRequest {
         message = "description must not exceed 500 characters"
     ))]
     pub description: Option<String>,
+
+    #[serde(skip)]
+    pub tenant_id: Option<String>,
 }
 
 impl Into<LookupTypeForCreateDto> for LookupTypeForCreateRequest {
     fn into(self) -> LookupTypeForCreateDto {
         LookupTypeForCreateDto {
+            tenant_id: self.tenant_id.unwrap_or_default(),
             code: self.code,
             name: self.name,
             description: self.description.unwrap_or_default(),

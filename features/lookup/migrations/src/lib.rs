@@ -4,6 +4,7 @@ mod m20260403_000001_create_lookup_tables;
 mod m20260406_000002_add_meta_to_lookup_item;
 mod m20260406_000003_add_default_to_lookup_item;
 mod m20260407_000004_seed_countries;
+mod m20260424_000005_add_tenant_id_to_lookup_type;
 
 pub struct Migrator;
 
@@ -15,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260406_000002_add_meta_to_lookup_item::Migration),
             Box::new(m20260406_000003_add_default_to_lookup_item::Migration),
             Box::new(m20260407_000004_seed_countries::Migration),
+            Box::new(m20260424_000005_add_tenant_id_to_lookup_type::Migration),
         ]
     }
 }

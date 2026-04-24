@@ -27,6 +27,7 @@ use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
+use shared_shared_extractor::TenantId;
 
 use crate::middleware::cache_lookup_items_middleware;
 
@@ -43,6 +44,7 @@ const TAG: &str = "lookup-item";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn get_lookup_items(
+    TenantId(tenant_id): TenantId,
     Path(type_code): Path<String>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -52,7 +54,7 @@ pub async fn get_lookup_items(
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
     let result =
-        LookupItemService::get_lookup_items_by_type_code(&type_code, &filters, &pagination, &order)
+        LookupItemService::get_lookup_items_by_type_code(&tenant_id, &type_code, &filters, &pagination, &order)
             .await?;
     Ok(ResponseJson(result))
 }
@@ -83,10 +85,11 @@ pub async fn get_lookup_item(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_lookup_item(
+    TenantId(tenant_id): TenantId,
     Path(type_code): Path<String>,
     ValidJson(mut req): ValidJson<LookupItemForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let lookup_type = LookupTypeService::get_lookup_type_by_code(&type_code).await;
+    let lookup_type = LookupTypeService::get_lookup_type_by_code(&tenant_id, &type_code).await;
     let lookup_type_id = match lookup_type {
         Ok(lookup_type) => lookup_type.id.unwrap(),
         Err(e) => {

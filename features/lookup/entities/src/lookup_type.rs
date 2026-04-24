@@ -12,7 +12,7 @@ use crate::lookup_item::Model as LookupModel;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "lookup_types")]
-#[dto(name(LookupTypeForCreate), columns(code, name, description))]
+#[dto(name(LookupTypeForCreate), columns(tenant_id, code, name, description))]
 #[dto(
     name(LookupTypeForUpdate),
     columns(code, name, description, is_active),
@@ -21,7 +21,7 @@ use crate::lookup_item::Model as LookupModel;
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(unique)]
+    pub tenant_id: String,
     pub code: String,
     pub name: String,
     pub description: String,

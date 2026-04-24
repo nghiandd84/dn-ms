@@ -3,7 +3,7 @@ use axum::{
     routing::{delete, get, patch, post},
     Router,
 };
-use tracing::{instrument, Level};
+use tracing::{debug, instrument, Level};
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
@@ -17,6 +17,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
     query_params::QueryParams,
 };
+use shared_shared_extractor::TenantId;
 
 use features_lookup_model::{
     lookup_type::{
@@ -40,8 +41,11 @@ const TAG: &str = "lookup-type";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_lookup_type(
-    ValidJson(req): ValidJson<LookupTypeForCreateRequest>,
+    TenantId(tenant_id): TenantId,
+    ValidJson(mut req): ValidJson<LookupTypeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
+    debug!("Creating lookup_type for tenant: {}", tenant_id);
+    req.tenant_id = Some(tenant_id);
     let id = LookupTypeService::create_lookup_type(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -60,6 +64,7 @@ pub async fn create_lookup_type(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn get_lookup_types(
+    TenantId(tenant_id): TenantId,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<LookupTypeDataFilterParams>,
@@ -67,7 +72,8 @@ pub async fn get_lookup_types(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = LookupTypeService::get_lookup_types(&filters, &pagination, &order).await?;
+    let result =
+        LookupTypeService::get_lookup_types(&tenant_id, &filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 

@@ -32,12 +32,13 @@ impl LookupItemService {
         Ok(id)
     }
     pub async fn get_lookup_items_by_type_code(
+        tenant_id: &str,
         type_code: &str,
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<LookupItemData>, AppError> {
-        let lookup_type = LookupTypeService::get_lookup_type_by_code(type_code).await;
+        let lookup_type = LookupTypeService::get_lookup_type_by_code(tenant_id, type_code).await;
         let lookup_type_id = match lookup_type {
             Ok(lookup_type) => lookup_type.id.unwrap(),
             Err(e) => {
