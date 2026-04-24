@@ -107,6 +107,9 @@ Respect dependencies — don't parallelize what must be sequential.
 - Route code review, simplification, YAGNI checks → @oracle
 - Route test writing and test file changes → @fixer
 
+### Unit Test Enforcement
+Every code change task delegated to @fixer or @designer MUST include the instruction: "Include unit tests in the same file." When reviewing specialist results, verify tests are present. If missing, send the specialist back with: "Add unit tests covering happy path, error paths, and edge cases."
+
 ### 5. Verify
 - Check for errors after changes
 - Use validation routing when applicable
