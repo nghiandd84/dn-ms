@@ -1,43 +1,117 @@
-- Create app 
-cargo new --bin --vcs none --name auth api/auth
-- Create lib
-cargo new --lib --vcs none --name shared-shared-data-app lib/shared/shared/data/app
-- Generate migrate
-sea-orm-cli migrate init -d ./features/auth/migration
+# DN Microservices
 
+A Rust-based microservices platform built with Axum, SeaORM, and Pingora.
 
-- Docker
+## Architecture
+
+```
+apps/           → Standalone applications (gateway, notification, auth-web)
+apis/           → HTTP API services
+features/       → Domain feature modules (entities, model, repo, service, migrations)
+libs/           → Shared libraries and tools
+docker/         → Docker configs and compose files
+```
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| Auth | Authentication, OAuth2, roles, permissions |
+| Booking | Booking and seat management |
+| Event | Event management |
+| Inventory | Seat and reservation management |
+| Merchant | Merchant, API keys, webhooks |
+| Fee | Fee configuration |
+| Profiles | User profiles and preferences |
+| Translation | i18n key/value management |
+| Email Template | Email templates with placeholders and translations |
+| Notification | Real-time notifications (Kafka + WebSocket) |
+| Bakery | Sample bakery domain (demo) |
+| Lookup | Multi-tenant lookup data management |
+| Payments | Payment core + Stripe integration |
+| Wallet | Wallet, top-ups, transfers, withdrawals |
+
+## Tech Stack
+
+- **Runtime**: Rust 1.85+, Tokio
+- **HTTP**: Axum, Pingora (gateway)
+- **ORM**: SeaORM (PostgreSQL)
+- **Cache**: Redis
+- **Messaging**: Kafka (rdkafka)
+- **Observability**: OpenTelemetry, Tracing
+- **Auth**: JWT (jsonwebtoken), Argon2
+- **API Docs**: Utoipa + Swagger UI
+- **Service Discovery**: Consul
+
+## Prerequisites
+
+- Rust 1.85+
+- Docker & Docker Compose
+- PostgreSQL, Redis, Kafka (via Docker)
+
+## Getting Started
+
+### 1. Start infrastructure
+
+```bash
 docker-compose -f docker-compose.no_api.yml up -d
-Access redis-command http://localhost:8081/
-Access PG ADMINADMIN http://localhost:5050/ Account: admin@admin.com/password123
+```
 
+### 2. Run a service
 
-// TODO need implement compiler
-https://dev.to/olutolax/building-a-compiler-interpreter-in-rust-part-3-em2
+```bash
+cargo run --bin api-auth
+```
 
-- Install Rust on Linux
-login: nghiandd/123456789
-Rust is installed now. Great!
+Or start all services:
 
-To get started you may need to restart your current shell.
-This would reload your PATH environment variable to include
-Cargo's bin directory ($HOME/.cargo/bin).
+```bash
+./start.sh
+```
 
-To configure your current shell, you need to source
-the corresponding env file under $HOME/.cargo.
+### 3. Run migrations
 
-This is usually done by running one of the following (note the leading DOT):
-. "$HOME/.cargo/env"            # For sh/bash/zsh/ash/dash/pdksh
-source "$HOME/.cargo/env.fish"  # For fish
-source $"($nu.home-path)/.cargo/env.nu"  # For nushell
+Migrations run automatically on service startup, or manually:
 
-Run on linux ubuntu
-To have systemd start code-server now and restart on boot:
-  sudo systemctl enable --now code-server@$USER
-Or, if you don't want/need a background service you can run:
-  code-server
+```bash
+cargo run --bin migrations_auth
+```
 
-  netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=$(wsl hostname -i)
+## Development
 
-auth-web
-Training/dn-ms/apps/auth-web$ npx @tailwindcss/cli -i ./tailwind.css -o ./assets/tailwind.css --watch
+### Create a new API service
+
+```bash
+cargo new --bin --vcs none --name api-<name> apis/<name>
+```
+
+### Create a new shared library
+
+```bash
+cargo new --lib --vcs none --name shared-shared-<name> libs/shared/shared/<name>
+```
+
+### Generate a new migration
+
+```bash
+sea-orm-cli migrate init -d ./features/<name>/migrations
+```
+
+### Run tests
+
+```bash
+cargo test -p <package-name>
+```
+
+### Code coverage
+
+```bash
+cargo tarpaulin -p <package-name> --out stdout
+```
+
+## Infrastructure URLs (local)
+
+| Service | URL |
+|---------|-----|
+| Redis Commander | http://localhost:8081 |
+| pgAdmin | http://localhost:5050 |
