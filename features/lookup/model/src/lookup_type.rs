@@ -32,17 +32,20 @@ pub struct LookupTypeData {
     pub items: Option<Vec<LookupItemData>>,
 }
 
-impl Into<LookupTypeData> for ModelOptionDto {
-    fn into(self) -> LookupTypeData {
+impl From<ModelOptionDto> for LookupTypeData {
+    fn from(val: ModelOptionDto) -> Self {
         LookupTypeData {
-            id: self.id,
-            tenant_id: self.tenant_id,
-            code: self.code,
-            name: self.name,
-            description: self.description,
-            is_active: self.is_active,
-            created_at: self.created_at,
-            updated_at: self.updated_at,
+            id: val.id,
+            tenant_id: val.tenant_id,
+            code: val.code,
+            name: val.name,
+            description: val.description,
+            is_active: val.is_active,
+            created_at: val.created_at,
+            updated_at: val.updated_at,
+            items: val
+                .items
+                .map(|items| items.into_iter().map(|item| item.into()).collect()),
             ..Default::default()
         }
     }

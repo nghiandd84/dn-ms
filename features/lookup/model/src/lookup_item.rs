@@ -12,7 +12,7 @@ use shared_shared_data_core::{
 use shared_shared_macro::{ParamFilter, Response};
 
 use features_lookup_entities::lookup_item::{
-    LookupItemForCreateDto, LookupItemForUpdateDto, ModelOptionDto,
+    LookupItemForCreateDto, LookupItemForUpdateDto, Model, ModelOptionDto,
 };
 
 use super::lookup_item_translation::LookupItemTranslationData;
@@ -32,6 +32,26 @@ pub struct LookupItemData {
     pub sort_order: Option<i32>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
+}
+
+impl Into<LookupItemData> for Model {
+    fn into(self) -> LookupItemData {
+        LookupItemData {
+            id: Some(self.id),
+            lookup_type_id: Some(self.lookup_type_id),
+            code: Some(self.code),
+            name: Some(self.name),
+            url: Some(self.url),
+            query_param_one: Some(self.query_param_one),
+            query_param_two: Some(self.query_param_two),
+            tenants: Some(self.tenants),
+            meta: Some(self.meta),
+            is_active: Some(self.is_active),
+            sort_order: Some(self.sort_order),
+            created_at: Some(self.created_at),
+            updated_at: Some(self.updated_at),
+        }
+    }
 }
 
 impl Into<LookupItemData> for ModelOptionDto {
