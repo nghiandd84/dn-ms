@@ -5,15 +5,18 @@ use shared_shared_data_core::{
     filter::FilterEnum,
     order::Order,
     paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_macro::Query;
 
+use features_auth_entities::permission::Entity as PermissionEntity;
 use features_auth_entities::role::{ActiveModel, Column, Entity, ModelOptionDto};
 use features_auth_model::role::RoleData;
 
 #[derive(Query)]
 #[query(key_type(Uuid))]
 #[query_filter(column_name(Column))]
+#[query_related(entity(PermissionEntity), field(permissions), name("permissions"))]
 struct RoleQueryManager;
 
 impl RoleQueryManager {
@@ -31,8 +34,9 @@ impl RoleQueryManager {
 pub struct RoleQuery {}
 
 impl RoleQuery {
-    pub async fn get<'a>(id: Uuid) -> Result<RoleData, DbErr> {
-        let model = RoleQueryManager::get_by_id_uuid(id).await?;
+    pub async fn get<'a>(id: Uuid, query_params: &QueryParams) -> Result<RoleData, DbErr> {
+        let includes = query_params.includes();
+        let model = RoleQueryManager::get_by_id_uuid_with_related_entities(id, &includes).await?;
         let user_data: RoleData = model.into();
         Ok(user_data)
     }
@@ -41,9 +45,15 @@ impl RoleQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
+        query_params: &QueryParams,
     ) -> Result<QueryResult<RoleData>, DbErr> {
         debug!("RoleQuery::search filters: {:?}", filters);
-        let result = RoleQueryManager::filter(pagination, order, filters).await;
+        let includes = query_params.includes();
+        let result = if !includes.is_empty() {
+            RoleQueryManager::filter_with_related_entities(pagination, order, filters, &includes).await
+        } else {
+            RoleQueryManager::filter(pagination, order, filters).await
+        };
         let result = match result {
             Ok(res) => res,
             Err(e) => {

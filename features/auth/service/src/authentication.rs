@@ -7,6 +7,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
     paging::Pagination,
+    query_params::QueryParams,
 };
 use shared_shared_data_error::{app::AppError, auth::AuthError};
 
@@ -129,7 +130,7 @@ impl AuthenticationRequestService {
         ];
 
         let default_roles =
-            RoleQuery::search(&Pagination::default(), &Order::default(), &filters).await;
+            RoleQuery::search(&Pagination::default(), &Order::default(), &filters, &QueryParams::default()).await;
         if default_roles.is_err() {
             let error = default_roles.err().unwrap();
             debug!("Error fetching default roles: {:?}", error);

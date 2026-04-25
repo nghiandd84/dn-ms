@@ -5,6 +5,8 @@ use serde::Serialize;
 
 use shared_shared_macro::Dto;
 
+use crate::permission::Model as PermissionModel;
+
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
 #[sea_orm(table_name = "roles")]
 #[dto(name(RoleForCreate), columns(name, description, client_id, is_default))]
@@ -25,6 +27,9 @@ pub struct Model {
     pub is_default: bool,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    pub permissions: Vec<PermissionModel>,
 }
 
 #[derive(Clone, Debug, EnumIter, DeriveRelation)]
@@ -51,6 +56,16 @@ impl ActiveModelBehavior for ActiveModel {
             self.created_at = ActiveValue::Set(current_time);
         }
         Ok(self)
+    }
+}
+
+impl Related<super::permission::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::role_permission::Relation::Permission.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::role_permission::Relation::Role.def().rev())
     }
 }
 

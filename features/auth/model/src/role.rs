@@ -77,6 +77,7 @@ pub struct AssignPermissionToRoleRequest {
     pub permission_ids: Vec<Uuid>,
 }
 
+use crate::permission::PermissionData;
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
@@ -88,6 +89,9 @@ pub struct RoleData {
     description: Option<String>,
     client_id: Option<Uuid>,
     is_default: Option<bool>,
+
+    #[skip_param]
+    pub permissions: Option<Vec<PermissionData>>,
 }
 
 impl RoleData {
@@ -104,6 +108,9 @@ impl Into<RoleData> for ModelOptionDto {
             id: self.id,
             client_id: self.client_id,
             is_default: self.is_default,
+            permissions: self
+                .permissions
+                .map(|p| p.into_iter().map(|m| m.into()).collect()),
             ..Default::default()
         }
     }

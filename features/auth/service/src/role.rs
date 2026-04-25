@@ -2,6 +2,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::Pagination,
+    query_params::QueryParams,
 };
 use tracing::debug;
 use uuid::Uuid;
@@ -22,8 +23,8 @@ impl RoleService {
         Ok(role_id)
     }
 
-    pub async fn get<'a>(role_id: Uuid) -> Result<RoleData> {
-        let role = RoleQuery::get(role_id).await?;
+    pub async fn get<'a>(role_id: Uuid, query_params: &QueryParams) -> Result<RoleData> {
+        let role = RoleQuery::get(role_id, query_params).await?;
         Ok(role.into())
     }
 

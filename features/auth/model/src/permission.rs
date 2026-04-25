@@ -5,7 +5,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 use features_auth_entities::permission::{
-    ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto,
+    Model, ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto,
 };
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
@@ -73,6 +73,18 @@ impl Into<PermissionData> for ModelOptionDto {
             description: self.description.unwrap(),
             id: self.id,
             mask: self.mask,
+            ..Default::default()
+        }
+    }
+}
+
+impl Into<PermissionData> for Model {
+    fn into(self) -> PermissionData {
+        PermissionData {
+            resource: Some(self.resource),
+            description: self.description,
+            id: Some(self.id),
+            mask: Some(self.mask),
             ..Default::default()
         }
     }

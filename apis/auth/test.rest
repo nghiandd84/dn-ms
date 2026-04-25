@@ -132,7 +132,8 @@ Content-Type: application/json
 GET {{baseUrl}}/test_users
 Content-Type: application/json
 
-
+### ROLES
+@roleId = b3298a2b-3a6d-40e3-8938-d4c213c589d3
 ### Role
 POST {{baseUrl}}/roles
 Content-Type: application/json
@@ -145,6 +146,74 @@ Content-Type: application/json
 
 ### Get All Roles
 GET {{baseUrl}}/roles?page=0&page_size=10
+Content-Type: application/json
+
+### Get All Roles
+GET {{baseUrl}}/roles?includes=permissions
+Content-Type: application/json
+
+### Get Role by Id
+GET {{baseUrl}}/roles/{{roleId}}?includes=permissions
+Content-Type: application/json
+
+### PERMISSIONS
+
+@permissionId = 8d02cb6f-54f7-4f26-a88d-c35127850c03
+
+### Create Permission
+POST {{baseUrl}}/permissions
+Content-Type: application/json
+
+{
+  "resource": "AUTH_MANAGE_USERS",
+  "description": "Manage users in auth service",
+  "mask": 1
+}
+
+### Get Permission by Id
+GET {{baseUrl}}/permissions/{{permissionId}}
+Content-Type: application/json
+
+### Update Permission
+PATCH {{baseUrl}}/permissions/{{permissionId}}
+Content-Type: application/json
+
+{
+  "resource": "AUTH_MANAGE_USERS",
+  "description": "Manage users in auth service (updated)",
+  "mask": 3
+}
+
+### Delete Permission
+DELETE {{baseUrl}}/permissions/2fd08099-b0da-40aa-a3ff-eb2c643df3db
+Content-Type: application/json
+
+### Filter Permissions
+GET {{baseUrl}}/permissions?page=1&page_size=20
+Content-Type: application/json
+
+### Filter Permissions by resource
+GET {{baseUrl}}/permissions?resource=sw|AUTH&page=1&page_size=20
+Content-Type: application/json
+
+### Assign Permissions to Role
+POST {{baseUrl}}/roles/{{roleId}}/assign-permissions
+Content-Type: application/json
+
+{
+  "permission_ids": ["{{permissionId}}"]
+}
+
+### Unassign Permissions from Role
+POST {{baseUrl}}/roles/{{roleId}}/unassign-permissions
+Content-Type: application/json
+
+{
+  "permission_ids": ["{{permissionId}}"]
+}
+
+### Get Permissions by Role
+GET {{baseUrl}}/roles/{{roleId}}/permissions
 Content-Type: application/json
 
 

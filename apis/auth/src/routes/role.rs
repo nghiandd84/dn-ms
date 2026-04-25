@@ -14,6 +14,7 @@ use shared_shared_data_app::{
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 
 use features_auth_entities::role::RoleForCreateDto;
@@ -95,8 +96,11 @@ async fn delete_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> 
         (status = 200, description = "Role Data", body = RoleDataResponse),       
     )
 )]
-async fn get_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<RoleData>> {
-    let role = RoleQuery::get(role_id).await?;
+async fn get_role(
+    Path(role_id): Path<Uuid>,
+    Query(query_params): Query<QueryParams>,
+) -> Result<ResponseJson<RoleData>> {
+    let role = RoleQuery::get(role_id, &query_params).await?;
     Ok(ResponseJson(role))
 }
 
@@ -132,12 +136,13 @@ async fn filter_roles(
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<RoleDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<QueryResult<RoleData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
 
-    let result = RoleQuery::search(&pagination, &order, &all_filters).await?;
+    let result = RoleQuery::search(&pagination, &order, &all_filters, &query_params).await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 pub struct QueryParams {
     #[serde(default, deserialize_with = "deserialize_comma_separated")]
     includes: Vec<String>,
