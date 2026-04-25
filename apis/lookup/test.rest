@@ -35,8 +35,12 @@ Content-Type: application/json
   "description": "Currency types"
 }
 
-### Get Lookup Type By Code
+### Get Lookup Type By Code include items
 GET {{baseUrl}}/lookup-types/{{lookupTypeId}}?includes=items
+
+
+### Get Lookup Type By Code
+GET {{baseUrl}}/lookup-types/{{lookupTypeId}}
 
 ### Update Lookup Type
 PATCH {{baseUrl}}/lookup-types/{{lookupTypeId}}
