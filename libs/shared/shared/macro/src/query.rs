@@ -308,6 +308,22 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         _ => quote! {},
     };
 
+    // Generate per-relation loading blocks for single entity by id
+    let related_load_by_id_blocks: Vec<_> = related_entities.iter().map(|rel| {
+        let entity_tok = &rel.entity_tokens;
+        let field_ident = format_ident!("{}", rel.field_name);
+        let inc_name = &rel.include_name;
+        quote! {
+            if includes.iter().any(|s| s == #inc_name) {
+                let related = parent_model
+                    .find_related(#entity_tok)
+                    .all(Self::get_db())
+                    .await?;
+                model.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+            }
+        }
+    }).collect();
+
     // Generate per-relation loading blocks, each gated by includes check
     let related_load_blocks: Vec<_> = related_entities.iter().map(|rel| {
         let entity_tok = &rel.entity_tokens;
@@ -330,6 +346,52 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
     }).collect();
 
     let related_entity_trait_quote = if !related_load_blocks.is_empty() {
+        let get_by_id_with_related_quote = match key_type_str.as_str() {
+            "Uuid" => quote! {
+                async fn get_by_id_uuid_with_related_entities(
+                    id: Uuid,
+                    includes: &Vec<String>,
+                ) -> Result<ModelOptionDto, DbErr> {
+                    let parent_model = Entity::find_by_id(id)
+                        .one(Self::get_db())
+                        .await?
+                        .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+                    let mut model: ModelOptionDto = parent_model.clone().into();
+                    #(#related_load_by_id_blocks)*
+                    Ok(model)
+                }
+            },
+            "i32" => quote! {
+                async fn get_by_id_i32_with_related_entities(
+                    id: i32,
+                    includes: &Vec<String>,
+                ) -> Result<ModelOptionDto, DbErr> {
+                    let parent_model = Entity::find_by_id(id)
+                        .one(Self::get_db())
+                        .await?
+                        .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+                    let mut model: ModelOptionDto = parent_model.clone().into();
+                    #(#related_load_by_id_blocks)*
+                    Ok(model)
+                }
+            },
+            "String" => quote! {
+                async fn get_by_id_str_with_related_entities(
+                    id: String,
+                    includes: &Vec<String>,
+                ) -> Result<ModelOptionDto, DbErr> {
+                    let parent_model = Entity::find_by_id(id)
+                        .one(Self::get_db())
+                        .await?
+                        .ok_or(DbErr::RecordNotFound("Not found".to_string()))?;
+                    let mut model: ModelOptionDto = parent_model.clone().into();
+                    #(#related_load_by_id_blocks)*
+                    Ok(model)
+                }
+            },
+            _ => quote! {},
+        };
+
         quote! {
             async fn filter_with_related_entities(
                 pagination: &Pagination,
@@ -369,6 +431,8 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                     result,
                 })
             }
+
+            #get_by_id_with_related_quote
         }
     } else {
         quote! {}

@@ -44,26 +44,8 @@ impl LookupTypeQuery {
             "Getting lookup_type by id: {}, includes: {:?}",
             id, includes
         );
-        if includes.contains(&"items".to_string()) {
-            debug!("Including related items for lookup_type id: {}", id);
-            let (lookup_type_model, items) = Entity::find_by_id(id)
-                .find_with_related(ItemEntity)
-                .all(LookupTypeQueryManager::get_db())
-                .await?
-                .into_iter()
-                .next()
-                .ok_or_else(|| DbErr::RecordNotFound("Not found".to_string()))?;
-
-            let mut model: ModelOptionDto = lookup_type_model.into();
-            model.items = Some(items.into_iter().map(|item| item.into()).collect());
-            debug!("Mapped lookup_type model: {:?}", model);
-            Ok(model.into())
-        } else {
-            debug!("Not including related items for lookup_type id: {}", id);
-            let lookup_type_model = LookupTypeQueryManager::get_by_id_uuid(id).await?;
-            debug!("Found lookup_type model: {:?}", lookup_type_model);
-            Ok(lookup_type_model.into())
-        }
+        let model = LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes).await?;
+        Ok(model.into())
     }
 
     pub async fn get_lookup_type_by_code(

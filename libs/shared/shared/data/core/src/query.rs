@@ -29,4 +29,28 @@ pub trait QueryManager<AM, MD> {
         let _ = includes;
         Self::filter(pagination, order, filter)
     }
+
+    fn get_by_id_uuid_with_related_entities(
+        id: Uuid,
+        includes: &Vec<String>,
+    ) -> impl std::future::Future<Output = Result<MD, DbErr>> {
+        let _ = includes;
+        Self::get_by_id_uuid(id)
+    }
+
+    fn get_by_id_i32_with_related_entities(
+        id: i32,
+        includes: &Vec<String>,
+    ) -> impl std::future::Future<Output = Result<MD, DbErr>> {
+        let _ = includes;
+        Self::get_by_id_i32(id)
+    }
+
+    fn get_by_id_str_with_related_entities(
+        id: String,
+        includes: &Vec<String>,
+    ) -> impl std::future::Future<Output = Result<MD, DbErr>> {
+        let _ = includes;
+        Self::get_by_id_str(id)
+    }
 }
