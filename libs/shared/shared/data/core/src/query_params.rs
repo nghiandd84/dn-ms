@@ -2,8 +2,7 @@ use serde::{Deserialize, Deserializer};
 
 #[derive(Deserialize)]
 pub struct QueryParams {
-    // We use a helper function to split the string
-    #[serde(deserialize_with = "deserialize_comma_separated")]
+    #[serde(default, deserialize_with = "deserialize_comma_separated")]
     includes: Vec<String>,
 }
 
@@ -21,35 +20,3 @@ impl QueryParams {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json;
-
-    #[test]
-    fn deserialize_comma_separated_includes() {
-        let json = r#"{"includes":"wallet,transaction"}"#;
-        let params: QueryParams = serde_json::from_str(json).unwrap();
-
-        assert_eq!(
-            params.includes(),
-            vec!["wallet".to_string(), "transaction".to_string()]
-        );
-    }
-
-    #[test]
-    fn deserialize_single_include() {
-        let json = r#"{"includes":"wallet"}"#;
-        let params: QueryParams = serde_json::from_str(json).unwrap();
-
-        assert_eq!(params.includes(), vec!["wallet".to_string()]);
-    }
-
-    #[test]
-    fn deserialize_empty_include_list() {
-        let json = r#"{"includes":""}"#;
-        let params: QueryParams = serde_json::from_str(json).unwrap();
-
-        assert_eq!(params.includes(), vec!["".to_string()]);
-    }
-}

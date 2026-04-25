@@ -70,12 +70,17 @@ pub async fn get_lookup_types(
     filter_params: FilterParams<LookupTypeDataFilterParams>,
     Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<QueryResult<LookupTypeData>>> {
-    debug!("Received request to get lookup_types for tenant_id: {}, pagination: {:?}, order: {:?}, filters: {:?}", tenant_id, query_pagination, query_order, filter_params);
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        LookupTypeService::get_lookup_types(&tenant_id, &filters, &pagination, &order, query_params).await?;
+    let result = LookupTypeService::get_lookup_types(
+        &tenant_id,
+        &filters,
+        &pagination,
+        &order,
+        &query_params,
+    )
+    .await?;
     Ok(ResponseJson(result))
 }
 
@@ -91,7 +96,7 @@ pub async fn get_lookup_type(
     Path(id): Path<Uuid>,
     Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<LookupTypeData>> {
-    let result = LookupTypeService::get_lookup_type_by_id(id, query_params).await?;
+    let result = LookupTypeService::get_lookup_type_by_id(id, &query_params).await?;
     Ok(ResponseJson(result))
 }
 

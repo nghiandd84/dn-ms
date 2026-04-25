@@ -36,23 +36,23 @@ impl LookupTypeService {
         filters: &Vec<FilterEnum>,
         pagination: &Pagination,
         order: &Order,
-        query_params: QueryParams,
+        query_params: &QueryParams,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
         LookupTypeQuery::get_lookup_types(
             tenant_id,
             pagination,
             order,
             filters,
-            query_params.includes(),
+            query_params,
         )
         .await
     }
 
     pub async fn get_lookup_type_by_id(
         id: Uuid,
-        query_params: QueryParams,
+        query_params: &QueryParams,
     ) -> Result<LookupTypeData, AppError> {
-        LookupTypeQuery::get_lookup_type_by_id(id, query_params.includes()).await
+        LookupTypeQuery::get_lookup_type_by_id(id, query_params).await
     }
 
     pub async fn get_lookup_type_by_code(

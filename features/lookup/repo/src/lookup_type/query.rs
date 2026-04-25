@@ -5,6 +5,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
@@ -36,8 +37,9 @@ pub struct LookupTypeQuery;
 impl LookupTypeQuery {
     pub async fn get_lookup_type_by_id(
         id: Uuid,
-        includes: Vec<String>,
+        query_params: &QueryParams,
     ) -> Result<LookupTypeData, AppError> {
+        let includes = query_params.includes();
         debug!(
             "Getting lookup_type by id: {}, includes: {:?}",
             id, includes
@@ -104,10 +106,9 @@ impl LookupTypeQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &Vec<FilterEnum>,
-        includes: Vec<String>,
+        query_params: &QueryParams,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
         let mut filters = filters.clone();
-        debug!("Getting lookup_types for tenant_id: {}, includes: {:?}, filters: {:?}, pagination: {:?}, order: {:?}", tenant_id, includes, filters, pagination, order);
         if !tenant_id.is_empty() {
             filters.push(FilterEnum::String(FilterParam {
                 name: Column::TenantId.to_string(),
@@ -117,6 +118,7 @@ impl LookupTypeQuery {
             }));
         }
 
+        let includes = query_params.includes();
         let result = if !includes.is_empty() {
             LookupTypeQueryManager::filter_with_related_entities(pagination, order, &filters, &includes).await?
         } else {
