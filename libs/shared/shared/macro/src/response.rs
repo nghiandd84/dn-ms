@@ -1,11 +1,19 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
+use syn::{DeriveInput, Ident};
 
-use syn::{parse_macro_input, DeriveInput};
+pub(crate) struct ResponseInput {
+    pub name: Ident,
+}
 
-pub fn response_json(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+impl ResponseInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        ResponseInput { name: input.ident }
+    }
+}
+
+pub fn response_json(input: ResponseInput) -> TokenStream {
+    let name = &input.name;
     let struct_name = format_ident!("{}Response", name);
 
     let output = quote! {
@@ -19,9 +27,8 @@ pub fn response_json(input: TokenStream) -> TokenStream {
     output.into()
 }
 
-pub fn response_json_generic(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+pub fn response_json_generic(input: ResponseInput) -> TokenStream {
+    let name = &input.name;
     let struct_name = format_ident!("{}Response", name);
 
     let output = quote! {

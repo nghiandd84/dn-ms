@@ -1,84 +1,170 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, punctuated::Punctuated, DeriveInput, Meta, Token};
+use syn::{
+    parse::{Parse, ParseStream},
+    DeriveInput, Ident, LitStr, Token,
+};
 
-struct RelatedEntityDef {
-    entity_tokens: proc_macro2::TokenStream,
-    field_name: String,
-    include_name: String,
+mod kw {
+    syn::custom_keyword!(key_type);
+    syn::custom_keyword!(column_name);
+    syn::custom_keyword!(entity);
+    syn::custom_keyword!(column);
+    syn::custom_keyword!(field);
+    syn::custom_keyword!(name);
 }
 
-pub fn query_impl(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+struct QueryAttr {
+    key_type: proc_macro2::TokenStream,
+}
 
-    let mut key_type_str: String = String::new();
-    let mut query_datas: Vec<String> = Vec::new();
-    let mut related_entities: Vec<RelatedEntityDef> = Vec::new();
+impl Parse for QueryAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        input.parse::<kw::key_type>()?;
+        let content;
+        syn::parenthesized!(content in input);
+        let key_type: proc_macro2::TokenStream = content.parse()?;
+        Ok(QueryAttr { key_type })
+    }
+}
 
-    for attr in &input.attrs {
-        if attr.path().is_ident("query") {
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                if let Meta::List(meta_list) = meta {
-                    if meta_list.path.get_ident().unwrap() == "key_type" {
-                        key_type_str = meta_list.tokens.to_string();
-                        break;
-                    }
-                }
+struct QueryFilterAttr {
+    column_name: proc_macro2::TokenStream,
+}
+
+impl Parse for QueryFilterAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        input.parse::<kw::column_name>()?;
+        let content;
+        syn::parenthesized!(content in input);
+        let column_name: proc_macro2::TokenStream = content.parse()?;
+        Ok(QueryFilterAttr { column_name })
+    }
+}
+
+struct QueryRelatedAttr {
+    entity_tokens: proc_macro2::TokenStream,
+    column_tokens: Option<proc_macro2::TokenStream>,
+    field_name: String,
+    include_name: Option<String>,
+}
+
+impl Parse for QueryRelatedAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut entity_tokens = None;
+        let mut column_tokens = None;
+        let mut field_name = None;
+        let mut include_name = None;
+
+        while !input.is_empty() {
+            let lookahead = input.lookahead1();
+            if lookahead.peek(kw::entity) {
+                input.parse::<kw::entity>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                entity_tokens = Some(content.parse::<proc_macro2::TokenStream>()?);
+            } else if lookahead.peek(kw::column) {
+                input.parse::<kw::column>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                column_tokens = Some(content.parse::<proc_macro2::TokenStream>()?);
+            } else if lookahead.peek(kw::field) {
+                input.parse::<kw::field>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                field_name = Some(content.parse::<Ident>()?.to_string());
+            } else if lookahead.peek(kw::name) {
+                input.parse::<kw::name>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                include_name = Some(content.parse::<LitStr>()?.value());
+            } else {
+                return Err(lookahead.error());
             }
+            let _ = input.parse::<Token![,]>();
         }
-        if attr.path().is_ident("query_filter") {
-            let mut column_name: String = String::new();
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                if let Meta::List(meta_list) = meta {
-                    let ident = meta_list.path.get_ident().unwrap();
-                    if ident == "column_name" {
-                        column_name = meta_list.tokens.to_string();
-                    }
-                }
-            }
-            query_datas.push(column_name);
-        }
-        if attr.path().is_ident("query_related") {
-            let mut entity_tokens: Option<proc_macro2::TokenStream> = None;
-            let mut field_name: Option<String> = None;
-            let mut include_name: Option<String> = None;
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                if let Meta::List(meta_list) = meta {
-                    let ident = meta_list.path.get_ident().unwrap();
-                    let tokens = meta_list.tokens.clone();
-                    if ident == "entity" {
-                        entity_tokens = Some(tokens);
-                    } else if ident == "field" {
-                        field_name = Some(tokens.to_string());
-                    } else if ident == "name" {
-                        // Strip quotes from string literal
-                        let s = tokens.to_string();
-                        include_name = Some(s.trim_matches('"').to_string());
-                    }
-                }
-            }
-            if let (Some(et), Some(fn_)) = (entity_tokens, field_name) {
-                let inc = include_name.unwrap_or_else(|| fn_.clone());
+
+        Ok(QueryRelatedAttr {
+            entity_tokens: entity_tokens
+                .ok_or_else(|| input.error("missing `entity(...)` in query_related"))?,
+            column_tokens,
+            field_name: field_name
+                .ok_or_else(|| input.error("missing `field(...)` in query_related"))?,
+            include_name,
+        })
+    }
+}
+
+pub(crate) struct RelatedEntityDef {
+    pub entity_tokens: proc_macro2::TokenStream,
+    pub column_tokens: Option<proc_macro2::TokenStream>,
+    pub field_name: String,
+    pub include_name: String,
+}
+
+pub(crate) struct QueryInput {
+    pub name: Ident,
+    pub key_type_str: String,
+    pub filter_columns: Vec<String>,
+    pub related_entities: Vec<RelatedEntityDef>,
+}
+
+impl QueryInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        let name = input.ident;
+        let mut key_type_str = String::new();
+        let mut filter_columns: Vec<String> = Vec::new();
+        let mut related_entities: Vec<RelatedEntityDef> = Vec::new();
+
+        for attr in &input.attrs {
+            if attr.path().is_ident("query") {
+                let parsed: QueryAttr = attr.parse_args().unwrap();
+                key_type_str = parsed.key_type.to_string();
+            } else if attr.path().is_ident("query_filter") {
+                let parsed: QueryFilterAttr = attr.parse_args().unwrap();
+                filter_columns.push(parsed.column_name.to_string());
+            } else if attr.path().is_ident("query_related") {
+                let parsed: QueryRelatedAttr = attr.parse_args().unwrap();
+                let inc = parsed
+                    .include_name
+                    .unwrap_or_else(|| parsed.field_name.clone());
                 related_entities.push(RelatedEntityDef {
-                    entity_tokens: et,
-                    field_name: fn_,
+                    entity_tokens: parsed.entity_tokens,
+                    column_tokens: parsed.column_tokens,
+                    field_name: parsed.field_name,
                     include_name: inc,
                 });
             }
         }
-    }
 
-    let function_quotes = query_datas.iter().map(|column_name| {
+        // Also register related entity columns as filter columns
+        for rel in &related_entities {
+            if let Some(col_tok) = &rel.column_tokens {
+                let col_str = col_tok.to_string();
+                if !filter_columns.contains(&col_str) {
+                    filter_columns.push(col_str);
+                }
+            }
+        }
+
+        QueryInput {
+            name,
+            key_type_str,
+            filter_columns,
+            related_entities,
+        }
+    }
+}
+
+pub fn query_impl(input: QueryInput) -> TokenStream {
+    let QueryInput {
+        name,
+        key_type_str,
+        filter_columns,
+        related_entities,
+    } = input;
+
+    let function_quotes = filter_columns.iter().map(|column_name| {
         let fn_name = format_ident!("filter_condition_{}", column_name.to_lowercase());
         let column_name = format_ident!("{}", column_name);
         quote! {
@@ -313,13 +399,36 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         let entity_tok = &rel.entity_tokens;
         let field_ident = format_ident!("{}", rel.field_name);
         let inc_name = &rel.include_name;
-        quote! {
-            if includes.iter().any(|s| s == #inc_name) {
-                let related = parent_model
-                    .find_related(#entity_tok)
-                    .all(Self::get_db())
-                    .await?;
-                model.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+
+        if let Some(col_tok) = &rel.column_tokens {
+            let col_str = col_tok.to_string();
+            let filter_fn = format_ident!("filter_condition_{}", col_str.to_lowercase());
+            quote! {
+                if includes.iter().any(|s| s == #inc_name) {
+                    let prefix = format!("{}.", #inc_name);
+                    let rel_filters: Vec<&FilterEnum> = related_filters.iter()
+                        .filter(|f| f.get_name().starts_with(&prefix))
+                        .collect();
+                    let mut query = parent_model.find_related(#entity_tok);
+                    for rf in &rel_filters {
+                        let col_name = rf.get_name().strip_prefix(&prefix).unwrap_or("").to_string();
+                        if let Ok(col) = #col_tok::from_str(&col_name) {
+                            query = query.filter(Self::#filter_fn(col, rf));
+                        }
+                    }
+                    let related = query.all(Self::get_db()).await?;
+                    model.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+                }
+            }
+        } else {
+            quote! {
+                if includes.iter().any(|s| s == #inc_name) {
+                    let related = parent_model
+                        .find_related(#entity_tok)
+                        .all(Self::get_db())
+                        .await?;
+                    model.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+                }
             }
         }
     }).collect();
@@ -329,16 +438,48 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         let entity_tok = &rel.entity_tokens;
         let field_ident = format_ident!("{}", rel.field_name);
         let inc_name = &rel.include_name;
-        quote! {
-            if includes.iter().any(|s| s == #inc_name) {
-                let with_related = Entity::find()
-                    .filter(Column::Id.is_in(parent_ids.clone()))
-                    .find_with_related(#entity_tok)
-                    .all(Self::get_db())
-                    .await?;
-                for (parent, related) in with_related {
-                    if let Some(dto) = result_map.get_mut(&parent.id) {
-                        dto.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+
+        if let Some(col_tok) = &rel.column_tokens {
+            let col_str = col_tok.to_string();
+            let filter_fn = format_ident!("filter_condition_{}", col_str.to_lowercase());
+            quote! {
+                if includes.iter().any(|s| s == #inc_name) {
+                    let prefix = format!("{}.", #inc_name);
+                    let rel_filters: Vec<&FilterEnum> = related_filters.iter()
+                        .filter(|f| f.get_name().starts_with(&prefix))
+                        .collect();
+
+                    let mut base_query = Entity::find()
+                        .filter(Column::Id.is_in(parent_ids.clone()))
+                        .find_with_related(#entity_tok);
+
+                    for rf in &rel_filters {
+                        let col_name = rf.get_name().strip_prefix(&prefix).unwrap_or("").to_string();
+                        if let Ok(col) = #col_tok::from_str(&col_name) {
+                            base_query = base_query.filter(Self::#filter_fn(col, rf));
+                        }
+                    }
+
+                    let with_related = base_query.all(Self::get_db()).await?;
+                    for (parent, related) in with_related {
+                        if let Some(dto) = result_map.get_mut(&parent.id) {
+                            dto.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+                        }
+                    }
+                }
+            }
+        } else {
+            quote! {
+                if includes.iter().any(|s| s == #inc_name) {
+                    let with_related = Entity::find()
+                        .filter(Column::Id.is_in(parent_ids.clone()))
+                        .find_with_related(#entity_tok)
+                        .all(Self::get_db())
+                        .await?;
+                    for (parent, related) in with_related {
+                        if let Some(dto) = result_map.get_mut(&parent.id) {
+                            dto.#field_ident = Some(related.into_iter().map(|r| r.into()).collect());
+                        }
                     }
                 }
             }
@@ -348,9 +489,11 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
     let related_entity_trait_quote = if !related_load_blocks.is_empty() {
         let get_by_id_with_related_quote = match key_type_str.as_str() {
             "Uuid" => quote! {
+                #[tracing::instrument]
                 async fn get_by_id_uuid_with_related_entities(
                     id: Uuid,
                     includes: &Vec<String>,
+                    related_filters: &Vec<FilterEnum>,
                 ) -> Result<ModelOptionDto, DbErr> {
                     let parent_model = Entity::find_by_id(id)
                         .one(Self::get_db())
@@ -362,9 +505,11 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 }
             },
             "i32" => quote! {
+                #[tracing::instrument]
                 async fn get_by_id_i32_with_related_entities(
                     id: i32,
                     includes: &Vec<String>,
+                    related_filters: &Vec<FilterEnum>,
                 ) -> Result<ModelOptionDto, DbErr> {
                     let parent_model = Entity::find_by_id(id)
                         .one(Self::get_db())
@@ -376,9 +521,11 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 }
             },
             "String" => quote! {
+                #[tracing::instrument]
                 async fn get_by_id_str_with_related_entities(
                     id: String,
                     includes: &Vec<String>,
+                    related_filters: &Vec<FilterEnum>,
                 ) -> Result<ModelOptionDto, DbErr> {
                     let parent_model = Entity::find_by_id(id)
                         .one(Self::get_db())
@@ -393,20 +540,19 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
         };
 
         quote! {
+            #[tracing::instrument]
             async fn filter_with_related_entities(
                 pagination: &Pagination,
                 order: &Order,
                 filter: &Vec<FilterEnum>,
                 includes: &Vec<String>,
+                related_filters: &Vec<FilterEnum>,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
-                let page_size = pagination.page_size.unwrap_or(1);
-                let mut page = pagination.page.unwrap_or(1);
-                if page <= 0 {
-                    page = 1;
+                if includes.is_empty() {
+                    return Self::filter(pagination, order, filter).await;
                 }
-                let paginator = Self::build_query(order, filter).paginate(Self::get_db(), page_size);
-                let num_pages = paginator.num_pages().await?;
-                let parents = paginator.fetch_page(page - 1).await?;
+
+                let (num_pages, parents) = Self::paginate_query(pagination, order, filter).await?;
 
                 // Preserve order and build lookup map
                 let parent_ids: Vec<_> = parents.iter().map(|p| p.id.clone()).collect();
@@ -480,6 +626,19 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 select
             }
 
+            async fn paginate_query(
+                pagination: &Pagination,
+                order: &Order,
+                filters: &Vec<FilterEnum>,
+            ) -> Result<(u64, Vec<<Entity as EntityTrait>::Model>), DbErr> {
+                let page_size = pagination.page_size.unwrap_or(1);
+                let page = pagination.page.unwrap_or(1).max(1);
+                let paginator = Self::build_query(order, filters).paginate(Self::get_db(), page_size);
+                let num_pages = paginator.num_pages().await?;
+                let result = paginator.fetch_page(page - 1).await?;
+                Ok((num_pages, result))
+            }
+
             #(#function_quotes)*
         }
 
@@ -500,21 +659,13 @@ pub fn query_impl(input: TokenStream) -> TokenStream {
                 order: &Order,
                 filter: &Vec<FilterEnum>,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
-                let page_size = pagination.page_size.unwrap_or(1);
-                let mut page = pagination.page.unwrap_or(1);
-                if page <= 0 {
-                    page = 1;
-                }
-                let paginator = Self::build_query(order, filter).paginate(Self::get_db(), page_size);
-                let num_pages = paginator.num_pages().await?;
-                let result = paginator.fetch_page(page - 1).await?;
+                let (num_pages, result) = Self::paginate_query(pagination, order, filter).await?;
                 let result: Vec<ModelOptionDto> = result.into_iter().map(|m| m.into()).collect();
 
-                let page_result = QueryResult {
+                Ok(QueryResult {
                     total_page: num_pages,
-                    result: result,
-                };
-                Ok(page_result)
+                    result,
+                })
             }
 
             #related_entity_trait_quote

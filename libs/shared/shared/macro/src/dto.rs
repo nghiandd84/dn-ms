@@ -1,57 +1,97 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, punctuated::Punctuated, Data, DeriveInput, Fields, Meta, Token};
+use syn::{
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated, Data, DeriveInput, Fields, Ident, Token,
+};
 
-pub fn derive_dto(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+mod kw {
+    syn::custom_keyword!(name);
+    syn::custom_keyword!(columns);
+    syn::custom_keyword!(option);
+}
 
-    let mut bto_data: Vec<(String, Vec<String>, bool)> = Vec::new();
+struct DtoAttr {
+    name: String,
+    columns: Vec<String>,
+    option: bool,
+}
 
-    for attr in &input.attrs {
-        if attr.path().is_ident("dto") {
-            let mut dto_name: String = String::new();
-            let mut dto_columns: Vec<String> = Vec::new();
-            let mut dto_option: bool = false;
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                match meta {
-                    Meta::List(meta_list) => {
-                        let name = meta_list.path.get_ident().unwrap();
-                        let tokens = meta_list.tokens.clone();
-                        if name == "name" {
-                            let name = tokens.to_string();
-                            dto_name = name.to_owned();
-                        } else if name == "columns" {
-                            let columns = tokens.to_string();
-                            dto_columns =
-                                columns.split(",").map(|s| s.trim().to_string()).collect();
-                        }
-                    }
-                    Meta::Path(meta_path) => {
-                        let name = meta_path.get_ident().unwrap();
-                        if name == "option" {
-                            dto_option = true;
-                        } else {
-                            panic!("Unknown attribute: {}", name);
-                        }
-                    }
-                    _ => {}
-                }
+impl Parse for DtoAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut name = String::new();
+        let mut columns = Vec::new();
+        let mut option = false;
+
+        while !input.is_empty() {
+            let lookahead = input.lookahead1();
+            if lookahead.peek(kw::name) {
+                input.parse::<kw::name>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                let tokens: proc_macro2::TokenStream = content.parse()?;
+                name = tokens.to_string();
+            } else if lookahead.peek(kw::columns) {
+                input.parse::<kw::columns>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                let idents = Punctuated::<Ident, Token![,]>::parse_terminated(&content)?;
+                columns = idents.iter().map(|i| i.to_string()).collect();
+            } else if lookahead.peek(kw::option) {
+                input.parse::<kw::option>()?;
+                option = true;
+            } else {
+                return Err(lookahead.error());
             }
-            bto_data.push((dto_name.clone(), dto_columns.clone(), dto_option));
+            let _ = input.parse::<Token![,]>();
         }
-    }
 
-    let fields = match &input.data {
-        Data::Struct(data_struct) => match &data_struct.fields {
-            Fields::Named(fields_named) => &fields_named.named,
-            _ => panic!("This macro only works on structs with named fields"),
-        },
-        _ => panic!("This macro only works on structs"),
-    };
+        Ok(DtoAttr { name, columns, option })
+    }
+}
+
+pub(crate) struct DtoDef {
+    pub name: String,
+    pub columns: Vec<String>,
+    pub option: bool,
+}
+
+pub(crate) struct DtoInput {
+    pub name: Ident,
+    pub dto_defs: Vec<DtoDef>,
+    pub fields: Punctuated<syn::Field, Token![,]>,
+}
+
+impl DtoInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        let name = input.ident;
+        let mut dto_defs = Vec::new();
+
+        for attr in &input.attrs {
+            if attr.path().is_ident("dto") {
+                let parsed: DtoAttr = attr.parse_args().unwrap();
+                dto_defs.push(DtoDef {
+                    name: parsed.name,
+                    columns: parsed.columns,
+                    option: parsed.option,
+                });
+            }
+        }
+
+        let fields = match input.data {
+            Data::Struct(data_struct) => match data_struct.fields {
+                Fields::Named(fields_named) => fields_named.named,
+                _ => panic!("This macro only works on structs with named fields"),
+            },
+            _ => panic!("This macro only works on structs"),
+        };
+
+        DtoInput { name, dto_defs, fields }
+    }
+}
+
+pub fn derive_dto(input: DtoInput) -> TokenStream {
+    let DtoInput { name, dto_defs, fields } = input;
 
     let option_fields = fields
         .iter()
@@ -73,7 +113,10 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
 
     let option_struct_name = format_ident!("{}OptionDto", name);
 
-    let bto_quotes = bto_data.iter().map(|(dto_name, dto_columns, dto_option)| {
+    let bto_quotes = dto_defs.iter().map(|def| {
+        let dto_name = &def.name;
+        let dto_columns = &def.columns;
+        let dto_option = def.option;
         let dto_name_ident = format_ident!("{}", dto_name);
         let dto_columns_ident: Vec<_> = dto_columns
             .iter()
@@ -93,7 +136,7 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
                 .map(|field| {
                     let name = &field.ident;
                     let ty = &field.ty;
-                    if *dto_option {
+                    if dto_option {
                         return quote! { pub #name: Option<#ty> };
                     }
                     quote! { pub #name: #ty }
@@ -103,7 +146,7 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
                 })
         });
 
-        let from_origin_quote = if *dto_option {
+        let from_origin_quote = if dto_option {
             quote! {
                 #(#dto_columns_ident: Some(original.#dto_columns_ident),)*
             }
@@ -113,7 +156,7 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
             }
         };
 
-        let from_origin_option_quote = if *dto_option {
+        let from_origin_option_quote = if dto_option {
             quote! {
                 #(#dto_columns_ident: original.#dto_columns_ident,)*
             }
@@ -123,7 +166,7 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
             }
         };
 
-        let from_new_struct_quote = if *dto_option {
+        let from_new_struct_quote = if dto_option {
             quote! {
                 #(#dto_columns_ident: dto.#dto_columns_ident.unwrap_or_default(),)*
             }
@@ -133,7 +176,7 @@ pub fn derive_dto(input: TokenStream) -> TokenStream {
             }
         };
 
-        let from_new_struct_option_quote = if *dto_option {
+        let from_new_struct_option_quote = if dto_option {
             quote! {
                 #(#dto_columns_ident: dto.#dto_columns_ident,)*
             }

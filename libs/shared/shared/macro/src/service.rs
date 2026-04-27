@@ -1,34 +1,51 @@
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::{
+    parse::{Parse, ParseStream},
+    DeriveInput, Ident,
+};
 
-use syn::{parse_macro_input, punctuated::Punctuated, DeriveInput, Meta, Token};
+mod kw {
+    syn::custom_keyword!(name);
+}
 
-pub fn remote_service(input: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(input as DeriveInput);
-    let name = &ast.ident;
+struct RemoteAttr {
+    name: String,
+}
 
-    let mut remote_name: String = String::new();
-    for attr in &ast.attrs {
-        if attr.path().is_ident("remote") {
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                match meta {
-                    Meta::List(meta_list) => {
-                        let name = meta_list.path.get_ident().unwrap();
-                        let tokens = meta_list.tokens.clone();
-                        if name == "name" {
-                            let name = tokens.to_string();
-                            remote_name = name.to_owned();
-                        }
-                    }
+impl Parse for RemoteAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        input.parse::<kw::name>()?;
+        let content;
+        syn::parenthesized!(content in input);
+        let name_tokens: proc_macro2::TokenStream = content.parse()?;
+        Ok(RemoteAttr {
+            name: name_tokens.to_string(),
+        })
+    }
+}
 
-                    _ => {}
-                }
+pub(crate) struct RemoteServiceInput {
+    pub name: Ident,
+    pub remote_name: String,
+}
+
+impl RemoteServiceInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        let name = input.ident;
+        let mut remote_name = String::new();
+        for attr in &input.attrs {
+            if attr.path().is_ident("remote") {
+                let parsed: RemoteAttr = attr.parse_args().unwrap();
+                remote_name = parsed.name;
             }
         }
+        RemoteServiceInput { name, remote_name }
     }
+}
+
+pub fn remote_service(input: RemoteServiceInput) -> TokenStream {
+    let RemoteServiceInput { name, remote_name } = input;
     let remote_name_ident = syn::Ident::new(&remote_name, name.span());
     let gen = quote! {
         use dn_consul::{Consul, GetServiceNodesRequest};

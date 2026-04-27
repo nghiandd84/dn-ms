@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use syn::{Data, DeriveInput, Fields, Ident};
 
 const FILTER_TYPES: [&str; 15] = [
     "string",
@@ -20,54 +20,71 @@ const FILTER_TYPES: [&str; 15] = [
     "jsonvalue"
 ];
 
-pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+pub(crate) struct FilterField {
+    pub name: Ident,
+    pub ty: syn::Type,
+}
+
+pub(crate) struct FilterInput {
+    pub name: Ident,
+    pub fields: Vec<FilterField>,
+}
+
+impl FilterInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        let name = input.ident;
+        let raw_fields = match input.data {
+            Data::Struct(data_struct) => match data_struct.fields {
+                Fields::Named(fields_named) => fields_named.named,
+                _ => panic!("This macro only works on structs with named fields"),
+            },
+            _ => panic!("This macro only works on structs"),
+        };
+
+        let fields = raw_fields
+            .into_iter()
+            .filter(|field| {
+                !field.attrs.iter().any(|attr| attr.path().is_ident("skip_param"))
+            })
+            .map(|field| {
+                let name = field.ident.clone().unwrap();
+                let ty = match &field.ty {
+                    syn::Type::Path(type_path)
+                        if type_path
+                            .path
+                            .segments
+                            .last()
+                            .is_some_and(|seg| seg.ident == "Option") =>
+                    {
+                        if let syn::PathArguments::AngleBracketed(args) =
+                            &type_path.path.segments.last().unwrap().arguments
+                        {
+                            if let syn::GenericArgument::Type(inner_ty) = args.args.first().unwrap() {
+                                inner_ty.clone()
+                            } else {
+                                field.ty.clone()
+                            }
+                        } else {
+                            field.ty.clone()
+                        }
+                    }
+                    _ => field.ty.clone(),
+                };
+                FilterField { name, ty }
+            })
+            .collect();
+
+        FilterInput { name, fields }
+    }
+}
+
+pub fn filter_macro_derive_impl(input: FilterInput) -> TokenStream {
+    let FilterInput { name, fields } = input;
     let param_filter_name = format_ident!("{}FilterParams", name);
 
-    let fields = match &input.data {
-        Data::Struct(data_struct) => match &data_struct.fields {
-            Fields::Named(fields_named) => &fields_named.named,
-            _ => panic!("This macro only works on structs with named fields"),
-        },
-        _ => panic!("This macro only works on structs"),
-    };
-
-    let fields: Vec<_> = fields
-        .iter()
-        .filter(|field| {
-            // Check if any attribute on the field is "skip_param"
-            !field.attrs.iter().any(|attr| attr.path().is_ident("skip_param"))
-        })
-        .map(|field| {
-            let name = &field.ident;
-            let ty = match &field.ty {
-                syn::Type::Path(type_path)
-                    if type_path
-                        .path
-                        .segments
-                        .last()
-                        .is_some_and(|seg| seg.ident == "Option") =>
-                {
-                    if let syn::PathArguments::AngleBracketed(args) =
-                        &type_path.path.segments.last().unwrap().arguments
-                    {
-                        if let syn::GenericArgument::Type(inner_ty) = args.args.first().unwrap() {
-                            inner_ty
-                        } else {
-                            &field.ty
-                        }
-                    } else {
-                        &field.ty
-                    }
-                }
-                _ => &field.ty,
-            };
-            (name, ty)
-        })
-        .collect();
-
-    let builder_fields = fields.clone().into_iter().map(|(name, ty)| {
+    let builder_fields = fields.iter().map(|f| {
+        let name = &f.name;
+        let ty = &f.ty;
         let ty_str = ty.to_token_stream().to_string();
         let ty_str = ty_str.replace(['<', '>'], "");
         let ty_str = ty_str.replace(' ', "");
@@ -92,13 +109,14 @@ pub fn filter_macro_derive_impl(input: TokenStream) -> TokenStream {
         }
     });
 
-    let builder_all_filters = fields.into_iter().map(|(name, ty)| {
-        let field_name_str = name.as_ref().unwrap().to_string();
+    let builder_all_filters = fields.iter().map(|f| {
+        let name = &f.name;
+        let ty = &f.ty;
+        let field_name_str = name.to_string();
         let field_name_quote = quote! {#field_name_str};
         let ty_str = ty.to_token_stream().to_string();
         let ty_str_lower = ty_str.to_lowercase();
         if !FILTER_TYPES.iter().any(|&x| x == ty_str_lower) {
-            let field_name_quote = quote! {#field_name_str};
             quote! {
                 if self.#name.is_some() {
                     let mut filters = self.#name.as_ref().unwrap().clone().all_filters();

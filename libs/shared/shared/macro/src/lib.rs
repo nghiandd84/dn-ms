@@ -1,66 +1,57 @@
 use proc_macro::TokenStream;
 
-mod builder;
 mod dto;
 mod filter;
 mod mutation;
-mod permission;
-mod proc_example;
 mod query;
 mod response;
 mod service;
 
-#[proc_macro]
-pub fn make_answer(input: TokenStream) -> TokenStream {
-    proc_example::make_answer(input)
-}
-
 #[proc_macro_derive(Query, attributes(query_filter, query, query_related))]
 pub fn query_derive(input: TokenStream) -> TokenStream {
-    query::query_impl(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let query_input = query::QueryInput::parse_from(derive_input);
+    query::query_impl(query_input)
 }
 
 #[proc_macro_derive(Mutation, attributes(mutation))]
 pub fn mutation_derive(input: TokenStream) -> TokenStream {
-    mutation::mutation_impl(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let mutation_input = mutation::MutationInput::parse_from(derive_input);
+    mutation::mutation_impl(mutation_input)
 }
 
 #[proc_macro_derive(RemoteService, attributes(remote))]
 pub fn remote_service_macro_derive(input: TokenStream) -> TokenStream {
-    service::remote_service(input)
-}
-
-#[proc_macro_derive(Greet)]
-pub fn greet_macro_derive(input: TokenStream) -> TokenStream {
-    proc_example::greet_macro_derive(input)
-}
-
-#[proc_macro_attribute]
-pub fn log_function_name(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    proc_example::log_function_name(_attr, item)
-}
-
-#[proc_macro_derive(Builder, attributes(builder_metadata))]
-pub fn derive_builder(input: TokenStream) -> TokenStream {
-    proc_example::derive_builder(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let service_input = service::RemoteServiceInput::parse_from(derive_input);
+    service::remote_service(service_input)
 }
 
 #[proc_macro_derive(ParamFilter, attributes(skip_param))]
 pub fn param_filter_macro_derive_impl(input: TokenStream) -> TokenStream {
-    filter::filter_macro_derive_impl(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let filter_input = filter::FilterInput::parse_from(derive_input);
+    filter::filter_macro_derive_impl(filter_input)
 }
 
 #[proc_macro_derive(Response)]
 pub fn response_json(input: TokenStream) -> TokenStream {
-    response::response_json(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let response_input = response::ResponseInput::parse_from(derive_input);
+    response::response_json(response_input)
 }
 
 #[proc_macro_derive(ResponseGeneric)]
 pub fn response_json_generic(input: TokenStream) -> TokenStream {
-    response::response_json_generic(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let response_input = response::ResponseInput::parse_from(derive_input);
+    response::response_json_generic(response_input)
 }
 
 #[proc_macro_derive(Dto, attributes(dto))]
 pub fn derive_dto(input: TokenStream) -> TokenStream {
-    dto::derive_dto(input)
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let dto_input = dto::DtoInput::parse_from(derive_input);
+    dto::derive_dto(dto_input)
 }

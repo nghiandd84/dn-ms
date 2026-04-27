@@ -1,33 +1,49 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, punctuated::Punctuated, DeriveInput, Meta, Token};
+use syn::{
+    parse::{Parse, ParseStream},
+    DeriveInput, Ident,
+};
 
-pub fn mutation_impl(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+mod kw {
+    syn::custom_keyword!(key_type);
+}
 
-    let mut key_type_str: String = String::new();
-    for attr in &input.attrs {
-        if attr.path().is_ident("mutation") {
-            let nested = attr
-                .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
-                .unwrap();
-            for meta in nested {
-                match meta {
-                    Meta::List(meta_list) => {
-                        let name = meta_list.path.get_ident().unwrap();
-                        let tokens = meta_list.tokens.clone();
-                        if name == "key_type" {
-                            key_type_str = tokens.to_string();
-                            break;
-                        }
-                    }
+struct MutationAttr {
+    key_type: proc_macro2::TokenStream,
+}
 
-                    _ => {}
-                }
+impl Parse for MutationAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        input.parse::<kw::key_type>()?;
+        let content;
+        syn::parenthesized!(content in input);
+        let key_type: proc_macro2::TokenStream = content.parse()?;
+        Ok(MutationAttr { key_type })
+    }
+}
+
+pub(crate) struct MutationInput {
+    pub name: Ident,
+    pub key_type_str: String,
+}
+
+impl MutationInput {
+    pub fn parse_from(input: DeriveInput) -> Self {
+        let name = input.ident;
+        let mut key_type_str = String::new();
+        for attr in &input.attrs {
+            if attr.path().is_ident("mutation") {
+                let parsed: MutationAttr = attr.parse_args().unwrap();
+                key_type_str = parsed.key_type.to_string();
             }
         }
+        MutationInput { name, key_type_str }
     }
+}
+
+pub fn mutation_impl(input: MutationInput) -> TokenStream {
+    let MutationInput { name, key_type_str } = input;
 
     let create_quote = match key_type_str.as_str() {
         "Uuid" => {
