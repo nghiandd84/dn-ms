@@ -148,8 +148,17 @@ Content-Type: application/json
 GET {{baseUrl}}/roles?page=0&page_size=10
 Content-Type: application/json
 
-### Get All Roles
+### Get All Roles with permissions
 GET {{baseUrl}}/roles?includes=permissions
+Content-Type: application/json
+
+
+### Search Roles by permissions[resource]
+GET {{baseUrl}}/roles?permissions[resource]=sw|LOOKUP
+Content-Type: application/json
+
+### Get All Roles with permissions filtered by resource
+GET {{baseUrl}}/roles?includes=permissions&permissions[resource]=sw|LOOKUP
 Content-Type: application/json
 
 ### Get Role by Id

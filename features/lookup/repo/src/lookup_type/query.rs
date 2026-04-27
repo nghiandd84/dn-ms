@@ -44,7 +44,7 @@ impl LookupTypeQuery {
             "Getting lookup_type by id: {}, includes: {:?}",
             id, includes
         );
-        let model = LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes).await?;
+        let model = LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes, &vec![]).await?;
         Ok(model.into())
     }
 
@@ -102,7 +102,7 @@ impl LookupTypeQuery {
 
         let includes = query_params.includes();
         let result = if !includes.is_empty() {
-            LookupTypeQueryManager::filter_with_related_entities(pagination, order, &filters, &includes).await?
+            LookupTypeQueryManager::filter_with_related_entities(pagination, order, &filters, &includes, &vec![]).await?
         } else {
             LookupTypeQueryManager::filter(pagination, order, &filters).await?
         };

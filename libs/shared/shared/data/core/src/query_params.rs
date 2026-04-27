@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer};
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Debug)]
 pub struct QueryParams {
     #[serde(default, deserialize_with = "deserialize_comma_separated")]
     includes: Vec<String>,
@@ -18,5 +18,12 @@ impl QueryParams {
     pub fn includes(&self) -> Vec<String> {
         self.includes.clone()
     }
-}
 
+    pub fn add_includes(&mut self, extra: Vec<String>) {
+        for inc in extra {
+            if !self.includes.contains(&inc) {
+                self.includes.push(inc);
+            }
+        }
+    }
+}

@@ -130,7 +130,7 @@ impl AuthenticationRequestService {
         ];
 
         let default_roles =
-            RoleQuery::search(&Pagination::default(), &Order::default(), &filters, &QueryParams::default()).await;
+            RoleQuery::search(&Pagination::default(), &Order::default(), &filters, &QueryParams::default(), &vec![]).await;
         if default_roles.is_err() {
             let error = default_roles.err().unwrap();
             debug!("Error fetching default roles: {:?}", error);

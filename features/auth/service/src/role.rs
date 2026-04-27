@@ -24,7 +24,7 @@ impl RoleService {
     }
 
     pub async fn get<'a>(role_id: Uuid, query_params: &QueryParams) -> Result<RoleData> {
-        let role = RoleQuery::get(role_id, query_params).await?;
+        let role = RoleQuery::get(role_id, query_params, &vec![]).await?;
         Ok(role.into())
     }
 

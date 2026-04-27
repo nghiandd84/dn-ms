@@ -9,6 +9,7 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::Query;
 
+use features_auth_entities::permission::Column as PermissionColumn;
 use features_auth_entities::permission::Entity as PermissionEntity;
 use features_auth_entities::role::{ActiveModel, Column, Entity, ModelOptionDto};
 use features_auth_model::role::RoleData;
@@ -16,7 +17,12 @@ use features_auth_model::role::RoleData;
 #[derive(Query)]
 #[query(key_type(Uuid))]
 #[query_filter(column_name(Column))]
-#[query_related(entity(PermissionEntity), field(permissions), name("permissions"))]
+#[query_related(
+    entity(PermissionEntity),
+    column(PermissionColumn),
+    field(permissions),
+    name("permissions")
+)]
 struct RoleQueryManager;
 
 impl RoleQueryManager {
@@ -34,9 +40,15 @@ impl RoleQueryManager {
 pub struct RoleQuery {}
 
 impl RoleQuery {
-    pub async fn get<'a>(id: Uuid, query_params: &QueryParams) -> Result<RoleData, DbErr> {
+    pub async fn get<'a>(
+        id: Uuid,
+        query_params: &QueryParams,
+        related_filters: &Vec<FilterEnum>,
+    ) -> Result<RoleData, DbErr> {
         let includes = query_params.includes();
-        let model = RoleQueryManager::get_by_id_uuid_with_related_entities(id, &includes).await?;
+        let model =
+            RoleQueryManager::get_by_id_uuid_with_related_entities(id, &includes, related_filters)
+                .await?;
         let user_data: RoleData = model.into();
         Ok(user_data)
     }
@@ -46,14 +58,18 @@ impl RoleQuery {
         order: &Order,
         filters: &Vec<FilterEnum>,
         query_params: &QueryParams,
+        related_filters: &Vec<FilterEnum>,
     ) -> Result<QueryResult<RoleData>, DbErr> {
-        debug!("RoleQuery::search filters: {:?}", filters);
+        debug!("RoleQuery::search called with pagination: {:?}, order: {:?}, filters: {:?}, query_params: {:?}, related_filters: {:?}", pagination, order, filters, query_params, related_filters);
         let includes = query_params.includes();
-        let result = if !includes.is_empty() {
-            RoleQueryManager::filter_with_related_entities(pagination, order, filters, &includes).await
-        } else {
-            RoleQueryManager::filter(pagination, order, filters).await
-        };
+        let result = RoleQueryManager::filter_with_related_entities(
+            pagination,
+            order,
+            filters,
+            &includes,
+            related_filters,
+        )
+        .await;
         let result = match result {
             Ok(res) => res,
             Err(e) => {

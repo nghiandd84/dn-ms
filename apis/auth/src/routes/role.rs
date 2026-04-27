@@ -8,10 +8,12 @@ use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
+    filter::FilterEnum,
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
     query_params::QueryParams,
@@ -19,7 +21,7 @@ use shared_shared_data_core::{
 
 use features_auth_entities::role::RoleForCreateDto;
 use features_auth_model::{
-    permission::PermissionData,
+    permission::{PermissionData, PermissionDataFilterParams},
     role::{
         AssignPermissionToRoleRequest, RoleData, RoleDataFilterParams, RoleDataResponse,
         RoleForCreateRequest, RoleForUpdateRequest,
@@ -28,6 +30,33 @@ use features_auth_model::{
 };
 use features_auth_repo::role::{RoleMutation, RoleQuery};
 use features_auth_service::{PermissionService, RoleService};
+
+#[derive(serde::Deserialize, Debug)]
+struct RoleRelatedFilterParams {
+    pub permissions: Option<PermissionDataFilterParams>,
+}
+
+impl RoleRelatedFilterParams {
+    fn related_filters(&self) -> Vec<FilterEnum> {
+        if let Some(ref p) = self.permissions {
+            let mut filters = p.all_filters();
+            for f in filters.iter_mut() {
+                f.add_name_prefix("permissions");
+            }
+            filters
+        } else {
+            vec![]
+        }
+    }
+
+    fn auto_includes(&self) -> Vec<String> {
+        let mut includes = vec![];
+        if self.permissions.is_some() {
+            includes.push("permissions".to_string());
+        }
+        includes
+    }
+}
 
 const TAG: &str = "role";
 
@@ -98,9 +127,12 @@ async fn delete_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> 
 )]
 async fn get_role(
     Path(role_id): Path<Uuid>,
-    Query(query_params): Query<QueryParams>,
+    Query(mut query_params): Query<QueryParams>,
+    related_filter: FilterParams<RoleRelatedFilterParams>,
 ) -> Result<ResponseJson<RoleData>> {
-    let role = RoleQuery::get(role_id, &query_params).await?;
+    let related_filters = related_filter.0.related_filters();
+    query_params.add_includes(related_filter.0.auto_includes());
+    let role = RoleQuery::get(role_id, &query_params, &related_filters).await?;
     Ok(ResponseJson(role))
 }
 
@@ -136,13 +168,18 @@ async fn filter_roles(
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<RoleDataFilterParams>,
-    Query(query_params): Query<QueryParams>,
+    Query(mut query_params): Query<QueryParams>,
+    related_filter: FilterParams<RoleRelatedFilterParams>,
 ) -> Result<ResponseJson<QueryResult<RoleData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
+    let related_filters = related_filter.0.related_filters();
+    query_params.add_includes(related_filter.0.auto_includes());
 
-    let result = RoleQuery::search(&pagination, &order, &all_filters, &query_params).await?;
+    let result =
+        RoleQuery::search(&pagination, &order, &all_filters, &query_params, &related_filters)
+            .await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
