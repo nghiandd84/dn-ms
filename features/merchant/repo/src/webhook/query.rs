@@ -15,17 +15,7 @@ use features_merchant_model::webhook::WebhookData;
 #[query_filter(column_name(Column))]
 struct WebhookQueryManager;
 
-impl WebhookQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> sea_orm::Condition {
-        let mut condition = sea_orm::Condition::all();
-        for filter_enum in filters {
-            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                condition = condition.add(Self::filter_condition_column(column, filter_enum));
-            }
-        }
-        condition
-    }
-}
+
 
 pub struct WebhookQuery;
 

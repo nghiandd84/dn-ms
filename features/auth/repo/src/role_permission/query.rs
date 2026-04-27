@@ -16,17 +16,7 @@ use features_auth_model::role_permission::RolePermissionData;
 #[query_filter(column_name(Column))]
 struct RolePermissionQueryManager;
 
-impl RolePermissionQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-        let mut condition = Condition::all();
-        for filter_enum in filters {
-            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                condition = condition.add(Self::filter_condition_column(column, filter_enum));
-            }
-        }
-        condition
-    }
-}
+
 
 pub struct RolePermissionQuery {}
 

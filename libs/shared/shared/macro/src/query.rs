@@ -106,6 +106,7 @@ pub(crate) struct QueryInput {
     pub name: Ident,
     pub key_type_str: String,
     pub filter_columns: Vec<String>,
+    pub user_filter_count: usize,
     pub related_entities: Vec<RelatedEntityDef>,
 }
 
@@ -138,6 +139,7 @@ impl QueryInput {
         }
 
         // Also register related entity columns as filter columns
+        let user_filter_count = filter_columns.len();
         for rel in &related_entities {
             if let Some(col_tok) = &rel.column_tokens {
                 let col_str = col_tok.to_string();
@@ -151,6 +153,7 @@ impl QueryInput {
             name,
             key_type_str,
             filter_columns,
+            user_filter_count,
             related_entities,
         }
     }
@@ -161,6 +164,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
         name,
         key_type_str,
         filter_columns,
+        user_filter_count,
         related_entities,
     } = input;
 
@@ -169,164 +173,79 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
         let column_name = format_ident!("{}", column_name);
         quote! {
             fn #fn_name (column: #column_name, filter_enum: &FilterEnum) -> Condition {
+                macro_rules! numeric_filter {
+                    ($filter:expr, $ty:ty) => {{
+                        let values: Vec<$ty> = $filter
+                            .raw_value
+                            .split(",")
+                            .filter_map(|s| <$ty>::from_str(s).ok())
+                            .collect();
+                        match $filter.operator {
+                            FilterOperator::Less => Condition::any().add(column.lt($filter.value.clone())),
+                            FilterOperator::LessEqual => Condition::any().add(column.lte($filter.value.clone())),
+                            FilterOperator::Greater => Condition::any().add(column.gt($filter.value.clone())),
+                            FilterOperator::GreaterEqual => Condition::any().add(column.gte($filter.value.clone())),
+                            FilterOperator::Equal => Condition::any().add(column.eq($filter.value.clone())),
+                            FilterOperator::NotEqual => Condition::any().add(column.ne($filter.value.clone())),
+                            FilterOperator::In => Condition::any().add(column.is_in(values)),
+                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
+                            _ => Condition::all(),
+                        }
+                    }};
+                }
+
+                macro_rules! vec_string_filter {
+                    ($filter:expr, $sql:expr) => {{
+                        let values: Vec<String> = $filter
+                            .raw_value
+                            .split(",")
+                            .map(|s| s.to_string())
+                            .collect();
+                        Condition::any().add(Expr::cust_with_exprs(
+                            $sql,
+                            vec![
+                                Expr::col((Entity, column)).into(),
+                                Expr::value(values).into(),
+                            ],
+                        ))
+                    }};
+                }
+
                 match filter_enum {
                     FilterEnum::Bool(filter) => match filter.operator {
                         FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
                         FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
                         _ => Condition::all(),
                     },
-
-                    FilterEnum::U32(filter) => {
-                        let values: Vec<u32> = filter
-                            .raw_value
-                            .split(",")
-                            .filter_map(|s| u32::from_str(s).ok())
-                            .collect();
-                        let condition = match filter.operator {
-                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
-                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
-                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
-                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
-                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                            FilterOperator::In => Condition::any().add(column.is_in(values)),
-                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
-                            _ => Condition::all(),
-                        };
-                        condition
-                    }
-                    FilterEnum::I32(filter) => {
-                        let values: Vec<i32> = filter
-                            .raw_value
-                            .split(",")
-                            .filter_map(|s| i32::from_str(s).ok())
-                            .collect();
-                        let condition = match filter.operator {
-                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
-                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
-                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
-                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
-                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                            FilterOperator::In => Condition::any().add(column.is_in(values)),
-                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
-                            _ => Condition::all(),
-                        };
-                        condition
-                    }
-                    FilterEnum::U64(filter) => {
-                        let values: Vec<u64> = filter
-                            .raw_value
-                            .split(",")
-                            .filter_map(|s| u64::from_str(s).ok())
-                            .collect();
-                        let condition = match filter.operator {
-                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
-                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
-                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
-                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
-                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                            FilterOperator::In => Condition::any().add(column.is_in(values)),
-                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
-                            _ => Condition::all(),
-                        };
-                        condition
-                    }
-                    FilterEnum::F32(filter) => {
-                        let values: Vec<f32> = filter
-                            .raw_value
-                            .split(",")
-                            .filter_map(|s| f32::from_str(s).ok())
-                            .collect();
-                        let condition = match filter.operator {
-                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
-                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
-                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
-                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
-                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                            FilterOperator::In => Condition::any().add(column.is_in(values)),
-                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
-                            _ => Condition::all(),
-                        };
-                        condition
-                    }
-                    FilterEnum::F64(filter) => {
-                        let values: Vec<f64> = filter
-                            .raw_value
-                            .split(",")
-                            .filter_map(|s| f64::from_str(s).ok())
-                            .collect();
-                        let condition = match filter.operator {
-                            FilterOperator::Less => Condition::any().add(column.lt(filter.value.clone())),
-                            FilterOperator::LessEqual => Condition::any().add(column.lte(filter.value.clone())),
-                            FilterOperator::Greater => Condition::any().add(column.gt(filter.value.clone())),
-                            FilterOperator::GreaterEqual => Condition::any().add(column.gte(filter.value.clone())),
-                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                            FilterOperator::In => Condition::any().add(column.is_in(values)),
-                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
-                            _ => Condition::all(),
-                        };
-                        condition
-                    }
+                    FilterEnum::U32(filter) => numeric_filter!(filter, u32),
+                    FilterEnum::I32(filter) => numeric_filter!(filter, i32),
+                    FilterEnum::U64(filter) => numeric_filter!(filter, u64),
+                    FilterEnum::F32(filter) => numeric_filter!(filter, f32),
+                    FilterEnum::F64(filter) => numeric_filter!(filter, f64),
                     FilterEnum::Uuid(filter) => {
                         let values: Vec<Uuid> = filter
                             .raw_value
                             .split(",")
                             .filter_map(|s| Uuid::parse_str(s).ok())
                             .collect();
-                        let condition = match filter.operator {
+                        match filter.operator {
                             FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
                             FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
                             FilterOperator::In => Condition::any().add(column.is_in(values)),
                             FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
                             _ => Condition::all(),
-                        };
-                        condition
+                        }
                     }
                     FilterEnum::String(filter) => match filter.operator {
                         FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
                         FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
                         FilterOperator::StartWith => Condition::any().add(column.starts_with(filter.value.as_deref().unwrap_or_default())),
-                        FilterOperator::Like => {
-                            Condition::any().add(column.contains(filter.value.as_deref().unwrap_or_default()))
-                        }
+                        FilterOperator::Like => Condition::any().add(column.contains(filter.value.as_deref().unwrap_or_default())),
                         _ => Condition::all(),
                     },
                     FilterEnum::VecString(filter) => match filter.operator {
-                        // ONLY for postgres, other database may not support array
-                        FilterOperator::In => {
-                            let values: Vec<String> = filter
-                                    .raw_value
-                                    .split(",")
-                                    .map(|s| s.to_string())
-                                    .collect();
-                            let epxr = Expr::cust_with_exprs(
-                                "$1  && $2 ::varchar[]",
-                                vec![
-                                    Expr::col((Entity, column)).into(),
-                                    Expr::value(values).into(),
-                                ],
-                            );
-                            Condition::any().add(epxr)
-                        },
-                        FilterOperator::NotIn => {
-                            let values: Vec<String> = filter
-                                    .raw_value
-                                    .split(",")
-                                    .map(|s| s.to_string())
-                                    .collect();
-                            let epxr = Expr::cust_with_exprs(
-                                "NOT ($1  @> $2 ::varchar[])",
-                                vec![
-                                    Expr::col((Entity, column)).into(),
-                                    Expr::value(values).into(),
-                                ],
-                            );
-                            Condition::any().add(epxr)
-                        }
+                        FilterOperator::In => vec_string_filter!(filter, "$1  && $2 ::varchar[]"),
+                        FilterOperator::NotIn => vec_string_filter!(filter, "NOT ($1  @> $2 ::varchar[])"),
                         _ => Condition::all(),
                     },
                     _ => Condition::all(),
@@ -431,6 +350,40 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
                 }
             }
         }
+    }).collect();
+
+    // Generate subquery blocks that narrow parents via JOINs based on related filters
+    let related_subquery_blocks: Vec<_> = related_entities.iter().filter_map(|rel| {
+        let entity_tok = &rel.entity_tokens;
+        let inc_name = &rel.include_name;
+        let col_tok = rel.column_tokens.as_ref()?;
+        let col_str = col_tok.to_string();
+        let filter_fn = format_ident!("filter_condition_{}", col_str.to_lowercase());
+
+        Some(quote! {
+            {
+                let prefix = format!("{}.", #inc_name);
+                let rel_filters: Vec<&FilterEnum> = related_filters.iter()
+                    .filter(|f| f.get_name().starts_with(&prefix))
+                    .collect();
+                if !rel_filters.is_empty() {
+                    let mut rel_condition = Condition::all();
+                    for rf in &rel_filters {
+                        let col_name = rf.get_name().strip_prefix(&prefix).unwrap_or("").to_string();
+                        if let Ok(col) = #col_tok::from_str(&col_name) {
+                            rel_condition = rel_condition.add(Self::#filter_fn(col, rf));
+                        }
+                    }
+                    let sub = Entity::find()
+                        .select_only()
+                        .column(Column::Id)
+                        .inner_join(#entity_tok)
+                        .filter(rel_condition)
+                        .into_query();
+                    base_query = base_query.filter(Column::Id.in_subquery(sub));
+                }
+            }
+        })
     }).collect();
 
     // Generate per-relation loading blocks, each gated by includes check
@@ -548,13 +501,35 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
                 includes: &Vec<String>,
                 related_filters: &Vec<FilterEnum>,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
-                if includes.is_empty() {
+                if includes.is_empty() && related_filters.is_empty() {
                     return Self::filter(pagination, order, filter).await;
                 }
 
-                let (num_pages, parents) = Self::paginate_query(pagination, order, filter).await?;
+                // Step 1: Build base query from parent filters + related filters (JOIN-based)
+                let parent_condition = Self::build_filter_condition(filter);
+                let mut base_query = Entity::find().filter(parent_condition);
+                #(#related_subquery_blocks)*
 
-                // Preserve order and build lookup map
+                // Step 2: Count total pages on the base query (no ordering)
+                let page_size = pagination.page_size.unwrap_or(1);
+                let page = pagination.page.unwrap_or(1).max(1);
+                let num_pages = base_query.clone().paginate(Self::get_db(), page_size).num_pages().await?;
+
+                // Step 3: Apply ordering, fetch page, and load related entities
+                let ordered_query = match (order.order_name.as_deref(), order.order_direction.as_ref()) {
+                    (Some(name), Some(direction)) => {
+                        if let Ok(column) = Column::from_str(name) {
+                            match direction {
+                                OrderDirection::Asc => base_query.order_by(column, SeaOrder::Asc),
+                                OrderDirection::Desc => base_query.order_by(column, SeaOrder::Desc),
+                            }
+                        } else {
+                            base_query.order_by(Column::CreatedAt, SeaOrder::Desc)
+                        }
+                    }
+                    _ => base_query.order_by(Column::CreatedAt, SeaOrder::Desc),
+                };
+                let parents = ordered_query.paginate(Self::get_db(), page_size).fetch_page(page - 1).await?;
                 let parent_ids: Vec<_> = parents.iter().map(|p| p.id.clone()).collect();
                 let mut result_map: std::collections::HashMap<_, ModelOptionDto> = parents
                     .into_iter()
@@ -566,7 +541,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
 
                 #(#related_load_blocks)*
 
-                // Return in original order
+                // Step 4: Map to DTOs preserving original order and return
                 let result: Vec<ModelOptionDto> = parent_ids
                     .iter()
                     .filter_map(|id| result_map.remove(id))
@@ -579,6 +554,26 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
             }
 
             #get_by_id_with_related_quote
+        }
+    } else {
+        quote! {}
+    };
+
+    // Generate build_filter_condition only for single user-specified filter column.
+    // Multi-column cases (e.g. UserQueryManager, BakerQueryManager) need custom dispatch.
+    let build_filter_condition_quote = if user_filter_count == 1 {
+        quote! {
+            impl #name {
+                fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
+                    let mut condition = Condition::all();
+                    for filter_enum in filters {
+                        if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
+                            condition = condition.add(Self::filter_condition_column(column, filter_enum));
+                        }
+                    }
+                    condition
+                }
+            }
         }
     } else {
         quote! {}
@@ -674,5 +669,10 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
 
     };
 
-    TokenStream::from(expanded)
+    let final_output = quote! {
+        #expanded
+        #build_filter_condition_quote
+    };
+
+    TokenStream::from(final_output)
 }
