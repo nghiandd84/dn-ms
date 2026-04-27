@@ -15,8 +15,6 @@ use features_bakery_model::lineitem::LineitemData;
 #[query_filter(column_name(Column))]
 struct LineitemQueryManager;
 
-
-
 pub struct LineitemQuery {}
 
 impl LineitemQuery {
@@ -28,7 +26,7 @@ impl LineitemQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<LineitemData>, DbErr> {
         let result = LineitemQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

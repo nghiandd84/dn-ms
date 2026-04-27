@@ -15,8 +15,6 @@ use features_merchant_model::webhook::WebhookData;
 #[query_filter(column_name(Column))]
 struct WebhookQueryManager;
 
-
-
 pub struct WebhookQuery;
 
 impl WebhookQuery {
@@ -35,9 +33,12 @@ impl WebhookQuery {
             operator: shared_shared_data_core::filter::FilterOperator::Equal,
         });
         let filters = vec![merchant_id_filter];
-        let result =
-            WebhookQueryManager::filter(&Pagination::default(), &Order::default(), &filters)
-                .await?;
+        let result = WebhookQueryManager::filter(
+            &Pagination::default(),
+            &Order::default(),
+            &FilterCondition::from(&filters),
+        )
+        .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|w| w.into()).collect(),
@@ -48,7 +49,7 @@ impl WebhookQuery {
     pub async fn get_webhooks<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<WebhookData>, AppError> {
         let result = WebhookQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

@@ -16,8 +16,6 @@ use features_event_model::EventData;
 #[query_filter(column_name(Column))]
 struct EventQueryManager;
 
-
-
 pub struct EventQuery;
 
 impl EventQuery {
@@ -29,7 +27,7 @@ impl EventQuery {
     pub async fn get_events<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<EventData>, AppError> {
         let result = EventQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

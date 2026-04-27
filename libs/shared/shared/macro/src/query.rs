@@ -497,7 +497,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
             async fn filter_with_related_entities(
                 pagination: &Pagination,
                 order: &Order,
-                filter: &Vec<FilterEnum>,
+                filter: &FilterCondition,
                 includes: &Vec<String>,
                 related_filters: &Vec<FilterEnum>,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
@@ -564,14 +564,30 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
     let build_filter_condition_quote = if user_filter_count == 1 {
         quote! {
             impl #name {
-                fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-                    let mut condition = Condition::all();
-                    for filter_enum in filters {
-                        if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                            condition = condition.add(Self::filter_condition_column(column, filter_enum));
+                fn build_filter_condition(filter_condition: &FilterCondition) -> Condition {
+                    match filter_condition {
+                        FilterCondition::And(conditions) => {
+                            let mut condition = Condition::all();
+                            for c in conditions {
+                                condition = condition.add(Self::build_filter_condition(c));
+                            }
+                            condition
+                        }
+                        FilterCondition::Or(conditions) => {
+                            let mut condition = Condition::any();
+                            for c in conditions {
+                                condition = condition.add(Self::build_filter_condition(c));
+                            }
+                            condition
+                        }
+                        FilterCondition::Leaf(filter_enum) => {
+                            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
+                                Self::filter_condition_column(column, filter_enum)
+                            } else {
+                                Condition::all()
+                            }
                         }
                     }
-                    condition
                 }
             }
         }
@@ -589,7 +605,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
             sea_query::{Alias, SelectStatement, SimpleExpr, Expr},
             prelude::*
         };
-        use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, order::OrderDirection};
+        use shared_shared_data_core::{query::QueryManager, filter::FilterOperator, filter::FilterCondition, order::OrderDirection};
         use shared_shared_config::db::DB_READ;
 
 
@@ -598,7 +614,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
                 (num_items / page_size) + (num_items % page_size > 0) as u64
             }
 
-            fn build_query(order: &Order, filters: &Vec<FilterEnum>) -> Select<Entity> {
+            fn build_query(order: &Order, filters: &FilterCondition) -> Select<Entity> {
                 let default_order = Entity::find().order_by(Column::CreatedAt, SeaOrder::Desc);
 
                 let select = match (order.order_name.as_deref(), order.order_direction.as_ref()) {
@@ -624,7 +640,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
             async fn paginate_query(
                 pagination: &Pagination,
                 order: &Order,
-                filters: &Vec<FilterEnum>,
+                filters: &FilterCondition,
             ) -> Result<(u64, Vec<<Entity as EntityTrait>::Model>), DbErr> {
                 let page_size = pagination.page_size.unwrap_or(1);
                 let page = pagination.page.unwrap_or(1).max(1);
@@ -652,7 +668,7 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
             async fn filter(
                 pagination: &Pagination,
                 order: &Order,
-                filter: &Vec<FilterEnum>,
+                filter: &FilterCondition,
             ) -> Result<QueryResult<ModelOptionDto>, DbErr> {
                 let (num_pages, result) = Self::paginate_query(pagination, order, filter).await?;
                 let result: Vec<ModelOptionDto> = result.into_iter().map(|m| m.into()).collect();

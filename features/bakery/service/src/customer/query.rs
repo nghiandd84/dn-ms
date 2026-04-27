@@ -15,8 +15,6 @@ use features_bakery_model::customer::CustomerData;
 #[query_filter(column_name(Column))]
 struct CustomerQueryManager;
 
-
-
 pub struct CustomerQuery {}
 
 impl CustomerQuery {
@@ -28,7 +26,7 @@ impl CustomerQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<CustomerData>, DbErr> {
         let result = CustomerQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

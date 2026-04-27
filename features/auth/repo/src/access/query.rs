@@ -16,8 +16,6 @@ use features_auth_model::access::AccessData;
 #[query_filter(column_name(Column))]
 struct AccessQueryManager;
 
-
-
 pub struct AccessQuery {}
 
 impl AccessQuery {
@@ -30,7 +28,7 @@ impl AccessQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<AccessData>, DbErr> {
         debug!("AccessQuery::search filters: {:?}", filters);
         let result = AccessQueryManager::filter(pagination, order, filters).await;

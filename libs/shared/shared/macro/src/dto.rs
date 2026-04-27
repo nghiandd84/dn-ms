@@ -2,7 +2,8 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
     parse::{Parse, ParseStream},
-    punctuated::Punctuated, Data, DeriveInput, Fields, Ident, Token,
+    punctuated::Punctuated,
+    Data, DeriveInput, Fields, Ident, Token,
 };
 
 mod kw {
@@ -46,7 +47,11 @@ impl Parse for DtoAttr {
             let _ = input.parse::<Token![,]>();
         }
 
-        Ok(DtoAttr { name, columns, option })
+        Ok(DtoAttr {
+            name,
+            columns,
+            option,
+        })
     }
 }
 
@@ -86,12 +91,20 @@ impl DtoInput {
             _ => panic!("This macro only works on structs"),
         };
 
-        DtoInput { name, dto_defs, fields }
+        DtoInput {
+            name,
+            dto_defs,
+            fields,
+        }
     }
 }
 
 pub fn derive_dto(input: DtoInput) -> TokenStream {
-    let DtoInput { name, dto_defs, fields } = input;
+    let DtoInput {
+        name,
+        dto_defs,
+        fields,
+    } = input;
 
     let option_fields = fields
         .iter()

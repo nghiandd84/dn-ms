@@ -53,9 +53,14 @@ pub async fn get_lookup_items(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result =
-        LookupItemService::get_lookup_items_by_type_code(&tenant_id, &type_code, &filters, &pagination, &order)
-            .await?;
+    let result = LookupItemService::get_lookup_items_by_type_code(
+        &tenant_id,
+        &type_code,
+        &filters,
+        &pagination,
+        &order,
+    )
+    .await?;
     Ok(ResponseJson(result))
 }
 

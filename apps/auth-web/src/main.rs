@@ -1,7 +1,7 @@
 use dioxus::{logger::tracing::debug, prelude::*};
 use dioxus_i18n::prelude::*;
 use serde::{Deserialize, Serialize};
-use unic_langid::{LanguageIdentifier};
+use unic_langid::LanguageIdentifier;
 
 // Not Remove https://github.com/MikeCode00/Dioxus-fullstack-Auth
 
@@ -20,7 +20,6 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 
 #[cfg(feature = "server")]
 const COUNTER_KEY: &str = "counter";
-
 
 #[cfg(feature = "server")]
 use unic_langid::langid;

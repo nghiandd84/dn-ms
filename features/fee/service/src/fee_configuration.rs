@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -81,7 +81,7 @@ impl FeeConfigurationService {
     pub async fn get_fee_configurations(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<FeeConfigurationData>, AppError> {
         FeeConfigurationQuery::get_fee_configurations(pagination, order, filters).await
     }

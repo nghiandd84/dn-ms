@@ -13,7 +13,7 @@ use shared_shared_data_app::{
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
     query_params::QueryParams,
@@ -39,7 +39,7 @@ struct RoleRelatedFilterParams {
 impl RoleRelatedFilterParams {
     fn related_filters(&self) -> Vec<FilterEnum> {
         if let Some(ref p) = self.permissions {
-            let mut filters = p.all_filters();
+            let mut filters = p.all_filters().collect_leaves();
             for f in filters.iter_mut() {
                 f.add_name_prefix("permissions");
             }
@@ -130,7 +130,7 @@ async fn get_role(
     Query(mut query_params): Query<QueryParams>,
     related_filter: FilterParams<RoleRelatedFilterParams>,
 ) -> Result<ResponseJson<RoleData>> {
-    let related_filters = related_filter.0.related_filters();
+    let related_filters = FilterCondition::from(related_filter.0.related_filters());
     query_params.add_includes(related_filter.0.auto_includes());
     let role = RoleQuery::get(role_id, &query_params, &related_filters).await?;
     Ok(ResponseJson(role))
@@ -174,12 +174,17 @@ async fn filter_roles(
     let pagination = query_pagination.0;
     let order = query_order.0;
     let all_filters = filter.0.all_filters();
-    let related_filters = related_filter.0.related_filters();
+    let related_filters = FilterCondition::from(related_filter.0.related_filters());
     query_params.add_includes(related_filter.0.auto_includes());
 
-    let result =
-        RoleQuery::search(&pagination, &order, &all_filters, &query_params, &related_filters)
-            .await?;
+    let result = RoleQuery::search(
+        &pagination,
+        &order,
+        &all_filters,
+        &query_params,
+        &related_filters,
+    )
+    .await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

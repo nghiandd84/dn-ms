@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -68,7 +68,7 @@ impl WebhookService {
     pub async fn get_webhooks(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<WebhookData>, AppError> {
         WebhookQuery::get_webhooks(pagination, order, filters).await
     }

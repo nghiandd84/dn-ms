@@ -16,8 +16,7 @@ use features_wallet_model::p2p_transfer::P2pTransferData;
 #[query_filter(column_name(Column))]
 struct P2pTransferQueryManager;
 
-impl P2pTransferQueryManager {
-}
+impl P2pTransferQueryManager {}
 
 pub struct P2pTransferQuery;
 
@@ -30,7 +29,7 @@ impl P2pTransferQuery {
     pub async fn get_p2p_transfers(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<P2pTransferData>, AppError> {
         let result = P2pTransferQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -51,7 +50,9 @@ impl P2pTransferQuery {
             value: Some(wallet_id),
             raw_value: wallet_id.to_string(),
         })];
-        let result = P2pTransferQueryManager::filter(pagination, order, &filters).await?;
+        let result =
+            P2pTransferQueryManager::filter(pagination, order, &FilterCondition::from(&filters))
+                .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

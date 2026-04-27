@@ -26,22 +26,34 @@ use features_auth_model::user::UserData;
 struct UserQueryManager;
 
 impl UserQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-        let mut condition = Condition::all();
-        for filter_enum in filters {
-            let name = filter_enum.get_name();
-            if name.starts_with("role.`") {
-                if let Ok(column) = RoleColumn::from_str(filter_enum.get_name().as_str()) {
-                    condition =
-                        condition.add(Self::filter_condition_rolecolumn(column, filter_enum));
+    fn build_filter_condition(filter_condition: &FilterCondition) -> Condition {
+        match filter_condition {
+            FilterCondition::And(conditions) => {
+                let mut condition = Condition::all();
+                for c in conditions {
+                    condition = condition.add(Self::build_filter_condition(c));
                 }
-            } else {
-                if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                    condition = condition.add(Self::filter_condition_column(column, filter_enum));
+                condition
+            }
+            FilterCondition::Or(conditions) => {
+                let mut condition = Condition::any();
+                for c in conditions {
+                    condition = condition.add(Self::build_filter_condition(c));
                 }
+                condition
+            }
+            FilterCondition::Leaf(filter_enum) => {
+                let name = filter_enum.get_name();
+                if name.starts_with("role.`") {
+                    if let Ok(column) = RoleColumn::from_str(name.as_str()) {
+                        return Self::filter_condition_rolecolumn(column, filter_enum);
+                    }
+                } else if let Ok(column) = Column::from_str(name.as_str()) {
+                    return Self::filter_condition_column(column, filter_enum);
+                }
+                Condition::all()
             }
         }
-        condition
     }
 }
 
@@ -64,7 +76,8 @@ impl UserQuery {
         let email_filter = FilterEnum::String(param);
         let filters: Vec<FilterEnum> = vec![email_filter];
 
-        let result = UserQueryManager::filter(&pagination, &order, &filters).await?;
+        let result =
+            UserQueryManager::filter(&pagination, &order, &FilterCondition::from(filters)).await?;
 
         let dto = result.result.into_iter().next();
         if dto.is_none() {
@@ -127,9 +140,9 @@ impl UserQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<UserData>, DbErr> {
-        let result = UserQueryManager::filter(pagination, order, filters).await?;
+        let result = UserQueryManager::filter(pagination, order, &filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),
@@ -140,9 +153,9 @@ impl UserQuery {
     pub async fn advance_search<'a>(
         _pagination: &Pagination,
         _order: &Order,
-        _filters: &Vec<FilterEnum>,
+        _filters: &FilterCondition,
     ) -> Result<QueryResult<UserData>, DbErr> {
-        // let result = UserQueryManager::filter(db, pagination, order, filters).await?;
+        // let result = UserQueryManager::filter(db, pagination, order, &filters).await?;
         let mapped_result = QueryResult {
             total_page: 3,
             result: vec![],

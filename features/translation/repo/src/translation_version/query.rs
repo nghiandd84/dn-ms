@@ -18,8 +18,6 @@ use features_translation_model::TranslationVersionData;
 #[query_filter(column_name(Column))]
 struct TranslationVersionQueryManager;
 
-
-
 pub struct TranslationVersionQuery;
 
 impl TranslationVersionQuery {
@@ -33,7 +31,7 @@ impl TranslationVersionQuery {
     pub async fn get_translation_versions<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
         let result = TranslationVersionQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -45,7 +43,7 @@ impl TranslationVersionQuery {
 
     pub async fn get_latest_version_by_key_locale(
         key_id: Uuid,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
@@ -58,7 +56,7 @@ impl TranslationVersionQuery {
         let key_filter = FilterEnum::Uuid(key_param);
 
         let mut search_filters = filters.clone();
-        search_filters.push(key_filter);
+        search_filters.push_leaf(key_filter);
 
         let result =
             TranslationVersionQueryManager::filter(&pagination, &order, &search_filters).await?;

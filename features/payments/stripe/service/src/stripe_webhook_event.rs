@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -77,16 +77,16 @@ impl StripeWebhookEventService {
             raw_value: processed.to_string(),
         };
         let processed_filter = FilterEnum::Bool(param);
-        let filters: Vec<FilterEnum> = vec![processed_filter];
+        let filters: FilterCondition = vec![processed_filter].into();
         StripeWebhookEventQuery::get_webhook_events(&pagination, &order, &filters).await
     }
 
     pub async fn get_webhook_events(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<StripeWebhookEventData>, AppError> {
-        StripeWebhookEventQuery::get_webhook_events(pagination, order, filters).await
+        StripeWebhookEventQuery::get_webhook_events(pagination, order, &filters).await
     }
 
     pub async fn update_webhook_event(

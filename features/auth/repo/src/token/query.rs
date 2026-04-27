@@ -15,8 +15,6 @@ use features_auth_model::token::TokenData;
 #[query_filter(column_name(Column))]
 struct TokenQueryManager;
 
-
-
 pub struct TokenQuery {}
 
 impl TokenQuery {
@@ -29,7 +27,7 @@ impl TokenQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TokenData>, DbErr> {
         let result = TokenQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

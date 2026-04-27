@@ -1,7 +1,7 @@
 use tracing::debug;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -64,7 +64,7 @@ impl ApiKeyService {
     pub async fn get_api_keys(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ApiKeyData>, AppError> {
         ApiKeyQuery::get_api_keys(pagination, order, filters).await
     }

@@ -18,8 +18,6 @@ use features_payments_stripe_model::stripe_refund::StripeRefundData;
 #[query_filter(column_name(Column))]
 struct StripeRefundQueryManager;
 
-
-
 pub struct StripeRefundQuery;
 
 impl StripeRefundQuery {
@@ -31,7 +29,7 @@ impl StripeRefundQuery {
     pub async fn get_refunds(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<StripeRefundData>, AppError> {
         let result = StripeRefundQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

@@ -1,7 +1,7 @@
 mod authentication;
-mod token;
 mod permission;
+mod token;
 
 pub use authentication::AuthenticationRequestService;
-pub use token::TokenService;
 pub use permission::PermissionService;
+pub use token::TokenService;

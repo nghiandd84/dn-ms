@@ -15,8 +15,6 @@ use features_bakery_model::order::OrderData;
 #[query_filter(column_name(Column))]
 struct OrderQueryManager;
 
-
-
 pub struct OrderQuery {}
 
 impl OrderQuery {
@@ -28,7 +26,7 @@ impl OrderQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<OrderData>, DbErr> {
         let result = OrderQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

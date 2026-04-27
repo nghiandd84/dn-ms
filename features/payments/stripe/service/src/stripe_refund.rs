@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -67,16 +67,16 @@ impl StripeRefundService {
             raw_value: status.to_string(),
         };
         let status_filter = FilterEnum::String(param);
-        let filters: Vec<FilterEnum> = vec![status_filter];
+        let filters: FilterCondition = vec![status_filter].into();
         StripeRefundQuery::get_refunds(&pagination, &order, &filters).await
     }
 
     pub async fn get_refunds(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<StripeRefundData>, AppError> {
-        StripeRefundQuery::get_refunds(pagination, order, filters).await
+        StripeRefundQuery::get_refunds(pagination, order, &filters).await
     }
 
     pub async fn update_refund(

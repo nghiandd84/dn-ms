@@ -18,8 +18,6 @@ use features_payments_core_model::payment_method::PaymentMethodData;
 #[query_filter(column_name(Column))]
 struct PaymentMethodQueryManager;
 
-
-
 pub struct PaymentMethodQuery;
 
 impl PaymentMethodQuery {
@@ -31,7 +29,7 @@ impl PaymentMethodQuery {
     pub async fn get_payment_methods<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<PaymentMethodData>, AppError> {
         let result = PaymentMethodQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

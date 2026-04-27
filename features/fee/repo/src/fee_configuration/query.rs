@@ -15,8 +15,6 @@ use features_fee_model::fee_configuration::FeeConfigurationData;
 #[query_filter(column_name(Column))]
 struct FeeConfigurationQueryManager;
 
-
-
 pub struct FeeConfigurationQuery;
 
 impl FeeConfigurationQuery {
@@ -40,7 +38,7 @@ impl FeeConfigurationQuery {
         let result = FeeConfigurationQueryManager::filter(
             &Pagination::default(),
             &Order::default(),
-            &filters,
+            &FilterCondition::from(&filters),
         )
         .await?;
         let mapped_result = QueryResult {
@@ -53,7 +51,7 @@ impl FeeConfigurationQuery {
     pub async fn get_fee_configurations<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<FeeConfigurationData>, AppError> {
         let result = FeeConfigurationQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

@@ -16,8 +16,6 @@ use features_wallet_model::idempotency::IdempotencyKeyData;
 #[query_filter(column_name(Column))]
 struct IdempotencyQueryManager;
 
-
-
 pub struct IdempotencyQuery;
 
 impl IdempotencyQuery {
@@ -33,9 +31,12 @@ impl IdempotencyQuery {
             value: Some(key.to_string()),
             raw_value: key.to_string(),
         })];
-        let result =
-            IdempotencyQueryManager::filter(&Pagination::default(), &Order::default(), &filters)
-                .await?;
+        let result = IdempotencyQueryManager::filter(
+            &Pagination::default(),
+            &Order::default(),
+            &FilterCondition::from(&filters),
+        )
+        .await?;
         if let Some(model) = result.result.into_iter().next() {
             Ok(model.into())
         } else {
@@ -48,7 +49,7 @@ impl IdempotencyQuery {
     pub async fn get_idempotency_keys(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<IdempotencyKeyData>, AppError> {
         let result = IdempotencyQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

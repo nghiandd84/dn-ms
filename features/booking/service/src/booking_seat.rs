@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -54,16 +54,16 @@ impl BookingSeatService {
             raw_value: booking_id.to_string(),
         };
         let booking_filter = FilterEnum::String(param);
-        let filters: Vec<FilterEnum> = vec![booking_filter];
+        let filters: FilterCondition = vec![booking_filter].into();
         BookingSeatQuery::get_booking_seats(&pagination, &order, &filters).await
     }
 
     pub async fn get_booking_seats<'a>(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<BookingSeatData>, AppError> {
-        BookingSeatQuery::get_booking_seats(pagination, order, filters).await
+        BookingSeatQuery::get_booking_seats(pagination, order, &filters).await
     }
 
     pub async fn update_booking_seat(

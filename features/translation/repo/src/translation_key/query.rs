@@ -16,8 +16,6 @@ use features_translation_model::TranslationKeyData;
 #[query_filter(column_name(Column))]
 struct TranslationKeyQueryManager;
 
-
-
 pub struct TranslationKeyQuery;
 
 impl TranslationKeyQuery {
@@ -41,7 +39,12 @@ impl TranslationKeyQuery {
         let project_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![project_filter];
 
-        let result = TranslationKeyQueryManager::filter(&pagination, &order, &filters).await?;
+        let result = TranslationKeyQueryManager::filter(
+            &pagination,
+            &order,
+            &FilterCondition::from(&filters),
+        )
+        .await?;
 
         let mapped_result = QueryResult {
             total_page: result.total_page,
@@ -53,7 +56,7 @@ impl TranslationKeyQuery {
     pub async fn get_translation_keys<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
         let result = TranslationKeyQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

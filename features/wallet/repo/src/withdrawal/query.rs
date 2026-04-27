@@ -16,8 +16,6 @@ use features_wallet_model::withdrawal::WithdrawalData;
 #[query_filter(column_name(Column))]
 struct WithdrawalQueryManager;
 
-
-
 pub struct WithdrawalQuery;
 
 impl WithdrawalQuery {
@@ -29,7 +27,7 @@ impl WithdrawalQuery {
     pub async fn get_withdrawals(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<WithdrawalData>, AppError> {
         let result = WithdrawalQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -50,7 +48,9 @@ impl WithdrawalQuery {
             value: Some(wallet_id),
             raw_value: wallet_id.to_string(),
         })];
-        let result = WithdrawalQueryManager::filter(pagination, order, &filters).await?;
+        let result =
+            WithdrawalQueryManager::filter(pagination, order, &FilterCondition::from(&filters))
+                .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

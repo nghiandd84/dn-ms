@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
     query_params::QueryParams,
@@ -33,19 +33,12 @@ impl LookupTypeService {
 
     pub async fn get_lookup_types(
         tenant_id: &str,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
         query_params: &QueryParams,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
-        LookupTypeQuery::get_lookup_types(
-            tenant_id,
-            pagination,
-            order,
-            filters,
-            query_params,
-        )
-        .await
+        LookupTypeQuery::get_lookup_types(tenant_id, pagination, order, filters, query_params).await
     }
 
     pub async fn get_lookup_type_by_id(

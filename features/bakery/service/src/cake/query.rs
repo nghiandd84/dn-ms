@@ -15,8 +15,6 @@ use features_bakery_model::cake::CakeData;
 #[query_filter(column_name(Column))]
 struct CakeQueryManager;
 
-
-
 pub struct CakeQuery {}
 
 impl CakeQuery {
@@ -29,7 +27,7 @@ impl CakeQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<CakeData>, DbErr> {
         let result = CakeQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

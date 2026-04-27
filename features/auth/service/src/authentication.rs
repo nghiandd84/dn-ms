@@ -4,7 +4,7 @@ use uuid::Uuid;
 use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterParam},
     order::Order,
     paging::Pagination,
     query_params::QueryParams,
@@ -129,8 +129,14 @@ impl AuthenticationRequestService {
             }),
         ];
 
-        let default_roles =
-            RoleQuery::search(&Pagination::default(), &Order::default(), &filters, &QueryParams::default(), &vec![]).await;
+        let default_roles = RoleQuery::search(
+            &Pagination::default(),
+            &Order::default(),
+            &FilterCondition::from(filters),
+            &QueryParams::default(),
+            &FilterCondition::and(vec![]),
+        )
+        .await;
         if default_roles.is_err() {
             let error = default_roles.err().unwrap();
             debug!("Error fetching default roles: {:?}", error);

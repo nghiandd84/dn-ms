@@ -148,6 +148,10 @@ Content-Type: application/json
 GET {{baseUrl}}/roles?page=0&page_size=10
 Content-Type: application/json
 
+### Get Roles with condition OR
+GET {{baseUrl}}/roles?name=eq|admin&status=eq|active&_condition=or&page=0&page_size=10
+Content-Type: application/json
+
 ### Get All Roles with permissions
 GET {{baseUrl}}/roles?includes=permissions
 Content-Type: application/json

@@ -16,8 +16,6 @@ use features_translation_model::key_tag::KeyTagData;
 #[query_filter(column_name(Column))]
 pub struct KeyTagQueryManager;
 
-
-
 impl KeyTagQueryManager {
     pub async fn get_tags_by_key_id(key_id: Uuid) -> Result<Vec<KeyTagData>, AppError> {
         let paging = Pagination::new(1, 100); // Assuming a reasonable limit for tags
@@ -30,7 +28,7 @@ impl KeyTagQueryManager {
         });
 
         let filters: Vec<FilterEnum> = vec![key_id_filter];
-        let query_result = Self::filter(&paging, &order, &filters).await?;
+        let query_result = Self::filter(&paging, &order, &FilterCondition::from(&filters)).await?;
         if query_result.result.is_empty() {
             return Err(AppError::EntityNotFound {
                 entity: "tag_key".to_string(),
@@ -61,7 +59,7 @@ impl KeyTagQueryManager {
         });
 
         let filters: Vec<FilterEnum> = vec![key_id_filter, tag_id_filter];
-        let query_result = Self::filter(&paging, &order, &filters).await;
+        let query_result = Self::filter(&paging, &order, &FilterCondition::from(&filters)).await;
         if query_result.is_err() {
             return Err(AppError::Internal("Failed to query key tags".to_string()));
         }

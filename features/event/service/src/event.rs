@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -64,16 +64,16 @@ impl EventService {
             raw_value: status.to_string(),
         };
         let status_filter = FilterEnum::String(param);
-        let filters: Vec<FilterEnum> = vec![status_filter];
+        let filters: FilterCondition = vec![status_filter].into();
         EventQuery::get_events(&pagination, &order, &filters).await
     }
 
     pub async fn get_events<'a>(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<EventData>, AppError> {
-        EventQuery::get_events(pagination, order, filters).await
+        EventQuery::get_events(pagination, order, &filters).await
     }
 
     pub async fn update_event(

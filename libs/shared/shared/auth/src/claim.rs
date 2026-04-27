@@ -116,17 +116,29 @@ mod tests {
     #[test]
     fn test_from_string_invalid_user_id() {
         let client_id = uuid::Uuid::new_v4();
-        let s = format!("accesses=admin*key1,user_id=not-a-uuid,client_id={}", client_id);
+        let s = format!(
+            "accesses=admin*key1,user_id=not-a-uuid,client_id={}",
+            client_id
+        );
         let ats = AccessTokenStruct::from_string(&s);
-        assert!(ats.is_none(), "Should return None if user_id is not a valid Uuid");
+        assert!(
+            ats.is_none(),
+            "Should return None if user_id is not a valid Uuid"
+        );
     }
 
     #[test]
     fn test_from_string_invalid_client_id() {
         let user_id = uuid::Uuid::new_v4();
-        let s = format!("accesses=admin*key1,user_id={},client_id=not-a-uuid", user_id);
+        let s = format!(
+            "accesses=admin*key1,user_id={},client_id=not-a-uuid",
+            user_id
+        );
         let ats = AccessTokenStruct::from_string(&s);
-        assert!(ats.is_none(), "Should return None if client_id is not a valid Uuid");
+        assert!(
+            ats.is_none(),
+            "Should return None if client_id is not a valid Uuid"
+        );
     }
 
     use super::*;

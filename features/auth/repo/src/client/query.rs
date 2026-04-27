@@ -15,8 +15,6 @@ use features_auth_model::client::ClientData;
 #[query_filter(column_name(Column))]
 struct ClientQueryManager;
 
-
-
 pub struct ClientQuery {}
 
 impl ClientQuery {
@@ -29,7 +27,7 @@ impl ClientQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ClientData>, DbErr> {
         let result = ClientQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

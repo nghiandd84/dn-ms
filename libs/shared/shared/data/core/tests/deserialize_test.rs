@@ -12,7 +12,10 @@ struct Wrapper {
 fn deserialize_datetime_valid() {
     let json = r#"{"dt": "2024-01-15T10:30:00"}"#;
     let w: Wrapper = serde_json::from_str(json).unwrap();
-    assert_eq!(w.dt, NaiveDateTime::parse_from_str("2024-01-15T10:30:00", "%Y-%m-%dT%H:%M:%S").unwrap());
+    assert_eq!(
+        w.dt,
+        NaiveDateTime::parse_from_str("2024-01-15T10:30:00", "%Y-%m-%dT%H:%M:%S").unwrap()
+    );
 }
 
 #[test]

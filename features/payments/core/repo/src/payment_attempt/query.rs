@@ -18,8 +18,6 @@ use features_payments_core_model::payment_attempt::PaymentAttemptData;
 #[query_filter(column_name(Column))]
 struct PaymentAttemptQueryManager;
 
-
-
 pub struct PaymentAttemptQuery;
 
 impl PaymentAttemptQuery {
@@ -33,7 +31,7 @@ impl PaymentAttemptQuery {
     pub async fn get_payment_attempts<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<PaymentAttemptData>, AppError> {
         let result = PaymentAttemptQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

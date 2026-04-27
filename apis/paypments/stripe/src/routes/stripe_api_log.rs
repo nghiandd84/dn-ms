@@ -19,6 +19,7 @@ use shared_shared_data_app::{
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
@@ -79,7 +80,7 @@ async fn filter_api_logs(
 ) -> Result<ResponseJson<QueryResult<StripeApiLogData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![]; // TODO: Add filter support
+    let filters = FilterCondition::And(vec![]); // TODO: Add filter support
     let result = StripeApiLogService::get_api_logs(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }

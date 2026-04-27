@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -50,7 +50,7 @@ impl TransactionService {
     pub async fn get_transactions(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TransactionData>, AppError> {
         TransactionQuery::get_transactions(pagination, order, filters).await
     }

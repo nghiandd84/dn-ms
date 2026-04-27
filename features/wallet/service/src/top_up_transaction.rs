@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -55,7 +55,7 @@ impl TopUpTransactionService {
     pub async fn get_top_up_transactions(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TopUpTransactionData>, AppError> {
         TopUpTransactionQuery::get_top_up_transactions(pagination, order, filters).await
     }

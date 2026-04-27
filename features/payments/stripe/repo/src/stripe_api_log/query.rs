@@ -18,8 +18,6 @@ use features_payments_stripe_model::stripe_api_log::StripeApiLogData;
 #[query_filter(column_name(Column))]
 struct StripeApiLogQueryManager;
 
-
-
 pub struct StripeApiLogQuery;
 
 impl StripeApiLogQuery {
@@ -31,7 +29,7 @@ impl StripeApiLogQuery {
     pub async fn get_api_logs(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<StripeApiLogData>, AppError> {
         let result = StripeApiLogQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

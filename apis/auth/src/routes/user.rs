@@ -17,6 +17,7 @@ use shared_shared_data_app::{
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
@@ -80,7 +81,7 @@ async fn filter_users(
 async fn test_filters() -> Result<ResponseJson<QueryResult<UserData>>> {
     let pagination = Pagination::default();
     let order = Order::default();
-    let all_filters = vec![];
+    let all_filters = FilterCondition::from(vec![]);
 
     let result = UserQuery::advance_search(&pagination, &order, &all_filters).await?;
     Ok(ResponseJson(result))

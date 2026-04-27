@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -67,16 +67,16 @@ impl StripeApiLogService {
             raw_value: method.to_string(),
         };
         let method_filter = FilterEnum::String(param);
-        let filters: Vec<FilterEnum> = vec![method_filter];
+        let filters: FilterCondition = vec![method_filter].into();
         StripeApiLogQuery::get_api_logs(&pagination, &order, &filters).await
     }
 
     pub async fn get_api_logs(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<StripeApiLogData>, AppError> {
-        StripeApiLogQuery::get_api_logs(pagination, order, filters).await
+        StripeApiLogQuery::get_api_logs(pagination, order, &filters).await
     }
 
     pub async fn update_api_log(

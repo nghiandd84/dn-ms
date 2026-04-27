@@ -1,6 +1,6 @@
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -39,7 +39,7 @@ impl TemplateTranslationService {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TemplateTranslationData>> {
         let result = TemplateTranslationQuery::search(pagination, order, filters).await?;
         Ok(result)

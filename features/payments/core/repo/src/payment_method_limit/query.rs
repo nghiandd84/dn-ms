@@ -18,8 +18,6 @@ use features_payments_core_model::payment_method_limit::PaymentMethodLimitData;
 #[query_filter(column_name(Column))]
 struct PaymentMethodLimitQueryManager;
 
-
-
 pub struct PaymentMethodLimitQuery;
 
 impl PaymentMethodLimitQuery {
@@ -33,7 +31,7 @@ impl PaymentMethodLimitQuery {
     pub async fn get_payment_method_limits<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<PaymentMethodLimitData>, AppError> {
         let result = PaymentMethodLimitQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

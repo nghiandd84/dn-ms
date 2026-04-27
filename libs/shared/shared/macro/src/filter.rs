@@ -17,7 +17,7 @@ const FILTER_TYPES: [&str; 15] = [
     "datetime",
     "vecstring",
     "vecuuid",
-    "jsonvalue"
+    "jsonvalue",
 ];
 
 pub(crate) struct FilterField {
@@ -44,7 +44,10 @@ impl FilterInput {
         let fields = raw_fields
             .into_iter()
             .filter(|field| {
-                !field.attrs.iter().any(|attr| attr.path().is_ident("skip_param"))
+                !field
+                    .attrs
+                    .iter()
+                    .any(|attr| attr.path().is_ident("skip_param"))
             })
             .map(|field| {
                 let name = field.ident.clone().unwrap();
@@ -59,7 +62,8 @@ impl FilterInput {
                         if let syn::PathArguments::AngleBracketed(args) =
                             &type_path.path.segments.last().unwrap().arguments
                         {
-                            if let syn::GenericArgument::Type(inner_ty) = args.args.first().unwrap() {
+                            if let syn::GenericArgument::Type(inner_ty) = args.args.first().unwrap()
+                            {
                                 inner_ty.clone()
                             } else {
                                 field.ty.clone()
@@ -119,11 +123,12 @@ pub fn filter_macro_derive_impl(input: FilterInput) -> TokenStream {
         if !FILTER_TYPES.iter().any(|&x| x == ty_str_lower) {
             quote! {
                 if self.#name.is_some() {
-                    let mut filters = self.#name.as_ref().unwrap().clone().all_filters();
-                    for f in filters.iter_mut() {
+                    let nested = self.#name.as_ref().unwrap().all_filters();
+                    let mut nested_leaves = nested.collect_leaves();
+                    for f in nested_leaves.iter_mut() {
                         f.add_name_prefix(#field_name_quote);
                     }
-                    result.append(&mut filters);
+                    leaves.append(&mut nested_leaves);
                 }
             }
         } else {
@@ -134,7 +139,7 @@ pub fn filter_macro_derive_impl(input: FilterInput) -> TokenStream {
                     let mut filter = self.#name.as_ref().unwrap().clone();
                     filter.name = #field_name_quote.to_owned();
                     let filter_enum = FilterEnum::#enum_type_quote(filter);
-                    result.push(filter_enum);
+                    leaves.push(filter_enum);
                 }
             }
         }
@@ -142,16 +147,23 @@ pub fn filter_macro_derive_impl(input: FilterInput) -> TokenStream {
 
     let gen = quote! {
 
-        #[derive(serde::Deserialize, Debug)]
+        #[derive(serde::Deserialize, Debug, Clone)]
         pub struct #param_filter_name {
+            #[serde(default = "shared_shared_data_core::filter::default_filter_logic")]
+            pub _condition: String,
             #(#builder_fields,)*
         }
 
         impl #param_filter_name {
-            pub fn all_filters(self: &Self) -> Vec<FilterEnum>{
-                let mut result: Vec<FilterEnum> = vec![];
+            pub fn all_filters(self: &Self) -> shared_shared_data_core::filter::FilterCondition {
+                use shared_shared_data_core::filter::FilterCondition;
+                let mut leaves: Vec<FilterEnum> = vec![];
                 #(#builder_all_filters)*
-                result
+                if self._condition == "or" {
+                    FilterCondition::Or(leaves.into_iter().map(FilterCondition::Leaf).collect())
+                } else {
+                    FilterCondition::And(leaves.into_iter().map(FilterCondition::Leaf).collect())
+                }
             }
         }
 

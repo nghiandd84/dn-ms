@@ -3,7 +3,7 @@ use sea_orm::DbErr;
 use uuid::Uuid;
 
 use crate::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -17,13 +17,13 @@ pub trait QueryManager<AM, MD> {
     fn filter(
         pagination: &Pagination,
         order: &Order,
-        filter: &Vec<FilterEnum>,
+        filter: &FilterCondition,
     ) -> impl std::future::Future<Output = Result<QueryResult<MD>, DbErr>>;
 
     fn filter_with_related_entities(
         pagination: &Pagination,
         order: &Order,
-        filter: &Vec<FilterEnum>,
+        filter: &FilterCondition,
         includes: &Vec<String>,
         related_filters: &Vec<FilterEnum>,
     ) -> impl std::future::Future<Output = Result<QueryResult<MD>, DbErr>> {

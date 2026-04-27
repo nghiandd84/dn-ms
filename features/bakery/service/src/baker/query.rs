@@ -22,24 +22,36 @@ use features_bakery_entities::bakery::{
 struct BakerQueryManager;
 
 impl BakerQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-        let mut condition = Condition::all();
-        for filter_enum in filters {
-            let name = filter_enum.get_name();
-            let column_name = name.as_str();
-            if column_name.starts_with("bakery.") {
-                let bakery_column_name = &column_name[7..];
-                if let Ok(column) = BakeryColumn::from_str(bakery_column_name) {
-                    condition =
-                        condition.add(Self::filter_condition_bakerycolumn(column, filter_enum));
+    fn build_filter_condition(filter_condition: &FilterCondition) -> Condition {
+        match filter_condition {
+            FilterCondition::And(conditions) => {
+                let mut condition = Condition::all();
+                for c in conditions {
+                    condition = condition.add(Self::build_filter_condition(c));
                 }
-            } else {
-                if let Ok(column) = Column::from_str(column_name) {
-                    condition = condition.add(Self::filter_condition_column(column, filter_enum));
+                condition
+            }
+            FilterCondition::Or(conditions) => {
+                let mut condition = Condition::any();
+                for c in conditions {
+                    condition = condition.add(Self::build_filter_condition(c));
                 }
+                condition
+            }
+            FilterCondition::Leaf(filter_enum) => {
+                let name = filter_enum.get_name();
+                let column_name = name.as_str();
+                if column_name.starts_with("bakery.") {
+                    let bakery_column_name = &column_name[7..];
+                    if let Ok(column) = BakeryColumn::from_str(bakery_column_name) {
+                        return Self::filter_condition_bakerycolumn(column, filter_enum);
+                    }
+                } else if let Ok(column) = Column::from_str(column_name) {
+                    return Self::filter_condition_column(column, filter_enum);
+                }
+                Condition::all()
             }
         }
-        condition
     }
     /*
     async fn advance_search(
@@ -84,7 +96,7 @@ impl BakerQueryManager {
 
     fn advance_select(
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> SelectTwoMany<Entity, BakeryEntity> {
         let mut select = Entity::find().find_with_related(BakeryEntity);
         // .left_join(BakeryEntity)
@@ -122,7 +134,7 @@ impl BakerQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<BakerData>, DbErr> {
         // let result = BakerQueryManager::advance_search(db, pagination, order, filters).await?;
         let result = BakerQueryManager::filter(pagination, order, filters).await?;

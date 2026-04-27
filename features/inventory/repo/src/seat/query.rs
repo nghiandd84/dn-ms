@@ -16,8 +16,6 @@ use features_inventory_model::seat::SeatData;
 #[query_filter(column_name(Column))]
 struct SeatQueryManager;
 
-
-
 pub struct SeatQuery;
 
 impl SeatQuery {
@@ -29,7 +27,7 @@ impl SeatQuery {
     pub async fn get_seats<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<SeatData>, AppError> {
         let result = SeatQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

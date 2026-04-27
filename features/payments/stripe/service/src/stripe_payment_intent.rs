@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -78,16 +78,16 @@ impl StripePaymentIntentService {
             raw_value: status.to_string(),
         };
         let status_filter = FilterEnum::String(param);
-        let filters: Vec<FilterEnum> = vec![status_filter];
+        let filters: FilterCondition = vec![status_filter].into();
         StripePaymentIntentQuery::get_payment_intents(&pagination, &order, &filters).await
     }
 
     pub async fn get_payment_intents(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<StripePaymentIntentData>, AppError> {
-        StripePaymentIntentQuery::get_payment_intents(pagination, order, filters).await
+        StripePaymentIntentQuery::get_payment_intents(pagination, order, &filters).await
     }
 
     pub async fn update_payment_intent(

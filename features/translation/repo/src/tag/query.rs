@@ -16,8 +16,6 @@ use features_translation_model::TagData;
 #[query_filter(column_name(Column))]
 struct TagQueryManager;
 
-
-
 pub struct TagQuery;
 
 impl TagQuery {
@@ -29,7 +27,7 @@ impl TagQuery {
     pub async fn get_tags<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TagData>, AppError> {
         let result = TagQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

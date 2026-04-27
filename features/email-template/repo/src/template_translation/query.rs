@@ -17,8 +17,6 @@ use features_email_template_model::template_translation::TemplateTranslationData
 #[query_filter(column_name(Column))]
 struct TemplateTranslationQueryManager;
 
-
-
 pub struct TemplateTranslationQuery {}
 
 impl TemplateTranslationQuery {
@@ -31,7 +29,7 @@ impl TemplateTranslationQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TemplateTranslationData>, DbErr> {
         let result = TemplateTranslationQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

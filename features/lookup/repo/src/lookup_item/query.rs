@@ -17,8 +17,6 @@ use features_lookup_model::lookup_item::LookupItemData;
 #[query_filter(column_name(Column))]
 struct LookupItemQueryManager;
 
-
-
 pub struct LookupItemQuery;
 
 impl LookupItemQuery {
@@ -30,7 +28,7 @@ impl LookupItemQuery {
     pub async fn get_lookup_items<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<LookupItemData>, AppError> {
         let result = LookupItemQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -44,7 +42,7 @@ impl LookupItemQuery {
         lookup_type_id: Uuid,
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<LookupItemData>, AppError> {
         let type_param: FilterParam<Uuid> = FilterParam {
             name: Column::LookupTypeId.to_string(),
@@ -53,7 +51,7 @@ impl LookupItemQuery {
             raw_value: lookup_type_id.to_string(),
         };
         let mut filters = filters.clone();
-        filters.push(FilterEnum::Uuid(type_param));
+        filters.push_leaf(FilterEnum::Uuid(type_param));
 
         let result = LookupItemQueryManager::filter(pagination, order, &filters).await?;
         debug!("Raw query result: {:?}", result);

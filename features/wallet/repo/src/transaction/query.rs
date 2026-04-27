@@ -16,8 +16,6 @@ use features_wallet_model::transaction::TransactionData;
 #[query_filter(column_name(Column))]
 struct TransactionQueryManager;
 
-
-
 pub struct TransactionQuery;
 
 impl TransactionQuery {
@@ -29,7 +27,7 @@ impl TransactionQuery {
     pub async fn get_transactions<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TransactionData>, AppError> {
         let result = TransactionQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -50,7 +48,9 @@ impl TransactionQuery {
             value: Some(wallet_id),
             raw_value: wallet_id.to_string(),
         })];
-        let result = TransactionQueryManager::filter(pagination, order, &filters).await?;
+        let result =
+            TransactionQueryManager::filter(pagination, order, &FilterCondition::from(&filters))
+                .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

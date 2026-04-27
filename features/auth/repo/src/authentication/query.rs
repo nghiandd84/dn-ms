@@ -15,8 +15,6 @@ use features_auth_model::authentication::AuthenticationRequestData;
 #[query_filter(column_name(Column))]
 struct AuthenticationRequestQueryManager;
 
-
-
 pub struct AuthenticationRequestQuery {}
 
 impl AuthenticationRequestQuery {

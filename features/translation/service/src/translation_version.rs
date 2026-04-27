@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -47,14 +47,14 @@ impl TranslationVersionService {
     pub async fn get_translation_versions<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {
         TranslationVersionQuery::get_translation_versions(pagination, order, filters).await
     }
 
     pub async fn get_latest_version_by_key_locale<'a>(
         key_id: Uuid,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<TranslationVersionData>, AppError> {

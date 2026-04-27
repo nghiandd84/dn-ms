@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -38,7 +38,7 @@ impl P2pTransferService {
     pub async fn get_p2p_transfers(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<P2pTransferData>, AppError> {
         P2pTransferQuery::get_p2p_transfers(pagination, order, filters).await
     }

@@ -12,6 +12,7 @@ use shared_shared_data_app::{
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -90,7 +91,12 @@ async fn get_idempotency_keys(
     Query(pagination): Query<Pagination>,
     Query(order): Query<Order>,
 ) -> Result<ResponseJson<QueryResult<IdempotencyKeyData>>> {
-    let result = IdempotencyService::get_idempotency_keys(&pagination, &order, &vec![]).await?;
+    let result = IdempotencyService::get_idempotency_keys(
+        &pagination,
+        &order,
+        &FilterCondition::And(vec![]),
+    )
+    .await?;
     Ok(ResponseJson(result))
 }
 

@@ -23,7 +23,7 @@ impl MigrationTrait for Migration {
                 )
                 .await?;
         }
-        
+
         if manager.has_column("users", "last_name").await? {
             manager
                 .alter_table(

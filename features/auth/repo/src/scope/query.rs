@@ -15,8 +15,6 @@ use features_auth_model::scope::ScopeData;
 #[query_filter(column_name(Column))]
 struct ScopeQueryManager;
 
-
-
 pub struct ScopeQuery {}
 
 impl ScopeQuery {
@@ -29,7 +27,7 @@ impl ScopeQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ScopeData>, DbErr> {
         let result = ScopeQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

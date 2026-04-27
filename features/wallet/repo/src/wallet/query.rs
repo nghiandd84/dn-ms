@@ -16,8 +16,6 @@ use features_wallet_model::wallet::WalletData;
 #[query_filter(column_name(Column))]
 struct WalletQueryManager;
 
-
-
 pub struct WalletQuery;
 
 impl WalletQuery {
@@ -29,7 +27,7 @@ impl WalletQuery {
     pub async fn get_wallets<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<WalletData>, AppError> {
         let result = WalletQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -46,8 +44,12 @@ impl WalletQuery {
             value: Some(user_id),
             raw_value: user_id.to_string(),
         })];
-        let wallet =
-            WalletQueryManager::filter(&Pagination::default(), &Order::default(), &filters).await?;
+        let wallet = WalletQueryManager::filter(
+            &Pagination::default(),
+            &Order::default(),
+            &FilterCondition::from(&filters),
+        )
+        .await?;
         let mapped_result = QueryResult {
             total_page: wallet.total_page,
             result: wallet.result.into_iter().map(|m| m.into()).collect(),

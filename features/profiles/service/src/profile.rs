@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -41,7 +41,7 @@ impl ProfileService {
     pub async fn get_profiles<'a>(
         pagination: Pagination,
         order: Order,
-        filters: Vec<FilterEnum>,
+        filters: FilterCondition,
     ) -> Result<QueryResult<ProfileData>, AppError> {
         ProfileQuery::get_profiles(&pagination, &order, &filters).await
     }

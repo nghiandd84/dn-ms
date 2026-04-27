@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -55,7 +55,7 @@ impl TranslationKeyService {
     pub async fn get_translation_keys<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TranslationKeyData>, AppError> {
         TranslationKeyQuery::get_translation_keys(pagination, order, filters).await
     }

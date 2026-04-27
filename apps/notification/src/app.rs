@@ -1,7 +1,10 @@
 use axum::{routing::get, Router};
 use features_notification_stream::message::NotificationMessage;
+use std::{
+    sync::{Arc, RwLock},
+    time::Duration,
+};
 use tokio::{spawn, time::interval};
-use std::{sync::{Arc, RwLock}, time::Duration};
 use tracing::{debug, error};
 
 use shared_shared_app::{

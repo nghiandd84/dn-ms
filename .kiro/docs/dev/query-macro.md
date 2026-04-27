@@ -23,38 +23,72 @@ Specifies the primary key type. Determines which `get_by_id_*` variant is implem
 
 Specifies the SeaORM `Column` enum to use for building filter conditions. Generates `filter_condition_<column_name>` which handles all `FilterEnum` variants (`String`, `Bool`, `I32`, `U32`, `I64`, `U64`, `F32`, `F64`, `Uuid`, `VecString`, `DateTime`).
 
-### `#[query_related(entity(...), field(...), name("..."))]`
+When exactly one `#[query_filter]` is specified, the macro also auto-generates `build_filter_condition`. For multiple `#[query_filter]` attributes (e.g., cross-entity filtering), you must implement `build_filter_condition` manually.
+
+### `#[query_related(entity(...), column(...), field(...), name("..."))]`
 
 Defines a related entity for eager loading. Can be specified multiple times for multiple relations.
 
-| Parameter | Description |
-|-----------|-------------|
-| `entity`  | The related SeaORM `Entity` type (e.g., `ItemEntity`) |
-| `field`   | The field name on `ModelOptionDto` to populate (e.g., `items`) |
-| `name`    | The string clients pass in `includes` to request this relation (e.g., `"items"`) |
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `entity`  | The related SeaORM `Entity` type (e.g., `ItemEntity`) | Yes |
+| `column`  | The related entity's `Column` enum for filtering (e.g., `PermissionColumn`) | No |
+| `field`   | The field name on `ModelOptionDto` to populate (e.g., `items`) | Yes |
+| `name`    | The string clients pass in `includes` to request this relation (e.g., `"items"`) | No (defaults to field) |
 
 When `query_related` is present, the macro generates:
 - `filter_with_related_entities` — paginated list query that loads related entities for each result
 - `get_by_id_*_with_related_entities` — single entity query that loads related entities by ID
 
-Both methods accept `includes: &Vec<String>` and only load relations whose `name` appears in the list.
+When `column` is specified, related filters narrow the **parent result set** via JOIN subquery (e.g., "only return roles that have a permission matching the filter").
 
 ---
 
-## Required Implementations
+## Auto-Generated vs Manual
 
-The user must implement `build_filter_condition` on the struct:
+### Auto-generated `build_filter_condition` (single `#[query_filter]`)
+
+When there is exactly one `#[query_filter(column_name(Column))]`, the macro generates:
 
 ```rust
-impl MyQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-        let mut condition = Condition::all();
-        for filter_enum in filters {
-            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                condition = condition.add(Self::filter_condition_column(column, filter_enum));
+fn build_filter_condition(filter_condition: &FilterCondition) -> Condition {
+    // Recursively walks And/Or/Leaf tree
+    // Maps Leaf -> Column::from_str + filter_condition_column
+}
+```
+
+No user code needed — just derive and go.
+
+### Manual `build_filter_condition` (multiple `#[query_filter]`)
+
+When there are multiple `#[query_filter]` attributes (cross-entity filtering), implement manually:
+
+```rust
+impl BakerQueryManager {
+    fn build_filter_condition(filter_condition: &FilterCondition) -> Condition {
+        match filter_condition {
+            FilterCondition::And(conditions) => {
+                let mut condition = Condition::all();
+                for c in conditions { condition = condition.add(Self::build_filter_condition(c)); }
+                condition
+            }
+            FilterCondition::Or(conditions) => {
+                let mut condition = Condition::any();
+                for c in conditions { condition = condition.add(Self::build_filter_condition(c)); }
+                condition
+            }
+            FilterCondition::Leaf(filter_enum) => {
+                let name = filter_enum.get_name();
+                if name.starts_with("bakery.") {
+                    if let Ok(col) = BakeryColumn::from_str(&name[7..]) {
+                        return Self::filter_condition_bakerycolumn(col, filter_enum);
+                    }
+                } else if let Ok(col) = Column::from_str(name.as_str()) {
+                    return Self::filter_condition_column(col, filter_enum);
+                }
+                Condition::all()
             }
         }
-        condition
     }
 }
 ```
@@ -68,13 +102,22 @@ impl MyQueryManager {
 | `get_by_id_uuid(id)` | Find entity by UUID primary key |
 | `get_by_id_i32(id)` | Find entity by i32 primary key |
 | `get_by_id_str(id)` | Find entity by String primary key |
-| `get_by_id_uuid_with_related_entities(id, &includes)` | Find by UUID + load related entities |
-| `get_by_id_i32_with_related_entities(id, &includes)` | Find by i32 + load related entities |
-| `get_by_id_str_with_related_entities(id, &includes)` | Find by String + load related entities |
-| `filter(pagination, order, filters)` | Paginated filtered query |
-| `filter_with_related_entities(pagination, order, filters, &includes)` | Paginated filtered query + load related entities |
+| `get_by_id_*_with_related_entities(id, &includes, &related_filters)` | Find by ID + load related entities |
+| `filter(pagination, order, &filter_condition)` | Paginated filtered query |
+| `filter_with_related_entities(pagination, order, &filter_condition, &includes, &related_filters)` | Paginated filtered query + load related entities |
+| `build_query(order, &filter_condition)` | Builds the base `Select` with ordering and filter conditions |
+| `paginate_query(pagination, order, &filter_condition)` | Paginate and fetch a page |
+| `build_filter_condition(&filter_condition)` | Recursively builds SeaORM `Condition` from `FilterCondition` tree |
 | `get_db()` | Returns the read database connection |
-| `build_query(order, filters)` | Builds the base `Select` with ordering and filter conditions |
+
+---
+
+## filter_with_related_entities — 4-Step Flow
+
+1. **Build base query** from parent filters + related filters (JOIN subquery narrows parents)
+2. **Count total pages** on the filtered base query (no ordering for efficient count)
+3. **Apply ordering**, paginate, fetch page, load related entities for the page
+4. **Map to DTOs** preserving original order and return
 
 ---
 
@@ -90,56 +133,80 @@ use features_lookup_entities::lookup_type::{ActiveModel, Column, Entity, ModelOp
 #[query_filter(column_name(Column))]
 #[query_related(entity(ItemEntity), field(items), name("items"))]
 struct LookupTypeQueryManager;
+// build_filter_condition is auto-generated — no manual impl needed
+```
 
-impl LookupTypeQueryManager {
-    fn build_filter_condition(filters: &Vec<FilterEnum>) -> Condition {
-        let mut condition = Condition::all();
-        for filter_enum in filters {
-            if let Ok(column) = Column::from_str(filter_enum.get_name().as_str()) {
-                condition = condition.add(Self::filter_condition_column(column, filter_enum));
-            }
-        }
-        condition
-    }
-}
+### With related entity filtering
+
+```rust
+use features_auth_entities::permission::Column as PermissionColumn;
+use features_auth_entities::permission::Entity as PermissionEntity;
+
+#[derive(Query)]
+#[query(key_type(Uuid))]
+#[query_filter(column_name(Column))]
+#[query_related(
+    entity(PermissionEntity),
+    column(PermissionColumn),
+    field(permissions),
+    name("permissions")
+)]
+struct RoleQueryManager;
 ```
 
 ### Usage in repo layer
 
 ```rust
-// Get by ID with related entities
-let includes = query_params.includes();
-let model = LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes).await?;
+// Simple query
+let condition = FilterCondition::from(filters); // Vec<FilterEnum> -> FilterCondition
+let result = MyQueryManager::filter(&pagination, &order, &condition).await?;
 
-// Paginated list with related entities
-let result = LookupTypeQueryManager::filter_with_related_entities(
-    &pagination, &order, &filters, &includes
+// With related entities
+let result = MyQueryManager::filter_with_related_entities(
+    &pagination, &order, &condition, &includes, &related_filters
 ).await?;
 
-// Simple query without relations
-let model = LookupTypeQueryManager::get_by_id_uuid(id).await?;
-let result = LookupTypeQueryManager::filter(&pagination, &order, &filters).await?;
+// Get by ID with related
+let model = MyQueryManager::get_by_id_uuid_with_related_entities(
+    id, &includes, &related_filters
+).await?;
 ```
 
 ---
 
-## QueryParams
+## Macro Architecture
 
-The `QueryParams` struct (`shared_shared_data_core::query_params`) deserializes the `includes` query parameter from the client:
+All derive macros in `libs/shared/shared/macro/src/lib.rs` follow the same pattern:
 
+```rust
+pub fn query_derive(input: TokenStream) -> TokenStream {
+    let derive_input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let query_input = query::QueryInput::parse_from(derive_input);  // parsing
+    query::query_impl(query_input)                                   // code generation
+}
 ```
-GET /lookup-types/123?includes=items
-GET /lookup-types?includes=items,categories
-GET /lookup-types  (no includes — defaults to empty vec)
-```
 
-Pass `&QueryParams` through the layers (API → service → repo) and call `.includes()` to get the `Vec<String>`.
+Each macro module defines:
+- **Attribute parse types** — custom `syn::Parse` implementations (no `Meta::List`)
+- **Input struct** — holds all parsed data (`QueryInput`, `MutationInput`, etc.)
+- **`parse_from(DeriveInput)`** — extracts attributes into the input struct
+- **`impl_fn(Input)`** — pure code generation, no parsing
+
+| Macro | Input Struct | Module |
+|-------|-------------|--------|
+| `Query` | `QueryInput` | `query.rs` |
+| `Mutation` | `MutationInput` | `mutation.rs` |
+| `RemoteService` | `RemoteServiceInput` | `service.rs` |
+| `Dto` | `DtoInput` | `dto.rs` |
+| `ParamFilter` | `FilterInput` | `filter.rs` |
+| `Response` / `ResponseGeneric` | `ResponseInput` | `response.rs` |
 
 ---
 
 ## Dependencies
 
-The macro expects these items in scope (imported automatically by the generated code):
-- `Entity`, `ActiveModel`, `Column`, `ModelOptionDto` from the entity crate
-- `Pagination`, `Order`, `FilterEnum`, `QueryResult` from `shared_shared_data_core`
-- `DB_READ` from `shared_shared_config::db`
+The macro generates these imports automatically:
+- `std::str::FromStr`
+- `sea_orm::{Condition, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, ...}`
+- `shared_shared_data_core::{query::QueryManager, filter::FilterOperator, filter::FilterCondition, order::OrderDirection}`
+- `shared_shared_config::db::DB_READ`

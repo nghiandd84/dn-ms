@@ -1,4 +1,7 @@
-use shared_shared_data_core::paging::QueryResult;
+use shared_shared_data_core::{
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
+    paging::QueryResult,
+};
 use shared_shared_macro::RemoteService;
 
 use features_email_template_model::email_template::EmailTemplateData;
@@ -12,7 +15,18 @@ impl EmailTemplateService {
         let email_template_endpoint = std::env::var("EMAIL_TEMPLATE_ENDPOINT_SEARCH")
             .expect("EMAIL_TEMPLATE_ENDPOINT_SEARCH must be set");
 
-        let url = format!("{}?key=eq|{}", email_template_endpoint, key);
+        let condition = FilterCondition::leaf(FilterEnum::String(FilterParam {
+            name: "key".to_string(),
+            operator: FilterOperator::Equal,
+            value: Some(key.clone()),
+            raw_value: key,
+        }));
+
+        let url = format!(
+            "{}?{}",
+            email_template_endpoint,
+            condition.to_query_string()
+        );
 
         let res = Self::call_api(url, reqwest::Method::GET, None, HashMap::new()).await;
         if res.is_err() {

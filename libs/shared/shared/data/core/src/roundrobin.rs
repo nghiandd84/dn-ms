@@ -42,4 +42,3 @@ impl<T> RoundRobin<T> {
         self.values = new_values;
     }
 }
-

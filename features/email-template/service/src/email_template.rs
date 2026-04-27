@@ -2,7 +2,7 @@ use tracing::debug;
 
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -42,7 +42,7 @@ impl EmailTemplateService {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<EmailTemplateData>> {
         let result = EmailTemplateQuery::search(pagination, order, filters).await?;
         Ok(result)

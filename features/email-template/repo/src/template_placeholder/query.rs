@@ -17,8 +17,6 @@ use features_email_template_model::template_placeholder::TemplatePlaceholderData
 #[query_filter(column_name(Column))]
 struct TemplatePlaceholderQueryManager;
 
-
-
 pub struct TemplatePlaceholderQuery {}
 
 impl TemplatePlaceholderQuery {
@@ -31,7 +29,7 @@ impl TemplatePlaceholderQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<TemplatePlaceholderData>, DbErr> {
         let result = TemplatePlaceholderQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

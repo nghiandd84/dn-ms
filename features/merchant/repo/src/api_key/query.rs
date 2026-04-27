@@ -14,8 +14,6 @@ use features_merchant_model::api_key::ApiKeyData;
 #[query_filter(column_name(Column))]
 struct ApiKeyQueryManager;
 
-
-
 pub struct ApiKeyQuery;
 
 impl ApiKeyQuery {
@@ -34,8 +32,12 @@ impl ApiKeyQuery {
             operator: FilterOperator::Equal,
         });
         let filters = vec![merchant_id_filter];
-        let result =
-            ApiKeyQueryManager::filter(&Pagination::default(), &Order::default(), &filters).await?;
+        let result = ApiKeyQueryManager::filter(
+            &Pagination::default(),
+            &Order::default(),
+            &FilterCondition::from(&filters),
+        )
+        .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|a| a.into()).collect(),
@@ -46,7 +48,7 @@ impl ApiKeyQuery {
     pub async fn get_api_keys<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ApiKeyData>, AppError> {
         let result = ApiKeyQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

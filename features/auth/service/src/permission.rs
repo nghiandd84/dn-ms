@@ -1,5 +1,5 @@
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -50,7 +50,9 @@ impl PermissionService {
         };
         let role_filter = FilterEnum::Uuid(role_filter_param);
         let filters = vec![role_filter];
-        let role_permissions = RolePermissionQuery::search(pagination, &order, &filters).await?;
+        let role_permissions =
+            RolePermissionQuery::search(pagination, &order, &FilterCondition::from(filters))
+                .await?;
         let permission_ids: Vec<Uuid> = role_permissions
             .result
             .into_iter()
@@ -77,7 +79,12 @@ impl PermissionService {
         let permission_filter = FilterEnum::Uuid(permission_filter_param);
         let permission_filters = vec![permission_filter];
 
-        let result = PermissionQuery::search(pagination, &order, &permission_filters).await?;
+        let result = PermissionQuery::search(
+            pagination,
+            &order,
+            &FilterCondition::from(permission_filters),
+        )
+        .await?;
         Ok(result)
     }
 

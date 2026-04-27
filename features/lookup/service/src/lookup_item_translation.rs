@@ -1,5 +1,5 @@
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -40,7 +40,7 @@ impl LookupItemTranslationService {
 
     pub async fn search_translations_by_item_id(
         item_id: Uuid,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
@@ -49,7 +49,7 @@ impl LookupItemTranslationService {
     }
 
     pub async fn get_translations(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {

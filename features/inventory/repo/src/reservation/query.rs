@@ -16,8 +16,6 @@ use features_inventory_model::reservation::ReservationData;
 #[query_filter(column_name(Column))]
 struct ReservationQueryManager;
 
-
-
 pub struct ReservationQuery;
 
 impl ReservationQuery {
@@ -29,7 +27,7 @@ impl ReservationQuery {
     pub async fn get_reservations<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ReservationData>, AppError> {
         let result = ReservationQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

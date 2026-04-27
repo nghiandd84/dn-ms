@@ -17,8 +17,6 @@ use shared_shared_macro::Query;
 #[query_filter(column_name(Column))]
 struct LookupItemTranslationQueryManager;
 
-
-
 pub struct LookupItemTranslationQuery;
 
 impl LookupItemTranslationQuery {
@@ -30,7 +28,7 @@ impl LookupItemTranslationQuery {
     pub async fn get_translations(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
         let result = LookupItemTranslationQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {
@@ -44,7 +42,7 @@ impl LookupItemTranslationQuery {
         lookup_item_id: Uuid,
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<LookupItemTranslationData>, AppError> {
         let lookup_type_param: FilterParam<Uuid> = FilterParam {
             name: Column::LookupItemId.to_string(),
@@ -53,7 +51,7 @@ impl LookupItemTranslationQuery {
             raw_value: lookup_item_id.to_string(),
         };
         let mut filters = filters.clone();
-        filters.push(FilterEnum::Uuid(lookup_type_param));
+        filters.push_leaf(FilterEnum::Uuid(lookup_type_param));
 
         let result =
             LookupItemTranslationQueryManager::filter(&pagination, &order, &filters).await?;
@@ -88,10 +86,10 @@ impl LookupItemTranslationQuery {
         let result = LookupItemTranslationQueryManager::filter(
             &pagination,
             &order,
-            &vec![
+            &FilterCondition::from(vec![
                 FilterEnum::Uuid(item_id_param),
                 FilterEnum::String(locale_param),
-            ],
+            ]),
         )
         .await?;
 

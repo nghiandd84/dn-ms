@@ -1,6 +1,5 @@
-use std::vec;
-
-use features_auth_model::{permission::PermissionData};
+use features_auth_model::permission::PermissionData;
+use shared_shared_data_core::filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam};
 use shared_shared_macro::RemoteService;
 
 #[derive(Debug, RemoteService)]
@@ -8,9 +7,11 @@ use shared_shared_macro::RemoteService;
 pub struct PermissionService {}
 
 impl PermissionService {
-    pub async fn get_roles_by_service_name<'a>(service_key: String) -> HashMap<String, Vec<PermissionData>> {
-        let permission_endpoint = std::env::var("AUTH_ROLES_ENDPOINT")
-            .expect("AUTH_ROLES_ENDPOINT must be set");
+    pub async fn get_roles_by_service_name<'a>(
+        service_key: String,
+    ) -> HashMap<String, Vec<PermissionData>> {
+        let permission_endpoint =
+            std::env::var("AUTH_ROLES_ENDPOINT").expect("AUTH_ROLES_ENDPOINT must be set");
         let permission_baggage_header = std::env::var("AUTH_ROLES_BAGGAGE_HEADER")
             .expect("AUTH_ROLES_BAGGAGE_HEADER must be set");
         let mut headers = HashMap::new();
@@ -19,13 +20,24 @@ impl PermissionService {
             "Calling permission service at {} with headers: {:?}",
             permission_endpoint, headers
         );
+
+        let condition = FilterCondition::leaf(FilterEnum::String(FilterParam {
+            name: "resource".to_string(),
+            operator: FilterOperator::StartWith,
+            value: Some(service_key.clone()),
+            raw_value: service_key,
+        }));
+
         let page = 1;
         let page_size = 20;
-        let permission_endpoint = format!(
-            "{}?resource=sw|{}&page={}&page_size={}",
-            permission_endpoint, service_key, page, page_size
+        let url = format!(
+            "{}?{}&page={}&page_size={}",
+            permission_endpoint,
+            condition.to_query_string(),
+            page,
+            page_size
         );
-        let res = Self::call_api(permission_endpoint, reqwest::Method::GET, None, headers).await;
+        let res = Self::call_api(url, reqwest::Method::GET, None, headers).await;
         if res.is_err() {
             let err_msg = res.err().unwrap();
             debug!("Error calling permission service: {}", err_msg);
@@ -40,15 +52,10 @@ impl PermissionService {
             return HashMap::new();
         }
         let permissions = permissions.unwrap();
-        let perms: Vec<PermissionData> =
+        let _perms: Vec<PermissionData> =
             serde_json::from_value(permissions.clone()).unwrap_or_else(|_| vec![]);
 
-        let mut role_permissions: HashMap<String, Vec<PermissionData>> = HashMap::new();
-        // for perm in perms {
-        //     role_permissions.entry(perm.role.clone()).or_insert_with(Vec::new).push(perm);
-        // }
-
+        let role_permissions: HashMap<String, Vec<PermissionData>> = HashMap::new();
         role_permissions
-
     }
 }

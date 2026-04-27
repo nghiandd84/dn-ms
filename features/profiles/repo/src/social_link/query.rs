@@ -15,8 +15,6 @@ use features_profiles_model::SocialLinkData;
 #[query_filter(column_name(Column))]
 struct SocialLinkQueryManager;
 
-
-
 pub struct SocialLinkQuery;
 
 impl SocialLinkQuery {
@@ -33,7 +31,9 @@ impl SocialLinkQuery {
         let id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![id_filter];
 
-        let result = SocialLinkQueryManager::filter(&pagination, &order, &filters).await?;
+        let result =
+            SocialLinkQueryManager::filter(&pagination, &order, &FilterCondition::from(&filters))
+                .await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -60,7 +60,9 @@ impl SocialLinkQuery {
         let profile_id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![profile_id_filter];
 
-        let result = SocialLinkQueryManager::filter(&pagination, &order, &filters).await?;
+        let result =
+            SocialLinkQueryManager::filter(&pagination, &order, &FilterCondition::from(&filters))
+                .await?;
         let result: Vec<SocialLinkData> = result.result.into_iter().map(|dto| dto.into()).collect();
         Ok(result)
     }
@@ -68,7 +70,7 @@ impl SocialLinkQuery {
     pub async fn get_social_links(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<SocialLinkData>, AppError> {
         let result = SocialLinkQueryManager::filter(pagination, order, filters).await?;
 

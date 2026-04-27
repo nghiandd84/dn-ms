@@ -20,8 +20,6 @@ use features_lookup_model::lookup_type::LookupTypeData;
 #[query_related(entity(ItemEntity), field(items), name("items"))]
 struct LookupTypeQueryManager;
 
-
-
 pub struct LookupTypeQuery;
 
 impl LookupTypeQuery {
@@ -34,7 +32,9 @@ impl LookupTypeQuery {
             "Getting lookup_type by id: {}, includes: {:?}",
             id, includes
         );
-        let model = LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes, &vec![]).await?;
+        let model =
+            LookupTypeQueryManager::get_by_id_uuid_with_related_entities(id, &includes, &vec![])
+                .await?;
         Ok(model.into())
     }
 
@@ -48,10 +48,10 @@ impl LookupTypeQuery {
             value: Some(code.to_string()),
             raw_value: code.to_string(),
         };
-        let mut filters = vec![FilterEnum::String(code_param)];
+        let mut filters: FilterCondition = vec![FilterEnum::String(code_param)].into();
 
         if !tenant_id.is_empty() {
-            filters.push(FilterEnum::String(FilterParam {
+            filters.push_leaf(FilterEnum::String(FilterParam {
                 name: Column::TenantId.to_string(),
                 operator: FilterOperator::Equal,
                 value: Some(tenant_id.to_string()),
@@ -77,12 +77,12 @@ impl LookupTypeQuery {
         tenant_id: &str,
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         query_params: &QueryParams,
     ) -> Result<QueryResult<LookupTypeData>, AppError> {
         let mut filters = filters.clone();
         if !tenant_id.is_empty() {
-            filters.push(FilterEnum::String(FilterParam {
+            filters.push_leaf(FilterEnum::String(FilterParam {
                 name: Column::TenantId.to_string(),
                 operator: FilterOperator::Equal,
                 value: Some(tenant_id.to_string()),
@@ -92,7 +92,14 @@ impl LookupTypeQuery {
 
         let includes = query_params.includes();
         let result = if !includes.is_empty() {
-            LookupTypeQueryManager::filter_with_related_entities(pagination, order, &filters, &includes, &vec![]).await?
+            LookupTypeQueryManager::filter_with_related_entities(
+                pagination,
+                order,
+                &filters,
+                &includes,
+                &vec![],
+            )
+            .await?
         } else {
             LookupTypeQueryManager::filter(pagination, order, &filters).await?
         };

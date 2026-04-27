@@ -16,8 +16,6 @@ use features_booking_model::booking::BookingData;
 #[query_filter(column_name(Column))]
 struct BookingQueryManager;
 
-
-
 pub struct BookingQuery;
 
 impl BookingQuery {
@@ -29,7 +27,7 @@ impl BookingQuery {
     pub async fn get_bookings<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<BookingData>, AppError> {
         let result = BookingQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

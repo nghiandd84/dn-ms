@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -45,7 +45,7 @@ impl SocialLinkService {
     pub async fn get_social_links<'a>(
         pagination: Pagination,
         order: Order,
-        filters: Vec<FilterEnum>,
+        filters: FilterCondition,
     ) -> Result<QueryResult<SocialLinkData>, AppError> {
         SocialLinkQuery::get_social_links(&pagination, &order, &filters).await
     }

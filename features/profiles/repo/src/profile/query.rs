@@ -16,8 +16,6 @@ use features_profiles_model::ProfileData;
 #[query_filter(column_name(Column))]
 struct ProfileQueryManager;
 
-
-
 pub struct ProfileQuery;
 
 impl ProfileQuery {
@@ -39,7 +37,9 @@ impl ProfileQuery {
         let user_id_filter = FilterEnum::Uuid(param);
         let filters: Vec<FilterEnum> = vec![user_id_filter];
 
-        let result = ProfileQueryManager::filter(&pagination, &order, &filters).await?;
+        let result =
+            ProfileQueryManager::filter(&pagination, &order, &FilterCondition::from(&filters))
+                .await?;
         let dto = result.result.into_iter().next();
 
         if dto.is_none() {
@@ -54,7 +54,7 @@ impl ProfileQuery {
     pub async fn get_profiles(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<ProfileData>, AppError> {
         let result = ProfileQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

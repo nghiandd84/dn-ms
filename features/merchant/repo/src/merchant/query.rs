@@ -14,8 +14,6 @@ use features_merchant_model::merchant::MerchantData;
 #[query_filter(column_name(Column))]
 struct MerchantQueryManager;
 
-
-
 pub struct MerchantQuery;
 
 impl MerchantQuery {
@@ -27,7 +25,7 @@ impl MerchantQuery {
     pub async fn get_merchants<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<MerchantData>, AppError> {
         let result = MerchantQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

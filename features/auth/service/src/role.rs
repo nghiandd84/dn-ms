@@ -1,5 +1,5 @@
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::Pagination,
     query_params::QueryParams,
@@ -24,7 +24,7 @@ impl RoleService {
     }
 
     pub async fn get<'a>(role_id: Uuid, query_params: &QueryParams) -> Result<RoleData> {
-        let role = RoleQuery::get(role_id, query_params, &vec![]).await?;
+        let role = RoleQuery::get(role_id, query_params, &FilterCondition::and(vec![])).await?;
         Ok(role.into())
     }
 
@@ -51,7 +51,9 @@ impl RoleService {
         let filters: Vec<FilterEnum> = vec![email_filter];
         let pagination = Pagination::new(1, 200);
         let order = Order::default();
-        let search = RolePermissionQuery::search(&pagination, &order, &filters).await?;
+        let search =
+            RolePermissionQuery::search(&pagination, &order, &FilterCondition::from(filters))
+                .await?;
         for dto in search.result {
             debug!(
                 "Current permission id {:?} and unassign permission {:?}",

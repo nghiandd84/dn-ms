@@ -16,8 +16,6 @@ use features_auth_model::permission::PermissionData;
 #[query_filter(column_name(Column))]
 struct PermissionQueryManager;
 
-
-
 pub struct PermissionQuery {}
 
 impl PermissionQuery {
@@ -30,7 +28,7 @@ impl PermissionQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<PermissionData>, DbErr> {
         debug!("PermissionQuery::search filters: {:?}", filters);
         let result = PermissionQueryManager::filter(pagination, order, filters).await;

@@ -18,8 +18,6 @@ use features_payments_stripe_model::stripe_payment_intent::StripePaymentIntentDa
 #[query_filter(column_name(Column))]
 struct StripePaymentIntentQueryManager;
 
-
-
 pub struct StripePaymentIntentQuery;
 
 impl StripePaymentIntentQuery {
@@ -33,7 +31,7 @@ impl StripePaymentIntentQuery {
     pub async fn get_payment_intents(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<StripePaymentIntentData>, AppError> {
         let result = StripePaymentIntentQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

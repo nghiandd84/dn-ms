@@ -17,8 +17,6 @@ use features_email_template_model::email_template::EmailTemplateData;
 #[query_filter(column_name(Column))]
 struct EmailTemplateQueryManager;
 
-
-
 pub struct EmailTemplateQuery {}
 
 impl EmailTemplateQuery {
@@ -31,7 +29,7 @@ impl EmailTemplateQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<EmailTemplateData>, DbErr> {
         let result = EmailTemplateQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

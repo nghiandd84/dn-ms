@@ -1,59 +1,86 @@
+use serde::Deserialize;
 use shared_shared_data_core::filter::FilterOperator;
 use shared_shared_data_core::filter_deserialize::*;
-use serde::Deserialize;
 
 // Helper structs that use the custom deserializers via serde field attributes
 #[derive(Deserialize)]
 struct StringFilter {
-    #[serde(default = "default_none_string", deserialize_with = "deserialize_filter_from_string")]
+    #[serde(
+        default = "default_none_string",
+        deserialize_with = "deserialize_filter_from_string"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<String>>,
 }
 
 #[derive(Deserialize)]
 struct I32Filter {
-    #[serde(default = "default_none_i32", deserialize_with = "deserialize_filter_from_i32")]
+    #[serde(
+        default = "default_none_i32",
+        deserialize_with = "deserialize_filter_from_i32"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<i32>>,
 }
 
 #[derive(Deserialize)]
 struct I64Filter {
-    #[serde(default = "default_none_i64", deserialize_with = "deserialize_filter_from_i64")]
+    #[serde(
+        default = "default_none_i64",
+        deserialize_with = "deserialize_filter_from_i64"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<i64>>,
 }
 
 #[derive(Deserialize)]
 struct U32Filter {
-    #[serde(default = "default_none_u32", deserialize_with = "deserialize_filter_from_u32")]
+    #[serde(
+        default = "default_none_u32",
+        deserialize_with = "deserialize_filter_from_u32"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<u32>>,
 }
 
 #[derive(Deserialize)]
 struct F32Filter {
-    #[serde(default = "default_none_f32", deserialize_with = "deserialize_filter_from_f32")]
+    #[serde(
+        default = "default_none_f32",
+        deserialize_with = "deserialize_filter_from_f32"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<f32>>,
 }
 
 #[derive(Deserialize)]
 struct F64Filter {
-    #[serde(default = "default_none_f64", deserialize_with = "deserialize_filter_from_f64")]
+    #[serde(
+        default = "default_none_f64",
+        deserialize_with = "deserialize_filter_from_f64"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<f64>>,
 }
 
 #[derive(Deserialize)]
 struct BoolFilter {
-    #[serde(default = "default_none_bool", deserialize_with = "deserialize_filter_from_bool")]
+    #[serde(
+        default = "default_none_bool",
+        deserialize_with = "deserialize_filter_from_bool"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<bool>>,
 }
 
 #[derive(Deserialize)]
 struct UuidFilter {
-    #[serde(default = "default_none_uuid", deserialize_with = "deserialize_filter_from_uuid")]
+    #[serde(
+        default = "default_none_uuid",
+        deserialize_with = "deserialize_filter_from_uuid"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<uuid::Uuid>>,
 }
 
 #[derive(Deserialize)]
 struct VecStringFilter {
-    #[serde(default = "default_none_vecstring", deserialize_with = "deserialize_filter_from_vecstring")]
+    #[serde(
+        default = "default_none_vecstring",
+        deserialize_with = "deserialize_filter_from_vecstring"
+    )]
     field: Option<shared_shared_data_core::filter::FilterParam<Vec<String>>>,
 }
 

@@ -1,5 +1,5 @@
 use shared_shared_data_core::{
-    filter::{convert_filter_param_to_query_string, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     paging::QueryResult,
 };
 use shared_shared_macro::RemoteService;
@@ -14,18 +14,17 @@ impl TemplatePlaceholderService {
     pub async fn get_template_holder_by_template_id(
         template_id: i32,
     ) -> Result<Vec<TemplatePlaceholderData>, String> {
-        let email_template_endpoint = std::env::var("TEMPLATE_PLACEHOLDER_ENDPOINT_SEARCH")
+        let endpoint = std::env::var("TEMPLATE_PLACEHOLDER_ENDPOINT_SEARCH")
             .expect("TEMPLATE_PLACEHOLDER_ENDPOINT_SEARCH must be set");
 
-        let template_id_param = FilterParam {
+        let condition = FilterCondition::leaf(FilterEnum::I32(FilterParam {
             name: "template_id".to_string(),
             operator: FilterOperator::Equal,
             value: Some(template_id),
             raw_value: template_id.to_string(),
-        };
-        let template_id_query_param = convert_filter_param_to_query_string(&template_id_param);
+        }));
 
-        let url = format!("{}?{}", email_template_endpoint, template_id_query_param);
+        let url = format!("{}?{}", endpoint, condition.to_query_string());
 
         let res = Self::call_api(url, reqwest::Method::GET, None, HashMap::new()).await;
         if res.is_err() {

@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -36,7 +36,7 @@ impl WithdrawalService {
     pub async fn get_withdrawals(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<WithdrawalData>, AppError> {
         WithdrawalQuery::get_withdrawals(pagination, order, filters).await
     }

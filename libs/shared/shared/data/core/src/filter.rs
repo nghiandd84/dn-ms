@@ -154,3 +154,107 @@ pub fn convert_filter_param_to_query_string<T>(filter: &FilterParam<T>) -> Strin
 }
 
 pub type VecString = Vec<String>;
+
+#[derive(Debug, Clone)]
+pub enum FilterCondition {
+    And(Vec<FilterCondition>),
+    Or(Vec<FilterCondition>),
+    Leaf(FilterEnum),
+}
+
+impl FilterCondition {
+    pub fn and(conditions: Vec<FilterCondition>) -> Self {
+        FilterCondition::And(conditions)
+    }
+
+    pub fn or(conditions: Vec<FilterCondition>) -> Self {
+        FilterCondition::Or(conditions)
+    }
+
+    pub fn leaf(filter: FilterEnum) -> Self {
+        FilterCondition::Leaf(filter)
+    }
+
+    /// Collect all leaf FilterEnum values from the tree (flattened).
+    pub fn collect_leaves(&self) -> Vec<FilterEnum> {
+        match self {
+            FilterCondition::And(conditions) | FilterCondition::Or(conditions) => {
+                conditions.iter().flat_map(|c| c.collect_leaves()).collect()
+            }
+            FilterCondition::Leaf(filter) => vec![filter.clone()],
+        }
+    }
+
+    /// Add a leaf filter to the current condition (appends to And/Or, wraps Leaf into And).
+    pub fn push_leaf(&mut self, filter: FilterEnum) {
+        match self {
+            FilterCondition::And(conditions) | FilterCondition::Or(conditions) => {
+                conditions.push(FilterCondition::Leaf(filter));
+            }
+            _ => {
+                let prev = std::mem::replace(self, FilterCondition::And(vec![]));
+                *self = FilterCondition::And(vec![prev, FilterCondition::Leaf(filter)]);
+            }
+        }
+    }
+
+    /// Convert to query string format for remote API calls.
+    /// Returns filter params and the `_condition` value.
+    /// Example: `("name=eq|admin&status=eq|active", "or")`
+    pub fn to_query_params(&self) -> (Vec<String>, &str) {
+        let leaves = self.collect_leaves();
+        let params: Vec<String> = leaves
+            .iter()
+            .map(|f| match f {
+                FilterEnum::String(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::Bool(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::I32(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::I64(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::I8(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::U32(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::U64(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::F32(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::F64(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::Uuid(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::DateTime(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::Json(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::VecString(p) => convert_filter_param_to_query_string(p),
+                FilterEnum::VecUuid(p) => convert_filter_param_to_query_string(p),
+            })
+            .collect();
+        let condition = match self {
+            FilterCondition::Or(_) => "or",
+            _ => "and",
+        };
+        (params, condition)
+    }
+
+    /// Convert to a full query string (e.g., `name=eq|admin&status=eq|active&_condition=or`).
+    pub fn to_query_string(&self) -> String {
+        let (params, condition) = self.to_query_params();
+        let mut qs = params.join("&");
+        if condition == "or" {
+            if !qs.is_empty() {
+                qs.push('&');
+            }
+            qs.push_str("_condition=or");
+        }
+        qs
+    }
+}
+
+pub fn default_filter_logic() -> String {
+    "and".to_string()
+}
+
+impl From<Vec<FilterEnum>> for FilterCondition {
+    fn from(filters: Vec<FilterEnum>) -> Self {
+        FilterCondition::And(filters.into_iter().map(FilterCondition::Leaf).collect())
+    }
+}
+
+impl From<&Vec<FilterEnum>> for FilterCondition {
+    fn from(filters: &Vec<FilterEnum>) -> Self {
+        FilterCondition::And(filters.iter().cloned().map(FilterCondition::Leaf).collect())
+    }
+}

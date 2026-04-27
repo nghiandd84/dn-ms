@@ -20,6 +20,7 @@ use shared_shared_data_app::{
     result::{OkUuid, OkUuidResponse, Result},
 };
 use shared_shared_data_core::{
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
@@ -83,7 +84,7 @@ async fn filter_webhook_events(
 ) -> Result<ResponseJson<QueryResult<StripeWebhookEventData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let filters = vec![]; // TODO: Add filter support
+    let filters = FilterCondition::And(vec![]); // TODO: Add filter support
     let result =
         StripeWebhookEventService::get_webhook_events(&filters, &pagination, &order).await?;
     Ok(ResponseJson(result))

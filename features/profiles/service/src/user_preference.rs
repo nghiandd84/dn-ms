@@ -2,7 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -47,7 +47,7 @@ impl UserPreferenceService {
     pub async fn get_user_preferences<'a>(
         pagination: Pagination,
         order: Order,
-        filters: Vec<FilterEnum>,
+        filters: FilterCondition,
     ) -> Result<QueryResult<UserPreferenceData>, AppError> {
         UserPreferenceQuery::get_user_preferences(&pagination, &order, &filters).await
     }

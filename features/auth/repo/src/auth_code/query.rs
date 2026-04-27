@@ -15,8 +15,6 @@ use features_auth_model::auth_code::AuthCodeData;
 #[query_filter(column_name(Column))]
 struct AuthCodeQueryManager;
 
-
-
 pub struct AuthCodeQuery {}
 
 impl AuthCodeQuery {
@@ -43,7 +41,7 @@ impl AuthCodeQuery {
             raw_value: code.to_string(),
             operator: FilterOperator::Equal,
         });
-        let filters: Vec<FilterEnum> = vec![client_id_filter, code_filter];
+        let filters: FilterCondition = vec![client_id_filter, code_filter].into();
         let query_result = Self::search(&paging, &order, &filters).await?;
         if query_result.result.is_empty() {
             return Err(DbErr::RecordNotFound(format!(
@@ -58,9 +56,9 @@ impl AuthCodeQuery {
     pub async fn search<'a>(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<AuthCodeData>, DbErr> {
-        let result = AuthCodeQueryManager::filter(pagination, order, filters).await?;
+        let result = AuthCodeQueryManager::filter(pagination, order, &filters).await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

@@ -70,17 +70,72 @@ fn filter_enum_add_name_prefix() {
 #[test]
 fn filter_enum_add_name_prefix_all_variants() {
     let mut variants: Vec<FilterEnum> = vec![
-        FilterEnum::Bool(FilterParam { name: "a".into(), value: Some(true), raw_value: "true".into(), operator: FilterOperator::Equal }),
-        FilterEnum::I8(FilterParam { name: "a".into(), value: Some(1), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::I64(FilterParam { name: "a".into(), value: Some(1), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::U32(FilterParam { name: "a".into(), value: Some(1), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::U64(FilterParam { name: "a".into(), value: Some(1), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::F32(FilterParam { name: "a".into(), value: Some(1.0), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::F64(FilterParam { name: "a".into(), value: Some(1.0), raw_value: "1".into(), operator: FilterOperator::Equal }),
-        FilterEnum::Json(FilterParam { name: "a".into(), value: Some(serde_json::json!({})), raw_value: "{}".into(), operator: FilterOperator::Equal }),
-        FilterEnum::DateTime(FilterParam { name: "a".into(), value: Some(chrono::NaiveDateTime::default()), raw_value: "".into(), operator: FilterOperator::Equal }),
-        FilterEnum::VecString(FilterParam { name: "a".into(), value: Some(vec![]), raw_value: "".into(), operator: FilterOperator::Equal }),
-        FilterEnum::VecUuid(FilterParam { name: "a".into(), value: Some(vec![]), raw_value: "".into(), operator: FilterOperator::Equal }),
+        FilterEnum::Bool(FilterParam {
+            name: "a".into(),
+            value: Some(true),
+            raw_value: "true".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::I8(FilterParam {
+            name: "a".into(),
+            value: Some(1),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::I64(FilterParam {
+            name: "a".into(),
+            value: Some(1),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::U32(FilterParam {
+            name: "a".into(),
+            value: Some(1),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::U64(FilterParam {
+            name: "a".into(),
+            value: Some(1),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::F32(FilterParam {
+            name: "a".into(),
+            value: Some(1.0),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::F64(FilterParam {
+            name: "a".into(),
+            value: Some(1.0),
+            raw_value: "1".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::Json(FilterParam {
+            name: "a".into(),
+            value: Some(serde_json::json!({})),
+            raw_value: "{}".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::DateTime(FilterParam {
+            name: "a".into(),
+            value: Some(chrono::NaiveDateTime::default()),
+            raw_value: "".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::VecString(FilterParam {
+            name: "a".into(),
+            value: Some(vec![]),
+            raw_value: "".into(),
+            operator: FilterOperator::Equal,
+        }),
+        FilterEnum::VecUuid(FilterParam {
+            name: "a".into(),
+            value: Some(vec![]),
+            raw_value: "".into(),
+            operator: FilterOperator::Equal,
+        }),
     ];
     for f in &mut variants {
         f.add_name_prefix("pfx");

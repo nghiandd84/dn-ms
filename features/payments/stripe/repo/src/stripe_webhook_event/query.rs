@@ -18,8 +18,6 @@ use features_payments_stripe_model::stripe_webhook_event::StripeWebhookEventData
 #[query_filter(column_name(Column))]
 struct StripeWebhookEventQueryManager;
 
-
-
 pub struct StripeWebhookEventQuery;
 
 impl StripeWebhookEventQuery {
@@ -33,7 +31,7 @@ impl StripeWebhookEventQuery {
     pub async fn get_webhook_events(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<StripeWebhookEventData>, AppError> {
         let result = StripeWebhookEventQueryManager::filter(pagination, order, filters).await?;
         let mapped_result = QueryResult {

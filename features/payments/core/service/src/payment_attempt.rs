@@ -3,7 +3,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
-    filter::{FilterEnum, FilterOperator, FilterParam},
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -54,16 +54,16 @@ impl PaymentAttemptService {
             raw_value: success.to_string(),
         };
         let success_filter = FilterEnum::Bool(param);
-        let filters: Vec<FilterEnum> = vec![success_filter];
+        let filters: FilterCondition = vec![success_filter].into();
         PaymentAttemptQuery::get_payment_attempts(&pagination, &order, &filters).await
     }
 
     pub async fn get_payment_attempts<'a>(
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<PaymentAttemptData>, AppError> {
-        PaymentAttemptQuery::get_payment_attempts(pagination, order, filters).await
+        PaymentAttemptQuery::get_payment_attempts(pagination, order, &filters).await
     }
 
     pub async fn update_payment_attempt(

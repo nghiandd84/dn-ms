@@ -1,7 +1,7 @@
 use tracing::debug;
 
 use shared_shared_data_core::{
-    filter::FilterEnum,
+    filter::{FilterCondition, FilterEnum},
     order::Order,
     paging::{Pagination, QueryResult},
 };
@@ -60,7 +60,7 @@ impl MerchantService {
     pub async fn get_merchants(
         pagination: &Pagination,
         order: &Order,
-        filters: &Vec<FilterEnum>,
+        filters: &FilterCondition,
     ) -> Result<QueryResult<MerchantData>, AppError> {
         MerchantQuery::get_merchants(pagination, order, filters).await
     }
