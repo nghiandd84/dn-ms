@@ -22,9 +22,12 @@ validator = { version = "0.20.0", features = ["derive"] }
 
 shared-shared-config = { workspace = true }
 shared-shared-app = { workspace = true }
+shared-shared-auth = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 shared-shared-data-app = { workspace = true }
+
+features-auth-remote = { workspace = true }
 
 features-translation-migrations = { workspace = true }
 features-translation-model = { workspace = true }

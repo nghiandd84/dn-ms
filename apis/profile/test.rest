@@ -1,8 +1,8 @@
-
 @baseUrl = http://localhost:5051
 # @baseUrl = http://localhost:6101
 
 @profileId = 1c847730-2bf0-45d1-a915-cb96a5195de7
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 ### healthchecker
 GET {{baseUrl}}/healthchecker
 
@@ -12,17 +12,21 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Profile 
 GET {{baseUrl}}/profiles
+baggage: {{baggage}}
 
 ### Search Profile 
 GET {{baseUrl}}/profiles?bio=li|My
+baggage: {{baggage}}
 
 
 ### Get Profile By ID Profile 
 GET {{baseUrl}}/profiles/{{profileId}}
+baggage: {{baggage}}
 
 ### CREATE Profile 
 POST {{baseUrl}}/profiles
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "avatar_url": "My Avatar URL",
@@ -36,6 +40,7 @@ Content-Type: application/json
 ### Update Profile 
 PATCH {{baseUrl}}/profiles/{{profileId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "avatar_url": "My Avatar URL UPDATE",
@@ -45,21 +50,26 @@ Content-Type: application/json
 ### DELETE Profile 
 DELETE {{baseUrl}}/profiles/deb98ead-5e38-49ef-a904-ffd03c177b59
 Content-Type: application/json
+baggage: {{baggage}}
 
 @userPreferenceId = 2e207d4d-c0bf-43ba-8ba4-d4b0f6fdccb8
 ### Get All User preference 
 GET {{baseUrl}}/user-preferences
+baggage: {{baggage}}
 
 ### Search Profile 
 GET {{baseUrl}}/user-preferences?language=li|en
+baggage: {{baggage}}
 
 
 ### Get user preference by id 
 GET {{baseUrl}}/user-preferences/{{userPreferenceId}}
+baggage: {{baggage}}
 
 ### CREATE User Preference 
 POST {{baseUrl}}/user-preferences
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "language": "en-US",
@@ -72,6 +82,7 @@ Content-Type: application/json
 ### Update user preference 
 PATCH {{baseUrl}}/user-preferences/{{userPreferenceId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "notifications_enabled": false,
@@ -81,23 +92,28 @@ Content-Type: application/json
 
 ### Delete user preference by id 
 DELETE {{baseUrl}}/user-preferences/74bf6e91-8eb3-4ebd-ae9d-372815201fd2
+baggage: {{baggage}}
 
 
 @socialLinkId = 1c2e8bc8-ea22-4054-abd9-0961ec93391d
 
 ### Get All Social Links
 GET {{baseUrl}}/social-links
+baggage: {{baggage}}
 
 
 ### search Social Links
 GET {{baseUrl}}/social-links?platform=eq|github
+baggage: {{baggage}}
 
 ### Get Social Link by ID
 GET {{baseUrl}}/social-links/{{socialLinkId}}
+baggage: {{baggage}}
 
 ### Create Social Link
 POST {{baseUrl}}/social-links
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "profile_id": "{{profileId}}",
@@ -108,6 +124,7 @@ Content-Type: application/json
 ### Update Social Link
 PATCH {{baseUrl}}/social-links/{{socialLinkId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "platform": "linkedin",
@@ -116,4 +133,4 @@ Content-Type: application/json
 
 ### Delete Social Link
 DELETE {{baseUrl}}/social-links/1c2e8bc8-ea22-4054-abd9-0961ec93391d
-
+baggage: {{baggage}}

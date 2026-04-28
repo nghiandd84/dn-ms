@@ -6,6 +6,10 @@ use axum::{
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateAttempt, CanDeleteAttempt, CanReadAttempt, CanUpdateAttempt};
+
 use features_payments_core_model::{
     payment_attempt::{
         PaymentAttemptData, PaymentAttemptDataFilterParams, PaymentAttemptForCreateRequest,
@@ -40,6 +44,7 @@ const TAG: &str = "payment-attempt";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_attempt(
+    _auth: Auth<CanCreateAttempt>,
     ValidJson(req): ValidJson<PaymentAttemptForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_attempt_id = PaymentAttemptService::create_payment_attempt(req).await?;
@@ -58,6 +63,7 @@ pub async fn create_payment_attempt(
     )
 )]
 pub async fn get_payment_attempt(
+    _auth: Auth<CanReadAttempt>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentAttemptData>> {
     let payment_attempt =
@@ -79,6 +85,7 @@ pub async fn get_payment_attempt(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_attempts(
+    _auth: Auth<CanReadAttempt>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentAttemptDataFilterParams>,
@@ -101,6 +108,7 @@ pub async fn filter_payment_attempts(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_attempt(
+    _auth: Auth<CanUpdateAttempt>,
     Path(payment_attempt_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentAttemptForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -121,6 +129,7 @@ pub async fn update_payment_attempt(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_attempt(
+    _auth: Auth<CanDeleteAttempt>,
     Path(payment_attempt_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentAttemptService::delete_payment_attempt(payment_attempt_id).await?;

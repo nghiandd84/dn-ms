@@ -24,6 +24,7 @@ pub struct CheckoutResponse {
 }
 
 pub async fn create_checkout(
+    _public: PublicAccess,
     State(state): State<Arc<AppState>>,
     Json(req): Json<CheckoutRequest>,
 ) -> Result<Json<CheckoutResponse>, String> {

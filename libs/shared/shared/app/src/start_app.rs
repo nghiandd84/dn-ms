@@ -27,6 +27,12 @@ where
 {
     fn routes(&self, app_state: &AppState<T, C>) -> Router;
 
+
+    /// Return path prefixes that are public (no baggage header required).
+    /// Override this to declare public endpoints.
+    fn public_paths(&self) -> &'static [&'static str] {
+        &[]
+    }
     fn custom_handler(
         &self,
         _app_state: &mut AppState<T, C>,
@@ -143,9 +149,13 @@ where
                 // .with_provider(metric_provider)
                 .build();
 
+            let public_paths: &'static [&'static str] = self.public_paths();
             let routes_all = Router::new()
                 .route("/healthchecker", get(health_checker_handler))
                 .merge(self.routes(&app_state))
+                .layer(middleware::from_fn(move |req, next| {
+                    shared_shared_auth::permission::require_baggage_header(req, next, public_paths)
+                }))
                 .layer(OtelInResponseLayer::default()) // OtelInResponseLayer: INJECTS the active trace context into the response headers.
                 .layer(middleware::map_response(main_response_mapper))
                 .layer(metrics) // Add HTTP metrics layer

@@ -6,6 +6,12 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateTemplateTranslation, CanDeleteTemplateTranslation, CanReadTemplateTranslation,
+    CanUpdateTemplateTranslation,
+};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
@@ -37,6 +43,7 @@ const TAG: &str = "Template-Translation";
     )
 )]
 async fn create_template_translation(
+    _auth: Auth<CanCreateTemplateTranslation>,
     _state: State<AppState<EmailTemplateCacheState>>,
     ValidJson(request): ValidJson<TemplateTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
@@ -61,6 +68,7 @@ async fn create_template_translation(
     )
 )]
 async fn update_template_translation(
+    _auth: Auth<CanUpdateTemplateTranslation>,
     Path(translation_id): Path<i32>,
     ValidJson(request): ValidJson<TemplateTranslationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -77,6 +85,7 @@ async fn update_template_translation(
     )
 )]
 async fn delete_template_translation(
+    _auth: Auth<CanDeleteTemplateTranslation>,
     Path(translation_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
     TemplateTranslationService::delete(translation_id).await?;
@@ -92,6 +101,7 @@ async fn delete_template_translation(
     )
 )]
 async fn get_template_translation(
+    _auth: Auth<CanReadTemplateTranslation>,
     Path(translation_id): Path<i32>,
 ) -> Result<ResponseJson<TemplateTranslationData>> {
     let scope = TemplateTranslationService::get(translation_id).await?;
@@ -111,6 +121,7 @@ async fn get_template_translation(
     )
 )]
 async fn filter_template_translation(
+    _auth: Auth<CanReadTemplateTranslation>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TemplateTranslationDataFilterParams>,

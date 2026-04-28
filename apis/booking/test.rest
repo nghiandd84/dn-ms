@@ -4,6 +4,7 @@
 @bookingSeatId = 25a14c7f-2775-482a-b0f0-a98dd2c2ece8
 
 @origin = http://localhost
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### Booking API Test requests
 
@@ -11,6 +12,7 @@
 POST {{baseUrl}}/bookings
 Content-Type: application/json
 Origin: {{origin}}
+baggage: {{baggage}}
 
 {
   "event_id": "12345678-1234-1234-1234-123456789022",
@@ -23,22 +25,26 @@ Origin: {{origin}}
 ### Get booking by ID
 GET {{baseUrl}}/bookings/{{bookingId}}
 Origin: {{origin}}
+baggage: {{baggage}}
 
 
 ### List all bookings with filters
 GET {{baseUrl}}/bookings
 Origin: {{origin}}
+baggage: {{baggage}}
 
 
 ### List all bookings with filters
 GET {{baseUrl}}/bookings?status=li|PENDING1
 Origin: {{origin}}
+baggage: {{baggage}}
 
 
 ### Update booking
 PATCH {{baseUrl}}/bookings/{{bookingId}}
 Content-Type: application/json
 Origin: {{origin}}
+baggage: {{baggage}}
 
 {
   "status": "CONFIRMED"
@@ -47,11 +53,13 @@ Origin: {{origin}}
 ### Delete booking
 DELETE {{baseUrl}}/bookings/6c1303c9-3f43-4538-ada1-5d2402787732
 Origin: {{origin}}
+baggage: {{baggage}}
 
 ### Create booking seat
 POST {{baseUrl}}/booking-seats
 Content-Type: application/json
 Origin: {{origin}}
+baggage: {{baggage}}
 
 {
   "booking_id": "{{bookingId}}",
@@ -62,19 +70,23 @@ Origin: {{origin}}
 ### Get booking seat by ID
 GET {{baseUrl}}/booking-seats/{{bookingSeatId}}
 Origin: {{origin}}
+baggage: {{baggage}}
 
 ### List all booking seats
 GET {{baseUrl}}/booking-seats
 Origin: {{origin}}
+baggage: {{baggage}}
 
 ### Search all booking seats
 GET {{baseUrl}}/booking-seats?price=le|300
 Origin: {{origin}}
+baggage: {{baggage}}
 
 ### Update booking seat
 PATCH {{baseUrl}}/booking-seats/{{bookingSeatId}}
 Content-Type: application/json
 Origin: {{origin}}
+baggage: {{baggage}}
 
 {
   "price": 80.00
@@ -83,3 +95,4 @@ Origin: {{origin}}
 ### Delete booking seat
 DELETE {{baseUrl}}/booking-seats/6090b514-38df-487f-80d5-faf15b53ceeb
 Origin: {{origin}}
+baggage: {{baggage}}

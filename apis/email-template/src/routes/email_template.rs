@@ -6,6 +6,11 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateEmailTemplate, CanDeleteEmailTemplate, CanReadEmailTemplate, CanUpdateEmailTemplate,
+};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
@@ -36,6 +41,7 @@ const TAG: &str = "Email-Template";
     )
 )]
 async fn create_email_template(
+    _auth: Auth<CanCreateEmailTemplate>,
     ValidJson(request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let template_id = EmailTemplateService::create(request).await?;
@@ -59,6 +65,7 @@ async fn create_email_template(
     )
 )]
 async fn update_email_template(
+    _auth: Auth<CanUpdateEmailTemplate>,
     Path(template_id): Path<i32>,
     ValidJson(request): ValidJson<EmailTemplateForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -74,7 +81,10 @@ async fn update_email_template(
         (status = 200, description = "Email Template was delete", body = OkI32Response),
     )
 )]
-async fn delete_email_template(Path(template_id): Path<i32>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_email_template(
+    _auth: Auth<CanDeleteEmailTemplate>,
+    Path(template_id): Path<i32>,
+) -> Result<ResponseJson<OkUuid>> {
     EmailTemplateService::delete(template_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -88,6 +98,7 @@ async fn delete_email_template(Path(template_id): Path<i32>) -> Result<ResponseJ
     )
 )]
 async fn get_email_template(
+    _auth: Auth<CanReadEmailTemplate>,
     Path(template_id): Path<i32>,
 ) -> Result<ResponseJson<EmailTemplateData>> {
     let scope = EmailTemplateService::get(template_id).await?;
@@ -107,6 +118,7 @@ async fn get_email_template(
     )
 )]
 async fn filter_email_template(
+    _auth: Auth<CanReadEmailTemplate>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<EmailTemplateDataFilterParams>,

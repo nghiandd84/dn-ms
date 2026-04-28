@@ -13,6 +13,9 @@ use features_translation_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateVersion, CanDeleteVersion, CanReadVersion, CanUpdateVersion};
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -38,6 +41,7 @@ const TAG: &str = "translation_version";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_translation_version(
+    _auth: Auth<CanCreateVersion>,
     Json(req): Json<TranslationVersionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let version_id = TranslationVersionService::create_translation_version(req).await?;
@@ -56,6 +60,7 @@ async fn create_translation_version(
     )
 )]
 async fn get_translation_version(
+    _auth: Auth<CanReadVersion>,
     Path(version_id): Path<Uuid>,
 ) -> Result<ResponseJson<TranslationVersionData>> {
     let version = TranslationVersionService::get_translation_version_by_id(version_id).await?;
@@ -75,6 +80,7 @@ async fn get_translation_version(
     )
 )]
 async fn get_latest_translation_version(
+    _auth: Auth<CanReadVersion>,
     Path(key_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -107,6 +113,7 @@ async fn get_latest_translation_version(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_translation_versions(
+    _auth: Auth<CanReadVersion>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TranslationVersionDataFilterParams>,
@@ -129,6 +136,7 @@ async fn filter_translation_versions(
     )
 )]
 async fn update_translation_version(
+    _auth: Auth<CanUpdateVersion>,
     Path(version_id): Path<Uuid>,
     Json(req): Json<TranslationVersionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -147,7 +155,7 @@ async fn update_translation_version(
         (status = 200, description = "Translation version deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_translation_version(Path(version_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_translation_version(_auth: Auth<CanDeleteVersion>, Path(version_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TranslationVersionService::delete_translation_version(version_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

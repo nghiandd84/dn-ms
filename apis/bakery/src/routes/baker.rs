@@ -24,7 +24,7 @@ use features_bakery_model::{
 };
 use features_bakery_service::baker::{BakerMutation, BakerQuery};
 
-use crate::permission::CanDeleteBaker;
+use crate::permission::{CanCreateBaker, CanDeleteBaker, CanReadBaker};
 
 const TAG: &str = "baker";
 
@@ -39,6 +39,7 @@ const TAG: &str = "baker";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateBaker>,
     ValidJson(request): ValidJson<BakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: BakerForCreateDto = request.into();
@@ -77,7 +78,7 @@ async fn delete_by_id(
         (status = 200, description = "Baker Data", body = BakerDataResponse),
     )
 )]
-async fn get_by_id(Path(baker_id): Path<i32>) -> Result<ResponseJson<BakerData>> {
+async fn get_by_id(_auth: Auth<CanReadBaker>, Path(baker_id): Path<i32>) -> Result<ResponseJson<BakerData>> {
     let baker = BakerQuery::get_by_id(baker_id).await?;
     Ok(ResponseJson(baker))
 }
@@ -96,6 +97,7 @@ async fn get_by_id(Path(baker_id): Path<i32>) -> Result<ResponseJson<BakerData>>
     )
 )]
 async fn filter(
+    _auth: Auth<CanReadBaker>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: FilterParams<BakerDataFilterParams>,

@@ -4,6 +4,7 @@
 # @baseUrl = http://localhost:6101
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 @templateId = 1
 @tempalateTranslationId = 1
 @placeholderId = 1
@@ -19,6 +20,7 @@ GET {{baseUrl}}/swagger-ui/
 ### Insert Email Template 
 POST {{baseUrl}}/email-templates
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "name": "Email Template Name",
@@ -29,22 +31,26 @@ Content-Type: application/json
 ### Get Email Template 
 GET {{baseUrl}}/email-templates/{{templateId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Email Template 
 GET {{baseUrl}}/email-templates?key=eq|DNAPP_ACTIVE_CODE
 # GET {{baseUrl}}/email-templates?description=li|testing&name=li|Name
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Delete Email Template 
 DELETE {{baseUrl}}/email-templates/2
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Template Translation API
 
 ### Insert Template Translation
 POST {{baseUrl}}/template-translations 
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "body": "Template Translation Body EN",
@@ -58,20 +64,24 @@ Content-Type: application/json
 ### Get Template Translation 
 GET {{baseUrl}}/template-translations/{{tempalateTranslationId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Filter Template Translation 
 GET {{baseUrl}}/template-translations?body=li|Body&template_id=eq|1
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Template Translation 
 GET {{baseUrl}}/template-translations?template_id=eq|1&language_code=eq|en-US
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Update Template Translation 
 PATCH {{baseUrl}}/template-translations/{{tempalateTranslationId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "body": "Template Translation Body EN Update"
@@ -80,6 +90,7 @@ Content-Type: application/json
 ### DELETE Template Translation 
 DELETE {{baseUrl}}/template-translations/4
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Template Placeholder API
@@ -87,6 +98,7 @@ Content-Type: application/json
 ### Insert Template Placeholder
 POST {{baseUrl}}/template-placeholders 
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "description": "placeholder description",
@@ -101,18 +113,22 @@ Content-Type: application/json
 # @prompt deletePlaceholderId Delete Placeholder Id
 DELETE {{baseUrl}}/template-placeholders/{{deletePlaceholderId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Template Placeholder
 GET {{baseUrl}}/template-placeholders/{{placeholderId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Template Placeholder
 GET {{baseUrl}}/template-placeholders?example_value=li|value
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Update Template Placeholder
 PATCH {{baseUrl}}/template-placeholders/{{placeholderId}}
 Content-Type: application/json  
+baggage: {{baggage}}
 
 {
   "example_value": "placeholder example value update"

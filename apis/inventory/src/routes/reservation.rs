@@ -15,6 +15,12 @@ use features_inventory_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateReservation, CanDeleteReservation, CanReadReservation, CanUpdateReservation,
+};
+
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -39,6 +45,7 @@ const TAG: &str = "reservation";
     )
 )]
 async fn create_reservation(
+    _auth: Auth<CanCreateReservation>,
     ValidJson(req): ValidJson<ReservationForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let reservation_id = ReservationService::create_reservation(req).await?;
@@ -57,6 +64,7 @@ async fn create_reservation(
     )
 )]
 async fn get_reservation(
+    _auth: Auth<CanReadReservation>,
     Path(reservation_id): Path<Uuid>,
 ) -> Result<ResponseJson<ReservationData>> {
     let reservation = ReservationService::get_reservation_by_id(reservation_id).await?;
@@ -82,6 +90,7 @@ async fn get_reservation(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_reservations(
+    _auth: Auth<CanReadReservation>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ReservationDataFilterParams>,
@@ -105,6 +114,7 @@ async fn filter_reservations(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_reservation(
+    _auth: Auth<CanUpdateReservation>,
     Path(reservation_id): Path<Uuid>,
     ValidJson(req): ValidJson<ReservationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -124,7 +134,7 @@ async fn update_reservation(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_reservation(Path(reservation_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_reservation(_auth: Auth<CanDeleteReservation>, Path(reservation_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ReservationService::delete_reservation(reservation_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

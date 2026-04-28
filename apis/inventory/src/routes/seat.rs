@@ -12,6 +12,10 @@ use features_inventory_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateSeat, CanDeleteSeat, CanReadSeat, CanUpdateSeat};
+
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -37,6 +41,7 @@ const TAG: &str = "seat";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_seat(
+    _auth: Auth<CanCreateSeat>,
     ValidJson(req): ValidJson<SeatForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let seat_id = SeatService::create_seat(req).await?;
@@ -54,7 +59,7 @@ async fn create_seat(
         (status = 200, description = "Seat retrieved successfully", body = SeatData),
     )
 )]
-async fn get_seat(Path(seat_id): Path<Uuid>) -> Result<ResponseJson<SeatData>> {
+async fn get_seat(_auth: Auth<CanReadSeat>, Path(seat_id): Path<Uuid>) -> Result<ResponseJson<SeatData>> {
     let seat = SeatService::get_seat_by_id(seat_id).await?;
     Ok(ResponseJson(seat))
 }
@@ -73,6 +78,7 @@ async fn get_seat(Path(seat_id): Path<Uuid>) -> Result<ResponseJson<SeatData>> {
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_seats(
+    _auth: Auth<CanReadSeat>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<SeatDataFilterParams>,
@@ -95,6 +101,7 @@ async fn filter_seats(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_seat(
+    _auth: Auth<CanUpdateSeat>,
     Path(seat_id): Path<Uuid>,
     ValidJson(req): ValidJson<SeatForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -114,7 +121,7 @@ async fn update_seat(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_seat(Path(seat_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_seat(_auth: Auth<CanDeleteSeat>, Path(seat_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     SeatService::delete_seat(seat_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

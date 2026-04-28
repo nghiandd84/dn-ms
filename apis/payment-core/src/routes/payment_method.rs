@@ -6,6 +6,10 @@ use axum::{
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateMethod, CanDeleteMethod, CanReadMethod, CanUpdateMethod};
+
 use features_payments_core_model::{
     payment_method::{
         PaymentMethodData, PaymentMethodDataFilterParams, PaymentMethodForCreateRequest,
@@ -40,6 +44,7 @@ const TAG: &str = "payment-method";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_method(
+    _auth: Auth<CanCreateMethod>,
     ValidJson(req): ValidJson<PaymentMethodForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_method_id = PaymentMethodService::create_payment_method(req).await?;
@@ -58,6 +63,7 @@ pub async fn create_payment_method(
     )
 )]
 pub async fn get_payment_method(
+    _auth: Auth<CanReadMethod>,
     Path(payment_method_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentMethodData>> {
     let payment_method = PaymentMethodService::get_payment_method_by_id(payment_method_id).await?;
@@ -78,6 +84,7 @@ pub async fn get_payment_method(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_methods(
+    _auth: Auth<CanReadMethod>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentMethodDataFilterParams>,
@@ -100,6 +107,7 @@ pub async fn filter_payment_methods(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_method(
+    _auth: Auth<CanUpdateMethod>,
     Path(payment_method_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentMethodForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -120,6 +128,7 @@ pub async fn update_payment_method(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_method(
+    _auth: Auth<CanDeleteMethod>,
     Path(payment_method_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentMethodService::delete_payment_method(payment_method_id).await?;

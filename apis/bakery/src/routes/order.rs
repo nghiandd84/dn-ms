@@ -6,6 +6,7 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, Result},
@@ -21,6 +22,8 @@ use features_bakery_model::{
 };
 use features_bakery_service::order::{OrderMutation, OrderQuery};
 
+use crate::permission::{CanCreateOrder, CanDeleteOrder};
+
 const TAG: &str = "order";
 
 #[utoipa::path(
@@ -34,6 +37,7 @@ const TAG: &str = "order";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateOrder>,
     ValidJson(request): ValidJson<OrderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = OrderMutation::create(request.into()).await?;
@@ -52,7 +56,7 @@ async fn create(
         (status = 200, description = "Order is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(Path(order_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(_auth: Auth<CanDeleteOrder>, Path(order_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     OrderMutation::delete(order_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
@@ -66,7 +70,7 @@ async fn delete_by_id(Path(order_id): Path<i32>) -> Result<ResponseJson<OkI32>> 
         (status = 200, description = "Customer Data", body = OrderDataResponse),
     )
 )]
-async fn get_by_id(Path(order_id): Path<i32>) -> Result<ResponseJson<OrderData>> {
+async fn get_by_id(_public: PublicAccess, Path(order_id): Path<i32>) -> Result<ResponseJson<OrderData>> {
     let cake = OrderQuery::get_by_id(order_id).await?;
     Ok(ResponseJson(cake))
 }
@@ -85,6 +89,7 @@ async fn get_by_id(Path(order_id): Path<i32>) -> Result<ResponseJson<OrderData>>
     )
 )]
 async fn filter(
+    _public: PublicAccess,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<OrderDataFilterParams>,

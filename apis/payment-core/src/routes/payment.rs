@@ -6,6 +6,10 @@ use axum::{
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreatePayment, CanDeletePayment, CanReadPayment, CanUpdatePayment};
+
 use features_payments_core_model::{
     payment::{
         PaymentData, PaymentDataFilterParams, PaymentForCreateRequest, PaymentForUpdateRequest,
@@ -39,6 +43,7 @@ const TAG: &str = "payment";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment(
+    _auth: Auth<CanCreatePayment>,
     ValidJson(req): ValidJson<PaymentForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_id = PaymentService::create_payment(req).await?;
@@ -56,7 +61,7 @@ pub async fn create_payment(
         (status = 200, description = "Payment retrieved successfully", body = PaymentData),
     )
 )]
-pub async fn get_payment(Path(payment_id): Path<Uuid>) -> Result<ResponseJson<PaymentData>> {
+pub async fn get_payment(_auth: Auth<CanReadPayment>, Path(payment_id): Path<Uuid>) -> Result<ResponseJson<PaymentData>> {
     let payment = PaymentService::get_payment_by_id(payment_id).await?;
     Ok(ResponseJson(payment))
 }
@@ -75,6 +80,7 @@ pub async fn get_payment(Path(payment_id): Path<Uuid>) -> Result<ResponseJson<Pa
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payments(
+    _auth: Auth<CanReadPayment>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentDataFilterParams>,
@@ -97,6 +103,7 @@ pub async fn filter_payments(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment(
+    _auth: Auth<CanUpdatePayment>,
     Path(payment_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -116,7 +123,7 @@ pub async fn update_payment(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-pub async fn delete_payment(Path(payment_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+pub async fn delete_payment(_auth: Auth<CanDeletePayment>, Path(payment_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     PaymentService::delete_payment(payment_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

@@ -1,6 +1,6 @@
-
 @baseUrl = http://localhost:5021
 # @baseUrl = http://localhost:6101
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -12,6 +12,7 @@ GET {{baseUrl}}/swagger-ui/
 ### Register
 POST {{baseUrl}}/bakers
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "bakery_id": 2,
@@ -29,7 +30,7 @@ Content-Type: application/json
 ### Delete Baker by Id
 DELETE {{baseUrl}}/bakers/5
 Content-Type: application/json
-baggage: accesses=BAKERY_SUPPORT*A_ACCESS_KEY|EMAIL_NOTIFICATION_SALE*B_ACCESS_KEY,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7
+baggage: {{baggage}}
 
 # baggage: accesses=BAKERY_SUPPORT*A_ACCESS_KEY|EMAIL_NOTIFICATION_SALE*B_ACCESS_KEY,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7
 #baggage: accesses=DNAPP_GUEST*access_key,user_id=066df7b0-dcd1-4e7c-94a1-9b5f68794ca7,client_id=5ed8e536-12ae-463d-ae9b-8c78cc5481e1
@@ -38,29 +39,35 @@ baggage: accesses=BAKERY_SUPPORT*A_ACCESS_KEY|EMAIL_NOTIFICATION_SALE*B_ACCESS_K
 ### Get Baker by Id
 GET {{baseUrl}}/bakers/8
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get Baker
 GET {{baseUrl}}/bakers?page_size=1&page=2
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Search Baker
 GET {{baseUrl}}/bakers?bakery[name]=li|bakery&bakery[profit_margin]=gt|2&name=li|kery&order_name=name&order_direction=-1
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Search Baker
 GET {{baseUrl}}/bakers?bakery[name]=li|ry&&bakery[profit_margin]=lt|2
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Search Baker
 GET {{baseUrl}}/bakers?bakery[name]=li|ry&page_size=2&page=2
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Create Bakery
 POST {{baseUrl}}/bakeries
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "A Bakery",
@@ -70,6 +77,7 @@ Content-Type: application/json
 ### Create Cake
 POST {{baseUrl}}/cakes
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "bakery_id": 1,
@@ -93,6 +101,7 @@ Content-Type: application/json
 ### Create Cake Baker
 POST {{baseUrl}}/cake-bakers
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "cake_id": 1,
@@ -103,10 +112,12 @@ Content-Type: application/json
 ### DELETE Cake Baker
 DELETE {{baseUrl}}/cake-bakers/1/1
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Create Customer
 POST {{baseUrl}}/customers
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "Mary"
@@ -120,6 +131,7 @@ Content-Type: application/json
 ### DELETE Customer
 DELETE {{baseUrl}}/customers/4
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Filtter Customer
@@ -130,6 +142,7 @@ Content-Type: application/json
 ### Create Orders
 POST {{baseUrl}}/orders
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "bakery_id": 1,
@@ -146,6 +159,7 @@ Content-Type: application/json
 ### DELETE Customer
 DELETE {{baseUrl}}/orders/3
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Filtter Customer
@@ -156,6 +170,7 @@ Content-Type: application/json
 ### Create Lineitem
 POST {{baseUrl}}/lineitems
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "cake_id": 1,
@@ -172,6 +187,7 @@ Content-Type: application/json
 ### DELETE Lineitem
 DELETE {{baseUrl}}/lineitems/2
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Filtter Lineitem

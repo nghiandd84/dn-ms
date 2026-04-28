@@ -26,9 +26,12 @@ stripe = { package = "async-stripe", version = "0.41", features = ["runtime-toki
 
 shared-shared-config = { workspace = true }
 shared-shared-app = { workspace = true }
+shared-shared-auth = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 shared-shared-data-app = { workspace = true }
+
+features-auth-remote = { workspace = true }
 
 features-payments-stripe-migrations = { workspace = true }
 features-payments-stripe-model = { workspace = true }

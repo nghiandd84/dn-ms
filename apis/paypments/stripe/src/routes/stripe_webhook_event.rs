@@ -25,6 +25,11 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateWebhookEvent, CanDeleteWebhookEvent, CanReadWebhookEvent, CanUpdateWebhookEvent,
+};
 use features_payments_stripe_service::StripeWebhookEventService;
 
 const TAG: &str = "stripe_webhook_event";
@@ -40,6 +45,7 @@ const TAG: &str = "stripe_webhook_event";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_webhook_event(
+    _auth: Auth<CanCreateWebhookEvent>,
     ValidJson(req): ValidJson<StripeWebhookEventForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let webhook_event_id = StripeWebhookEventService::create_webhook_event(req).await?;
@@ -58,6 +64,7 @@ async fn create_webhook_event(
     )
 )]
 async fn get_webhook_event(
+    _auth: Auth<CanReadWebhookEvent>,
     Path(webhook_event_id): Path<Uuid>,
 ) -> Result<ResponseJson<StripeWebhookEventData>> {
     let webhook_event =
@@ -79,6 +86,7 @@ async fn get_webhook_event(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_webhook_events(
+    _auth: Auth<CanReadWebhookEvent>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
 ) -> Result<ResponseJson<QueryResult<StripeWebhookEventData>>> {
@@ -101,6 +109,7 @@ async fn filter_webhook_events(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_webhook_event(
+    _auth: Auth<CanUpdateWebhookEvent>,
     Path(webhook_event_id): Path<Uuid>,
     ValidJson(req): ValidJson<StripeWebhookEventForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -120,7 +129,7 @@ async fn update_webhook_event(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_webhook_event(Path(webhook_event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_webhook_event(_auth: Auth<CanDeleteWebhookEvent>, Path(webhook_event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeWebhookEventService::delete_webhook_event(webhook_event_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

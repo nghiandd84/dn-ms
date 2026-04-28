@@ -6,6 +6,12 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateTemplatePlaceholder, CanDeleteTemplatePlaceholder, CanReadTemplatePlaceholder,
+    CanUpdateTemplatePlaceholder,
+};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
@@ -37,6 +43,7 @@ const TAG: &str = "Template-Plaeceholder";
     )
 )]
 async fn create_template_placeholder(
+    _auth: Auth<CanCreateTemplatePlaceholder>,
     ValidJson(request): ValidJson<TemplatePlaceholderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let placeholder_id = TemplatePlaceholderService::create(request).await?;
@@ -60,6 +67,7 @@ async fn create_template_placeholder(
     )
 )]
 async fn update_template_placeholder(
+    _auth: Auth<CanUpdateTemplatePlaceholder>,
     Path(placeholder_id): Path<i32>,
     ValidJson(request): ValidJson<TemplatePlaeholderForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -76,6 +84,7 @@ async fn update_template_placeholder(
     )
 )]
 async fn delete_template_placeholder(
+    _auth: Auth<CanDeleteTemplatePlaceholder>,
     Path(placeholder_id): Path<i32>,
 ) -> Result<ResponseJson<OkUuid>> {
     TemplatePlaceholderService::delete(placeholder_id).await?;
@@ -91,6 +100,7 @@ async fn delete_template_placeholder(
     )
 )]
 async fn get_template_placeholder(
+    _auth: Auth<CanReadTemplatePlaceholder>,
     Path(placeholder_id): Path<i32>,
 ) -> Result<ResponseJson<TemplatePlaceholderData>> {
     let scope = TemplatePlaceholderService::get(placeholder_id).await?;
@@ -110,6 +120,7 @@ async fn get_template_placeholder(
     )
 )]
 async fn filter_template_placeholder(
+    _auth: Auth<CanReadTemplatePlaceholder>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TemplatePlaceholderDataFilterParams>,

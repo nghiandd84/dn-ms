@@ -25,6 +25,9 @@ use features_wallet_model::{
         TopUpTransactionForUpdateRequest,
     },
 };
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateTopUp, CanReadTopUp};
 use features_wallet_service::TopUpTransactionService;
 
 const TAG: &str = "top_up";
@@ -40,6 +43,7 @@ const TAG: &str = "top_up";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_top_up_transaction(
+    _auth: Auth<CanCreateTopUp>,
     _idempotency_key: IdempotencyKey,
     Path(wallet_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForCreateRequest>,
@@ -60,6 +64,7 @@ async fn create_top_up_transaction(
     )
 )]
 async fn get_top_up_transaction(
+    _auth: Auth<CanReadTopUp>,
     Path(top_up_transaction_id): Path<Uuid>,
 ) -> Result<ResponseJson<TopUpTransactionData>> {
     let top_up =
@@ -81,6 +86,7 @@ async fn get_top_up_transaction(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_top_up_transactions(
+    _auth: Auth<CanReadTopUp>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TopUpTransactionDataFilterParams>,
@@ -104,6 +110,7 @@ async fn filter_top_up_transactions(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_top_up_transaction(
+    _auth: Auth<CanCreateTopUp>,
     _idempotency_key: IdempotencyKey,
     Path(top_up_transaction_id): Path<Uuid>,
     ValidJson(req): ValidJson<TopUpTransactionForUpdateRequest>,
@@ -125,6 +132,7 @@ async fn update_top_up_transaction(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_top_up_transaction(
+    _auth: Auth<CanCreateTopUp>,
     Path(top_up_transaction_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     TopUpTransactionService::delete_top_up_transaction(top_up_transaction_id).await?;

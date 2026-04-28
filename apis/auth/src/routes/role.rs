@@ -7,6 +7,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -30,6 +31,8 @@ use features_auth_model::{
 };
 use features_auth_repo::role::{RoleMutation, RoleQuery};
 use features_auth_service::{PermissionService, RoleService};
+
+use crate::permission::{CanCreateRole, CanDeleteRole, CanReadRole, CanUpdateRole};
 
 #[derive(serde::Deserialize, Debug)]
 struct RoleRelatedFilterParams {
@@ -70,6 +73,7 @@ const TAG: &str = "role";
     )
 )]
 async fn create_role(
+    _auth: Auth<CanCreateRole>,
     ValidJson(register_request): ValidJson<RoleForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: RoleForCreateDto = register_request.into();
@@ -94,6 +98,7 @@ async fn create_role(
     )
 )]
 async fn update_role(
+    _auth: Auth<CanUpdateRole>,
     Path(role_id): Path<Uuid>,
     ValidJson(register_request): ValidJson<RoleForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -112,7 +117,10 @@ async fn update_role(
         (status = 200, description = "Role is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_role(
+    _auth: Auth<CanDeleteRole>,
+    Path(role_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     RoleMutation::delete(role_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -126,6 +134,7 @@ async fn delete_role(Path(role_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> 
     )
 )]
 async fn get_role(
+    _auth: Auth<CanReadRole>,
     Path(role_id): Path<Uuid>,
     Query(mut query_params): Query<QueryParams>,
     related_filter: FilterParams<RoleRelatedFilterParams>,
@@ -145,6 +154,7 @@ async fn get_role(
     )
 )]
 async fn get_permission_by_role(
+    _auth: Auth<CanReadRole>,
     Path(role_id): Path<Uuid>,
 ) -> Result<ResponseJson<QueryResult<PermissionData>>> {
     let pagination = Pagination::new(1, 200);
@@ -165,6 +175,7 @@ async fn get_permission_by_role(
     )
 )]
 async fn filter_roles(
+    _auth: Auth<CanReadRole>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<RoleDataFilterParams>,
@@ -199,6 +210,7 @@ async fn filter_roles(
     )
 )]
 async fn assign_permissions(
+    _auth: Auth<CanUpdateRole>,
     Path(role_id): Path<Uuid>,
     ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -219,6 +231,7 @@ async fn assign_permissions(
     )
 )]
 async fn unassign_permissions(
+    _auth: Auth<CanUpdateRole>,
     Path(role_id): Path<Uuid>,
     ValidJson(request): ValidJson<AssignPermissionToRoleRequest>,
 ) -> Result<ResponseJson<OkUuid>> {

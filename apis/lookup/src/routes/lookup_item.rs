@@ -18,6 +18,7 @@ use features_lookup_model::{
 use features_lookup_service::{lookup_item::LookupItemService, lookup_type::LookupTypeService};
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::result::{OkUuid, OkUuidResponse, Result};
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -30,6 +31,7 @@ use shared_shared_data_core::{
 use shared_shared_extractor::TenantId;
 
 use crate::middleware::cache_lookup_items_middleware;
+use crate::permission::{CanCreateLookupItem, CanDeleteLookupItem, CanUpdateLookupItem};
 
 const TAG: &str = "lookup-item";
 
@@ -44,6 +46,7 @@ const TAG: &str = "lookup-item";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn get_lookup_items(
+    _public: PublicAccess,
     TenantId(tenant_id): TenantId,
     Path(type_code): Path<String>,
     query_pagination: Query<Pagination>,
@@ -73,6 +76,7 @@ pub async fn get_lookup_items(
     )
 )]
 pub async fn get_lookup_item(
+    _public: PublicAccess,
     Path((_type_code, id)): Path<(String, Uuid)>,
 ) -> Result<ResponseJson<LookupItemData>> {
     let result = LookupItemService::get_lookup_item_by_id(id).await?;
@@ -90,6 +94,7 @@ pub async fn get_lookup_item(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_lookup_item(
+    _auth: Auth<CanCreateLookupItem>,
     TenantId(tenant_id): TenantId,
     Path(type_code): Path<String>,
     ValidJson(mut req): ValidJson<LookupItemForCreateRequest>,
@@ -123,6 +128,7 @@ pub async fn create_lookup_item(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_lookup_item(
+    _auth: Auth<CanUpdateLookupItem>,
     Path((_type_code, id)): Path<(String, Uuid)>,
     ValidJson(req): ValidJson<LookupItemForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -143,6 +149,7 @@ pub async fn update_lookup_item(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_lookup_item(
+    _auth: Auth<CanDeleteLookupItem>,
     Path((_type_code, id)): Path<(String, Uuid)>,
 ) -> Result<ResponseJson<OkUuid>> {
     LookupItemService::delete_lookup_item(id).await?;

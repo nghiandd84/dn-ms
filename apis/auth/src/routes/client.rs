@@ -16,6 +16,7 @@ use features_auth_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -27,6 +28,8 @@ use shared_shared_data_core::{
 
 use features_auth_model::state::AuthAppState;
 use features_auth_repo::client::{ClientMutation, ClientQuery};
+
+use crate::permission::{CanCreateClient, CanDeleteClient, CanReadClient, CanUpdateClient};
 
 const TAG: &str = "client";
 
@@ -40,6 +43,7 @@ const TAG: &str = "client";
     )
 )]
 async fn create_client(
+    _auth: Auth<CanCreateClient>,
     ValidJson(register_request): ValidJson<ClientForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let role_id = ClientMutation::create(register_request.into()).await?;
@@ -63,6 +67,7 @@ async fn create_client(
     )
 )]
 async fn update_client(
+    _auth: Auth<CanUpdateClient>,
     Path(client_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ClientForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +83,10 @@ async fn update_client(
         (status = 200, description = "Client is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_client(
+    _auth: Auth<CanDeleteClient>,
+    Path(client_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     ClientMutation::delete(client_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -91,7 +99,10 @@ async fn delete_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<OkUui
         (status = 200, description = "Client Data", body = ClientDataResponse),       
     )
 )]
-async fn get_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<ClientData>> {
+async fn get_client(
+    _auth: Auth<CanReadClient>,
+    Path(client_id): Path<Uuid>,
+) -> Result<ResponseJson<ClientData>> {
     let scope = ClientQuery::get(client_id).await?;
     Ok(ResponseJson(scope))
 }
@@ -109,6 +120,7 @@ async fn get_client(Path(client_id): Path<Uuid>) -> Result<ResponseJson<ClientDa
     )
 )]
 async fn filter_clients(
+    _auth: Auth<CanReadClient>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ClientDataFilterParams>,

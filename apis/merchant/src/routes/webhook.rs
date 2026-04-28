@@ -12,6 +12,10 @@ use features_merchant_model::webhook::{
 };
 use features_merchant_service::WebhookService;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateWebhook, CanDeleteWebhook, CanReadWebhook, CanUpdateWebhook};
+
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -36,6 +40,7 @@ const TAG: &str = "webhook";
 )]
 #[instrument(skip_all)]
 async fn create_webhook(
+    _auth: Auth<CanCreateWebhook>,
     ValidJson(req): ValidJson<WebhookForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let id = WebhookService::create_webhook(req).await?;
@@ -53,7 +58,7 @@ async fn create_webhook(
         (status = 200, description = "Webhook retrieved", body = WebhookData),
     )
 )]
-async fn get_webhook(Path(webhook_id): Path<Uuid>) -> Result<ResponseJson<WebhookData>> {
+async fn get_webhook(_auth: Auth<CanReadWebhook>, Path(webhook_id): Path<Uuid>) -> Result<ResponseJson<WebhookData>> {
     let item = WebhookService::get_webhook_by_id(webhook_id).await?;
     Ok(ResponseJson(item))
 }
@@ -71,6 +76,7 @@ async fn get_webhook(Path(webhook_id): Path<Uuid>) -> Result<ResponseJson<Webhoo
     )
 )]
 async fn filter_webhooks(
+    _auth: Auth<CanReadWebhook>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<WebhookDataFilterParams>,
@@ -93,6 +99,7 @@ async fn filter_webhooks(
 )]
 #[instrument(skip_all)]
 async fn update_webhook(
+    _auth: Auth<CanUpdateWebhook>,
     Path(webhook_id): Path<Uuid>,
     ValidJson(req): ValidJson<WebhookForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -112,7 +119,7 @@ async fn update_webhook(
     )
 )]
 #[instrument(skip_all)]
-async fn delete_webhook(Path(webhook_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_webhook(_auth: Auth<CanDeleteWebhook>, Path(webhook_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     WebhookService::delete_webhook(webhook_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

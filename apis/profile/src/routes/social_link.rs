@@ -7,6 +7,7 @@ use tracing::{instrument, Level};
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -17,6 +18,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use crate::permission::{
+    CanCreateSocialLink, CanDeleteSocialLink, CanReadSocialLink, CanUpdateSocialLink,
+};
 use features_profiles_model::{
     state::{ProfileAppState, ProfileCacheState},
     SocialLinkData, SocialLinkDataFilterParams, SocialLinkForCreateRequest,
@@ -37,6 +41,7 @@ const TAG: &str = "social-link";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_social_link(
+    _auth: Auth<CanCreateSocialLink>,
     Json(req): Json<SocialLinkForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let link_id = SocialLinkService::create_social_link(req).await?;
@@ -54,7 +59,10 @@ async fn create_social_link(
         (status = 200, description = "Social link retrieved successfully", body = SocialLinkData),
     )
 )]
-async fn get_social_link(Path(link_id): Path<Uuid>) -> Result<ResponseJson<SocialLinkData>> {
+async fn get_social_link(
+    _auth: Auth<CanReadSocialLink>,
+    Path(link_id): Path<Uuid>,
+) -> Result<ResponseJson<SocialLinkData>> {
     let link = SocialLinkService::get_social_link_by_id(link_id).await?;
     Ok(ResponseJson(link))
 }
@@ -68,6 +76,7 @@ async fn get_social_link(Path(link_id): Path<Uuid>) -> Result<ResponseJson<Socia
     )
 )]
 async fn get_social_links_by_profile_id(
+    _auth: Auth<CanReadSocialLink>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<Vec<SocialLinkData>>> {
     let links = SocialLinkService::get_social_links_by_profile_id(profile_id).await?;
@@ -88,6 +97,7 @@ async fn get_social_links_by_profile_id(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_social_links(
+    _auth: Auth<CanReadSocialLink>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<SocialLinkDataFilterParams>,
@@ -110,6 +120,7 @@ async fn filter_social_links(
     )
 )]
 async fn update_social_link(
+    _auth: Auth<CanUpdateSocialLink>,
     Path(link_id): Path<Uuid>,
     Json(req): Json<SocialLinkForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -128,7 +139,10 @@ async fn update_social_link(
         (status = 200, description = "Social link deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_social_link(Path(link_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_social_link(
+    _auth: Auth<CanDeleteSocialLink>,
+    Path(link_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     SocialLinkService::delete_social_link(link_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

@@ -6,6 +6,7 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, Result},
@@ -23,6 +24,8 @@ use features_bakery_model::{
 };
 use features_bakery_service::customer::{CustomerMutation, CustomerQuery};
 
+use crate::permission::{CanCreateCustomer, CanDeleteCustomer};
+
 const TAG: &str = "customer";
 
 #[utoipa::path(
@@ -36,6 +39,7 @@ const TAG: &str = "customer";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateCustomer>,
     ValidJson(request): ValidJson<CustomerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = CustomerMutation::create(request.into()).await?;
@@ -54,7 +58,7 @@ async fn create(
         (status = 200, description = "Customer is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(_auth: Auth<CanDeleteCustomer>, Path(customer_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     CustomerMutation::delete(customer_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
@@ -68,7 +72,7 @@ async fn delete_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<OkI32
         (status = 200, description = "Customer Data", body = CustomerDataResponse),
     )
 )]
-async fn get_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<CustomerData>> {
+async fn get_by_id(_public: PublicAccess, Path(customer_id): Path<i32>) -> Result<ResponseJson<CustomerData>> {
     let cake = CustomerQuery::get_by_id(customer_id).await?;
     Ok(ResponseJson(cake))
 }
@@ -87,6 +91,7 @@ async fn get_by_id(Path(customer_id): Path<i32>) -> Result<ResponseJson<Customer
     )
 )]
 async fn filter(
+    _public: PublicAccess,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<CustomerDataFilterParams>,

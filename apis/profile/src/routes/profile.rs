@@ -12,6 +12,7 @@ use features_profiles_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -22,6 +23,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use crate::permission::{CanCreateProfile, CanDeleteProfile, CanReadProfile, CanUpdateProfile};
 use features_profiles_service::ProfileService;
 
 const TAG: &str = "profile";
@@ -36,7 +38,7 @@ const TAG: &str = "profile";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_profile(Json(req): Json<ProfileForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
+async fn create_profile(_auth: Auth<CanCreateProfile>, Json(req): Json<ProfileForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let profile_id = ProfileService::create_profile(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -52,7 +54,7 @@ async fn create_profile(Json(req): Json<ProfileForCreateRequest>) -> Result<Resp
         (status = 200, description = "Profile retrieved successfully", body = ProfileData),
     )
 )]
-async fn get_profile(Path(profile_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
+async fn get_profile(_auth: Auth<CanReadProfile>, Path(profile_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
     let profile = ProfileService::get_profile_by_id(profile_id).await?;
     Ok(ResponseJson(profile))
 }
@@ -65,7 +67,7 @@ async fn get_profile(Path(profile_id): Path<Uuid>) -> Result<ResponseJson<Profil
         (status = 200, description = "Profile retrieved by user ID", body = ProfileData),
     )
 )]
-async fn get_profile_by_user_id(Path(user_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
+async fn get_profile_by_user_id(_auth: Auth<CanReadProfile>, Path(user_id): Path<Uuid>) -> Result<ResponseJson<ProfileData>> {
     let profile = ProfileService::get_profile_by_user_id(user_id).await?;
     Ok(ResponseJson(profile))
 }
@@ -84,6 +86,7 @@ async fn get_profile_by_user_id(Path(user_id): Path<Uuid>) -> Result<ResponseJso
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_profiles(
+    _auth: Auth<CanReadProfile>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ProfileDataFilterParams>,
@@ -105,6 +108,7 @@ async fn filter_profiles(
     )
 )]
 async fn update_profile(
+    _auth: Auth<CanUpdateProfile>,
     Path(profile_id): Path<Uuid>,
     Json(req): Json<ProfileForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -123,7 +127,7 @@ async fn update_profile(
         (status = 200, description = "Profile deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_profile(Path(profile_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_profile(_auth: Auth<CanDeleteProfile>, Path(profile_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ProfileService::delete_profile(profile_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

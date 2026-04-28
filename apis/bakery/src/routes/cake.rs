@@ -6,6 +6,7 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, Result},
@@ -21,6 +22,8 @@ use features_bakery_model::{
 };
 use features_bakery_service::cake::{CakeMutation, CakeQuery};
 
+use crate::permission::{CanCreateCake, CanDeleteCake};
+
 const TAG: &str = "cake";
 
 #[utoipa::path(
@@ -34,6 +37,7 @@ const TAG: &str = "cake";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateCake>,
     ValidJson(request): ValidJson<CakeForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = CakeMutation::create(request.into()).await?;
@@ -52,7 +56,7 @@ async fn create(
         (status = 200, description = "Cake is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(Path(cake_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(_auth: Auth<CanDeleteCake>, Path(cake_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     CakeMutation::delete(cake_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
@@ -66,7 +70,7 @@ async fn delete_by_id(Path(cake_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
         (status = 200, description = "Cake Data", body = CakeDataResponse),
     )
 )]
-async fn get_by_id(Path(cake_id): Path<i32>) -> Result<ResponseJson<CakeData>> {
+async fn get_by_id(_public: PublicAccess, Path(cake_id): Path<i32>) -> Result<ResponseJson<CakeData>> {
     let cake = CakeQuery::get_by_id(cake_id).await?;
     Ok(ResponseJson(cake))
 }
@@ -85,6 +89,7 @@ async fn get_by_id(Path(cake_id): Path<i32>) -> Result<ResponseJson<CakeData>> {
     )
 )]
 async fn filter(
+    _public: PublicAccess,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<CakeDataFilterParams>,

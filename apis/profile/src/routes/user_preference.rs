@@ -12,6 +12,7 @@ use features_profiles_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -22,6 +23,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use crate::permission::{
+    CanCreatePreference, CanDeletePreference, CanReadPreference, CanUpdatePreference,
+};
 use features_profiles_model::state::{ProfileAppState, ProfileCacheState};
 use features_profiles_service::UserPreferenceService;
 
@@ -38,6 +42,7 @@ const TAG: &str = "user-preference";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_user_preference(
+    _auth: Auth<CanCreatePreference>,
     Json(req): Json<UserPreferenceForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let preference_id = UserPreferenceService::create_user_preference(req).await?;
@@ -56,6 +61,7 @@ async fn create_user_preference(
     )
 )]
 async fn get_user_preference(
+    _auth: Auth<CanReadPreference>,
     Path(preference_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserPreferenceData>> {
     let preference = UserPreferenceService::get_user_preference_by_id(preference_id).await?;
@@ -71,6 +77,7 @@ async fn get_user_preference(
     )
 )]
 async fn get_user_preference_by_profile_id(
+    _auth: Auth<CanReadPreference>,
     Path(profile_id): Path<Uuid>,
 ) -> Result<ResponseJson<UserPreferenceData>> {
     let preference = UserPreferenceService::get_user_preference_by_profile_id(profile_id).await?;
@@ -91,6 +98,7 @@ async fn get_user_preference_by_profile_id(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_user_preferences(
+    _auth: Auth<CanReadPreference>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<UserPreferenceDataFilterParams>,
@@ -113,6 +121,7 @@ async fn filter_user_preferences(
     )
 )]
 async fn update_user_preference(
+    _auth: Auth<CanUpdatePreference>,
     Path(preference_id): Path<Uuid>,
     Json(req): Json<UserPreferenceForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -131,7 +140,10 @@ async fn update_user_preference(
         (status = 200, description = "User preference deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_user_preference(Path(preference_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_user_preference(
+    _auth: Auth<CanDeletePreference>,
+    Path(preference_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     UserPreferenceService::delete_user_preference(preference_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

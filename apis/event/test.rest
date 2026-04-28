@@ -1,5 +1,6 @@
 @baseUrl = http://localhost:5071
 @eventId = ffbaa1ea-af8c-43b6-ab85-95dfa8c808b9
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -11,13 +12,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Events
 GET {{baseUrl}}/events
+baggage: {{baggage}}
 
 ### Search Events
 GET {{baseUrl}}/events?status=li|UPCOMING&order_name=event_name&order_direction=1
+baggage: {{baggage}}
 
 ### Create Event
 POST {{baseUrl}}/events
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "event_name": "Tech Conference 2026",
@@ -30,10 +34,12 @@ Content-Type: application/json
 
 ### Get Event By ID
 GET {{baseUrl}}/events/{{eventId}}
+baggage: {{baggage}}
 
 ### Update Event
 PATCH {{baseUrl}}/events/{{eventId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "event_name": "Tech Conference 2026 Updated",
@@ -43,3 +49,4 @@ Content-Type: application/json
 
 ### Delete Event
 DELETE {{baseUrl}}/events/ddbb6469-a2bf-478c-95fc-b99b674e35a0
+baggage: {{baggage}}

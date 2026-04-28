@@ -13,6 +13,12 @@ use features_merchant_model::{
     state::{MerchantAppState, MerchantCacheState},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateMerchant, CanDeleteMerchant, CanReadMerchant, CanUpdateMerchant,
+};
+
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -39,6 +45,7 @@ const TAG: &str = "merchant";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_merchant(
+    _auth: Auth<CanCreateMerchant>,
     ValidJson(req): ValidJson<MerchantForCreateRequest>,
 ) -> Result<ResponseJson<OkStr>> {
     let merchant_id = MerchantService::create_merchant(req).await?;
@@ -56,7 +63,7 @@ async fn create_merchant(
         (status = 200, description = "Merchant retrieved successfully", body = MerchantData),
     )
 )]
-async fn get_merchant(Path(merchant_id): Path<String>) -> Result<ResponseJson<MerchantData>> {
+async fn get_merchant(_auth: Auth<CanReadMerchant>, Path(merchant_id): Path<String>) -> Result<ResponseJson<MerchantData>> {
     let merchant = MerchantService::get_merchant_by_id(merchant_id).await?;
     Ok(ResponseJson(merchant))
 }
@@ -75,6 +82,7 @@ async fn get_merchant(Path(merchant_id): Path<String>) -> Result<ResponseJson<Me
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_merchants(
+    _auth: Auth<CanReadMerchant>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<MerchantDataFilterParams>,
@@ -95,6 +103,7 @@ async fn filter_merchants(
     )
 )]
 async fn get_api_keys_by_merchant(
+    _auth: Auth<CanReadMerchant>,
     Path(merchant_id): Path<String>,
 ) -> Result<ResponseJson<QueryResult<ApiKeyData>>> {
     let items = ApiKeyService::get_api_keys_by_merchant_id(merchant_id).await?;
@@ -112,6 +121,7 @@ async fn get_api_keys_by_merchant(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_merchant(
+    _auth: Auth<CanUpdateMerchant>,
     Path(merchant_id): Path<String>,
     ValidJson(req): ValidJson<MerchantForUpdateRequest>,
 ) -> Result<ResponseJson<OkStr>> {
@@ -131,7 +141,7 @@ async fn update_merchant(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_merchant(Path(merchant_id): Path<String>) -> Result<ResponseJson<OkStr>> {
+async fn delete_merchant(_auth: Auth<CanDeleteMerchant>, Path(merchant_id): Path<String>) -> Result<ResponseJson<OkStr>> {
     MerchantService::delete_merchant(merchant_id.to_string()).await?;
     Ok(ResponseJson(OkStr {
         ok: true,

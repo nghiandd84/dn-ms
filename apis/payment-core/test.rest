@@ -3,6 +3,7 @@
 @paymentAttemptId = c98421b1-0150-4175-b170-2a4ae35ce83b
 @paymentMethodId = bb49bd21-6d9f-4521-87ac-4efd993e8031
 @paymentMethodLimitId = a0d46e6a-df79-4000-aff0-2f0554dbdfc8
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -14,13 +15,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Payments
 GET {{baseUrl}}/payments
+baggage: {{baggage}}
 
 ### Search Payments
 GET {{baseUrl}}/payments?status=li|succeeded&order_name=created_at&order_direction=1
+baggage: {{baggage}}
 
 ### Create Payment
 POST {{baseUrl}}/payments
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "amount": 1,
@@ -34,10 +38,12 @@ Content-Type: application/json
 
 ### Get Payment by ID
 GET {{baseUrl}}/payments/{{paymentId}}
+baggage: {{baggage}}
 
 ### Update Payment
 PATCH {{baseUrl}}/payments/{{paymentId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "status": "succeeded"
@@ -45,15 +51,18 @@ Content-Type: application/json
 
 ### Delete Payment
 DELETE {{baseUrl}}/payments/{{paymentId}}
+baggage: {{baggage}}
 
 ### ===== PAYMENT ATTEMPTS =====
 
 ### Get All Payment Attempts
 GET {{baseUrl}}/payment-attempts
+baggage: {{baggage}}
 
 ### Create Payment Attempt
 POST {{baseUrl}}/payment-attempts
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -65,19 +74,23 @@ Content-Type: application/json
 
 ### Get Payment Attempt by ID
 GET {{baseUrl}}/payment-attempts/{{paymentAttemptId}}
+baggage: {{baggage}}
 
 ### ===== PAYMENT METHODS =====
 
 ### Get All Payment Methods
 GET {{baseUrl}}/payment-methods
+baggage: {{baggage}}
 
 
 ### Search Payment Methods
 GET {{baseUrl}}/payment-methods?display_name=li|card
+baggage: {{baggage}}
 
 ### Create Payment Method
 POST {{baseUrl}}/payment-methods
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "display_name": "card",
@@ -97,6 +110,7 @@ Content-Type: application/json
 ### Update Payment Method
 PATCH {{baseUrl}}/payment-methods/{{paymentMethodId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "display_name": "card-update",
@@ -115,22 +129,27 @@ Content-Type: application/json
 
 ### Get Payment Method by ID
 GET {{baseUrl}}/payment-methods/{{paymentMethodId}}
+baggage: {{baggage}}
 
 
 ### Get Payment Method by ID
 DELETE {{baseUrl}}/payment-methods/abdff062-8d6a-4746-801e-5e8ce4e4e5ba
+baggage: {{baggage}}
 
 ### ===== PAYMENT METHOD LIMITS =====
 
 ### Get All Payment Method Limits
 GET {{baseUrl}}/payment-method-limits
+baggage: {{baggage}}
 
 ### Search Payment Method Limits
 GET {{baseUrl}}/payment-method-limits?currency=eq|USD
+baggage: {{baggage}}
 
 ### Create Payment Method Limit
 POST {{baseUrl}}/payment-method-limits
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "payment_method_id": "{{paymentMethodId}}",
@@ -142,6 +161,7 @@ Content-Type: application/json
 ### Create Payment Method Limit
 PATCH  {{baseUrl}}/payment-method-limits/{{paymentMethodLimitId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "payment_method_id": "{{paymentMethodId}}",
@@ -152,6 +172,8 @@ Content-Type: application/json
 
 ### Get Payment Method Limit by ID
 GET {{baseUrl}}/payment-method-limits/{{paymentMethodLimitId}}
+baggage: {{baggage}}
 
 ### Delete Payment Method Limit by ID
 DELETE  {{baseUrl}}/payment-method-limits/e8f2b12a-3677-4b0a-8582-50def77aa55c
+baggage: {{baggage}}

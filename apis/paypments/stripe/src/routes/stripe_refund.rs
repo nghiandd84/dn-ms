@@ -22,6 +22,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateRefund, CanDeleteRefund, CanReadRefund, CanUpdateRefund};
 use features_payments_stripe_service::StripeRefundService;
 
 const TAG: &str = "stripe_refund";
@@ -37,6 +40,7 @@ const TAG: &str = "stripe_refund";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_refund(
+    _auth: Auth<CanCreateRefund>,
     ValidJson(req): ValidJson<StripeRefundForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let refund_id = StripeRefundService::create_refund(req).await?;
@@ -54,7 +58,7 @@ async fn create_refund(
         (status = 200, description = "Refund retrieved successfully", body = StripeRefundData),
     )
 )]
-async fn get_refund(Path(refund_id): Path<Uuid>) -> Result<ResponseJson<StripeRefundData>> {
+async fn get_refund(_auth: Auth<CanReadRefund>, Path(refund_id): Path<Uuid>) -> Result<ResponseJson<StripeRefundData>> {
     let refund = StripeRefundService::get_refund_by_id(refund_id).await?;
     Ok(ResponseJson(refund))
 }
@@ -73,6 +77,7 @@ async fn get_refund(Path(refund_id): Path<Uuid>) -> Result<ResponseJson<StripeRe
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_refunds(
+    _auth: Auth<CanReadRefund>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
 ) -> Result<ResponseJson<QueryResult<StripeRefundData>>> {
@@ -94,6 +99,7 @@ async fn filter_refunds(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_refund(
+    _auth: Auth<CanUpdateRefund>,
     Path(refund_id): Path<Uuid>,
     ValidJson(req): ValidJson<StripeRefundForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -113,7 +119,7 @@ async fn update_refund(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_refund(Path(refund_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_refund(_auth: Auth<CanDeleteRefund>, Path(refund_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeRefundService::delete_refund(refund_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

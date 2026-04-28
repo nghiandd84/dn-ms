@@ -12,6 +12,9 @@ use features_translation_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateTag, CanDeleteTag, CanReadTag, CanUpdateTag};
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -36,7 +39,7 @@ const TAG: &str = "tag";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_tag(Json(req): Json<TagForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
+async fn create_tag(_auth: Auth<CanCreateTag>, Json(req): Json<TagForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let tag_id = TagService::create_tag(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -52,7 +55,7 @@ async fn create_tag(Json(req): Json<TagForCreateRequest>) -> Result<ResponseJson
         (status = 200, description = "Tag retrieved successfully", body = TagData),
     )
 )]
-async fn get_tag(Path(tag_id): Path<Uuid>) -> Result<ResponseJson<TagData>> {
+async fn get_tag(_auth: Auth<CanReadTag>, Path(tag_id): Path<Uuid>) -> Result<ResponseJson<TagData>> {
     let tag = TagService::get_tag_by_id(tag_id).await?;
     Ok(ResponseJson(tag))
 }
@@ -71,6 +74,7 @@ async fn get_tag(Path(tag_id): Path<Uuid>) -> Result<ResponseJson<TagData>> {
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_tags(
+    _auth: Auth<CanReadTag>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TagDataFilterParams>,
@@ -92,6 +96,7 @@ async fn filter_tags(
     )
 )]
 async fn update_tag(
+    _auth: Auth<CanUpdateTag>,
     Path(tag_id): Path<Uuid>,
     Json(req): Json<TagForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -110,7 +115,7 @@ async fn update_tag(
         (status = 200, description = "Tag deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_tag(Path(tag_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_tag(_auth: Auth<CanDeleteTag>, Path(tag_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TagService::delete_tag(tag_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

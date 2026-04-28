@@ -2,6 +2,7 @@
 @walletId = c6d7bac5-5304-4f2e-9e0b-63abe5a56c3f
 @topUpId = 12345678-1234-1234-1234-123456789abc
 @transactionId = 87654321-4321-4321-4321-210987654321
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -13,13 +14,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Wallets
 GET {{baseUrl}}/wallets
+baggage: {{baggage}}
 
 ### Search Wallets
 GET {{baseUrl}}/wallets?balance=gt|0.2&order_name=currency&order_direction=1
+baggage: {{baggage}}
 
 ### Create wallets
 POST {{baseUrl}}/wallets
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "balance": 0,
@@ -28,10 +32,12 @@ Content-Type: application/json
 
 ### Get Wallet By ID
 GET {{baseUrl}}/wallets/{{walletId}}
+baggage: {{baggage}}
 
 ### Update Wallet
 PATCH {{baseUrl}}/wallets/{{walletId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "is_active": true
@@ -39,12 +45,14 @@ Content-Type: application/json
 
 ### Delete Wallet
 DELETE {{baseUrl}}/wallets/dd7c55c7-82df-4987-b2e2-74466dd9b011
+baggage: {{baggage}}
 
 ### ===== Top-Up Transactions =====
 
 ### Create Top-Up Transaction
 POST {{baseUrl}}/wallets/{{walletId}}/top-ups
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "amount": 100.50,
@@ -55,16 +63,20 @@ Content-Type: application/json
 
 ### Get Top-Up Transaction by ID
 GET {{baseUrl}}/top-ups/{{topUpId}}
+baggage: {{baggage}}
 
 ### Get All Top-Up Transactions
 GET {{baseUrl}}/top-ups
+baggage: {{baggage}}
 
 ### Get Top-Up Transactions for Wallet
 GET {{baseUrl}}/wallets/{{walletId}}/top-ups
+baggage: {{baggage}}
 
 ### Update Top-Up Transaction
 PATCH {{baseUrl}}/top-ups/{{topUpId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "COMPLETED",
@@ -73,12 +85,14 @@ Content-Type: application/json
 
 ### Delete Top-Up Transaction
 DELETE {{baseUrl}}/top-ups/{{topUpId}}
+baggage: {{baggage}}
 
 ### ===== Transactions =====
 
 ### Create Transaction - Deposit
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -92,6 +106,7 @@ Content-Type: application/json
 ### Create Transaction - Withdrawal
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -105,6 +120,7 @@ Content-Type: application/json
 ### Create Transaction - Payment
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -118,6 +134,7 @@ Content-Type: application/json
 ### Create Transaction - Transfer
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -130,16 +147,20 @@ Content-Type: application/json
 
 ### Get Transaction by ID
 GET {{baseUrl}}/transactions/{{transactionId}}
+baggage: {{baggage}}
 
 ### Get All Transactions
 GET {{baseUrl}}/transactions
+baggage: {{baggage}}
 
 ### Get Transactions for Wallet
 GET {{baseUrl}}/wallets/{{walletId}}/transactions
+baggage: {{baggage}}
 
 ### Update Transaction
 PATCH {{baseUrl}}/transactions/{{transactionId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "COMPLETED",
@@ -148,6 +169,7 @@ Content-Type: application/json
 
 ### Delete Transaction
 DELETE {{baseUrl}}/transactions/{{transactionId}}
+baggage: {{baggage}}
 
 ### ===== Test Scenarios =====
 
@@ -155,6 +177,7 @@ DELETE {{baseUrl}}/transactions/{{transactionId}}
 # 1. Create a wallet
 POST {{baseUrl}}/wallets
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "balance": 0,
@@ -165,6 +188,7 @@ Content-Type: application/json
 # @name createTopUp
 POST {{baseUrl}}/wallets/{{walletId}}/top-ups
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "amount": 50.00,
@@ -176,10 +200,12 @@ Content-Type: application/json
 ### 3. Get the created top-up (use the ID from response)
 # @name getTopUp
 GET {{baseUrl}}/top-ups/{{$createTopUp.response.body.id}}
+baggage: {{baggage}}
 
 ### 4. Update the top-up status to completed
 PATCH {{baseUrl}}/top-ups/{{$createTopUp.response.body.id}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "COMPLETED"
@@ -187,12 +213,14 @@ Content-Type: application/json
 
 ### 5. Verify wallet balance was updated (this would require a wallet balance check endpoint)
 GET {{baseUrl}}/wallets/{{walletId}}
+baggage: {{baggage}}
 
 ### Scenario: Transaction Flow
 # 1. Create a deposit transaction
 # @name createDeposit
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -205,10 +233,12 @@ Content-Type: application/json
 
 ### 2. Get the created transaction
 GET {{baseUrl}}/transactions/{{$createDeposit.response.body.id}}
+baggage: {{baggage}}
 
 ### 3. Update transaction status
 PATCH {{baseUrl}}/transactions/{{$createDeposit.response.body.id}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "COMPLETED"
@@ -218,6 +248,7 @@ Content-Type: application/json
 # @name createWithdrawal
 POST {{baseUrl}}/transactions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -231,6 +262,7 @@ Content-Type: application/json
 ### 5. Update withdrawal status
 PATCH {{baseUrl}}/transactions/{{$createWithdrawal.response.body.id}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "COMPLETED"
@@ -240,6 +272,7 @@ Content-Type: application/json
 # Create multiple top-ups for testing
 POST {{baseUrl}}/wallets/{{walletId}}/top-ups
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "amount": 25.75,
@@ -251,6 +284,7 @@ Content-Type: application/json
 ###
 POST {{baseUrl}}/wallets/{{walletId}}/top-ups
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "amount": 10.00,
@@ -259,18 +293,22 @@ Content-Type: application/json
 
 ### List all top-ups with pagination
 GET {{baseUrl}}/top-ups?page=1&limit=10&order_name=created_at&order_direction=-1
+baggage: {{baggage}}
 
 ### Filter top-ups by status
 GET {{baseUrl}}/top-ups?status=eq|COMPLETED
+baggage: {{baggage}}
 
 ### Filter top-ups by method
 GET {{baseUrl}}/top-ups?method=eq|CARD
+baggage: {{baggage}}
 
 ### ===== P2P Transfer =====
 
 ### Create P2P Transfer
 POST {{baseUrl}}/p2p-transfers
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "from_wallet_id": "{{walletId}}",
@@ -281,16 +319,20 @@ Content-Type: application/json
 @p2pTransferId = 
 ### Get P2P Transfer by ID
 GET {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
+baggage: {{baggage}}
 
 ### Get All P2P Transfers
 GET {{baseUrl}}/p2p-transfers
+baggage: {{baggage}}
 
 ### Get Wallet P2P Transfers
 GET {{baseUrl}}/wallets/{{walletId}}/p2p-transfers
+baggage: {{baggage}}
 
 ### Update P2P Transfer
 PATCH {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "SUCCESS",
@@ -299,6 +341,7 @@ Content-Type: application/json
 
 ### Delete P2P Transfer
 DELETE {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
+baggage: {{baggage}}
 
 ### ===== Withdrawal =====
 
@@ -307,6 +350,7 @@ DELETE {{baseUrl}}/p2p-transfers/{{p2pTransferId}}
 ### Create Withdrawal
 POST {{baseUrl}}/wallets/{{walletId}}/withdrawals
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -316,16 +360,20 @@ Content-Type: application/json
 
 ### Get Withdrawal by ID
 GET {{baseUrl}}/withdrawals/{{withdrawalId}}
+baggage: {{baggage}}
 
 ### Get All Withdrawals
 GET {{baseUrl}}/withdrawals
+baggage: {{baggage}}
 
 ### Get Wallet Withdrawals
 GET {{baseUrl}}/wallets/{{walletId}}/withdrawals
+baggage: {{baggage}}
 
 ### Update Withdrawal
 PATCH {{baseUrl}}/withdrawals/{{withdrawalId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "SUCCESS",
@@ -334,6 +382,7 @@ Content-Type: application/json
 
 ### Delete Withdrawal
 DELETE {{baseUrl}}/withdrawals/{{withdrawalId}}
+baggage: {{baggage}}
 
 ### ===== P2P + Withdrawal Scenarios =====
 
@@ -342,6 +391,7 @@ DELETE {{baseUrl}}/withdrawals/{{withdrawalId}}
 # @name createTransfer
 POST {{baseUrl}}/p2p-transfers
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "from_wallet_id": "{{walletId}}",
@@ -352,6 +402,7 @@ Content-Type: application/json
 ### 2. Complete p2p transfer
 PATCH {{baseUrl}}/p2p-transfers/{{$createTransfer.response.body.id}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "SUCCESS"
@@ -361,6 +412,7 @@ Content-Type: application/json
 # @name createWithdrawal
 POST {{baseUrl}}/wallets/{{walletId}}/withdrawals
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "wallet_id": "{{walletId}}",
@@ -371,6 +423,7 @@ Content-Type: application/json
 ### 4. Complete withdrawal
 PATCH {{baseUrl}}/withdrawals/{{$createWithdrawal.response.body.id}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
     "status": "SUCCESS"
@@ -379,19 +432,24 @@ Content-Type: application/json
 ### Scenario: Transaction Filtering and Pagination
 ### List all transactions with pagination
 GET {{baseUrl}}/transactions?page=1&limit=5&order_name=created_at&order_direction=-1
+baggage: {{baggage}}
 
 ### Filter transactions by type
 GET {{baseUrl}}/transactions?transaction_type=eq|DEPOSIT
+baggage: {{baggage}}
 
 ### Filter transactions by status
 GET {{baseUrl}}/transactions?status=eq|COMPLETED
+baggage: {{baggage}}
 
 ### Filter transactions by amount range
 GET {{baseUrl}}/transactions?amount=gt|0
+baggage: {{baggage}}
 
 ### Filter transactions by currency
 GET {{baseUrl}}/transactions?currency=eq|USD
+baggage: {{baggage}}
 
 ### Filter transactions by wallet
 GET {{baseUrl}}/transactions?wallet_id=eq|{{walletId}}
-
+baggage: {{baggage}}

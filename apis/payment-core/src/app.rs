@@ -1,10 +1,15 @@
+use std::time::Duration;
+
 use axum::Router;
+use features_auth_remote::PermissionService;
+use tokio::{spawn, time::interval};
 use tracing::error;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use shared_shared_app::{
     config::AppConfig,
+    discovery::get_consul_client,
     event_task::{
         consumer::{consumer_task, ConsumerConfig},
         producer::{Producer, ProducerConfig},
@@ -41,6 +46,7 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
         app_state: &mut AppState<PaymentsCoreAppState, PaymentsCoreCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let clone_app_state = app_state.clone();
+        let mut perm_app_state = app_state.clone();
         let app_key = self.config.app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let event_kafka_group = if instance_id.is_ok() {
@@ -61,7 +67,6 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
             ))
             .await;
             tokio::spawn(async move {
-                // let clone_arc_state = Arc::clone(&arc_state);
                 if let Err(e) = consumer_task(
                     consumer_config,
                     clone_app_state,
@@ -72,6 +77,30 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
                 .await
                 {
                     error!("Error in consumer task: {:?}", e);
+                }
+            });
+
+            spawn(async move {
+                let service_key = "PAYMENT_CORE".to_string();
+                let mut interval = interval(Duration::from_secs(30));
+                loop {
+                    interval.tick().await;
+                    let consul_client = get_consul_client().unwrap();
+                    PermissionService::update_remote(&consul_client).await;
+                    let all_permissions =
+                        PermissionService::get_roles_by_service_name(service_key.clone()).await;
+                    for (role_name, permissions) in all_permissions {
+                        let mask_permissions = permissions
+                            .iter()
+                            .map(|perm| {
+                                (
+                                    perm.resource.clone().unwrap_or_default(),
+                                    perm.mask.unwrap_or(0) as u32,
+                                )
+                            })
+                            .collect();
+                        perm_app_state.set_permission_map(role_name, mask_permissions);
+                    }
                 }
             });
 

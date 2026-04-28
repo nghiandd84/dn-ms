@@ -3,6 +3,7 @@
 @keyId = 25511ecb-4222-4310-88a5-a0b0a06e803f
 @tagId = 6120a589-fec2-41fa-bedf-753c13c473ed
 @versionId = 251461a9-d91a-486f-8b95-bbb81df66833
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 ### healthchecker
 GET {{baseUrl}}/healthchecker
 
@@ -13,13 +14,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Projects
 GET {{baseUrl}}/projects
+baggage: {{baggage}}
 
 ### Search Projects
 GET {{baseUrl}}/projects?default_locale=li|en&order_name=default_locale&order_direction=1
+baggage: {{baggage}}
 
 ### Create Project
 POST {{baseUrl}}/projects
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "My App",
@@ -29,10 +33,12 @@ Content-Type: application/json
 
 ### Get Project By ID
 GET {{baseUrl}}/projects/{{projectId}}
+baggage: {{baggage}}
 
 ### Update Project
 PATCH {{baseUrl}}/projects/{{projectId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "My App Updated",
@@ -41,15 +47,18 @@ Content-Type: application/json
 
 ### Delete Project
 DELETE {{baseUrl}}/projects/{{projectId}}
+baggage: {{baggage}}
 
 ### ===== TRANSLATION KEYS =====
 
 ### Get All Translation Keys
 GET {{baseUrl}}/translation-keys
+baggage: {{baggage}}
 
 ### Create Translation Key
 POST {{baseUrl}}/translation-keys
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "project_id": "{{projectId}}",
@@ -59,13 +68,16 @@ Content-Type: application/json
 
 ### Get Translation Key By ID
 GET {{baseUrl}}/translation-keys/{{keyId}}
+baggage: {{baggage}}
 
 ### Get Translation Keys by Project
 GET {{baseUrl}}/projects/{{projectId}}/translation-keys
+baggage: {{baggage}}
 
 ### Update Translation Key
 PATCH {{baseUrl}}/translation-keys/{{keyId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "key_name": "welcome_message_updated",
@@ -75,6 +87,7 @@ Content-Type: application/json
 ### Assign Tag
 POST {{baseUrl}}/translation-keys/{{keyId}}/assign-tags
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "tag_ids": ["{{tagId}}", "96010d85-39d6-444f-9940-c0a85b9d97b3"]
@@ -83,6 +96,7 @@ Content-Type: application/json
 ### UnAssign Tag
 POST {{baseUrl}}/translation-keys/{{keyId}}/unassign-tags
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "tag_ids": ["{{tagId}}", "96010d85-39d6-444f-9940-c0a85b9d97b3"]
@@ -90,21 +104,26 @@ Content-Type: application/json
 
 ### Delete Translation Key
 DELETE {{baseUrl}}/translation-keys/{{keyId}}
+baggage: {{baggage}}
 
 ### ===== TAGS =====
 
 ### Get All Tags
 GET {{baseUrl}}/tags
+baggage: {{baggage}}
 
 ### Search Tags
 GET {{baseUrl}}/tags?name=li|ui&order_name=name&order_direction=-1
+baggage: {{baggage}}
 
 ###
 GET {{baseUrl}}/tags?name=li%7Cui&order_name=name&order_direction=-1
+baggage: {{baggage}}
 
 ### Create Tag
 POST {{baseUrl}}/tags
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "aui-new"
@@ -112,10 +131,12 @@ Content-Type: application/json
 
 ### Get Tag By ID
 GET {{baseUrl}}/tags/{{tagId}}
+baggage: {{baggage}}
 
 ### Update Tag
 PATCH {{baseUrl}}/tags/{{tagId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "name": "interface"
@@ -123,15 +144,18 @@ Content-Type: application/json
 
 ### Delete Tag
 DELETE {{baseUrl}}/tags/{{tagId}}
+baggage: {{baggage}}
 
 ### ===== TRANSLATION VERSIONS =====
 
 ### Get All Translation Versions
 GET {{baseUrl}}/translation-versions?version_number=eq|2
+baggage: {{baggage}}
 
 ### Create Translation Version
 POST {{baseUrl}}/translation-versions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "key_id": "{{keyId}}",
@@ -143,13 +167,16 @@ Content-Type: application/json
 
 ### Get Translation Version By ID
 GET {{baseUrl}}/translation-versions/{{versionId}}
+baggage: {{baggage}}
 
 ### Get Latest Translation Version
 GET {{baseUrl}}/translation-keys/{{keyId}}/versions/latest?locale=li|en&status=eq|published
+baggage: {{baggage}}
 
 ### Update Translation Version
 PATCH {{baseUrl}}/translation-versions/{{versionId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "content": "Welcome to our awesome application",
@@ -158,3 +185,4 @@ Content-Type: application/json
 
 ### Delete Translation Version
 DELETE {{baseUrl}}/translation-versions/feb72e59-593c-4eb8-aae5-08e85b1f4f13
+baggage: {{baggage}}

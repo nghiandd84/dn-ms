@@ -6,6 +6,7 @@ use axum::{
 use features_bakery_service::cake_bakers::CakeBakerMutation;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, Result},
@@ -13,6 +14,8 @@ use shared_shared_data_app::{
 
 use features_bakery_entities::cakes_bakers::CakeBakerForCreateDto;
 use features_bakery_model::{cakes_bakers::CakeBakerForCreateRequest, state::BakeryCacheState};
+
+use crate::permission::{CanCreateCakeBaker, CanDeleteCakeBaker};
 
 const TAG: &str = "cake-bakers";
 
@@ -27,6 +30,7 @@ const TAG: &str = "cake-bakers";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateCakeBaker>,
     ValidJson(request): ValidJson<CakeBakerForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let dto: CakeBakerForCreateDto = request.into();
@@ -46,7 +50,7 @@ async fn create(
         (status = 200, description = "Cake Baker is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(Path((cake_id, baker_id)): Path<(i32, i32)>) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(_auth: Auth<CanDeleteCakeBaker>, Path((cake_id, baker_id)): Path<(i32, i32)>) -> Result<ResponseJson<OkI32>> {
     CakeBakerMutation::delete(cake_id, baker_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }

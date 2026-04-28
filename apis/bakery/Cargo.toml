@@ -35,6 +35,8 @@ shared-shared-auth = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-app =  { workspace = true }
 
+features-auth-remote = { workspace = true }
+
 features-bakery-migrations = { workspace = true }
 features-bakery-model = { workspace = true }
 features-bakery-entities = { workspace = true }

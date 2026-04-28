@@ -34,6 +34,8 @@ shared-shared-data-core = { workspace = true }
 shared-shared-data-app =  { workspace = true }
 shared-shared-data-auth =  { workspace = true }
 
+features-auth-remote = { workspace = true }
+
 features-email-template-entities = { workspace = true }
 features-email-template-migrations = { workspace = true }
 features-email-template-model = { workspace = true }

@@ -27,6 +27,9 @@ use features_wallet_model::{
         WithdrawalForUpdateRequest,
     },
 };
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateWithdrawal, CanReadWithdrawal, CanUpdateWithdrawal};
 use features_wallet_service::WithdrawalService;
 
 const TAG: &str = "withdrawal";
@@ -42,6 +45,7 @@ const TAG: &str = "withdrawal";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_withdrawal(
+    _auth: Auth<CanCreateWithdrawal>,
     idempotency_key: IdempotencyKey,
     Path(wallet_id): Path<Uuid>,
     ValidJson(mut req): ValidJson<WithdrawalForCreateRequest>,
@@ -68,7 +72,10 @@ async fn create_withdrawal(
         (status = 200, description = "Withdrawal retrieved", body = WithdrawalData),
     )
 )]
-async fn get_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJson<WithdrawalData>> {
+async fn get_withdrawal(
+    _auth: Auth<CanReadWithdrawal>,
+    Path(withdrawal_id): Path<Uuid>,
+) -> Result<ResponseJson<WithdrawalData>> {
     let withdrawal = WithdrawalService::get_withdrawal_by_id(withdrawal_id).await?;
     Ok(ResponseJson(withdrawal))
 }
@@ -84,6 +91,7 @@ async fn get_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJson<
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_withdrawals(
+    _auth: Auth<CanReadWithdrawal>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<WithdrawalDataFilterParams>,
@@ -106,6 +114,7 @@ async fn filter_withdrawals(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn get_wallet_withdrawals(
+    _auth: Auth<CanReadWithdrawal>,
     Path(wallet_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -128,6 +137,7 @@ async fn get_wallet_withdrawals(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_withdrawal(
+    _auth: Auth<CanUpdateWithdrawal>,
     _idempotency_key: IdempotencyKey,
     Path(withdrawal_id): Path<Uuid>,
     ValidJson(req): ValidJson<WithdrawalForUpdateRequest>,
@@ -148,7 +158,10 @@ async fn update_withdrawal(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_withdrawal(Path(withdrawal_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_withdrawal(
+    _auth: Auth<CanCreateWithdrawal>,
+    Path(withdrawal_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     WithdrawalService::delete_withdrawal(withdrawal_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

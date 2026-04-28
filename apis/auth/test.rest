@@ -1,4 +1,3 @@
-
 ### Variables
 @baseUrl = http://localhost:5011
 # @baseUrl = http://localhost:6101
@@ -7,6 +6,7 @@
 # @authCode = 
 @AccessToken = 
 @RefreshToken = 
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 @userEmail = nghiandd@gmail.com
 @userPassword = Test@123456
@@ -105,18 +105,22 @@ Content-Type: application/json
 ### Delete User
 DELETE {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get User
 GET {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Finds User
 GET {{baseUrl}}/users?page_size=1&page=4&first_name=li|nghia_like&last_name=eq|nghia_equal&age=lte|12&email=eq|nghia@test.com&id=eq|4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Finds User
 GET {{baseUrl}}/users?page_size=10&page=1&&order_name=first_name&order_direction=-1
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -127,16 +131,19 @@ tracestate: 00-6eac2b714dd57b47498837ce4b023876-c8e10305886ac80f-01
 ### Finds User in id array
 GET {{baseUrl}}/users?page_size=10&page=1&id=in|{{userId}},4df3f7dd-e618-4254-9330-f1d9aa65f129
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get Test Users 
 GET {{baseUrl}}/test_users
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### ROLES
 @roleId = b3298a2b-3a6d-40e3-8938-d4c213c589d3
 ### Role
 POST {{baseUrl}}/roles
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "client_id": "{{clientId}}",
@@ -147,27 +154,33 @@ Content-Type: application/json
 ### Get All Roles
 GET {{baseUrl}}/roles?page=0&page_size=10
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get Roles with condition OR
 GET {{baseUrl}}/roles?name=li|GUEST&description=li|all&_condition=or&page=0&page_size=10
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get All Roles with permissions
 GET {{baseUrl}}/roles?includes=permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Search Roles by permissions[resource]
 GET {{baseUrl}}/roles?permissions[resource]=sw|LOOKUP
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get All Roles with permissions filtered by resource
 GET {{baseUrl}}/roles?includes=permissions&permissions[resource]=sw|LOOKUP
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Get Role by Id
 GET {{baseUrl}}/roles/{{roleId}}?includes=permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### PERMISSIONS
 
@@ -176,6 +189,7 @@ Content-Type: application/json
 ### Create Permission
 POST {{baseUrl}}/permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "resource": "AUTH_MANAGE_USERS",
@@ -186,10 +200,12 @@ Content-Type: application/json
 ### Get Permission by Id
 GET {{baseUrl}}/permissions/{{permissionId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Update Permission
 PATCH {{baseUrl}}/permissions/{{permissionId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "resource": "AUTH_MANAGE_USERS",
@@ -200,18 +216,22 @@ Content-Type: application/json
 ### Delete Permission
 DELETE {{baseUrl}}/permissions/2fd08099-b0da-40aa-a3ff-eb2c643df3db
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Permissions
 GET {{baseUrl}}/permissions?page=1&page_size=20
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Permissions by resource
 GET {{baseUrl}}/permissions?resource=sw|AUTH&page=1&page_size=20
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Assign Permissions to Role
 POST {{baseUrl}}/roles/{{roleId}}/assign-permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "permission_ids": ["{{permissionId}}"]
@@ -220,6 +240,7 @@ Content-Type: application/json
 ### Unassign Permissions from Role
 POST {{baseUrl}}/roles/{{roleId}}/unassign-permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "permission_ids": ["{{permissionId}}"]
@@ -228,6 +249,7 @@ Content-Type: application/json
 ### Get Permissions by Role
 GET {{baseUrl}}/roles/{{roleId}}/permissions
 Content-Type: application/json
+baggage: {{baggage}}
 
 
 ### Logout
@@ -240,6 +262,7 @@ Content-Type: application/json
 ### Get Client
 POST {{baseUrl}}/clients
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "allowed_grants": [
@@ -258,14 +281,17 @@ Content-Type: application/json
 ### Get Client
 GET {{baseUrl}}/clients/{{clientId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Client
 GET {{baseUrl}}/clients?client_secret=li|sec&allowed_grants=in|type2,type12
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### Filter Client
 GET {{baseUrl}}/clients?sec&allowed_grants=nin|auth_code
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### TOKEN
 
@@ -315,8 +341,9 @@ Content-Type: application/json
 ### Test
 GET {{baseUrl}}/permissions?resource=sw|LOOKUP&page=1&page_size=20
 Content-Type: application/json
+baggage: {{baggage}}
 
 ### GET PERMISION of Service AUTH
 GET {{baseUrl}}/permissions?resource=sw|AUTH&page=1&page_size=20
 Content-Type: application/json
-baggage: accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
+baggage: {{baggage}}

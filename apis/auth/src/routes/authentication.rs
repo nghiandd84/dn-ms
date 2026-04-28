@@ -9,6 +9,7 @@ use features_auth_model::{
 };
 use features_auth_stream::PRODUCER_KEY;
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::PublicAccess;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -32,6 +33,7 @@ const TAG: &str = "request";
     )
 )]
 async fn request_code(
+    _public: PublicAccess,
     ValidJson(request): ValidJson<AuthenticationCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let request_id = AuthenticationRequestService::request(request.into()).await?;
@@ -51,6 +53,7 @@ async fn request_code(
     )
 )]
 async fn request_login(
+    _public: PublicAccess,
     ValidJson(request): ValidJson<AuthLoginRequest>,
 ) -> Result<ResponseJson<AuthLoginData>> {
     let login_data = AuthenticationRequestService::login(request).await?;
@@ -67,6 +70,7 @@ async fn request_login(
     )
 )]
 async fn request_register(
+    _public: PublicAccess,
     State(state): State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<AuthRegisterRequest>,
 ) -> Result<ResponseJson<AuthRegisterData>> {

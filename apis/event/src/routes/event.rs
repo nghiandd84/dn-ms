@@ -22,6 +22,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateEvent, CanDeleteEvent, CanReadEvent, CanUpdateEvent};
 use features_event_service::EventService;
 use features_event_stream::PRODUCER_KEY;
 
@@ -38,6 +41,7 @@ const TAG: &str = "event";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_event(
+    _auth: Auth<CanCreateEvent>,
     state: State<AppState<EventAppState, EventCacheState>>,
     Json(req): Json<EventForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -59,7 +63,7 @@ async fn create_event(
         (status = 200, description = "Event retrieved successfully", body = EventData),
     )
 )]
-async fn get_event(Path(event_id): Path<Uuid>) -> Result<ResponseJson<EventData>> {
+async fn get_event(_auth: Auth<CanReadEvent>, Path(event_id): Path<Uuid>) -> Result<ResponseJson<EventData>> {
     let event = EventService::get_event_by_id(event_id).await?;
     Ok(ResponseJson(event))
 }
@@ -78,6 +82,7 @@ async fn get_event(Path(event_id): Path<Uuid>) -> Result<ResponseJson<EventData>
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_events(
+    _auth: Auth<CanReadEvent>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<EventDataFilterParams>,
@@ -100,6 +105,7 @@ async fn filter_events(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_event(
+    _auth: Auth<CanUpdateEvent>,
     state: State<AppState<EventAppState, EventCacheState>>,
     Path(event_id): Path<Uuid>,
     Json(req): Json<EventForUpdateRequest>,
@@ -123,7 +129,7 @@ async fn update_event(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_event(Path(event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_event(_auth: Auth<CanDeleteEvent>, Path(event_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     EventService::delete_event(event_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

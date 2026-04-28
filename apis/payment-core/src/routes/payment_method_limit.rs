@@ -6,6 +6,12 @@ use axum::{
 use tracing::{instrument, Level};
 use uuid::Uuid;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateMethodLimit, CanDeleteMethodLimit, CanReadMethodLimit, CanUpdateMethodLimit,
+};
+
 use features_payments_core_model::{
     payment_method_limit::{
         PaymentMethodLimitData, PaymentMethodLimitDataFilterParams,
@@ -40,6 +46,7 @@ const TAG: &str = "payment-method-limit";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_payment_method_limit(
+    _auth: Auth<CanCreateMethodLimit>,
     ValidJson(req): ValidJson<PaymentMethodLimitForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_method_limit_id =
@@ -59,6 +66,7 @@ pub async fn create_payment_method_limit(
     )
 )]
 pub async fn get_payment_method_limit(
+    _auth: Auth<CanReadMethodLimit>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<PaymentMethodLimitData>> {
     let payment_method_limit =
@@ -80,6 +88,7 @@ pub async fn get_payment_method_limit(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn filter_payment_method_limits(
+    _auth: Auth<CanReadMethodLimit>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<PaymentMethodLimitDataFilterParams>,
@@ -103,6 +112,7 @@ pub async fn filter_payment_method_limits(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment_method_limit(
+    _auth: Auth<CanUpdateMethodLimit>,
     Path(payment_method_limit_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentMethodLimitForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -123,6 +133,7 @@ pub async fn update_payment_method_limit(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_payment_method_limit(
+    _auth: Auth<CanDeleteMethodLimit>,
     Path(payment_method_limit_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     PaymentMethodLimitService::delete_payment_method_limit(payment_method_limit_id).await?;

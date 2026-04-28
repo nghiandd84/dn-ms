@@ -1,5 +1,6 @@
 @baseUrl = http://localhost:5131
 @merchantId = mch_7993b79cadbc4612
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -11,13 +12,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Merchants
 GET {{baseUrl}}/merchants
+baggage: {{baggage}}
 
 ### Search Merchants
 GET {{baseUrl}}/merchants?status=li|INACTIVE&order_name=business_name&order_direction=1
+baggage: {{baggage}}
 
 ### Create Merchant
 POST {{baseUrl}}/merchants
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "business_name": "Acme Corp",
@@ -30,13 +34,16 @@ Content-Type: application/json
 
 ### Get Merchant By ID
 GET {{baseUrl}}/merchants/{{merchantId}}
+baggage: {{baggage}}
 
 ### Get API Keys by Merchant
 GET {{baseUrl}}/merchants/{{merchantId}}/api-keys
+baggage: {{baggage}}
 
 ### Update Merchant
 PATCH {{baseUrl}}/merchants/{{merchantId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "business_name": "Acme Corp Updated",
@@ -45,12 +52,14 @@ Content-Type: application/json
 
 ### Delete Merchant
 DELETE {{baseUrl}}/merchants/mch_2c60d3fe5aeb4736
+baggage: {{baggage}}
 
 ### ===== API KEYS =====
 
 ### Create API Key
 POST {{baseUrl}}/api-keys
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "environment": "production",
@@ -61,15 +70,18 @@ Content-Type: application/json
 ### Get API Key By ID
 @apiKeyId = 1
 GET {{baseUrl}}/api-keys/{{apiKeyId}}
+baggage: {{baggage}}
 
 
 
 ### Get API Keys (filter/pagination)
 GET {{baseUrl}}/api-keys?page=1&size=20&order_name=created_at&order_direction=1
+baggage: {{baggage}}
 
 ### Update API Key
 PATCH {{baseUrl}}/api-keys/{{apiKeyId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "environment": "staging",
@@ -78,6 +90,7 @@ Content-Type: application/json
 
 ### Delete API Key
 DELETE {{baseUrl}}/api-keys/2
+baggage: {{baggage}}
 
 ### ===== WEBHOOKS =====
 
@@ -85,10 +98,12 @@ DELETE {{baseUrl}}/api-keys/2
 
 ### Get Webhooks 
 GET {{baseUrl}}/webhooks
+baggage: {{baggage}}
 
 ### Create Webhook
 POST {{baseUrl}}/webhooks
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "merchant_id": "{{merchantId}}",
@@ -100,13 +115,16 @@ Content-Type: application/json
 
 ### Get Webhook By ID
 GET {{baseUrl}}/webhooks/{{webhookId}}
+baggage: {{baggage}}
 
 ### Get Webhooks (filter/pagination)
 GET {{baseUrl}}/webhooks?page=1&size=20&order_name=created_at&order_direction=1
+baggage: {{baggage}}
 
 ### Update Webhook
 PATCH {{baseUrl}}/webhooks/{{webhookId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "url": "https://example.com/updated-webhook",
@@ -116,3 +134,4 @@ Content-Type: application/json
 
 ### Delete Webhook
 DELETE {{baseUrl}}/webhooks/1ba9e455-86dd-48b4-9955-48643497085c
+baggage: {{baggage}}

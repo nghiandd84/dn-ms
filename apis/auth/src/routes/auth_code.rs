@@ -15,6 +15,7 @@ use features_auth_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -26,6 +27,8 @@ use shared_shared_data_core::{
 
 use features_auth_model::state::AuthAppState;
 use features_auth_repo::auth_code::{AuthCodeMutation, AuthCodeQuery};
+
+use crate::permission::{CanCreateAuthCode, CanDeleteAuthCode, CanReadAuthCode};
 
 const TAG: &str = "auth_code";
 
@@ -39,6 +42,7 @@ const TAG: &str = "auth_code";
     )
 )]
 async fn create_auth_code(
+    _auth: Auth<CanCreateAuthCode>,
     ValidJson(register_request): ValidJson<AuthCodeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: AuthCodeForCreateDto = register_request.into();
@@ -57,7 +61,10 @@ async fn create_auth_code(
         (status = 200, description = "Auth Code is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_auth_code(
+    _auth: Auth<CanDeleteAuthCode>,
+    Path(auth_code_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     AuthCodeMutation::delete(auth_code_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -70,7 +77,10 @@ async fn delete_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson
         (status = 200, description = "Auth Code Data", body = AuthCodeDataResponse),       
     )
 )]
-async fn get_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson<AuthCodeData>> {
+async fn get_auth_code(
+    _auth: Auth<CanReadAuthCode>,
+    Path(auth_code_id): Path<Uuid>,
+) -> Result<ResponseJson<AuthCodeData>> {
     let auth_code = AuthCodeQuery::get(auth_code_id).await?;
     Ok(ResponseJson(auth_code))
 }
@@ -88,6 +98,7 @@ async fn get_auth_code(Path(auth_code_id): Path<Uuid>) -> Result<ResponseJson<Au
     )
 )]
 async fn filter_auth_codes(
+    _auth: Auth<CanReadAuthCode>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<AuthCodeDataFilterParams>,

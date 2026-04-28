@@ -11,6 +11,10 @@ use features_merchant_model::api_key::{
 use features_merchant_model::state::{MerchantAppState, MerchantCacheState};
 use features_merchant_service::ApiKeyService;
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateApiKey, CanDeleteApiKey, CanReadApiKey, CanUpdateApiKey};
+
 use shared_shared_app::state::AppState;
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -35,6 +39,7 @@ const TAG: &str = "api_key";
 )]
 #[instrument(skip_all)]
 async fn create_api_key(
+    _auth: Auth<CanCreateApiKey>,
     ValidJson(req): ValidJson<ApiKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let id = ApiKeyService::create_api_key(req).await?;
@@ -52,7 +57,7 @@ async fn create_api_key(
         (status = 200, description = "API key retrieved", body = ApiKeyData),
     )
 )]
-async fn get_api_key(Path(api_key_id): Path<i32>) -> Result<ResponseJson<ApiKeyData>> {
+async fn get_api_key(_auth: Auth<CanReadApiKey>, Path(api_key_id): Path<i32>) -> Result<ResponseJson<ApiKeyData>> {
     let item = ApiKeyService::get_api_key_by_id(api_key_id).await?;
     Ok(ResponseJson(item))
 }
@@ -71,6 +76,7 @@ async fn get_api_key(Path(api_key_id): Path<i32>) -> Result<ResponseJson<ApiKeyD
 )]
 #[instrument(skip_all)]
 async fn filter_api_keys(
+    _auth: Auth<CanReadApiKey>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ApiKeyDataFilterParams>,
@@ -93,6 +99,7 @@ async fn filter_api_keys(
 )]
 #[instrument(skip_all)]
 async fn update_api_key(
+    _auth: Auth<CanUpdateApiKey>,
     Path(api_key_id): Path<i32>,
     ValidJson(req): ValidJson<ApiKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
@@ -112,7 +119,7 @@ async fn update_api_key(
     )
 )]
 #[instrument(skip_all)]
-async fn delete_api_key(Path(api_key_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
+async fn delete_api_key(_auth: Auth<CanDeleteApiKey>, Path(api_key_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     ApiKeyService::delete_api_key(api_key_id).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,

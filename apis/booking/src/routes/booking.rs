@@ -14,6 +14,7 @@ use features_booking_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -24,6 +25,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use crate::permission::{CanCreateBooking, CanDeleteBooking, CanReadBooking, CanUpdateBooking};
 use features_booking_service::BookingService;
 
 const TAG: &str = "booking";
@@ -39,6 +41,7 @@ const TAG: &str = "booking";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_booking(
+    _auth: Auth<CanCreateBooking>,
     ValidJson(req): ValidJson<BookingForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let booking_id = BookingService::create_booking(req).await?;
@@ -56,7 +59,10 @@ async fn create_booking(
         (status = 200, description = "Booking retrieved successfully", body = BookingData),
     )
 )]
-async fn get_booking(Path(booking_id): Path<Uuid>) -> Result<ResponseJson<BookingData>> {
+async fn get_booking(
+    _auth: Auth<CanReadBooking>,
+    Path(booking_id): Path<Uuid>,
+) -> Result<ResponseJson<BookingData>> {
     let booking = BookingService::get_booking_by_id(booking_id).await?;
     Ok(ResponseJson(booking))
 }
@@ -75,6 +81,7 @@ async fn get_booking(Path(booking_id): Path<Uuid>) -> Result<ResponseJson<Bookin
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_bookings(
+    _auth: Auth<CanReadBooking>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<BookingDataFilterParams>,
@@ -97,6 +104,7 @@ async fn filter_bookings(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_booking(
+    _auth: Auth<CanUpdateBooking>,
     Path(booking_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -116,7 +124,10 @@ async fn update_booking(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_booking(Path(booking_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_booking(
+    _auth: Auth<CanDeleteBooking>,
+    Path(booking_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     BookingService::delete_booking(booking_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

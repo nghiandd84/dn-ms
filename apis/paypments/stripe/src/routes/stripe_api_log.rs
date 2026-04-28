@@ -24,6 +24,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateApiLog, CanDeleteApiLog, CanReadApiLog, CanUpdateApiLog};
 use features_payments_stripe_service::StripeApiLogService;
 
 const TAG: &str = "stripe_api_log";
@@ -39,6 +42,7 @@ const TAG: &str = "stripe_api_log";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_api_log(
+    _auth: Auth<CanCreateApiLog>,
     ValidJson(req): ValidJson<StripeApiLogForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let api_log_id = StripeApiLogService::create_api_log(req).await?;
@@ -56,7 +60,7 @@ async fn create_api_log(
         (status = 200, description = "API log retrieved successfully", body = StripeApiLogData),
     )
 )]
-async fn get_api_log(Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<StripeApiLogData>> {
+async fn get_api_log(_auth: Auth<CanReadApiLog>, Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<StripeApiLogData>> {
     let api_log = StripeApiLogService::get_api_log_by_id(api_log_id).await?;
     Ok(ResponseJson(api_log))
 }
@@ -75,6 +79,7 @@ async fn get_api_log(Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<Stripe
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_api_logs(
+    _auth: Auth<CanReadApiLog>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
 ) -> Result<ResponseJson<QueryResult<StripeApiLogData>>> {
@@ -96,6 +101,7 @@ async fn filter_api_logs(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_api_log(
+    _auth: Auth<CanUpdateApiLog>,
     Path(api_log_id): Path<Uuid>,
     ValidJson(req): ValidJson<StripeApiLogForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -115,7 +121,7 @@ async fn update_api_log(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_api_log(Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_api_log(_auth: Auth<CanDeleteApiLog>, Path(api_log_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     StripeApiLogService::delete_api_log(api_log_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

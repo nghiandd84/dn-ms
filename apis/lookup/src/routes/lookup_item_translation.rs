@@ -18,6 +18,7 @@ use features_lookup_model::state::{LookupAppState, LookupCacheState};
 use features_lookup_service::lookup_item_translation::LookupItemTranslationService;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::result::{OkUuid, OkUuidResponse, Result};
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -25,6 +26,11 @@ use shared_shared_data_app::{
 };
 
 const TAG: &str = "lookup-item-translation";
+
+use crate::permission::{
+    CanCreateLookupItemTranslation, CanDeleteLookupItemTranslation,
+    CanUpdateLookupItemTranslation,
+};
 
 #[utoipa::path(
     get,
@@ -36,6 +42,7 @@ const TAG: &str = "lookup-item-translation";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn get_translations(
+    _public: PublicAccess,
     Path((_type_code, item_id)): Path<(String, Uuid)>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -65,6 +72,7 @@ pub async fn get_translations(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_translation(
+    _auth: Auth<CanCreateLookupItemTranslation>,
     Path((_type_code, item_id)): Path<(String, Uuid)>,
     ValidJson(mut req): ValidJson<LookupItemTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -87,6 +95,7 @@ pub async fn create_translation(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_translation(
+    _auth: Auth<CanUpdateLookupItemTranslation>,
     Path((_type_code, item_id, item_translation_id)): Path<(String, Uuid, Uuid)>,
     ValidJson(req): ValidJson<LookupItemTranslationForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -107,6 +116,7 @@ pub async fn update_translation(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn delete_translation(
+    _auth: Auth<CanDeleteLookupItemTranslation>,
     Path((_type_code, _item_id, item_translation_id)): Path<(String, Uuid, Uuid)>,
 ) -> Result<ResponseJson<OkUuid>> {
     LookupItemTranslationService::delete_translation(item_translation_id).await?;

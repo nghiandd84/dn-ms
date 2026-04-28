@@ -1,6 +1,7 @@
 @baseUrl = http://localhost:5081
 @reservationId = dd63b490-514e-46c9-88e1-71900e518184
 @seatId = c98421b1-0150-4175-b170-2a4ae35ce83b
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -12,13 +13,16 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Reservations
 GET {{baseUrl}}/reservations
+baggage: {{baggage}}
 
 ### Search Reservations
 GET {{baseUrl}}/reservations?status=li|UPCOMING&order_name=event_name&order_direction=1
+baggage: {{baggage}}
 
 ### Create Reservation
 POST {{baseUrl}}/reservations
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "seat_id": "{{seatId}}",
@@ -30,10 +34,12 @@ Content-Type: application/json
 
 ### Get Reservation By ID
 GET {{baseUrl}}/reservations/{{reservationId}}
+baggage: {{baggage}}
 
 ### Update Reservation
 PATCH {{baseUrl}}/reservations/{{reservationId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "status": "COMING_SOON"
@@ -41,6 +47,7 @@ Content-Type: application/json
 
 ### Delete Reservation
 DELETE {{baseUrl}}/reservations/93693a9a-11a1-4d9a-a889-6938cbf31ce1
+baggage: {{baggage}}
 
 
 
@@ -48,13 +55,16 @@ DELETE {{baseUrl}}/reservations/93693a9a-11a1-4d9a-a889-6938cbf31ce1
 
 ### Get All SEATS
 GET {{baseUrl}}/seats
+baggage: {{baggage}}
 
 ### Search seat
 GET {{baseUrl}}/seats?seat_number=li|N1&order_name=created_at&order_direction=1
+baggage: {{baggage}}
 
 ### Create seat
 POST {{baseUrl}}/seats
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "event_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -67,10 +77,12 @@ Content-Type: application/json
 
 ### Get seats By ID
 GET {{baseUrl}}/seats/{{seatId}}
+baggage: {{baggage}}
 
 ### Update Reservation
 PATCH {{baseUrl}}/seats/{{seatId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "section": "S1 UPDATE"
@@ -78,3 +90,4 @@ Content-Type: application/json
 
 ### Delete seat
 DELETE {{baseUrl}}/seats/a60a811a-066b-42c5-9106-a50c442f25ab
+baggage: {{baggage}}

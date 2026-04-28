@@ -1,10 +1,15 @@
+use std::time::Duration;
+
 use axum::Router;
+use features_auth_remote::PermissionService;
+use tokio::{spawn, time::interval};
 use tracing::debug;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use shared_shared_app::{
     config::AppConfig,
+    discovery::get_consul_client,
     event_task::producer::{Producer, ProducerConfig},
     start_app::StartApp,
     state::AppState,
@@ -35,13 +40,17 @@ impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
         &self.config
     }
 
+    fn public_paths(&self) -> &'static [&'static str] {
+        &["/login", "/register", "/token"]
+    }
+
     fn custom_handler(
         &self,
         app_state: &mut AppState<AuthAppState, AuthCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
+        let mut clone_app_state = app_state.clone();
+        let app_key = self.config.app_key.clone();
         async move {
-            let app_key = self.config.app_key.clone();
-
             let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
             let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
 
@@ -49,8 +58,32 @@ impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
                 ProducerConfig::from_env(kafka_server_env.clone(), kafka_topic_env.clone());
             debug!("Creating Kafka producer with config {:?}", producer_config);
             let producer = Producer::from_config(producer_config).await;
-            app_state.set_producer(PRODUCER_KEY.to_string(), producer);
+            clone_app_state.set_producer(PRODUCER_KEY.to_string(), producer);
 
+            spawn(async move {
+                let service_key = "AUTH".to_string();
+                let mut interval = interval(Duration::from_secs(30));
+                loop {
+                    interval.tick().await;
+                    debug!("Call API Permission to get permission by service name: {}", service_key);
+                    let consul_client = get_consul_client().unwrap();
+                    PermissionService::update_remote(&consul_client).await;
+                    let all_permissions =
+                        PermissionService::get_roles_by_service_name(service_key.clone()).await;
+                    for (role_name, permissions) in all_permissions {
+                        let mask_permissions = permissions
+                            .iter()
+                            .map(|perm| {
+                                (
+                                    perm.resource.clone().unwrap_or_default(),
+                                    perm.mask.unwrap_or(0) as u32,
+                                )
+                            })
+                            .collect();
+                        clone_app_state.set_permission_map(role_name, mask_permissions);
+                    }
+                }
+            });
             Ok(())
         }
     }

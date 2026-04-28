@@ -33,6 +33,10 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
         &self.config
     }
 
+    fn public_paths(&self) -> &'static [&'static str] {
+        &["/lookup-types"]
+    }
+
     fn migrate(
         &self,
         db: &Database,

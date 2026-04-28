@@ -15,6 +15,7 @@ use features_booking_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -25,6 +26,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use crate::permission::{CanCreateSeat, CanDeleteSeat, CanReadSeat, CanUpdateSeat};
 use features_booking_service::BookingSeatService;
 
 const TAG: &str = "booking_seat";
@@ -40,6 +42,7 @@ const TAG: &str = "booking_seat";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_booking_seat(
+    _auth: Auth<CanCreateSeat>,
     ValidJson(req): ValidJson<BookingSeatForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let booking_seat_id = BookingSeatService::create_booking_seat(req).await?;
@@ -58,6 +61,7 @@ async fn create_booking_seat(
     )
 )]
 async fn get_booking_seat(
+    _auth: Auth<CanReadSeat>,
     Path(booking_seat_id): Path<Uuid>,
 ) -> Result<ResponseJson<BookingSeatData>> {
     let booking_seat = BookingSeatService::get_booking_seat_by_id(booking_seat_id).await?;
@@ -78,6 +82,7 @@ async fn get_booking_seat(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_booking_seats(
+    _auth: Auth<CanReadSeat>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<BookingSeatDataFilterParams>,
@@ -100,6 +105,7 @@ async fn filter_booking_seats(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_booking_seat(
+    _auth: Auth<CanUpdateSeat>,
     Path(booking_seat_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingSeatForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -119,7 +125,10 @@ async fn update_booking_seat(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_booking_seat(Path(booking_seat_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_booking_seat(
+    _auth: Auth<CanDeleteSeat>,
+    Path(booking_seat_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     BookingSeatService::delete_booking_seat(booking_seat_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

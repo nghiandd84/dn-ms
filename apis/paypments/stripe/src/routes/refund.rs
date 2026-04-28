@@ -18,6 +18,7 @@ pub struct RefundResponse {
 }
 
 pub async fn create_refund(
+    _public: PublicAccess,
     State(state): State<Arc<AppState>>,
     Json(req): Json<RefundRequest>,
 ) -> Result<Json<RefundResponse>, String> {

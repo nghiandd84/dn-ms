@@ -1,10 +1,12 @@
 use axum::{extract::State, http::HeaderMap, Router};
+use shared_shared_auth::permission::PublicAccess;
 use std::sync::Arc;
 use stripe::{EventType, Webhook};
 
 use crate::app::AppState;
 
 pub async fn handle_webhook(
+    _public: PublicAccess,
     State(_state): State<Arc<AppState>>,
     headers: HeaderMap,
     payload: String,

@@ -35,6 +35,8 @@ shared-shared-data-error = { workspace = true }
 shared-shared-data-app =  { workspace = true }
 shared-shared-data-auth =  { workspace = true }
 
+features-auth-remote = { workspace = true }
+
 features-auth-migrations = { workspace = true }
 features-auth-model = { workspace = true }
 features-auth-entities = { workspace = true }

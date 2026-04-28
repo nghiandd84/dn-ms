@@ -1,6 +1,7 @@
 use axum::{routing::post, Router};
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::PublicAccess;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -21,6 +22,7 @@ use features_auth_service::RegisterService;
     )
 )]
 async fn register(
+    _public: PublicAccess,
     ValidJson(register_request): ValidJson<UserForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let result = RegisterService::register(register_request).await;

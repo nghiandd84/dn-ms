@@ -23,6 +23,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateWallet, CanDeleteWallet, CanReadWallet, CanUpdateWallet};
 use features_wallet_service::{TopUpTransactionService, TransactionService, WalletService};
 
 const TAG: &str = "wallet";
@@ -38,6 +41,7 @@ const TAG: &str = "wallet";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_wallet(
+    _auth: Auth<CanCreateWallet>,
     ValidJson(mut req): ValidJson<WalletForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     // Get user_id from auth context
@@ -58,7 +62,10 @@ async fn create_wallet(
         (status = 200, description = "Wallet retrieved successfully", body = WalletData),
     )
 )]
-async fn get_wallet(Path(wallet_id): Path<Uuid>) -> Result<ResponseJson<WalletData>> {
+async fn get_wallet(
+    _auth: Auth<CanReadWallet>,
+    Path(wallet_id): Path<Uuid>,
+) -> Result<ResponseJson<WalletData>> {
     let wallet = WalletService::get_wallet_by_id(wallet_id).await?;
     Ok(ResponseJson(wallet))
 }
@@ -72,6 +79,7 @@ async fn get_wallet(Path(wallet_id): Path<Uuid>) -> Result<ResponseJson<WalletDa
     )
 )]
 async fn get_wallet_by_user(
+    _auth: Auth<CanReadWallet>,
     Path(user_id): Path<Uuid>,
 ) -> Result<ResponseJson<QueryResult<WalletData>>> {
     let wallet = WalletService::get_wallet_by_user_id(user_id).await?;
@@ -92,6 +100,7 @@ async fn get_wallet_by_user(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_wallets(
+    _auth: Auth<CanReadWallet>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<WalletDataFilterParams>,
@@ -114,6 +123,7 @@ async fn filter_wallets(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_wallet(
+    _auth: Auth<CanUpdateWallet>,
     Path(wallet_id): Path<Uuid>,
     ValidJson(req): ValidJson<WalletForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -133,7 +143,10 @@ async fn update_wallet(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_wallet(Path(wallet_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_wallet(
+    _auth: Auth<CanDeleteWallet>,
+    Path(wallet_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     WalletService::delete_wallet(wallet_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -155,6 +168,7 @@ async fn delete_wallet(Path(wallet_id): Path<Uuid>) -> Result<ResponseJson<OkUui
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn get_wallet_transactions(
+    _auth: Auth<CanReadWallet>,
     Path(wallet_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -180,6 +194,7 @@ async fn get_wallet_transactions(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn get_wallet_top_up_transactions(
+    _auth: Auth<CanReadWallet>,
     Path(wallet_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,

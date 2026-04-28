@@ -23,6 +23,9 @@ use features_wallet_model::{
     },
     state::{WalletAppState, WalletCacheState},
 };
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateIdempotency, CanReadIdempotency, CanUpdateIdempotency};
 use features_wallet_service::IdempotencyService;
 
 const TAG: &str = "idempotency";
@@ -38,6 +41,7 @@ const TAG: &str = "idempotency";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_idempotency_key(
+    _auth: Auth<CanCreateIdempotency>,
     ValidJson(req): ValidJson<IdempotencyKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let key_id = IdempotencyService::create_idempotency_key(req).await?;
@@ -56,6 +60,7 @@ async fn create_idempotency_key(
     )
 )]
 async fn get_idempotency_key_by_id(
+    _auth: Auth<CanReadIdempotency>,
     Path(id): Path<Uuid>,
 ) -> Result<ResponseJson<IdempotencyKeyData>> {
     let idempotency_key = IdempotencyService::get_idempotency_key_by_id(id).await?;
@@ -71,6 +76,7 @@ async fn get_idempotency_key_by_id(
     )
 )]
 async fn get_idempotency_key_by_key(
+    _auth: Auth<CanReadIdempotency>,
     Path(key): Path<String>,
 ) -> Result<ResponseJson<IdempotencyKeyData>> {
     let idempotency_key = IdempotencyService::get_idempotency_key_by_key(&key).await?;
@@ -88,6 +94,7 @@ async fn get_idempotency_key_by_key(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn get_idempotency_keys(
+    _auth: Auth<CanReadIdempotency>,
     Query(pagination): Query<Pagination>,
     Query(order): Query<Order>,
 ) -> Result<ResponseJson<QueryResult<IdempotencyKeyData>>> {
@@ -111,6 +118,7 @@ async fn get_idempotency_keys(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_idempotency_key(
+    _auth: Auth<CanUpdateIdempotency>,
     Path(id): Path<Uuid>,
     ValidJson(req): ValidJson<IdempotencyKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -130,7 +138,10 @@ async fn update_idempotency_key(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_idempotency_key(Path(id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_idempotency_key(
+    _auth: Auth<CanCreateIdempotency>,
+    Path(id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     IdempotencyService::delete_idempotency_key(id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

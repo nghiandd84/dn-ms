@@ -25,6 +25,11 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreatePaymentIntent, CanDeletePaymentIntent, CanReadPaymentIntent, CanUpdatePaymentIntent,
+};
 use features_payments_stripe_service::StripePaymentIntentService;
 
 const TAG: &str = "stripe_payment_intent";
@@ -40,6 +45,7 @@ const TAG: &str = "stripe_payment_intent";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_payment_intent(
+    _auth: Auth<CanCreatePaymentIntent>,
     ValidJson(req): ValidJson<StripePaymentIntentForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let payment_intent_id = StripePaymentIntentService::create_payment_intent(req).await?;
@@ -58,6 +64,7 @@ async fn create_payment_intent(
     )
 )]
 async fn get_payment_intent(
+    _auth: Auth<CanReadPaymentIntent>,
     Path(payment_intent_id): Path<Uuid>,
 ) -> Result<ResponseJson<StripePaymentIntentData>> {
     let payment_intent =
@@ -79,6 +86,7 @@ async fn get_payment_intent(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_payment_intents(
+    _auth: Auth<CanReadPaymentIntent>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
 ) -> Result<ResponseJson<QueryResult<StripePaymentIntentData>>> {
@@ -101,6 +109,7 @@ async fn filter_payment_intents(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_payment_intent(
+    _auth: Auth<CanUpdatePaymentIntent>,
     Path(payment_intent_id): Path<Uuid>,
     ValidJson(req): ValidJson<StripePaymentIntentForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -121,6 +130,7 @@ async fn update_payment_intent(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_payment_intent(
+    _auth: Auth<CanDeletePaymentIntent>,
     Path(payment_intent_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
     StripePaymentIntentService::delete_payment_intent(payment_intent_id).await?;

@@ -19,6 +19,7 @@ use features_auth_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::Result,
@@ -30,6 +31,8 @@ use shared_shared_data_core::{
 
 use features_auth_repo::token::TokenQuery;
 use features_auth_service::TokenService;
+
+use crate::permission::CanReadToken;
 
 const TAG: &str = "token";
 
@@ -43,6 +46,7 @@ const TAG: &str = "token";
     )
 )]
 async fn create_token(
+    _public: PublicAccess,
     state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForCreateRequest>,
 ) -> Result<ResponseJson<AuthorizationCodeData>> {
@@ -65,6 +69,7 @@ async fn create_token(
     )
 )]
 async fn verify_token(
+    _public: PublicAccess,
     ValidJson(request): ValidJson<TokenForVerifyRequest>,
 ) -> Result<ResponseJson<AccessTokenStruct>> {
     debug!("Verify token with request: {:?}", request);
@@ -82,7 +87,10 @@ async fn verify_token(
         (status = 200, description = "Token Data", body = TokenDataResponse),       
     )
 )]
-async fn get_token(Path(token_id): Path<Uuid>) -> Result<ResponseJson<TokenData>> {
+async fn get_token(
+    _auth: Auth<CanReadToken>,
+    Path(token_id): Path<Uuid>,
+) -> Result<ResponseJson<TokenData>> {
     let token = TokenQuery::get(token_id).await?;
     Ok(ResponseJson(token))
 }
@@ -100,6 +108,7 @@ async fn get_token(Path(token_id): Path<Uuid>) -> Result<ResponseJson<TokenData>
     )
 )]
 async fn filter_tokens(
+    _auth: Auth<CanReadToken>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<TokenDataFilterParams>,

@@ -7,6 +7,7 @@ use features_auth_model::{
 };
 use features_auth_service::LoginService;
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::PublicAccess;
 use shared_shared_data_app::{json::ResponseJson, result::Result};
 
 #[utoipa::path(
@@ -19,7 +20,10 @@ use shared_shared_data_app::{json::ResponseJson, result::Result};
         (status = 200, description= "Login success", body= LoginDataResponse),       
     )
 )]
-async fn login(Json(login_request): Json<LoginRequest>) -> Result<ResponseJson<LoginData>> {
+async fn login(
+    _public: PublicAccess,
+    Json(login_request): Json<LoginRequest>,
+) -> Result<ResponseJson<LoginData>> {
     debug!("Login requet  {:?}", login_request);
     let success_data = LoginService::login(login_request).await;
     let success_data = success_data.unwrap();

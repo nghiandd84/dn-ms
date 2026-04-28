@@ -7,6 +7,7 @@ use tracing::{debug, instrument, Level};
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::result::{OkUuid, OkUuidResponse, Result};
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -28,6 +29,8 @@ use features_lookup_model::{
 };
 use features_lookup_service::lookup_type::LookupTypeService;
 
+use crate::permission::{CanCreateLookupType, CanDeleteLookupType, CanUpdateLookupType};
+
 const TAG: &str = "lookup-type";
 
 #[utoipa::path(
@@ -41,6 +44,7 @@ const TAG: &str = "lookup-type";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn create_lookup_type(
+    _auth: Auth<CanCreateLookupType>,
     TenantId(tenant_id): TenantId,
     ValidJson(mut req): ValidJson<LookupTypeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -64,6 +68,7 @@ pub async fn create_lookup_type(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn get_lookup_types(
+    _public: PublicAccess,
     TenantId(tenant_id): TenantId,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -93,6 +98,7 @@ pub async fn get_lookup_types(
     )
 )]
 pub async fn get_lookup_type(
+    _public: PublicAccess,
     Path(id): Path<Uuid>,
     Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<LookupTypeData>> {
@@ -111,6 +117,7 @@ pub async fn get_lookup_type(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_lookup_type(
+    _auth: Auth<CanUpdateLookupType>,
     Path(id): Path<Uuid>,
     ValidJson(req): ValidJson<LookupTypeForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -130,7 +137,10 @@ pub async fn update_lookup_type(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-pub async fn delete_lookup_type(Path(id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+pub async fn delete_lookup_type(
+    _auth: Auth<CanDeleteLookupType>,
+    Path(id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     LookupTypeService::delete_lookup_type(id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

@@ -7,6 +7,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -26,6 +27,8 @@ use features_auth_model::{
 };
 use features_auth_repo::permission::{PermissionMutation, PermissionQuery};
 
+use crate::permission as perm;
+
 const TAG: &str = "permissions";
 
 #[utoipa::path(
@@ -38,6 +41,7 @@ const TAG: &str = "permissions";
     )
 )]
 async fn create_permission(
+    _auth: Auth<perm::CanCreatePermission>,
     ValidJson(register_request): ValidJson<PermissionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: PermissionForCreateDto = register_request.into();
@@ -63,6 +67,7 @@ async fn create_permission(
     )
 )]
 async fn update_permission(
+    _auth: Auth<perm::CanUpdatePermission>,
     Path(permission_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<PermissionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +83,10 @@ async fn update_permission(
         (status = 200, description = "Permission is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_permission(
+    _auth: Auth<perm::CanDeletePermission>,
+    Path(permission_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     PermissionMutation::delete(permission_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -91,7 +99,10 @@ async fn delete_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJs
         (status = 200, description = "Permission Data", body = PermissionDataResponse),       
     )
 )]
-async fn get_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJson<PermissionData>> {
+async fn get_permission(
+    _auth: Auth<perm::CanReadPermission>,
+    Path(permission_id): Path<Uuid>,
+) -> Result<ResponseJson<PermissionData>> {
     let permission = PermissionQuery::get(permission_id).await?;
     Ok(ResponseJson(permission))
 }
@@ -109,6 +120,7 @@ async fn get_permission(Path(permission_id): Path<Uuid>) -> Result<ResponseJson<
     )
 )]
 async fn filter_permissions(
+    _auth: Auth<perm::CanReadPermission>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<PermissionDataFilterParams>,

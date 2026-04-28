@@ -25,6 +25,9 @@ use features_wallet_model::{
     },
     state::{WalletAppState, WalletCacheState},
 };
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateP2pTransfer, CanReadP2pTransfer};
 use features_wallet_service::P2pTransferService;
 
 const TAG: &str = "p2p_transfer";
@@ -40,6 +43,7 @@ const TAG: &str = "p2p_transfer";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_p2p_transfer(
+    _auth: Auth<CanCreateP2pTransfer>,
     _idempotency_key: IdempotencyKey,
     ValidJson(req): ValidJson<P2pTransferForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -59,6 +63,7 @@ async fn create_p2p_transfer(
     )
 )]
 async fn get_p2p_transfer(
+    _auth: Auth<CanReadP2pTransfer>,
     Path(p2p_transfer_id): Path<Uuid>,
 ) -> Result<ResponseJson<P2pTransferData>> {
     let transfer = P2pTransferService::get_p2p_transfer_by_id(p2p_transfer_id).await?;
@@ -76,6 +81,7 @@ async fn get_p2p_transfer(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_p2p_transfers(
+    _auth: Auth<CanReadP2pTransfer>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<P2pTransferDataFilterParams>,
@@ -98,6 +104,7 @@ async fn filter_p2p_transfers(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn get_wallet_p2p_transfers(
+    _auth: Auth<CanReadP2pTransfer>,
     Path(wallet_id): Path<Uuid>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
@@ -120,6 +127,7 @@ async fn get_wallet_p2p_transfers(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_p2p_transfer(
+    _auth: Auth<CanCreateP2pTransfer>,
     // idempotency_key: IdempotencyKey,
     Path(p2p_transfer_id): Path<Uuid>,
     ValidJson(req): ValidJson<P2pTransferForUpdateRequest>,
@@ -140,7 +148,10 @@ async fn update_p2p_transfer(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_p2p_transfer(Path(p2p_transfer_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_p2p_transfer(
+    _auth: Auth<CanCreateP2pTransfer>,
+    Path(p2p_transfer_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     P2pTransferService::delete_p2p_transfer(p2p_transfer_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

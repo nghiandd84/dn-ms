@@ -12,6 +12,9 @@ use features_translation_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateProject, CanDeleteProject, CanReadProject, CanUpdateProject};
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -36,7 +39,7 @@ const TAG: &str = "project";
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn create_project(Json(req): Json<ProjectForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
+async fn create_project(_auth: Auth<CanCreateProject>, Json(req): Json<ProjectForCreateRequest>) -> Result<ResponseJson<OkUuid>> {
     let project_id = ProjectService::create_project(req).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -52,7 +55,7 @@ async fn create_project(Json(req): Json<ProjectForCreateRequest>) -> Result<Resp
         (status = 200, description = "Project retrieved successfully", body = ProjectData),
     )
 )]
-async fn get_project(Path(project_id): Path<Uuid>) -> Result<ResponseJson<ProjectData>> {
+async fn get_project(_auth: Auth<CanReadProject>, Path(project_id): Path<Uuid>) -> Result<ResponseJson<ProjectData>> {
     let project = ProjectService::get_project_by_id(project_id).await?;
     Ok(ResponseJson(project))
 }
@@ -71,6 +74,7 @@ async fn get_project(Path(project_id): Path<Uuid>) -> Result<ResponseJson<Projec
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_projects(
+    _auth: Auth<CanReadProject>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<ProjectDataFilterParams>,
@@ -92,6 +96,7 @@ async fn filter_projects(
     )
 )]
 async fn update_project(
+    _auth: Auth<CanUpdateProject>,
     Path(project_id): Path<Uuid>,
     Json(req): Json<ProjectForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -110,7 +115,7 @@ async fn update_project(
         (status = 200, description = "Project deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_project(Path(project_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_project(_auth: Auth<CanDeleteProject>, Path(project_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     ProjectService::delete_project(project_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

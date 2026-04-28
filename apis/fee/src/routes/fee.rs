@@ -25,6 +25,11 @@ use features_fee_model::{
     state::{FeeAppState, FeeCacheState},
 };
 use features_fee_service::FeeConfigurationService;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{
+    CanCreateConfiguration, CanDeleteConfiguration, CanReadConfiguration, CanUpdateConfiguration,
+};
 
 const TAG: &str = "fee";
 
@@ -39,6 +44,7 @@ const TAG: &str = "fee";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_fee_configuration(
+    _auth: Auth<CanCreateConfiguration>,
     ValidJson(req): ValidJson<FeeConfigurationForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let id = FeeConfigurationService::create_fee_configuration(req).await?;
@@ -56,7 +62,7 @@ async fn create_fee_configuration(
         (status = 200, description = "Fee configuration retrieved successfully", body = FeeConfigurationData),
     )
 )]
-async fn get_fee_configuration(Path(id): Path<Uuid>) -> Result<ResponseJson<FeeConfigurationData>> {
+async fn get_fee_configuration(_auth: Auth<CanReadConfiguration>, Path(id): Path<Uuid>) -> Result<ResponseJson<FeeConfigurationData>> {
     let fee_config = FeeConfigurationService::get_fee_configuration_by_id(id).await?;
     Ok(ResponseJson(fee_config))
 }
@@ -75,6 +81,7 @@ async fn get_fee_configuration(Path(id): Path<Uuid>) -> Result<ResponseJson<FeeC
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_fee_configurations(
+    _auth: Auth<CanReadConfiguration>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<FeeConfigurationDataFilterParams>,
@@ -98,6 +105,7 @@ async fn filter_fee_configurations(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_fee_configuration(
+    _auth: Auth<CanUpdateConfiguration>,
     Path(id): Path<Uuid>,
     ValidJson(req): ValidJson<FeeConfigurationForUpdateRequest>,
 ) -> Result<ResponseJson<OkStr>> {
@@ -117,7 +125,7 @@ async fn update_fee_configuration(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_fee_configuration(Path(id): Path<Uuid>) -> Result<ResponseJson<OkStr>> {
+async fn delete_fee_configuration(_auth: Auth<CanDeleteConfiguration>, Path(id): Path<Uuid>) -> Result<ResponseJson<OkStr>> {
     FeeConfigurationService::delete_fee_configuration(id).await?;
     Ok(ResponseJson(OkStr {
         ok: true,

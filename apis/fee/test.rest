@@ -1,5 +1,6 @@
 @baseUrl = http://localhost:5141
 @feeConfigId = a21020c6-1496-467c-ad69-e1b352c6338c
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
 GET {{baseUrl}}/healthchecker
@@ -11,15 +12,18 @@ GET {{baseUrl}}/swagger-ui/
 
 ### Get All Fee Configurations
 GET {{baseUrl}}/fee-configurations
+baggage: {{baggage}}
 
 
 ### Search Fee
 GET {{baseUrl}}/fee-configurations?percentage_rate=gt|3
+baggage: {{baggage}}
 
 
 ### Create Fee Configuration
 POST {{baseUrl}}/fee-configurations
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "effective_from": "2023-01-01T00:00:00",
@@ -33,10 +37,12 @@ Content-Type: application/json
 
 ### Get Fee Configuration By ID
 GET {{baseUrl}}/fee-configurations/{{feeConfigId}}
+baggage: {{baggage}}
 
 ### Update Fee Configuration
 PATCH {{baseUrl}}/fee-configurations/{{feeConfigId}}
 Content-Type: application/json
+baggage: {{baggage}}
 
 {
   "percentage_rate": 3.33,
@@ -54,3 +60,4 @@ Content-Type: application/json
 
 ### Delete Fee Configuration
 DELETE {{baseUrl}}/fee-configurations/d63de457-d2de-49ed-ba98-017b49afd515
+baggage: {{baggage}}

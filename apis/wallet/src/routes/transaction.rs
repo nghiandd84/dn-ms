@@ -25,6 +25,9 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
 };
 
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateTransaction, CanReadTransaction};
 use features_wallet_service::TransactionService;
 
 const TAG: &str = "transaction";
@@ -40,6 +43,7 @@ const TAG: &str = "transaction";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_transaction(
+    _auth: Auth<CanCreateTransaction>,
     ValidJson(req): ValidJson<TransactionForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let transaction_id = TransactionService::create_transaction(req).await?;
@@ -58,6 +62,7 @@ async fn create_transaction(
     )
 )]
 async fn get_transaction(
+    _auth: Auth<CanReadTransaction>,
     Path(transaction_id): Path<Uuid>,
 ) -> Result<ResponseJson<TransactionData>> {
     let transaction = TransactionService::get_transaction_by_id(transaction_id).await?;
@@ -78,6 +83,7 @@ async fn get_transaction(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_transactions(
+    _auth: Auth<CanReadTransaction>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TransactionDataFilterParams>,
@@ -100,6 +106,7 @@ async fn filter_transactions(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_transaction(
+    _auth: Auth<CanCreateTransaction>,
     Path(transaction_id): Path<Uuid>,
     ValidJson(req): ValidJson<TransactionForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -119,7 +126,10 @@ async fn update_transaction(
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]
-async fn delete_transaction(Path(transaction_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_transaction(
+    _auth: Auth<CanCreateTransaction>,
+    Path(transaction_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     TransactionService::delete_transaction(transaction_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,

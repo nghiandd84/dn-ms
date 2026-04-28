@@ -16,6 +16,7 @@ use features_auth_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -26,6 +27,8 @@ use shared_shared_data_core::{
 };
 
 use features_auth_repo::scope::{ScopeMutation, ScopeQuery};
+
+use crate::permission::{CanCreateScope, CanDeleteScope, CanReadScope, CanUpdateScope};
 
 const TAG: &str = "scope";
 
@@ -39,6 +42,7 @@ const TAG: &str = "scope";
     )
 )]
 async fn create_scope(
+    _auth: Auth<CanCreateScope>,
     ValidJson(register_request): ValidJson<ScopeForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let dto: ScopeForCreateDto = register_request.into();
@@ -63,6 +67,7 @@ async fn create_scope(
     )
 )]
 async fn update_scope(
+    _auth: Auth<CanUpdateScope>,
     Path(scope_id): Path<Uuid>,
     ValidJson(scope_request): ValidJson<ScopeForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -78,7 +83,10 @@ async fn update_scope(
         (status = 200, description = "Scope is deleted", body = OkUuidResponse),       
     )
 )]
-async fn delete_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_scope(
+    _auth: Auth<CanDeleteScope>,
+    Path(scope_id): Path<Uuid>,
+) -> Result<ResponseJson<OkUuid>> {
     ScopeMutation::delete(scope_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
 }
@@ -91,7 +99,10 @@ async fn delete_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>
         (status = 200, description = "Scope Data", body = ScopeDataResponse),       
     )
 )]
-async fn get_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<ScopeData>> {
+async fn get_scope(
+    _auth: Auth<CanReadScope>,
+    Path(scope_id): Path<Uuid>,
+) -> Result<ResponseJson<ScopeData>> {
     let scope = ScopeQuery::get(scope_id).await?;
     Ok(ResponseJson(scope))
 }
@@ -109,6 +120,7 @@ async fn get_scope(Path(scope_id): Path<Uuid>) -> Result<ResponseJson<ScopeData>
     )
 )]
 async fn filter_scopes(
+    _auth: Auth<CanReadScope>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<ScopeDataFilterParams>,

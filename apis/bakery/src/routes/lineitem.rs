@@ -6,6 +6,7 @@ use axum::{
 use tracing::debug;
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, Result},
@@ -23,6 +24,8 @@ use features_bakery_model::{
 };
 use features_bakery_service::lineitem::{LineitemMutation, LineitemQuery};
 
+use crate::permission::{CanCreateLineitem, CanDeleteLineitem};
+
 const TAG: &str = "lineitem";
 
 #[utoipa::path(
@@ -36,6 +39,7 @@ const TAG: &str = "lineitem";
     )
 )]
 async fn create(
+    _auth: Auth<CanCreateLineitem>,
     ValidJson(request): ValidJson<LineitemForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
     let role_id = LineitemMutation::create(request.into()).await?;
@@ -54,7 +58,7 @@ async fn create(
         (status = 200, description = "Lineitem is deleted", body = OkI32Response),
     )
 )]
-async fn delete_by_id(Path(lineitem_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
+async fn delete_by_id(_auth: Auth<CanDeleteLineitem>, Path(lineitem_id): Path<i32>) -> Result<ResponseJson<OkI32>> {
     LineitemMutation::delete(lineitem_id).await?;
     Ok(ResponseJson(OkI32 { ok: true, id: None }))
 }
@@ -68,7 +72,7 @@ async fn delete_by_id(Path(lineitem_id): Path<i32>) -> Result<ResponseJson<OkI32
         (status = 200, description = "Lineitem Data", body = LineitemDataResponse),
     )
 )]
-async fn get_by_id(Path(lineitem_id): Path<i32>) -> Result<ResponseJson<LineitemData>> {
+async fn get_by_id(_public: PublicAccess, Path(lineitem_id): Path<i32>) -> Result<ResponseJson<LineitemData>> {
     let cake = LineitemQuery::get_by_id(lineitem_id).await?;
     Ok(ResponseJson(cake))
 }
@@ -87,6 +91,7 @@ async fn get_by_id(Path(lineitem_id): Path<i32>) -> Result<ResponseJson<Lineitem
     )
 )]
 async fn filter(
+    _public: PublicAccess,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter: Query<LineitemDataFilterParams>,

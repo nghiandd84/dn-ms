@@ -13,6 +13,9 @@ use features_translation_model::{
 };
 
 use shared_shared_app::state::AppState;
+use shared_shared_auth::permission::Auth;
+
+use crate::permission::{CanCreateKey, CanDeleteKey, CanReadKey, CanUpdateKey};
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::ResponseJson,
@@ -38,6 +41,7 @@ const TAG: &str = "translation_key";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_translation_key(
+    _auth: Auth<CanCreateKey>,
     Json(req): Json<TranslationKeyForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
     let key_id = TranslationKeyService::create_translation_key(req).await?;
@@ -55,7 +59,7 @@ async fn create_translation_key(
         (status = 200, description = "Translation key retrieved successfully", body = TranslationKeyData),
     )
 )]
-async fn get_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson<TranslationKeyData>> {
+async fn get_translation_key(_auth: Auth<CanReadKey>, Path(key_id): Path<Uuid>) -> Result<ResponseJson<TranslationKeyData>> {
     let key = TranslationKeyService::get_translation_key_by_id(key_id).await?;
     Ok(ResponseJson(key))
 }
@@ -69,6 +73,7 @@ async fn get_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson<Tr
     )
 )]
 async fn get_translation_keys_by_project(
+    _auth: Auth<CanReadKey>,
     Path(project_id): Path<Uuid>,
 ) -> Result<ResponseJson<QueryResult<TranslationKeyData>>> {
     let keys = TranslationKeyService::get_translation_keys_by_project(project_id).await?;
@@ -89,6 +94,7 @@ async fn get_translation_keys_by_project(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn filter_translation_keys(
+    _auth: Auth<CanReadKey>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<TranslationKeyDataFilterParams>,
@@ -110,6 +116,7 @@ async fn filter_translation_keys(
     )
 )]
 async fn update_translation_key(
+    _auth: Auth<CanUpdateKey>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<TranslationKeyForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -128,7 +135,7 @@ async fn update_translation_key(
         (status = 200, description = "Translation key deleted successfully", body = OkUuidResponse),
     )
 )]
-async fn delete_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
+async fn delete_translation_key(_auth: Auth<CanDeleteKey>, Path(key_id): Path<Uuid>) -> Result<ResponseJson<OkUuid>> {
     TranslationKeyService::delete_translation_key(key_id).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
@@ -146,6 +153,7 @@ async fn delete_translation_key(Path(key_id): Path<Uuid>) -> Result<ResponseJson
     )
 )]
 async fn assign_tags_to_key(
+    _auth: Auth<CanCreateKey>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<AssignTagsRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
@@ -166,6 +174,7 @@ async fn assign_tags_to_key(
     )
 )]
 async fn unassign_tags_from_key(
+    _auth: Auth<CanCreateKey>,
     Path(key_id): Path<Uuid>,
     Json(req): Json<UnassignTagsRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
