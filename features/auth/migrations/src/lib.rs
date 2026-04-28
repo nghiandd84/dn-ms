@@ -38,6 +38,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20260101_add_email_to_client_table::Migration),
             Box::new(m20260104_add_role_permission_table::Migration),
             Box::new(m20260127_add_remove_profile_fields::Migration),
+
+            // Alawys keep this migration at the end of the list, as it depends on all previous migrations to be applied first.
             Box::new(m20260413_seed_roles_and_permissions_for_admin_all::Migration),
         ]
     }

@@ -312,7 +312,7 @@ for i in {1..2}; do
     PORT=516$i
     echo "---  LOOKUP on port $PORT ---"
     # Execute the program
-    # LOOKUP_PORT=516$i $APP_DIRECTORY/api-lookup  &
+    LOOKUP_PORT=516$i $APP_DIRECTORY/api-lookup  &
 done
 sleep 1s
 
