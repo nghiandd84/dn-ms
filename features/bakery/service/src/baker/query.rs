@@ -1,6 +1,4 @@
 use features_bakery_model::baker::BakerData;
-// use sea_orm::prelude::*;
-use sea_orm::SelectTwoMany;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -11,9 +9,7 @@ use shared_shared_data_core::{
 use shared_shared_macro::Query;
 
 use features_bakery_entities::baker::{ActiveModel, Column, Entity, ModelOptionDto};
-use features_bakery_entities::bakery::{
-    Column as BakeryColumn, Entity as BakeryEntity, ModelOptionDto as BakeryModelOptionDto,
-};
+use features_bakery_entities::bakery::Column as BakeryColumn;
 
 #[derive(Query)]
 #[query(key_type(i32))]

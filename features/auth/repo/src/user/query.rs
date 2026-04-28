@@ -1,4 +1,4 @@
-use sea_orm::{FromQueryResult, LoaderTrait};
+use sea_orm::LoaderTrait;
 use std::vec;
 use tracing::debug;
 use uuid::Uuid;
@@ -149,66 +149,4 @@ impl UserQuery {
         };
         Ok(mapped_result)
     }
-
-    pub async fn advance_search<'a>(
-        _pagination: &Pagination,
-        _order: &Order,
-        _filters: &FilterCondition,
-    ) -> Result<QueryResult<UserData>, DbErr> {
-        // let result = UserQueryManager::filter(db, pagination, order, &filters).await?;
-        let mapped_result = QueryResult {
-            total_page: 3,
-            result: vec![],
-        };
-        debug!("Start test search");
-        // TODO understand how to use Select, SelectTwo, and SelectTwoMany
-        // Only one find_with_related. Hope for new version of sea_orm
-        // let users = Entity::find().find_with_related(RoleEntity);
-        // let x = Entity::find().into_tuple()
-        let users = Entity::find()
-            .filter(Column::Email.contains("nghia"))
-            // .find_also_related(AccessEntity)
-            // .find_also_linked(l)
-            // .find_with_linked(l)
-            .find_with_related(AccessEntity)
-            .all(UserQueryManager::get_db())
-            .await?;
-        // .join(JoinType::LeftJoin, features_auth_entities::role::Relation::Access);
-        // .join(JoinType::LeftJoin, rel);
-
-        // Filter by role.name
-        // let users = users
-        //     // .filter(RoleColumn::Name.contains("2"))
-        //     // .filter(
-        //     //     AccessColumn::Id
-        //     //         .ne(Uuid::parse_str("885d3245-17cd-4d16-a424-6158cb59693e").unwrap()),
-        //     // )
-        //     // .filter(Column::Email.contains("2"))
-        //     // .into_model::<AdvanceUser>()
-        //     .all(db)
-        //     .await?;
-        // let users = users.filter(Column::Email.contains("n")).all(db).await?;
-        debug!("users: {:?}", users);
-
-        let user1s = Entity::find()
-            .filter(Column::Email.contains("n"))
-            .all(UserQueryManager::get_db())
-            .await?;
-        debug!("user1s: {:?}", user1s);
-        let user2s = user1s
-            .load_many_to_many(RoleEntity, AccessEntity, UserQueryManager::get_db())
-            .await?;
-        debug!("user2s: {:?}", user2s);
-        // let rs = users
-        //     .load_many_to_many(RoleEntity, AccessEntity, db)
-        //     .await?;
-
-        Ok(mapped_result)
-    }
-}
-
-#[derive(FromQueryResult, Debug)]
-struct AdvanceUser {
-    id: Uuid,
-    key: String,
 }

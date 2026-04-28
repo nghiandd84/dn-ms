@@ -78,20 +78,11 @@ async fn filter_users(
     Ok(ResponseJson(result))
 }
 
-async fn test_filters() -> Result<ResponseJson<QueryResult<UserData>>> {
-    let pagination = Pagination::default();
-    let order = Order::default();
-    let all_filters = FilterCondition::from(vec![]);
-
-    let result = UserQuery::advance_search(&pagination, &order, &all_filters).await?;
-    Ok(ResponseJson(result))
-}
 
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
         .route("/users/{user_id}", delete(delete_user))
         .route("/users/{user_id}", get(get_user))
         .route("/users", get(filter_users))
-        .route("/test_users", get(test_filters))
         .with_state(app_state.clone())
 }
