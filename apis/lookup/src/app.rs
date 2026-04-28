@@ -56,7 +56,8 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
         &self,
         app_state: &mut AppState<LookupAppState, LookupCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
-        async {
+        let mut clone_app_state = app_state.clone();
+        async move {
             spawn(async move {
                 let service_key = "LOOKUP".to_string();
 
@@ -76,19 +77,23 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
                         "Permissions for service {}: {:?}",
                         service_key, all_permissions
                     );
-                    /*
+
                     for (role_name, permissions) in all_permissions {
-                        let perm = permissions.iter().fold(0, |acc, perm| acc | perm.mask);
-                        debug!("Role: {}, Permissions mask: {}", role_name, perm);
-                        app_state.set_permission_map(
-                            role_name,
-                            permissions
-                                .iter()
-                                .map(|perm| (perm.resource.clone(), perm.mask))
-                                .collect(),
+                        let mask_permissions = permissions
+                            .iter()
+                            .map(|perm| {
+                                (
+                                    perm.resource.clone().unwrap_or_default(),
+                                    perm.mask.unwrap_or(0) as u32,
+                                )
+                            })
+                            .collect();
+                        debug!(
+                            "Role: {}, Permissions mask: {:?}",
+                            role_name, mask_permissions
                         );
+                        clone_app_state.set_permission_map(role_name, mask_permissions);
                     }
-                    */
                 }
             });
             Ok(())

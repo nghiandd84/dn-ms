@@ -52,14 +52,10 @@ where
             Err(_err) => None,
         };
         match permission {
-            Some(perms) => {
-                let perm = perms
-                    .into_iter()
-                    .find(|(res, _)| res == &resource_name)
-                    .map(|(_, p)| p)
-                    .unwrap_or(0);
-                perm
-            }
+            Some(perms) => perms
+                .into_iter()
+                .filter(|(res, _)| res == &resource_name)
+                .fold(0, |acc, (_, p)| acc | p),
             None => 0,
         }
     }

@@ -1,6 +1,6 @@
 use shared_shared_data_app::result::Result;
 use shared_shared_data_core::{
-    filter::{FilterCondition, FilterEnum},
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
 };
