@@ -28,17 +28,10 @@ impl EmailTemplateService {
             condition.to_query_string()
         );
 
-        let res = Self::call_api(url, reqwest::Method::GET, None, HashMap::new()).await;
-        if res.is_err() {
-            let err_msg = res.err().unwrap();
-            return Err(err_msg);
-        }
-        let data: serde_json::Value = res.unwrap();
-        let email_template: QueryResult<EmailTemplateData> =
-            serde_json::from_value(data).map_err(|e| {
-                error!("Failed to deserialize email template data: {}", e);
-                e.to_string()
-            })?;
+        let data = Self::call_api(url, reqwest::Method::GET, None, HashMap::new())
+            .await
+            .map_err(|e| e)?;
+        let email_template = QueryResult::<EmailTemplateData>::from_value(data)?;
         if email_template.result.is_empty() {
             return Err("Email template not found".to_string());
         }

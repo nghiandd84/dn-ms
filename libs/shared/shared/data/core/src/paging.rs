@@ -9,6 +9,15 @@ pub struct QueryResult<T> {
     pub result: Vec<T>,
 }
 
+impl<T: serde::de::DeserializeOwned> QueryResult<T> {
+    pub fn from_value(value: serde_json::Value) -> Result<Self, String> {
+        serde_json::from_value(value).map_err(|e| {
+            tracing::error!("Failed to deserialize QueryResult: {}", e);
+            e.to_string()
+        })
+    }
+}
+
 fn deserialize_page_size<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
 where
     D: Deserializer<'de>,

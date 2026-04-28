@@ -22,40 +22,61 @@ impl PermissionService {
         );
 
         let condition = FilterCondition::leaf(FilterEnum::String(FilterParam {
-            name: "resource".to_string(),
+            name: "permissions[resource]".to_string(),
             operator: FilterOperator::StartWith,
             value: Some(service_key.clone()),
             raw_value: service_key,
         }));
 
-        let page = 1;
+        let query_string = condition.to_query_string();
         let page_size = 20;
-        let url = format!(
-            "{}?{}&page={}&page_size={}",
-            permission_endpoint,
-            condition.to_query_string(),
-            page,
-            page_size
-        );
-        let res = Self::call_api(url, reqwest::Method::GET, None, headers).await;
-        if res.is_err() {
-            let err_msg = res.err().unwrap();
-            debug!("Error calling permission service: {}", err_msg);
-            return HashMap::new();
-        }
-        let res = res.unwrap();
-        debug!("Permission service response: {:?}", res);
+        let mut page = 1u64;
+        let mut role_permissions: HashMap<String, Vec<PermissionData>> = HashMap::new();
 
-        let permissions = res.get("result");
-        if permissions.is_none() {
-            println!("Response body does not contain permissions");
-            return HashMap::new();
-        }
-        let permissions = permissions.unwrap();
-        let _perms: Vec<PermissionData> =
-            serde_json::from_value(permissions.clone()).unwrap_or_else(|_| vec![]);
+        loop {
+            let url = format!(
+                "{}?{}&includes=permissions&page={}&page_size={}",
+                permission_endpoint, query_string, page, page_size
+            );
+            let res = Self::call_api(url, reqwest::Method::GET, None, headers.clone()).await;
+            if let Err(err_msg) = res {
+                debug!("Error calling permission service: {}", err_msg);
+                return role_permissions;
+            }
+            let res = res.unwrap();
+            debug!("Permission service response page {}: {:?}", page, res);
 
-        let role_permissions: HashMap<String, Vec<PermissionData>> = HashMap::new();
+            let total_page = res.get("total_page").and_then(|v| v.as_u64()).unwrap_or(0);
+            let roles = match res.get("result") {
+                Some(r) => r,
+                None => break,
+            };
+
+            if let Some(arr) = roles.as_array() {
+                for role in arr {
+                    let name = role.get("name").and_then(|v| v.as_str()).unwrap_or_default();
+                    if name.is_empty() {
+                        continue;
+                    }
+                    let perms: Vec<PermissionData> = role
+                        .get("permissions")
+                        .cloned()
+                        .and_then(|v| serde_json::from_value(v).ok())
+                        .unwrap_or_default();
+
+                    role_permissions
+                        .entry(name.to_string())
+                        .or_default()
+                        .extend(perms);
+                }
+            }
+
+            if page >= total_page {
+                break;
+            }
+            page += 1;
+        }
+
         role_permissions
     }
 }

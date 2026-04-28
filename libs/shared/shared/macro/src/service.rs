@@ -139,80 +139,52 @@ pub fn remote_service(input: RemoteServiceInput) -> TokenStream {
                     .unwrap_or_else(|| "DEFAULT".to_string());
                 debug!("Extracted tenant_id from baggage: {}", tenant);
 
-                let instance = Self::get_instance(tenant.as_str());
-                if instance.is_none() {
-                    let err_msg = "No available service instances".to_string();
-                    error!("{}", err_msg);
-                    return Err(err_msg);
-                }
-                let (ip, port) = instance.unwrap();
-                let http_protocol = Self::http_protocol();
-                let url = format!("{http_protocol}://{ip}:{port}{endpoint}");
+                let (ip, port) = Self::get_instance(tenant.as_str()).ok_or_else(|| {
+                    error!("No available service instances");
+                    "No available service instances".to_string()
+                })?;
+
+                let url = format!("{}://{}:{}{}", Self::http_protocol(), ip, port, endpoint);
                 debug!("Request URL: {}", url);
 
-                let res = match method {
-                    Method::POST => {
-                        client
-                            .post(&url)
-                    }
-                    Method::PATCH => {
-                        client
-                            .patch(&url)
-                    }
-                    Method::GET => {
-                        client
-                            .get(&url)
-                    }
-                    _ => {
-                        let err_msg = format!("Unsupported HTTP method: {}", method);
-                        return Err(err_msg);
-                    }
+                let builder = match method {
+                    Method::POST => client.post(&url),
+                    Method::PATCH => client.patch(&url),
+                    Method::GET => client.get(&url),
+                    _ => return Err(format!("Unsupported HTTP method: {}", method)),
                 };
 
-
-
                 let mut header_map = HeaderMap::new();
-
                 for (key, value) in headers_hashmap {
-                    let header_name = HeaderName::from_bytes(key.as_bytes());
-                    let header_value = HeaderValue::from_bytes(value.as_bytes());
-                    if header_name.is_err() || header_value.is_err() {
-                        continue;
+                    if let (Ok(name), Ok(val)) = (
+                        HeaderName::from_bytes(key.as_bytes()),
+                        HeaderValue::from_bytes(value.as_bytes()),
+                    ) {
+                        header_map.insert(name, val);
                     }
-                    let header_name = header_name.unwrap();
-                    let header_value = header_value.unwrap();
-                    header_map.insert(header_name, header_value);
                 }
 
-                let res = res
+                let res = builder
                     .header("Content-Type", "application/json")
                     .headers(header_map)
                     .json(&json_body)
                     .send()
-                    .await;
-                if let Err(e) = res {
-                    let err_msg = format!("Failed to send request {}", e);
-                    return Err(err_msg);
-                }
-                let res = res.unwrap();
+                    .await
+                    .map_err(|e| format!("Failed to send request: {}", e))?;
+
                 if !res.status().is_success() {
-                    let err_msg = format!("Return failed status: {}", res.status());
-                    return Err(err_msg);
+                    return Err(format!("Return failed status: {}", res.status()));
                 }
-                let body = res.text().await;
-                if body.is_err() {
-                    let err_msg = format!("Failed to read response body: {}", body.err().unwrap());
-                    return Err(err_msg);
-                }
-                let body = body.unwrap();
-                let data = serde_json::from_str::<serde_json::Value>(&body);
-                if data.is_err() {
-                    let err_msg = format!("Failed to parse response body: {}", data.err().unwrap());
-                    return Err(err_msg);
-                }
-                let data = data.unwrap();
-                let data = data.get("data").unwrap().clone();
-                Ok(data)
+
+                let body = res.text().await
+                    .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+                let data: Value = serde_json::from_str(&body)
+                    .map_err(|e| format!("Failed to parse response body: {}", e))?;
+
+                data.get("data")
+                    .cloned()
+                    .ok_or_else(|| "Response missing 'data' field".to_string())
             }
 
             fn get_instance(tenant_id: &str) -> Option<Host> {
