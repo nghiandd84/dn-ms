@@ -274,60 +274,186 @@ gateways:
         filter: app_notification_filter   
       
       # Profile
+      - name: profile_request_id
+        type: request_id
+        enabled: true
+        filter: profile_router_filter
+      - name: profile_token_auth
+        type: token_auth
+        enabled: true
+        filter: profile_router_filter
+        config:
+          use_auth_service: true
       - name: profile_cors
         type: cors
         enabled: true
         filter: profile_router_filter
         config:
           allowed_domains: localhost
+      - name: profile_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: profile_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
       
       # Translation
+      - name: translation_request_id
+        type: request_id
+        enabled: true
+        filter: translation_router_filter
+      - name: translation_token_auth
+        type: token_auth
+        enabled: true
+        filter: translation_router_filter
+        config:
+          use_auth_service: true
       - name: translation_cors
         type: cors
         enabled: true
         filter: translation_router_filter
         config:
           allowed_domains: localhost
+      - name: translation_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: translation_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
       # Event
+      - name: event_request_id
+        type: request_id
+        enabled: true
+        filter: event_router_filter
+      - name: event_token_auth
+        type: token_auth
+        enabled: true
+        filter: event_router_filter
+        config:
+          use_auth_service: true
       - name: event_cors
         type: cors
         enabled: true
         filter: event_router_filter
         config:
           allowed_domains: localhost
+      - name: event_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: event_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
       # Booking
+      - name: booking_request_id
+        type: request_id
+        enabled: true
+        filter: booking_router_filter
+      - name: booking_token_auth
+        type: token_auth
+        enabled: true
+        filter: booking_router_filter
+        config:
+          use_auth_service: true
       - name: booking_cors
         type: cors
         enabled: true
         filter: booking_router_filter
         config:
           allowed_domains: localhost
+      - name: booking_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: booking_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
       # Inventory
+      - name: inventory_request_id
+        type: request_id
+        enabled: true
+        filter: inventory_router_filter
+      - name: inventory_token_auth
+        type: token_auth
+        enabled: true
+        filter: inventory_router_filter
+        config:
+          use_auth_service: true
       - name: inventory_cors
         type: cors
         enabled: true
-        filter: translation_router_filter
+        filter: inventory_router_filter
         config:
           allowed_domains: localhost
+      - name: inventory_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: inventory_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
       # Email Template
+      - name: email_template_request_id
+        type: request_id
+        enabled: true
+        filter: email_template_router_filter
+      - name: email_template_token_auth
+        type: token_auth
+        enabled: true
+        filter: email_template_router_filter
+        config:
+          use_auth_service: true
       - name: email_template_cors
         type: cors
         enabled: true
         filter: email_template_router_filter
         config:
           allowed_domains: localhost
+      - name: email_template_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: email_template_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
       # Merchant
+      - name: merchant_request_id
+        type: request_id
+        enabled: true
+        filter: merchant_router_filter
+      - name: merchant_token_auth
+        type: token_auth
+        enabled: true
+        filter: merchant_router_filter
+        config:
+          use_auth_service: true
       - name: merchant_cors
         type: cors
         enabled: true
         filter: merchant_router_filter
         config:
           allowed_domains: localhost
+      - name: merchant_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: merchant_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
 
     filters:
       - name: auth_router_filter
