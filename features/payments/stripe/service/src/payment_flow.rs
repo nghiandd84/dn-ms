@@ -41,6 +41,7 @@ impl PaymentFlowService {
                 idempotency_key: req.idempotency_key.clone(),
                 transaction_id: req.idempotency_key.clone(),
                 gateway_transaction_id: "N/A".to_string(),
+                metadata: req.metadata.clone(),
             },
         )
         .await

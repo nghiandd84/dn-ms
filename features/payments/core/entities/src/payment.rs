@@ -18,7 +18,8 @@ use shared_shared_macro::Dto;
         status,
         provider_name,
         idempotency_key,
-        gateway_transaction_id
+        gateway_transaction_id,
+        metadata
     )
 )]
 #[dto(
@@ -41,6 +42,8 @@ pub struct Model {
     pub gateway_transaction_id: String,
     #[sea_orm(column_type = "String(StringLen::N(255))", nullable, unique)]
     pub idempotency_key: String,
+    #[sea_orm(column_type = "Json", nullable)]
+    pub metadata: serde_json::Value,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

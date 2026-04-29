@@ -11,6 +11,7 @@ pub enum PaymentCoreEventMessage {
 pub struct PaymentSucceededMessage {
     pub payment_id: Uuid,
     pub user_id: Uuid,
+    pub wallet_id: Option<Uuid>,
     pub amount: i64,
     pub currency: String,
 }

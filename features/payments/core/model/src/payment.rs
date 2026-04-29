@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime as DateTime;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
@@ -25,6 +26,8 @@ pub struct PaymentData {
     pub provider_name: Option<String>,
     pub gateway_transaction_id: Option<String>,
     pub idempotency_key: Option<String>,
+    #[skip_param]
+    pub metadata: Option<JsonValue>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
 }
@@ -40,6 +43,7 @@ impl Into<PaymentData> for ModelOptionDto {
             provider_name: self.provider_name,
             gateway_transaction_id: self.gateway_transaction_id,
             idempotency_key: self.idempotency_key,
+            metadata: self.metadata,
             created_at: self.created_at,
             updated_at: self.updated_at,
             ..Default::default()
@@ -91,6 +95,7 @@ pub struct PaymentForCreateRequest {
     ))]
     pub transaction_id: String,
     pub user_id: Uuid,
+    pub metadata: Option<JsonValue>,
 }
 
 impl Into<PaymentForCreateDto> for PaymentForCreateRequest {
@@ -101,9 +106,10 @@ impl Into<PaymentForCreateDto> for PaymentForCreateRequest {
             gateway_transaction_id: self.gateway_transaction_id,
             idempotency_key: self.idempotency_key,
             provider_name: self.provider_name,
-            status: "created".to_string(), // Default status for new payments
+            status: "created".to_string(),
             transaction_id: self.transaction_id,
             user_id: self.user_id,
+            metadata: self.metadata.unwrap_or(serde_json::json!({})),
         }
     }
 }

@@ -119,6 +119,12 @@ pub async fn update_payment(
 
     if is_succeeded {
         let payment = PaymentService::get_payment_by_id(payment_id).await?;
+        let wallet_id = payment
+            .metadata
+            .as_ref()
+            .and_then(|m| m.get("wallet_id"))
+            .and_then(|v| v.as_str())
+            .and_then(|s| s.parse::<Uuid>().ok());
         let producer = state
             .get_producer(PRODUCER_KEY.to_string())
             .expect("Producer not found");
@@ -128,6 +134,7 @@ pub async fn update_payment(
                 message: PaymentSucceededMessage {
                     payment_id,
                     user_id: payment.user_id.unwrap_or_default(),
+                    wallet_id,
                     amount: payment.amount.unwrap_or_default(),
                     currency: payment.currency.unwrap_or_default(),
                 },
