@@ -41,3 +41,4 @@ features-wallet-entities = { workspace = true }
 features-wallet-repo = { workspace = true }
 features-wallet-service = { workspace = true }
 features-wallet-stream = { workspace = true }
+features-payments-core-stream = { workspace = true }

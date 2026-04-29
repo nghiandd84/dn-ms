@@ -105,7 +105,8 @@ impl Into<TransactionForCreateDto> for TransactionForCreateRequest {
             transaction_type: self.transaction_type,
             amount: self.amount,
             currency: self.currency,
-            status: "INITIATED".to_string(), // Default status for new transactions
+            status: "INITIATED".to_string(),
+            reference_id: self.reference_id.unwrap_or_default(),
             description: self.description.unwrap_or_default(),
         }
     }

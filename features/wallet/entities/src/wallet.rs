@@ -9,7 +9,7 @@ use shared_shared_macro::Dto;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "wallets")]
 #[dto(name(WalletForCreate), columns(user_id, currency, balance))]
-#[dto(name(WalletForUpdate), columns(balance, currency, is_active), option)]
+#[dto(name(WalletForUpdate), columns(balance, currency, is_active, version), option)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,

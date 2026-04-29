@@ -3,12 +3,19 @@ use std::time::Duration;
 use axum::{middleware::from_fn, Router};
 use features_auth_remote::PermissionService;
 use tokio::{spawn, time::interval};
-use tracing::debug;
+use tracing::{debug, error};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use shared_shared_app::{
-    config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
+    config::AppConfig,
+    discovery::get_consul_client,
+    event_task::{
+        consumer::{consumer_task, ConsumerConfig},
+        producer::{Producer, ProducerConfig},
+    },
+    start_app::StartApp,
+    state::AppState,
 };
 use shared_shared_config::db::Database;
 
@@ -16,6 +23,7 @@ use features_wallet_migrations::{Migrator, MigratorTrait};
 use features_wallet_model::state::{WalletAppState, WalletCacheState};
 
 use crate::{
+    consumers::payment_core_consumer::handler::handle_payment_core_message,
     doc::ApiDoc,
     middleware::idempotency_tracking_middleware,
     routes::{
@@ -40,7 +48,44 @@ impl<'a> StartApp<WalletAppState, WalletCacheState> for MyApp<'a> {
         app_state: &mut AppState<WalletAppState, WalletCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let mut clone_app_state = app_state.clone();
+        let consumer_app_state = app_state.clone();
+        let app_key = self.config.app_key.clone();
+        let instance_id = std::env::var("INSTANCE_ID");
+        let payment_core_kafka_group = if let Ok(ref id) = instance_id {
+            format!("wallet_for_payment_core_{}", id)
+        } else {
+            "wallet_for_payment_core".to_string()
+        };
+
+        let consumer_config = ConsumerConfig::from_env(
+            format!("{}_CONSUMER_PAYMENT_CORE_KAFKA_BOOTSTRAP_SERVERS", app_key),
+            format!("{}_CONSUMER_PAYMENT_CORE_KAFKA_TOPIC", app_key),
+            payment_core_kafka_group,
+        );
+
         async move {
+            // Spawn payment-core consumer
+            let dlq_producer = Producer::from_config(ProducerConfig::from_env(
+                "DLQ_KAFKA_BOOTSTRAP_SERVERS".to_string(),
+                "DLQ_KAFKA_TOPIC".to_string(),
+            ))
+            .await;
+            let dlq_app_key = app_key.clone();
+            tokio::spawn(async move {
+                if let Err(e) = consumer_task(
+                    consumer_config,
+                    consumer_app_state,
+                    dlq_producer,
+                    dlq_app_key,
+                    handle_payment_core_message,
+                )
+                .await
+                {
+                    error!("Error in payment-core consumer task: {:?}", e);
+                }
+            });
+
+            // Permission sync loop
             spawn(async move {
                 let service_key = "WALLET".to_string();
                 let mut interval = interval(Duration::from_secs(30));

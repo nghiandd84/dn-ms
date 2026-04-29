@@ -36,6 +36,7 @@ pub struct WalletForUpdateRequest {
     pub balance: Option<f32>,
     pub currency: Option<String>,
     pub is_active: Option<bool>,
+    pub version: Option<i32>,
 }
 
 impl Into<WalletForUpdateDto> for WalletForUpdateRequest {
@@ -44,6 +45,7 @@ impl Into<WalletForUpdateDto> for WalletForUpdateRequest {
             balance: self.balance,
             currency: self.currency,
             is_active: self.is_active,
+            version: self.version,
         }
     }
 }

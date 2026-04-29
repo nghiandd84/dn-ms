@@ -10,7 +10,7 @@ use shared_shared_macro::Dto;
 #[sea_orm(table_name = "transactions")]
 #[dto(
     name(TransactionForCreate),
-    columns(wallet_id, transaction_type, amount, currency, status, description)
+    columns(wallet_id, transaction_type, amount, currency, status, reference_id, description)
 )]
 #[dto(name(TransactionForUpdate), columns(status, description), option)]
 pub struct Model {
