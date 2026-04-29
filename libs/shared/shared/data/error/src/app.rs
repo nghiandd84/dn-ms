@@ -33,6 +33,11 @@ pub enum AppError {
     Validation(validator::ValidationErrors),
 }
 
+pub fn remote_err(e: String) -> AppError {
+    debug!("Remote service error: {e}");
+    AppError::Internal(e)
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let mut response = StatusCode::INTERNAL_SERVER_ERROR.into_response();

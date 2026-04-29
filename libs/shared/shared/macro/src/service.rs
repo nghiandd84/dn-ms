@@ -126,7 +126,7 @@ pub fn remote_service(input: RemoteServiceInput) -> TokenStream {
                 headers_hashmap: HashMap<String, String>,
             ) -> Result<Value, String>
             {
-                debug!("Calling API: {} with method {}", endpoint, method);
+                debug!("Calling API: {} with method {} body: {:?} and headers: {:?}", endpoint, method, json_body, headers_hashmap);
 
                 let client: ClientWithMiddleware = ClientBuilder::new(Client::new())
                     .with(shared_shared_middleware::RequestTracingMiddleware)

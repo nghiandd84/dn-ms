@@ -14,7 +14,7 @@ use features_payments_core_entities::payment::{
     ModelOptionDto, PaymentForCreateDto, PaymentForUpdateDto,
 };
 
-#[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
+#[derive(Serialize, Deserialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct PaymentData {
     pub id: Option<Uuid>,
     pub transaction_id: Option<String>,
