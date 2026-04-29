@@ -1,0 +1,14 @@
+[package]
+name = "features-payments-core-stream"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+name = "features_payments_core_stream"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }

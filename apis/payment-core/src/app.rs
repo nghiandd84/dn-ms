@@ -47,7 +47,9 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let clone_app_state = app_state.clone();
         let mut perm_app_state = app_state.clone();
+        let mut producer_app_state = app_state.clone();
         let app_key = self.config.app_key.clone();
+        let producer_app_key = app_key.clone();
         let instance_id = std::env::var("INSTANCE_ID");
         let event_kafka_group = if instance_id.is_ok() {
             format!("payment_core_for_event_{}", instance_id.unwrap())
@@ -61,6 +63,14 @@ impl<'a> StartApp<PaymentsCoreAppState, PaymentsCoreCacheState> for MyApp<'a> {
             event_kafka_group,
         );
         async move {
+            // Setup producer for payment_core_topic
+            let producer_config = ProducerConfig::from_env(
+                format!("{}_KAFKA_BOOTSTRAP_SERVERS", producer_app_key),
+                format!("{}_KAFKA_TOPIC", producer_app_key),
+            );
+            let producer = Producer::from_config(producer_config).await;
+            producer_app_state.set_producer(features_payments_core_stream::PRODUCER_KEY.to_string(), producer);
+
             let dlq_producer = Producer::from_config(ProducerConfig::from_env(
                 "DLQ_KAFKA_BOOTSTRAP_SERVERS".to_string(),
                 "DLQ_KAFKA_TOPIC".to_string(),

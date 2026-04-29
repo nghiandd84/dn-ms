@@ -37,3 +37,4 @@ features-payments-core-repo = { workspace = true }
 features-payments-core-service = { workspace = true }
 
 features-event-stream = { workspace = true }
+features-payments-core-stream = { workspace = true }

@@ -1,9 +1,9 @@
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, State},
     routing::{delete, get, patch, post},
     Router,
 };
-use tracing::{instrument, Level};
+use tracing::{debug, instrument, Level};
 use uuid::Uuid;
 
 use shared_shared_auth::permission::Auth;
@@ -17,7 +17,10 @@ use features_payments_core_model::{
     state::{PaymentsCoreAppState, PaymentsCoreCacheState},
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{
+    event_task::producer::ProducerMessage,
+    state::AppState,
+};
 use shared_shared_data_app::{
     filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
@@ -29,6 +32,9 @@ use shared_shared_data_core::{
 };
 
 use features_payments_core_service::PaymentService;
+use features_payments_core_stream::{
+    PaymentCoreEventMessage, PaymentSucceededMessage, PRODUCER_KEY,
+};
 
 const TAG: &str = "payment";
 
@@ -104,10 +110,34 @@ pub async fn filter_payments(
 #[instrument(level = Level::INFO, skip_all)]
 pub async fn update_payment(
     _auth: Auth<CanUpdatePayment>,
+    state: State<AppState<PaymentsCoreAppState, PaymentsCoreCacheState>>,
     Path(payment_id): Path<Uuid>,
     ValidJson(req): ValidJson<PaymentForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
+    let is_succeeded = req.status.as_deref() == Some("succeeded");
     PaymentService::update_payment(payment_id, req).await?;
+
+    if is_succeeded {
+        let payment = PaymentService::get_payment_by_id(payment_id).await?;
+        let producer = state
+            .get_producer(PRODUCER_KEY.to_string())
+            .expect("Producer not found");
+        let message = ProducerMessage {
+            key: None,
+            payload: PaymentCoreEventMessage::Succeeded {
+                message: PaymentSucceededMessage {
+                    payment_id,
+                    user_id: payment.user_id.unwrap_or_default(),
+                    amount: payment.amount.unwrap_or_default(),
+                    currency: payment.currency.unwrap_or_default(),
+                },
+            },
+        };
+        if let Err(e) = producer.send(&message).await {
+            debug!("Error sending payment success event to Kafka: {:?}", e.reason);
+        }
+    }
+
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(payment_id),

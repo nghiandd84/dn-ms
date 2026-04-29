@@ -95,6 +95,8 @@ members = [
     "features/payments/core/model", 
     "features/payments/core/repo", 
     "features/payments/core/service", 
+    "features/payments/core/remote", 
+    "features/payments/core/stream", 
 
     "features/payments/stripe/entities",
     "features/payments/stripe/migrations",
@@ -323,6 +325,8 @@ features-payments-core-migrations = { path = "./features/payments/core/migration
 features-payments-core-model = { path = "./features/payments/core/model"}
 features-payments-core-repo = { path = "./features/payments/core/repo"}
 features-payments-core-service = { path = "./features/payments/core/service"}
+features-payments-core-remote = { path = "./features/payments/core/remote"}
+features-payments-core-stream = { path = "./features/payments/core/stream"}
 
 
 # Payment Stripe features
