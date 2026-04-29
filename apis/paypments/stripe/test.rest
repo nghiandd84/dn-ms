@@ -1,0 +1,227 @@
+@baseUrl = http://localhost:5121
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
+@paymentIntentId = 00000000-0000-0000-0000-000000000000
+@refundId = 00000000-0000-0000-0000-000000000000
+@webhookEventId = 00000000-0000-0000-0000-000000000000
+@apiLogId = 00000000-0000-0000-0000-000000000000
+@paymentId = 00000000-0000-0000-0000-000000000000
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== PAYMENT FLOW =====
+
+### Initiate Payment (creates core payment + Stripe PaymentIntent)
+POST {{baseUrl}}/stripe/flow/initiate
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "amount": 2000,
+  "currency": "usd",
+  "idempotency_key": "order-001-user-002",
+  "metadata": {
+    "order_id": "order-002"
+  }
+}
+### Response of /stripe/flow/initiate
+{
+    "client_secret": "pi_3TRNh9HWlGxwCogl1an7Vs2G_secret_iPpnqMVFeYjLzA5TZuPoiLAE8",
+    "payment_id": "3d76a352-9836-46e6-9242-230e30366cf5",
+    "stripe_payment_intent_id": "pi_3TRNh9HWlGxwCogl1an7Vs2G"
+  }
+
+### Refund Payment
+POST {{baseUrl}}/stripe/flow/refund
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "{{paymentId}}",
+  "amount": 1000,
+  "reason": "requested_by_customer"
+}
+
+### Refund Payment (full)
+POST {{baseUrl}}/stripe/flow/refund
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "{{paymentId}}"
+}
+
+### Webhook (called by Stripe — signature required)
+POST {{baseUrl}}/stripe/flow/webhook
+Content-Type: application/json
+stripe-signature: t=1234567890,v1=test_signature
+
+{
+  "id": "evt_test_001",
+  "type": "payment_intent.succeeded",
+  "data": {
+    "object": {
+      "id": "pi_test_001",
+      "amount": 2000,
+      "currency": "usd",
+      "status": "succeeded"
+    }
+  }
+}
+
+### ===== STRIPE PAYMENT INTENTS (CRUD) =====
+
+### Get All Payment Intents
+GET {{baseUrl}}/stripe/payment-intents
+baggage: {{baggage}}
+
+### Search Payment Intents
+GET {{baseUrl}}/stripe/payment-intents?status=eq|succeeded&order_name=created_at&order_direction=1
+baggage: {{baggage}}
+
+### Create Payment Intent Record
+POST {{baseUrl}}/stripe/payment-intents
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "stripe_payment_intent_id": "pi_test_manual_001",
+  "amount": 5000,
+  "currency": "usd",
+  "status": "requires_payment_method",
+  "client_secret": "pi_test_manual_001_secret_xxx",
+  "metadata": {"order_id": "manual-001"}
+}
+
+### Get Payment Intent by ID
+GET {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+baggage: {{baggage}}
+
+### Update Payment Intent
+PATCH {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status": "succeeded"
+}
+
+### Delete Payment Intent
+DELETE {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+baggage: {{baggage}}
+
+### ===== STRIPE REFUNDS (CRUD) =====
+
+### Get All Refunds
+GET {{baseUrl}}/stripe/refunds
+baggage: {{baggage}}
+
+### Create Refund Record
+POST {{baseUrl}}/stripe/refunds
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "stripe_refund_id": "re_test_001",
+  "stripe_payment_intent_id": "pi_test_001",
+  "amount": 1000,
+  "currency": "usd",
+  "status": "succeeded",
+  "reason": "requested_by_customer"
+}
+
+### Get Refund by ID
+GET {{baseUrl}}/stripe/refunds/{{refundId}}
+baggage: {{baggage}}
+
+### Update Refund
+PATCH {{baseUrl}}/stripe/refunds/{{refundId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status": "succeeded"
+}
+
+### Delete Refund
+DELETE {{baseUrl}}/stripe/refunds/{{refundId}}
+baggage: {{baggage}}
+
+### ===== STRIPE WEBHOOK EVENTS (CRUD) =====
+
+### Get All Webhook Events
+GET {{baseUrl}}/stripe/webhook-events
+baggage: {{baggage}}
+
+### Create Webhook Event Record
+POST {{baseUrl}}/stripe/webhook-events
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "stripe_event_id": "evt_manual_001",
+  "event_type": "payment_intent.succeeded",
+  "event_data": {"object": {"id": "pi_test_001", "status": "succeeded"}},
+  "processed": false
+}
+
+### Get Webhook Event by ID
+GET {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+baggage: {{baggage}}
+
+### Update Webhook Event
+PATCH {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "processed": true
+}
+
+### Delete Webhook Event
+DELETE {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+baggage: {{baggage}}
+
+### ===== STRIPE API LOGS (CRUD) =====
+
+### Get All API Logs
+GET {{baseUrl}}/stripe/api-logs
+baggage: {{baggage}}
+
+### Create API Log Record
+POST {{baseUrl}}/stripe/api-logs
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "endpoint": "/v1/payment_intents",
+  "method": "POST",
+  "request_body": "{\"amount\":2000,\"currency\":\"usd\"}",
+  "response_body": "{\"id\":\"pi_test_001\",\"status\":\"requires_payment_method\"}",
+  "status_code": 200,
+  "stripe_request_id": "req_test_001"
+}
+
+### Get API Log by ID
+GET {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+baggage: {{baggage}}
+
+### Update API Log
+PATCH {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status_code": 201,
+  "response_body": "{\"id\":\"pi_test_001\",\"status\":\"succeeded\"}"
+}
+
+### Delete API Log
+DELETE {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+baggage: {{baggage}}

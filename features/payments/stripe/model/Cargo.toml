@@ -23,4 +23,6 @@ shared-shared-data-auth =  { workspace = true }
 shared-shared-data-error =  { workspace = true }
 shared-shared-macro = { workspace = true }
 
+stripe = { package = "async-stripe", version = "0.41", features = ["runtime-tokio-hyper"] }
+
 features-payments-stripe-entities = { workspace = true }

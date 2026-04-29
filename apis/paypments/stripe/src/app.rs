@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use axum::Router;
 use features_auth_remote::PermissionService;
+use features_payments_core_remote::PaymentRemoteService;
 use tokio::{spawn, time::interval};
 use tracing::{debug, error};
 use utoipa::OpenApi;
@@ -26,6 +27,7 @@ use crate::{
     consumers::event_consumer::handler::handle_event_consumer_message,
     doc::ApiDoc,
     routes::{
+        payment_flow::routes as payment_flow_routes,
         stripe_api_log::routes as api_log_routes,
         stripe_payment_intent::routes as payment_intent_routes,
         stripe_refund::routes as refund_routes,
@@ -88,6 +90,7 @@ impl<'a> StartApp<PaymentsStripeAppState, PaymentsStripeCacheState> for MyApp<'a
                     interval.tick().await;
                     let consul_client = get_consul_client().unwrap();
                     PermissionService::update_remote(&consul_client).await;
+                    PaymentRemoteService::update_remote(&consul_client).await;
                     let all_permissions =
                         PermissionService::get_roles_by_service_name(service_key.clone()).await;
                     for (role_name, permissions) in all_permissions {
@@ -128,6 +131,7 @@ impl<'a> StartApp<PaymentsStripeAppState, PaymentsStripeCacheState> for MyApp<'a
             .merge(refund_routes(app_state))
             .merge(webhook_event_routes(app_state))
             .merge(api_log_routes(app_state))
+            .merge(payment_flow_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
@@ -141,11 +145,17 @@ pub async fn start_app() -> Result<(), Box<dyn std::error::Error>> {
         true,
     );
 
+    let stripe_secret = std::env::var("STRIPE_SECRET_KEY")
+        .expect("STRIPE_SECRET_KEY must be set");
+    let stripe_client = stripe::Client::new(stripe_secret);
+
     let mut my_app = MyApp {
         config: &app_config,
     };
 
-    my_app.start_app(None).await?;
+    my_app
+        .start_app(Some(PaymentsStripeAppState { stripe_client }))
+        .await?;
 
     debug!("Stripe app stopped");
 

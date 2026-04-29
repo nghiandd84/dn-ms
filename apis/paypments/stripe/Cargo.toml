@@ -33,6 +33,8 @@ shared-shared-data-app = { workspace = true }
 
 features-auth-remote = { workspace = true }
 
+features-payments-core-remote = { workspace = true }
+
 features-payments-stripe-migrations = { workspace = true }
 features-payments-stripe-model = { workspace = true }
 features-payments-stripe-entities = { workspace = true }

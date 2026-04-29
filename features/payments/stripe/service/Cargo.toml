@@ -10,11 +10,16 @@ path = "src/lib.rs"
 
 [dependencies]
 sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+serde_json = { workspace = true }
+stripe = { package = "async-stripe", version = "0.41", features = ["runtime-tokio-hyper"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
+
+features-payments-core-model = { workspace = true }
+features-payments-core-remote = { workspace = true }
 
 features-payments-stripe-entities = { workspace = true }
 features-payments-stripe-model = { workspace = true }

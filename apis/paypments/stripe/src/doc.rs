@@ -30,7 +30,10 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::stripe_refund::get_refund,
         crate::routes::stripe_refund::filter_refunds,
         crate::routes::stripe_refund::update_refund,
-        crate::routes::stripe_refund::delete_refund
+        crate::routes::stripe_refund::delete_refund,
+        crate::routes::payment_flow::initiate_payment,
+        crate::routes::payment_flow::handle_webhook,
+        crate::routes::payment_flow::refund_payment,
     ),
     tags(
         (name = "stripe", description = "Stripe payment endpoints"),

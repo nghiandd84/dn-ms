@@ -1,13 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct PaymentsStripeAppState {}
-
-impl Default for PaymentsStripeAppState {
-    fn default() -> Self {
-        Self {}
-    }
+#[derive(Clone)]
+pub struct PaymentsStripeAppState {
+    pub stripe_client: stripe::Client,
 }
+
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum PaymentsStripeCacheState {

@@ -1,3 +1,4 @@
+pub mod payment_flow;
 pub mod state;
 pub mod stripe_api_log;
 pub mod stripe_payment_intent;
