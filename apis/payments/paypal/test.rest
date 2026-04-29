@@ -1,0 +1,235 @@
+@baseUrl = http://localhost:5181
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
+@orderId = 00000000-0000-0000-0000-000000000000
+@refundId = 00000000-0000-0000-0000-000000000000
+@webhookEventId = 00000000-0000-0000-0000-000000000000
+@apiLogId = 00000000-0000-0000-0000-000000000000
+@paymentId = 00000000-0000-0000-0000-000000000000
+@paypalOrderId = 5O190127TN364715T
+
+### healthchecker
+GET {{baseUrl}}/healthchecker
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== PAYMENT FLOW =====
+
+### Initiate Payment (creates core payment + PayPal Order)
+POST {{baseUrl}}/flow/initiate
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "amount": 2000,
+  "currency": "usd",
+  "idempotency_key": "order-001-user-002",
+  "metadata": {
+    "wallet_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  }
+}
+
+### Capture Payment (after buyer approves on PayPal)
+POST {{baseUrl}}/flow/capture
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "paypal_order_id": "{{paypalOrderId}}"
+}
+
+### Refund Payment (partial)
+POST {{baseUrl}}/flow/refund
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "{{paymentId}}",
+  "amount": 1000,
+  "reason": "requested_by_customer"
+}
+
+### Refund Payment (full)
+POST {{baseUrl}}/flow/refund
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "{{paymentId}}"
+}
+
+### Webhook (called by PayPal)
+POST {{baseUrl}}/flow/webhook
+Content-Type: application/json
+
+{
+  "id": "WH-TEST-00000000001",
+  "event_type": "PAYMENT.CAPTURE.COMPLETED",
+  "resource": {
+    "id": "2GG279541U471931P",
+    "status": "COMPLETED",
+    "amount": {
+      "currency_code": "USD",
+      "value": "20.00"
+    },
+    "supplementary_data": {
+      "related_ids": {
+        "order_id": "5O190127TN364715T"
+      }
+    }
+  }
+}
+
+### ===== PAYPAL ORDERS (CRUD) =====
+
+### Get All Orders
+GET {{baseUrl}}/orders
+baggage: {{baggage}}
+
+### Search Orders
+GET {{baseUrl}}/orders?status=eq|COMPLETED&order_name=created_at&order_direction=1
+baggage: {{baggage}}
+
+### Create Order Record
+POST {{baseUrl}}/orders
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "paypal_order_id": "5O190127TN364715T",
+  "amount": 2000,
+  "currency": "usd",
+  "status": "CREATED",
+  "approval_url": "https://www.sandbox.paypal.com/checkoutnow?token=5O190127TN364715T"
+}
+
+### Get Order by ID
+GET {{baseUrl}}/orders/{{orderId}}
+baggage: {{baggage}}
+
+### Update Order
+PATCH {{baseUrl}}/orders/{{orderId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status": "COMPLETED",
+  "capture_id": "2GG279541U471931P"
+}
+
+### Delete Order
+DELETE {{baseUrl}}/orders/{{orderId}}
+baggage: {{baggage}}
+
+### ===== PAYPAL REFUNDS (CRUD) =====
+
+### Get All Refunds
+GET {{baseUrl}}/refunds
+baggage: {{baggage}}
+
+### Create Refund Record
+POST {{baseUrl}}/refunds
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "payment_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "paypal_refund_id": "1JU08902781691411",
+  "paypal_capture_id": "2GG279541U471931P",
+  "amount": 1000,
+  "currency": "usd",
+  "status": "COMPLETED",
+  "reason": "requested_by_customer"
+}
+
+### Get Refund by ID
+GET {{baseUrl}}/refunds/{{refundId}}
+baggage: {{baggage}}
+
+### Update Refund
+PATCH {{baseUrl}}/refunds/{{refundId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status": "COMPLETED"
+}
+
+### Delete Refund
+DELETE {{baseUrl}}/refunds/{{refundId}}
+baggage: {{baggage}}
+
+### ===== PAYPAL WEBHOOK EVENTS (CRUD) =====
+
+### Get All Webhook Events
+GET {{baseUrl}}/webhook-events
+baggage: {{baggage}}
+
+### Create Webhook Event Record
+POST {{baseUrl}}/webhook-events
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "paypal_event_id": "WH-TEST-00000000002",
+  "event_type": "CHECKOUT.ORDER.APPROVED",
+  "event_data": {"resource": {"id": "5O190127TN364715T", "status": "APPROVED"}},
+  "processed": false
+}
+
+### Get Webhook Event by ID
+GET {{baseUrl}}/webhook-events/{{webhookEventId}}
+baggage: {{baggage}}
+
+### Update Webhook Event
+PATCH {{baseUrl}}/webhook-events/{{webhookEventId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "processed": true
+}
+
+### Delete Webhook Event
+DELETE {{baseUrl}}/webhook-events/{{webhookEventId}}
+baggage: {{baggage}}
+
+### ===== PAYPAL API LOGS (CRUD) =====
+
+### Get All API Logs
+GET {{baseUrl}}/api-logs
+baggage: {{baggage}}
+
+### Create API Log Record
+POST {{baseUrl}}/api-logs
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "endpoint": "/v2/checkout/orders",
+  "method": "POST",
+  "request_body": "{\"intent\":\"CAPTURE\",\"purchase_units\":[{\"amount\":{\"currency_code\":\"USD\",\"value\":\"20.00\"}}]}",
+  "response_body": "{\"id\":\"5O190127TN364715T\",\"status\":\"CREATED\"}",
+  "status_code": 201,
+  "paypal_request_id": "order-001-user-002"
+}
+
+### Get API Log by ID
+GET {{baseUrl}}/api-logs/{{apiLogId}}
+baggage: {{baggage}}
+
+### Update API Log
+PATCH {{baseUrl}}/api-logs/{{apiLogId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "status_code": 201,
+  "response_body": "{\"id\":\"5O190127TN364715T\",\"status\":\"COMPLETED\"}"
+}
+
+### Delete API Log
+DELETE {{baseUrl}}/api-logs/{{apiLogId}}
+baggage: {{baggage}}

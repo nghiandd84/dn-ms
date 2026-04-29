@@ -7,7 +7,7 @@ End-to-end flow from Stripe payment success to wallet balance credit via Kafka.
 ```
 Client                    Stripe Service              Payment-Core             Wallet
   |                            |                           |                     |
-  | POST /stripe/flow/initiate |                           |                     |
+  | POST /flow/initiate |                           |                     |
   | { amount, currency,        |                           |                     |
   |   metadata: {wallet_id} }  |                           |                     |
   |                            |-- create_payment -------->|                     |

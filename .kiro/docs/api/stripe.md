@@ -11,7 +11,7 @@ Integrates with Stripe for payment processing, webhooks, and reconciliation.
 
 ## Payment Flow Endpoints
 
-### POST /stripe/flow/initiate
+### POST /flow/initiate
 Initiates an end-to-end payment: creates a core payment record, calls Stripe to create a PaymentIntent, and returns the `client_secret` for frontend Stripe.js confirmation.
 
 **Auth:** `Auth<CanCreatePaymentIntent>`
@@ -40,7 +40,7 @@ Initiates an end-to-end payment: creates a core payment record, calls Stripe to 
 - If Stripe API fails → core payment is marked `"failed"`, a failed payment attempt is logged, error returned to caller.
 - If post-Stripe DB updates fail (update core payment, persist stripe PI record) → logged as errors but `client_secret` is still returned since the Stripe PaymentIntent exists. Webhook will reconcile.
 
-### POST /stripe/flow/webhook
+### POST /flow/webhook
 Receives Stripe webhook events. Verifies signature, persists the event, and updates payment + PI status.
 
 **Auth:** `PublicAccess` (called by Stripe)
@@ -53,7 +53,7 @@ Receives Stripe webhook events. Verifies signature, persists the event, and upda
 - `payment_intent.canceled` → status `"canceled"`
 - `payment_intent.processing` → status `"processing"`
 
-### POST /stripe/flow/refund
+### POST /flow/refund
 Creates a refund via Stripe API and persists records.
 
 **Auth:** `Auth<CanCreatePaymentIntent>`
@@ -80,32 +80,32 @@ Omit `amount` for full refund.
 ## CRUD Endpoints
 
 ### Stripe Payment Intents
-- `POST /stripe/payment-intents` — Create record
-- `GET /stripe/payment-intents` — List/filter
-- `GET /stripe/payment-intents/{id}` — Get by ID
-- `PATCH /stripe/payment-intents/{id}` — Update
-- `DELETE /stripe/payment-intents/{id}` — Delete
+- `POST /payment-intents` — Create record
+- `GET /payment-intents` — List/filter
+- `GET /payment-intents/{id}` — Get by ID
+- `PATCH /payment-intents/{id}` — Update
+- `DELETE /payment-intents/{id}` — Delete
 
 ### Stripe Refunds
-- `POST /stripe/refunds` — Create record
-- `GET /stripe/refunds` — List/filter
-- `GET /stripe/refunds/{id}` — Get by ID
-- `PATCH /stripe/refunds/{id}` — Update
-- `DELETE /stripe/refunds/{id}` — Delete
+- `POST /refunds` — Create record
+- `GET /refunds` — List/filter
+- `GET /refunds/{id}` — Get by ID
+- `PATCH /refunds/{id}` — Update
+- `DELETE /refunds/{id}` — Delete
 
 ### Stripe Webhook Events
-- `POST /stripe/webhook-events` — Create record
-- `GET /stripe/webhook-events` — List/filter
-- `GET /stripe/webhook-events/{id}` — Get by ID
-- `PATCH /stripe/webhook-events/{id}` — Update
-- `DELETE /stripe/webhook-events/{id}` — Delete
+- `POST /webhook-events` — Create record
+- `GET /webhook-events` — List/filter
+- `GET /webhook-events/{id}` — Get by ID
+- `PATCH /webhook-events/{id}` — Update
+- `DELETE /webhook-events/{id}` — Delete
 
 ### Stripe API Logs
-- `POST /stripe/api-logs` — Create record
-- `GET /stripe/api-logs` — List/filter
-- `GET /stripe/api-logs/{id}` — Get by ID
-- `PATCH /stripe/api-logs/{id}` — Update
-- `DELETE /stripe/api-logs/{id}` — Delete
+- `POST /api-logs` — Create record
+- `GET /api-logs` — List/filter
+- `GET /api-logs/{id}` — Get by ID
+- `PATCH /api-logs/{id}` — Update
+- `DELETE /api-logs/{id}` — Delete
 
 ## Permissions
 

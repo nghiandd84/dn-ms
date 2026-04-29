@@ -15,7 +15,7 @@ GET {{baseUrl}}/swagger-ui/
 ### ===== PAYMENT FLOW =====
 
 ### Initiate Payment (creates core payment + Stripe PaymentIntent)
-POST {{baseUrl}}/stripe/flow/initiate
+POST {{baseUrl}}/flow/initiate
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -36,7 +36,7 @@ baggage: {{baggage}}
   }
 
 ### Refund Payment
-POST {{baseUrl}}/stripe/flow/refund
+POST {{baseUrl}}/flow/refund
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -47,7 +47,7 @@ baggage: {{baggage}}
 }
 
 ### Refund Payment (full)
-POST {{baseUrl}}/stripe/flow/refund
+POST {{baseUrl}}/flow/refund
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -56,7 +56,7 @@ baggage: {{baggage}}
 }
 
 ### Webhook (called by Stripe — signature required)
-POST {{baseUrl}}/stripe/flow/webhook
+POST {{baseUrl}}/flow/webhook
 Content-Type: application/json
 stripe-signature: t=1234567890,v1=test_signature
 
@@ -76,15 +76,15 @@ stripe-signature: t=1234567890,v1=test_signature
 ### ===== STRIPE PAYMENT INTENTS (CRUD) =====
 
 ### Get All Payment Intents
-GET {{baseUrl}}/stripe/payment-intents
+GET {{baseUrl}}/payment-intents
 baggage: {{baggage}}
 
 ### Search Payment Intents
-GET {{baseUrl}}/stripe/payment-intents?status=eq|succeeded&order_name=created_at&order_direction=1
+GET {{baseUrl}}/payment-intents?status=eq|succeeded&order_name=created_at&order_direction=1
 baggage: {{baggage}}
 
 ### Create Payment Intent Record
-POST {{baseUrl}}/stripe/payment-intents
+POST {{baseUrl}}/payment-intents
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -99,11 +99,11 @@ baggage: {{baggage}}
 }
 
 ### Get Payment Intent by ID
-GET {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+GET {{baseUrl}}/payment-intents/{{paymentIntentId}}
 baggage: {{baggage}}
 
 ### Update Payment Intent
-PATCH {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+PATCH {{baseUrl}}/payment-intents/{{paymentIntentId}}
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -112,17 +112,17 @@ baggage: {{baggage}}
 }
 
 ### Delete Payment Intent
-DELETE {{baseUrl}}/stripe/payment-intents/{{paymentIntentId}}
+DELETE {{baseUrl}}/payment-intents/{{paymentIntentId}}
 baggage: {{baggage}}
 
 ### ===== STRIPE REFUNDS (CRUD) =====
 
 ### Get All Refunds
-GET {{baseUrl}}/stripe/refunds
+GET {{baseUrl}}/refunds
 baggage: {{baggage}}
 
 ### Create Refund Record
-POST {{baseUrl}}/stripe/refunds
+POST {{baseUrl}}/refunds
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -137,11 +137,11 @@ baggage: {{baggage}}
 }
 
 ### Get Refund by ID
-GET {{baseUrl}}/stripe/refunds/{{refundId}}
+GET {{baseUrl}}/refunds/{{refundId}}
 baggage: {{baggage}}
 
 ### Update Refund
-PATCH {{baseUrl}}/stripe/refunds/{{refundId}}
+PATCH {{baseUrl}}/refunds/{{refundId}}
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -150,17 +150,17 @@ baggage: {{baggage}}
 }
 
 ### Delete Refund
-DELETE {{baseUrl}}/stripe/refunds/{{refundId}}
+DELETE {{baseUrl}}/refunds/{{refundId}}
 baggage: {{baggage}}
 
 ### ===== STRIPE WEBHOOK EVENTS (CRUD) =====
 
 ### Get All Webhook Events
-GET {{baseUrl}}/stripe/webhook-events
+GET {{baseUrl}}/webhook-events
 baggage: {{baggage}}
 
 ### Create Webhook Event Record
-POST {{baseUrl}}/stripe/webhook-events
+POST {{baseUrl}}/webhook-events
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -172,11 +172,11 @@ baggage: {{baggage}}
 }
 
 ### Get Webhook Event by ID
-GET {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+GET {{baseUrl}}/webhook-events/{{webhookEventId}}
 baggage: {{baggage}}
 
 ### Update Webhook Event
-PATCH {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+PATCH {{baseUrl}}/webhook-events/{{webhookEventId}}
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -185,17 +185,17 @@ baggage: {{baggage}}
 }
 
 ### Delete Webhook Event
-DELETE {{baseUrl}}/stripe/webhook-events/{{webhookEventId}}
+DELETE {{baseUrl}}/webhook-events/{{webhookEventId}}
 baggage: {{baggage}}
 
 ### ===== STRIPE API LOGS (CRUD) =====
 
 ### Get All API Logs
-GET {{baseUrl}}/stripe/api-logs
+GET {{baseUrl}}/api-logs
 baggage: {{baggage}}
 
 ### Create API Log Record
-POST {{baseUrl}}/stripe/api-logs
+POST {{baseUrl}}/api-logs
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -209,11 +209,11 @@ baggage: {{baggage}}
 }
 
 ### Get API Log by ID
-GET {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+GET {{baseUrl}}/api-logs/{{apiLogId}}
 baggage: {{baggage}}
 
 ### Update API Log
-PATCH {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+PATCH {{baseUrl}}/api-logs/{{apiLogId}}
 Content-Type: application/json
 baggage: {{baggage}}
 
@@ -223,5 +223,5 @@ baggage: {{baggage}}
 }
 
 ### Delete API Log
-DELETE {{baseUrl}}/stripe/api-logs/{{apiLogId}}
+DELETE {{baseUrl}}/api-logs/{{apiLogId}}
 baggage: {{baggage}}

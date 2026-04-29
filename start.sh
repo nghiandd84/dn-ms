@@ -27,6 +27,7 @@ export WALLET_PORT=5151
 export LOOKUP_PORT=5161
 export INVENTORY_PORT=5171
 export PAYMENT_STRIPE_PORT=5121
+export PAYMENT_PAYPAL_PORT=5181
 export NOTIFICATION_APP_PORT=4001
 #export KAFKA_CLUSTER_ID=I-vULn-DS7yWYemeCtBj_A
 export OTEL_VERSION=0.96.0
@@ -99,6 +100,11 @@ done
 # Kill Stripe Payment port
 for i in {1..2}; do 
     fuser -k -15 512$i/tcp 
+done
+
+# Kill PayPal Payment port
+for i in {1..2}; do 
+    fuser -k -15 518$i/tcp 
 done
 
 # Kill Merchant  port
@@ -274,6 +280,15 @@ for i in {1..2}; do
     echo "---  PAYMENT STRIPE on port $PORT ---"
     # Execute the program
     PAYMENT_STRIPE_PORT=512$i $APP_DIRECTORY/api-stripe  &
+done
+sleep 1s
+
+echo "------------ Start PayPal Payment API ------------"
+for i in {1..2}; do
+    PORT=518$i
+    echo "---  PAYMENT PAYPAL on port $PORT ---"
+    # Execute the program
+    PAYMENT_PAYPAL_PORT=518$i $APP_DIRECTORY/api-paypal  &
 done
 sleep 1s
 

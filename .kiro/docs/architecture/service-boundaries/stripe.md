@@ -19,7 +19,7 @@ Integrates with Stripe for payment processing, webhooks, and reconciliation.
 ```
 Frontend                    Stripe Service                 Payment Core          Stripe API
    │                             │                              │                    │
-   │  POST /stripe/flow/initiate │                              │                    │
+   │  POST /flow/initiate │                              │                    │
    │────────────────────────────>│  create_payment (remote)     │                    │
    │                             │─────────────────────────────>│                    │
    │                             │<─────────────────────────────│                    │
@@ -32,7 +32,7 @@ Frontend                    Stripe Service                 Payment Core         
    │<────────────────────────────│                              │                    │
    │                             │                              │                    │
    │  (Stripe.js confirms)       │                              │                    │
-   │                             │  POST /stripe/flow/webhook   │                    │
+   │                             │  POST /flow/webhook   │                    │
    │                             │<──────────────────────────────────────────────────│
    │                             │  update statuses (remote)    │                    │
    │                             │─────────────────────────────>│                    │
@@ -45,7 +45,7 @@ Frontend                    Stripe Service                 Payment Core         
 - **Refund failure**: Stripe error returned, no partial state changes
 
 ## Endpoints
-- `POST /stripe/flow/initiate` — Initiate payment (creates core payment + Stripe PI)
-- `POST /stripe/flow/webhook` — Stripe webhook handler (public)
-- `POST /stripe/flow/refund` — Refund a payment
-- CRUD for: `/stripe/payment-intents`, `/stripe/refunds`, `/stripe/webhook-events`, `/stripe/api-logs`
+- `POST /flow/initiate` — Initiate payment (creates core payment + Stripe PI)
+- `POST /flow/webhook` — Stripe webhook handler (public)
+- `POST /flow/refund` — Refund a payment
+- CRUD for: `/payment-intents`, `/refunds`, `/webhook-events`, `/api-logs`

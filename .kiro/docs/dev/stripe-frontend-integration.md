@@ -21,7 +21,7 @@ const stripe = Stripe("pk_your_publishable_key");
 ### 1. Call the backend
 
 ```typescript
-const res = await fetch("/stripe/flow/initiate", {
+const res = await fetch("/flow/initiate", {
   method: "POST",
   headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
   body: JSON.stringify({
@@ -108,7 +108,7 @@ if (clientSecret) {
 Refunds are entirely server-side. No Stripe.js interaction needed.
 
 ```typescript
-const res = await fetch("/stripe/flow/refund", {
+const res = await fetch("/flow/refund", {
   method: "POST",
   headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
   body: JSON.stringify({
@@ -132,7 +132,7 @@ if (status === "succeeded") {
 ```
 Client                          Backend                         Stripe
   |                                |                              |
-  |-- POST /stripe/flow/initiate ->|                              |
+  |-- POST /flow/initiate ->|                              |
   |                                |-- create core payment        |
   |                                |-- PaymentIntent::create ---->|
   |                                |<-- client_secret ------------|
@@ -149,5 +149,5 @@ Client                          Backend                         Stripe
 
 - `client_secret` is used by Stripe.js to securely confirm the payment on the client side
 - `stripe_payment_intent_id` is for tracking/display — not needed by Stripe.js
-- The webhook (`POST /stripe/flow/webhook`) reconciles the final payment status server-side
+- The webhook (`POST /flow/webhook`) reconciles the final payment status server-side
 - Refunds don't need client-side Stripe.js — just call the API and check the response status

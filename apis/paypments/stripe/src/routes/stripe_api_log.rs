@@ -33,7 +33,7 @@ const TAG: &str = "stripe_api_log";
 
 #[utoipa::path(
     post,
-    path = "/stripe/api-logs",
+    path = "/api-logs",
     tag = TAG,
     request_body = StripeApiLogForCreateRequest,
     responses(
@@ -54,7 +54,7 @@ async fn create_api_log(
 
 #[utoipa::path(
     get,
-    path = "/stripe/api-logs/{api_log_id}",
+    path = "/api-logs/{api_log_id}",
     tag = TAG,
     responses(
         (status = 200, description = "API log retrieved successfully", body = StripeApiLogData),
@@ -67,7 +67,7 @@ async fn get_api_log(_auth: Auth<CanReadApiLog>, Path(api_log_id): Path<Uuid>) -
 
 #[utoipa::path(
     get,
-    path = "/stripe/api-logs",
+    path = "/api-logs",
     tag = TAG,
     params(
         Order,
@@ -92,7 +92,7 @@ async fn filter_api_logs(
 
 #[utoipa::path(
     patch,
-    path = "/stripe/api-logs/{api_log_id}",
+    path = "/api-logs/{api_log_id}",
     tag = TAG,
     request_body = StripeApiLogForUpdateRequest,
     responses(
@@ -114,7 +114,7 @@ async fn update_api_log(
 
 #[utoipa::path(
     delete,
-    path = "/stripe/api-logs/{api_log_id}",
+    path = "/api-logs/{api_log_id}",
     tag = TAG,
     responses(
         (status = 200, description = "API log deleted successfully", body = OkUuidResponse),
@@ -131,10 +131,10 @@ async fn delete_api_log(_auth: Auth<CanDeleteApiLog>, Path(api_log_id): Path<Uui
 
 pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .route("/stripe/api-logs", post(create_api_log))
-        .route("/stripe/api-logs", get(filter_api_logs))
-        .route("/stripe/api-logs/{api_log_id}", get(get_api_log))
-        .route("/stripe/api-logs/{api_log_id}", patch(update_api_log))
-        .route("/stripe/api-logs/{api_log_id}", delete(delete_api_log))
+        .route("/api-logs", post(create_api_log))
+        .route("/api-logs", get(filter_api_logs))
+        .route("/api-logs/{api_log_id}", get(get_api_log))
+        .route("/api-logs/{api_log_id}", patch(update_api_log))
+        .route("/api-logs/{api_log_id}", delete(delete_api_log))
         .with_state(app_state.clone())
 }

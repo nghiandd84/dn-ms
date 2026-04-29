@@ -105,6 +105,13 @@ members = [
     "features/payments/stripe/service",
     "features/payments/stripe/stream",
 
+    "features/payments/paypal/entities",
+    "features/payments/paypal/migrations",
+    "features/payments/paypal/model",
+    "features/payments/paypal/repo",
+    "features/payments/paypal/service",
+    "features/payments/paypal/stream",
+
 
     "features/email-template/entities", 
     "features/email-template/migrations", 
@@ -136,6 +143,7 @@ members = [
     "apis/notification",
     "apis/payment-core",
     "apis/paypments/stripe",
+    "apis/payments/paypal",
     "apps/auth-notification",
     "apps/auth-web",
     "apps/gateway", 
@@ -336,6 +344,14 @@ features-payments-stripe-model = { path = "./features/payments/stripe/model"}
 features-payments-stripe-repo = { path = "./features/payments/stripe/repo"}
 features-payments-stripe-service = { path = "./features/payments/stripe/service"}
 features-payments-stripe-stream = { path = "./features/payments/stripe/stream"}
+
+# Payment PayPal features
+features-payments-paypal-entities = { path = "./features/payments/paypal/entities"}
+features-payments-paypal-migrations = { path = "./features/payments/paypal/migrations"}
+features-payments-paypal-model = { path = "./features/payments/paypal/model"}
+features-payments-paypal-repo = { path = "./features/payments/paypal/repo"}
+features-payments-paypal-service = { path = "./features/payments/paypal/service"}
+features-payments-paypal-stream = { path = "./features/payments/paypal/stream"}
 
 
 # Wallet Feature

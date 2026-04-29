@@ -31,7 +31,7 @@ const TAG: &str = "stripe_refund";
 
 #[utoipa::path(
     post,
-    path = "/stripe/refunds",
+    path = "/refunds",
     tag = TAG,
     request_body = StripeRefundForCreateRequest,
     responses(
@@ -52,7 +52,7 @@ async fn create_refund(
 
 #[utoipa::path(
     get,
-    path = "/stripe/refunds/{refund_id}",
+    path = "/refunds/{refund_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Refund retrieved successfully", body = StripeRefundData),
@@ -65,7 +65,7 @@ async fn get_refund(_auth: Auth<CanReadRefund>, Path(refund_id): Path<Uuid>) -> 
 
 #[utoipa::path(
     get,
-    path = "/stripe/refunds",
+    path = "/refunds",
     tag = TAG,
     params(
         Order,
@@ -90,7 +90,7 @@ async fn filter_refunds(
 
 #[utoipa::path(
     patch,
-    path = "/stripe/refunds/{refund_id}",
+    path = "/refunds/{refund_id}",
     tag = TAG,
     request_body = StripeRefundForUpdateRequest,
     responses(
@@ -112,7 +112,7 @@ async fn update_refund(
 
 #[utoipa::path(
     delete,
-    path = "/stripe/refunds/{refund_id}",
+    path = "/refunds/{refund_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Refund deleted successfully", body = OkUuidResponse),
@@ -129,10 +129,10 @@ async fn delete_refund(_auth: Auth<CanDeleteRefund>, Path(refund_id): Path<Uuid>
 
 pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .route("/stripe/refunds", post(create_refund))
-        .route("/stripe/refunds", get(filter_refunds))
-        .route("/stripe/refunds/{refund_id}", get(get_refund))
-        .route("/stripe/refunds/{refund_id}", patch(update_refund))
-        .route("/stripe/refunds/{refund_id}", delete(delete_refund))
+        .route("/refunds", post(create_refund))
+        .route("/refunds", get(filter_refunds))
+        .route("/refunds/{refund_id}", get(get_refund))
+        .route("/refunds/{refund_id}", patch(update_refund))
+        .route("/refunds/{refund_id}", delete(delete_refund))
         .with_state(app_state.clone())
 }

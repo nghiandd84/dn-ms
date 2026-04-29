@@ -36,7 +36,7 @@ const TAG: &str = "stripe_payment_intent";
 
 #[utoipa::path(
     post,
-    path = "/stripe/payment-intents",
+    path = "/payment-intents",
     tag = TAG,
     request_body = StripePaymentIntentForCreateRequest,
     responses(
@@ -57,7 +57,7 @@ async fn create_payment_intent(
 
 #[utoipa::path(
     get,
-    path = "/stripe/payment-intents/{payment_intent_id}",
+    path = "/payment-intents/{payment_intent_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Payment intent retrieved successfully", body = StripePaymentIntentData),
@@ -74,7 +74,7 @@ async fn get_payment_intent(
 
 #[utoipa::path(
     get,
-    path = "/stripe/payment-intents",
+    path = "/payment-intents",
     tag = TAG,
     params(
         Order,
@@ -100,7 +100,7 @@ async fn filter_payment_intents(
 
 #[utoipa::path(
     patch,
-    path = "/stripe/payment-intents/{payment_intent_id}",
+    path = "/payment-intents/{payment_intent_id}",
     tag = TAG,
     request_body = StripePaymentIntentForUpdateRequest,
     responses(
@@ -122,7 +122,7 @@ async fn update_payment_intent(
 
 #[utoipa::path(
     delete,
-    path = "/stripe/payment-intents/{payment_intent_id}",
+    path = "/payment-intents/{payment_intent_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Payment intent deleted successfully", body = OkUuidResponse),
@@ -142,18 +142,18 @@ async fn delete_payment_intent(
 
 pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .route("/stripe/payment-intents", post(create_payment_intent))
-        .route("/stripe/payment-intents", get(filter_payment_intents))
+        .route("/payment-intents", post(create_payment_intent))
+        .route("/payment-intents", get(filter_payment_intents))
         .route(
-            "/stripe/payment-intents/{payment_intent_id}",
+            "/payment-intents/{payment_intent_id}",
             get(get_payment_intent),
         )
         .route(
-            "/stripe/payment-intents/{payment_intent_id}",
+            "/payment-intents/{payment_intent_id}",
             patch(update_payment_intent),
         )
         .route(
-            "/stripe/payment-intents/{payment_intent_id}",
+            "/payment-intents/{payment_intent_id}",
             delete(delete_payment_intent),
         )
         .with_state(app_state.clone())

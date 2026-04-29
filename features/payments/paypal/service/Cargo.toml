@@ -1,0 +1,28 @@
+[package]
+name = "features-payments-paypal-service"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[lib]
+name = "features_payments_paypal_service"
+path = "src/lib.rs"
+
+[dependencies]
+base64 = { workspace = true }
+reqwest = { workspace = true }
+sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+
+features-payments-core-model = { workspace = true }
+features-payments-core-remote = { workspace = true }
+
+features-payments-paypal-entities = { workspace = true }
+features-payments-paypal-model = { workspace = true }
+features-payments-paypal-repo = { workspace = true }

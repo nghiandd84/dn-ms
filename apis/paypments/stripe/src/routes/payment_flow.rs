@@ -36,7 +36,7 @@ fn extract_baggage(headers: &HeaderMap) -> String {
 
 #[utoipa::path(
     post,
-    path = "/stripe/flow/initiate",
+    path = "/flow/initiate",
     tag = TAG,
     request_body = InitiatePaymentRequest,
     responses(
@@ -58,7 +58,7 @@ async fn initiate_payment(
 
 #[utoipa::path(
     post,
-    path = "/stripe/flow/webhook",
+    path = "/flow/webhook",
     tag = TAG,
     responses(
         (status = 200, description = "Webhook processed"),
@@ -92,7 +92,7 @@ async fn handle_webhook(
 
 #[utoipa::path(
     post,
-    path = "/stripe/flow/refund",
+    path = "/flow/refund",
     tag = TAG,
     request_body = RefundPaymentRequest,
     responses(
@@ -114,8 +114,8 @@ async fn refund_payment(
 
 pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .route("/stripe/flow/initiate", post(initiate_payment))
-        .route("/stripe/flow/webhook", post(handle_webhook))
-        .route("/stripe/flow/refund", post(refund_payment))
+        .route("/flow/initiate", post(initiate_payment))
+        .route("/flow/webhook", post(handle_webhook))
+        .route("/flow/refund", post(refund_payment))
         .with_state(app_state.clone())
 }

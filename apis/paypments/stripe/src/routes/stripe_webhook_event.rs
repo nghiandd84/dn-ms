@@ -36,7 +36,7 @@ const TAG: &str = "stripe_webhook_event";
 
 #[utoipa::path(
     post,
-    path = "/stripe/webhook-events",
+    path = "/webhook-events",
     tag = TAG,
     request_body = StripeWebhookEventForCreateRequest,
     responses(
@@ -57,7 +57,7 @@ async fn create_webhook_event(
 
 #[utoipa::path(
     get,
-    path = "/stripe/webhook-events/{webhook_event_id}",
+    path = "/webhook-events/{webhook_event_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Webhook event retrieved successfully", body = StripeWebhookEventData),
@@ -74,7 +74,7 @@ async fn get_webhook_event(
 
 #[utoipa::path(
     get,
-    path = "/stripe/webhook-events",
+    path = "/webhook-events",
     tag = TAG,
     params(
         Order,
@@ -100,7 +100,7 @@ async fn filter_webhook_events(
 
 #[utoipa::path(
     patch,
-    path = "/stripe/webhook-events/{webhook_event_id}",
+    path = "/webhook-events/{webhook_event_id}",
     tag = TAG,
     request_body = StripeWebhookEventForUpdateRequest,
     responses(
@@ -122,7 +122,7 @@ async fn update_webhook_event(
 
 #[utoipa::path(
     delete,
-    path = "/stripe/webhook-events/{webhook_event_id}",
+    path = "/webhook-events/{webhook_event_id}",
     tag = TAG,
     responses(
         (status = 200, description = "Webhook event deleted successfully", body = OkUuidResponse),
@@ -139,18 +139,18 @@ async fn delete_webhook_event(_auth: Auth<CanDeleteWebhookEvent>, Path(webhook_e
 
 pub fn routes(app_state: &AppState<PaymentsStripeAppState, PaymentsStripeCacheState>) -> Router {
     Router::new()
-        .route("/stripe/webhook-events", post(create_webhook_event))
-        .route("/stripe/webhook-events", get(filter_webhook_events))
+        .route("/webhook-events", post(create_webhook_event))
+        .route("/webhook-events", get(filter_webhook_events))
         .route(
-            "/stripe/webhook-events/{webhook_event_id}",
+            "/webhook-events/{webhook_event_id}",
             get(get_webhook_event),
         )
         .route(
-            "/stripe/webhook-events/{webhook_event_id}",
+            "/webhook-events/{webhook_event_id}",
             patch(update_webhook_event),
         )
         .route(
-            "/stripe/webhook-events/{webhook_event_id}",
+            "/webhook-events/{webhook_event_id}",
             delete(delete_webhook_event),
         )
         .with_state(app_state.clone())
