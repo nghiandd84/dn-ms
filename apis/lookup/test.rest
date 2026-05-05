@@ -18,7 +18,7 @@ GET {{baseUrl}}/swagger-ui/
 GET {{baseUrl}}/lookup-types
 
 ### Search Lookup Types and include items
-GET {{baseUrl}}/lookup-types?code=li|{{typeCode}}&includes=items
+GET {{baseUrl}}/lookup-types?code=li|{{typeCode}}&includes=items&fields=code,id,description,items[code],items[name]
 
 ### Search Lookup Types 
 GET {{baseUrl}}/lookup-types?code=li|{{typeCode}}
