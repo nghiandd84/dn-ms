@@ -52,6 +52,9 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
             .merge(lookup_type_routes(app_state))
             .merge(lookup_item_routes(app_state))
             .merge(lookup_item_translation_routes(app_state))
+            .layer(axum::middleware::from_fn(
+                shared_shared_middleware::field_filter_middleware,
+            ))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }
