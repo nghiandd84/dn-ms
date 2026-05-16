@@ -180,6 +180,40 @@ Committed. What next?
 
 Wait for user selection before taking action.
 
+## Post-Push to Master: Knowledge Generation
+
+**After any push to the `master` branch**, automatically ask the user if they want to generate or update knowledge documentation in `.kiro/docs`.
+
+### Trigger
+
+When `git push` targets `master` (or `main`) branch and succeeds.
+
+### Workflow
+
+1. Identify which files/features were changed in the pushed commits
+2. Ask the user:
+
+```
+✅ Pushed to master. The following areas were changed:
+- [list changed features/modules]
+
+Would you like me to generate/update knowledge docs in .kiro/docs for these changes?
+- API docs (.kiro/docs/api/)
+- Dev guides (.kiro/docs/dev/)
+- Architecture docs (.kiro/docs/architecture/)
+- Skip for now
+```
+
+3. If user agrees, analyze the changed code and generate/update the relevant `.kiro/docs` markdown files
+4. After generating docs, offer to commit the doc changes separately
+
+### What to Document
+
+- New API endpoints → `.kiro/docs/api/<service>.md`
+- New patterns/flows → `.kiro/docs/dev/<topic>.md`
+- Schema changes → `.kiro/docs/architecture/schemas/<feature>.md`
+- Service boundary changes → `.kiro/docs/architecture/service-boundaries/<feature>.md`
+
 ## Red Flags / Never
 
 - **NEVER** commit without checking for secrets (.env, *.pem, credentials.*)
