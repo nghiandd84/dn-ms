@@ -42,6 +42,8 @@ gateways:
         filter: email_template_router_filter
       - upstream: merchant
         filter: merchant_router_filter
+      - upstream: anomaly_detector
+        filter: detector_router_filter
       
     upstreams:
       - name: bakery
@@ -212,9 +214,61 @@ gateways:
             tls: false
             sni: null
             weight: 2
+
+      - name: anomaly_detector
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5191
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5192
+            tls: false
+            sni: null
+            weight: 1
       
     
     interceptors:
+      # Anomaly Detector - Global (applies to all routes)
+      - name: global_anomaly_detector
+        type: anomaly_detector
+        enabled: true
+        config:
+          redis_url: redis://127.0.0.1/
+          max_payload_size: "1048576"
+          duplicate_threshold: "5"
+          duplicate_multi_ip_threshold: "10"
+          duplicate_window: "60"
+          max_404_count: "10"
+          not_found_window: "60"
+          max_auth_failures: "5"
+          auth_window: "300"
+          block_duration: "600"
+          max_distinct_paths: "50"
+          path_window: "60"
+      # Anomaly Detector - Stricter for auth routes
+      - name: auth_anomaly_detector
+        type: anomaly_detector
+        enabled: true
+        filter: auth_router_filter
+        config:
+          redis_url: redis://127.0.0.1/
+          max_payload_size: "524288"
+          duplicate_threshold: "3"
+          duplicate_multi_ip_threshold: "5"
+          duplicate_window: "60"
+          max_404_count: "5"
+          not_found_window: "60"
+          max_auth_failures: "3"
+          auth_window: "300"
+          block_duration: "900"
+          max_distinct_paths: "20"
+          path_window: "60"
       # Bakery
       - name: bakery_request_id
         type: request_id
@@ -503,4 +557,8 @@ gateways:
         path:
           operator: start_with
           value: /api/merchant
-         
+
+      - name: detector_router_filter
+        path:
+          operator: start_with
+          value: /detector

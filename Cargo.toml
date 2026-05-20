@@ -144,6 +144,7 @@ members = [
     "apis/payment-core",
     "apis/paypments/stripe",
     "apis/payments/paypal",
+    "apis/anomaly_detector",
     "apps/auth-notification",
     "apps/auth-web",
     "apps/gateway", 

@@ -7,6 +7,7 @@ pub enum InterceptorType {
     Cors,
     RateLimiter,
     TokenAuth,
+    AnomalyDetector,
 }
 
 impl InterceptorType {
@@ -16,6 +17,7 @@ impl InterceptorType {
             InterceptorType::Cors => "cors",
             InterceptorType::RateLimiter => "rate_limiter",
             InterceptorType::TokenAuth => "token_auth",
+            InterceptorType::AnomalyDetector => "anomaly_detector",
         }
     }
 }

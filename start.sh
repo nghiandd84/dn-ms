@@ -29,6 +29,7 @@ export INVENTORY_PORT=5171
 export PAYMENT_STRIPE_PORT=5121
 export PAYMENT_PAYPAL_PORT=5181
 export NOTIFICATION_APP_PORT=4001
+export ANOMALY_DETECTOR_PORT=5191
 #export KAFKA_CLUSTER_ID=I-vULn-DS7yWYemeCtBj_A
 export OTEL_VERSION=0.96.0
 # update varibale when startup
@@ -125,6 +126,11 @@ done
 # Kill Lookup  port
 for i in {1..2}; do 
     fuser -k -15 516$i/tcp 
+done
+
+# Kill Anomaly Detector port
+for i in {1..2}; do 
+    fuser -k -15 519$i/tcp 
 done
 
 
@@ -329,6 +335,11 @@ for i in {1..2}; do
     # Execute the program
     LOOKUP_PORT=516$i $APP_DIRECTORY/api-lookup  &
 done
+sleep 1s
+
+echo "------------ Start ANOMALY DETECTOR API ------------"
+echo "--- Anomaly Detector on port 5401 ---"
+ANOMALY_DETECTOR_PORT=5401 $APP_DIRECTORY/api-anomaly-detector  &
 sleep 1s
 
 echo "------------ Start Auth-Server ------------"

@@ -6,6 +6,7 @@ use crate::{
     gateway::{
         interceptor::{Interceptor, InterceptorType},
         interceptors::{
+            anomaly_detector::AnomalyDetectorInterceptorBuilder,
             cors::CorsInterceptorBuilder, rate_limiter::RateLimiterInterceptorBuilder,
             request_id::RequestIdInterceptorBuilder, token_auth::TokenAuthInterceptorBuilder,
         },
@@ -41,6 +42,10 @@ impl InterceptorBuilderRegistry {
         registry.insert(
             InterceptorType::TokenAuth,
             Arc::new(TokenAuthInterceptorBuilder::default()),
+        );
+        registry.insert(
+            InterceptorType::AnomalyDetector,
+            Arc::new(AnomalyDetectorInterceptorBuilder::default()),
         );
 
         Self { registry }
