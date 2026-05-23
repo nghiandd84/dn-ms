@@ -14,8 +14,6 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::authentication::request_code,
         crate::routes::authentication::request_login,
         crate::routes::authentication::request_register,
-        crate::routes::register::register,
-        crate::routes::login::login,
         crate::routes::auth_code::create_auth_code,
         crate::routes::auth_code::get_auth_code,
         crate::routes::auth_code::delete_auth_code,

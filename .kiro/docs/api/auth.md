@@ -26,13 +26,6 @@ Provides authentication, authorization, and identity management for the platform
 | POST | `/public/requests/login` | `AuthLoginRequest` | `AuthLoginDataResponse` |
 | POST | `/public/requests/register` | `AuthRegisterRequest` | `AuthRegisterDataResponse` |
 
-### Login & Registration
-
-| Method | Path | Request Body | Response |
-|--------|------|-------------|----------|
-| POST | `/login` | `LoginRequest` | `LoginDataResponse` |
-| POST | `/register` | `UserForCreateRequest` | `OkUuidResponse` |
-
 ### Token Management (`/tokens`, `/public/tokens`)
 
 | Method | Path | Request Body | Response |
@@ -415,26 +408,25 @@ API (apis/auth/src/routes/*.rs)
 ## Example Usage
 
 ```http
-### Register a new user
-POST /register
+### Register via authentication request flow
+POST /public/requests/register
 Content-Type: application/json
 
 {
   "email": "user@example.com",
   "password": "Test@123456",
+  "state": "<state_from_request_code>",
   "language": "en"
 }
 
-### Login
-POST /login
+### Login via authentication request flow
+POST /public/requests/login
 Content-Type: application/json
 
 {
-  "client_id": "5ed8e536-12ae-463d-ae9b-8c78cc5481e1",
   "email": "user@example.com",
   "password": "Test@123456",
-  "scopes": ["email", "profile"],
-  "redirect_uri": "http://localhost:4200"
+  "state": "<state_from_request_code>"
 }
 
 ### Exchange auth code for token
