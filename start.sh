@@ -338,8 +338,12 @@ done
 sleep 1s
 
 echo "------------ Start ANOMALY DETECTOR API ------------"
-echo "--- Anomaly Detector on port 5401 ---"
-ANOMALY_DETECTOR_PORT=5401 $APP_DIRECTORY/api-anomaly-detector  &
+for i in {1..2}; do
+    PORT=519$i
+    echo "---  LOOKUP on port $PORT ---"
+    # Execute the program
+    ANOMALY_DETECTOR_PORT=519$i $APP_DIRECTORY/api-anomaly-detector  &
+done
 sleep 1s
 
 echo "------------ Start Auth-Server ------------"
@@ -349,10 +353,7 @@ echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
 # Execute the program
 $APP_DIRECTORY/app-gateway  &
-
-
 sleep 1s
-
 
 #wait
 
@@ -364,6 +365,9 @@ sleep 1s
 # IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/release/web/auth-web
 
 echo "All done"
+# Wait for all process are finished
+sleep 4s
+
 exit 0 
 
 

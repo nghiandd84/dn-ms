@@ -41,6 +41,15 @@ ui_config {
 connect {
   enabled = true
 }
+
+# Prevent bug rejoin cluster after long time
+autopilot {
+  cleanup_dead_servers = false
+  last_contact_threshold = "0s"
+  server_rejoin_age_max = "0s"
+}
+
+# To fix it sudo mv /opt/consul/server_metadata.json /opt/consul/server_metadata.json.bak 2>/dev/null
 ```
 
 Setup Permissions and Start
