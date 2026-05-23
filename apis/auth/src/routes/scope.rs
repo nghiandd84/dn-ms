@@ -15,7 +15,7 @@ use features_auth_model::{
     state::{AuthAppState, AuthCacheState},
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -37,8 +37,11 @@ const TAG: &str = "scope";
     request_body = ScopeForCreateRequest,
     path = "/scopes",
     tag = TAG,
+    summary = "Create scope",
     responses(
-        (status = 200, description = "Scope is created", body = OkUuidResponse),       
+        (status = 200, description = "Scope is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn create_scope(
@@ -61,9 +64,13 @@ async fn create_scope(
     ),
     path = "/scopes/{scope_id}",
     tag = TAG,
+    summary = "Update scope",
     description = "Change Scope Data",
     responses(
-        (status = 200, description= "Scope was updated", body= OkUuidResponse),       
+        (status = 200, description= "Scope was updated", body= OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Scope not found", body = ErrorResponse),
     )
 )]
 async fn update_scope(
@@ -79,8 +86,11 @@ async fn update_scope(
     delete,
     path = "/scopes/{scope_id}",
     tag = TAG,
+    summary = "Delete scope",
     responses(
-        (status = 200, description = "Scope is deleted", body = OkUuidResponse),       
+        (status = 200, description = "Scope is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Scope not found", body = ErrorResponse),
     )
 )]
 async fn delete_scope(
@@ -95,8 +105,11 @@ async fn delete_scope(
     get,
     path = "/scopes/{scope_id}",
     tag = TAG,
+    summary = "Get scope by ID",
     responses(
-        (status = 200, description = "Scope Data", body = ScopeDataResponse),       
+        (status = 200, description = "Scope Data", body = ScopeDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Scope not found", body = ErrorResponse),
     )
 )]
 async fn get_scope(
@@ -111,12 +124,14 @@ async fn get_scope(
     get,
     path = "/scopes",
     tag = TAG,
+    summary = "Filter scopes",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Scope", body = QueryResultResponse<ScopeData>),       
+        (status = 200, description = "Filtered Scope", body = QueryResultResponse<ScopeData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_scopes(

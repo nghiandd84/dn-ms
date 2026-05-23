@@ -15,7 +15,7 @@ use features_auth_model::{
     state::AuthCacheState,
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -38,8 +38,11 @@ const TAG: &str = "client";
     request_body = ClientForCreateRequest,
     path = "/clients",
     tag = TAG,
+    summary = "Create client",
     responses(
-        (status = 200, description = "Client is created", body = OkUuidResponse),       
+        (status = 200, description = "Client is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn create_client(
@@ -61,9 +64,13 @@ async fn create_client(
     ),
     path = "/clients/{client_id}",
     tag = TAG,
+    summary = "Update client",
     description = "Change Client Data",
     responses(
-        (status = 200, description= "Client was updated", body= OkUuidResponse),       
+        (status = 200, description= "Client was updated", body= OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Client not found", body = ErrorResponse),
     )
 )]
 async fn update_client(
@@ -79,8 +86,11 @@ async fn update_client(
     delete,
     path = "/clients/{client_id}",
     tag = TAG,
+    summary = "Delete client",
     responses(
-        (status = 200, description = "Client is deleted", body = OkUuidResponse),       
+        (status = 200, description = "Client is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Client not found", body = ErrorResponse),
     )
 )]
 async fn delete_client(
@@ -95,8 +105,11 @@ async fn delete_client(
     get,
     path = "/clients/{client_id}",
     tag = TAG,
+    summary = "Get client by ID",
     responses(
-        (status = 200, description = "Client Data", body = ClientDataResponse),       
+        (status = 200, description = "Client Data", body = ClientDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Client not found", body = ErrorResponse),
     )
 )]
 async fn get_client(
@@ -111,12 +124,14 @@ async fn get_client(
     get,
     path = "/clients",
     tag = TAG,
+    summary = "Filter clients",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Client", body = QueryResultResponse<ClientData>),       
+        (status = 200, description = "Filtered Client", body = QueryResultResponse<ClientData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_clients(

@@ -6,7 +6,7 @@ use axum::{
 use tracing::debug;
 use uuid::Uuid;
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     filter_param::FilterParams,
@@ -68,8 +68,11 @@ const TAG: &str = "role";
     request_body = RoleForCreateRequest,
     path = "/roles",
     tag = TAG,
+    summary = "Create role",
     responses(
-        (status = 200, description = "Role is created", body = OkUuidResponse),       
+        (status = 200, description = "Role is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn create_role(
@@ -85,16 +88,20 @@ async fn create_role(
 }
 
 #[utoipa::path(
-    post,
+    patch,
     request_body = RoleForUpdateRequest,
     params  (
         ("role_id" = String, Path, description = "Role Id"),
     ),
     path = "/roles/{role_id}",
     tag = TAG,
+    summary = "Update role",
     description = "Change Role Data",
     responses(
-        (status = 200, description = "Role is created", body = OkUuidResponse),       
+        (status = 200, description = "Role is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Role not found", body = ErrorResponse),
     )
 )]
 async fn update_role(
@@ -113,8 +120,11 @@ async fn update_role(
     delete,
     path = "/roles/{role_id}",
     tag = TAG,
+    summary = "Delete role",
     responses(
-        (status = 200, description = "Role is deleted", body = OkUuidResponse),       
+        (status = 200, description = "Role is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Role not found", body = ErrorResponse),
     )
 )]
 async fn delete_role(
@@ -129,8 +139,11 @@ async fn delete_role(
     get,
     path = "/roles/{role_id}",
     tag = TAG,
+    summary = "Get role by ID",
     responses(
-        (status = 200, description = "Role Data", body = RoleDataResponse),       
+        (status = 200, description = "Role Data", body = RoleDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Role not found", body = ErrorResponse),
     )
 )]
 async fn get_role(
@@ -149,8 +162,11 @@ async fn get_role(
     get,
     path = "/roles/{role_id}/permissions",
     tag = TAG,
+    summary = "Get permissions by role",
     responses(
-        (status = 200, description = "Permission Data", body = QueryResultResponse<PermissionData>),       
+        (status = 200, description = "Permission Data", body = QueryResultResponse<PermissionData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Role not found", body = ErrorResponse),
     )
 )]
 async fn get_permission_by_role(
@@ -166,12 +182,14 @@ async fn get_permission_by_role(
     get,
     path = "/roles",
     tag = TAG,
+    summary = "Filter roles",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Role", body = QueryResultResponse<RoleData>),       
+        (status = 200, description = "Filtered Role", body = QueryResultResponse<RoleData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_roles(
@@ -205,8 +223,11 @@ async fn filter_roles(
     request_body = AssignPermissionToRoleRequest,
     path = "/roles/{role_id}/assign-permissions",
     tag = TAG,
+    summary = "Assign permissions to role",
     responses(
-        (status = 200, description = "Permission was assigned", body = OkUuidResponse),       
+        (status = 200, description = "Permission was assigned", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn assign_permissions(
@@ -226,8 +247,11 @@ async fn assign_permissions(
     request_body = AssignPermissionToRoleRequest,
     path = "/roles/{role_id}/unassign-permissions",
     tag = TAG,
+    summary = "Unassign permissions from role",
     responses(
-        (status = 200, description = "Permission was assigned", body = OkUuidResponse),       
+        (status = 200, description = "Permission was assigned", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn unassign_permissions(

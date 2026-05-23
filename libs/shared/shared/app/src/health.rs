@@ -7,12 +7,16 @@ use utoipa::ToSchema;
 
 use shared_shared_macro::Response;
 
+use crate::doc::ErrorResponse;
+
 #[utoipa::path(
     get,
     path = "/healthchecker",
     tag = "Health Checker",
+    summary = "Health check",
     responses(
-        (status = 200, description= "Health Checker", body= HealthResponse),       
+        (status = 200, description= "Health Checker", body= HealthResponse),
+        (status = 503, description = "Service unavailable", body = ErrorResponse),
     )
 )]
 #[instrument(level = Level::INFO)]

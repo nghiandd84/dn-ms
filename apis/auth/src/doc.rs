@@ -1,6 +1,6 @@
 use utoipa::OpenApi;
 
-use shared_shared_app::doc::JwtSecurityAddon;
+use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -8,6 +8,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
         title = "Auth API",
         version = "0.1.0",
         description = "Complete Auth Restful API"
+    ),
+    security(
+        ("token" = [])
+    ),
+    components(
+        schemas(ErrorResponse)
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
@@ -52,6 +58,6 @@ use shared_shared_app::doc::JwtSecurityAddon;
     tags(
         (name = "Rust REST API", description = "Authentication in Rust Endpoints")
     ),
-    modifiers(&JwtSecurityAddon)
+    modifiers(&JwtSecurityAddon, &ServerAddon)
 )]
 pub struct ApiDoc;

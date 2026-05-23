@@ -18,7 +18,7 @@ use features_auth_model::{
     },
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::{Auth, PublicAccess};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -41,8 +41,10 @@ const TAG: &str = "token";
     request_body = TokenForCreateRequest,
     path = "/public/tokens/oauth",
     tag = TAG,
+    summary = "Create OAuth token",
     responses(
-        (status = 200, description = "Token is created", body = AuthorizationCodeDataResponse),       
+        (status = 200, description = "Token is created", body = AuthorizationCodeDataResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
     )
 )]
 async fn create_token(
@@ -64,8 +66,11 @@ async fn create_token(
     request_body = TokenForVerifyRequest,
     path = "/public/tokens/verify",
     tag = TAG,
+    summary = "Verify token",
     responses(
-        (status = 200, description = "Token is verified", body = AccessTokenStructResponse),       
+        (status = 200, description = "Token is verified", body = AccessTokenStructResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Invalid token", body = ErrorResponse),
     )
 )]
 async fn verify_token(
@@ -83,8 +88,11 @@ async fn verify_token(
     get,
     path = "/tokens/{token_id}",
     tag = TAG,
+    summary = "Get token by ID",
     responses(
-        (status = 200, description = "Token Data", body = TokenDataResponse),       
+        (status = 200, description = "Token Data", body = TokenDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Token not found", body = ErrorResponse),
     )
 )]
 async fn get_token(
@@ -99,12 +107,14 @@ async fn get_token(
     get,
     path = "/tokens",
     tag = TAG,
+    summary = "Filter tokens",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Token", body = QueryResultResponse<TokenData>),       
+        (status = 200, description = "Filtered Token", body = QueryResultResponse<TokenData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_tokens(

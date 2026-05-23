@@ -6,7 +6,7 @@ use axum::{
 use tracing::debug;
 use uuid::Uuid;
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -36,8 +36,11 @@ const TAG: &str = "permissions";
     request_body = PermissionForCreateRequest,
     path = "/permissions",
     tag = TAG,
+    summary = "Create permission",
     responses(
-        (status = 200, description = "Permission is created", body = OkUuidResponse),       
+        (status = 200, description = "Permission is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn create_permission(
@@ -61,9 +64,13 @@ async fn create_permission(
     ),
     path = "/permissions/{permission_id}",
     tag = TAG,
+    summary = "Update permission",
     description = "Change Permission Data",
     responses(
-        (status = 200, description= "Permission was updated", body= OkUuidResponse),       
+        (status = 200, description= "Permission was updated", body= OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Permission not found", body = ErrorResponse),
     )
 )]
 async fn update_permission(
@@ -79,8 +86,11 @@ async fn update_permission(
     delete,
     path = "/permissions/{permission_id}",
     tag = TAG,
+    summary = "Delete permission",
     responses(
-        (status = 200, description = "Permission is deleted", body = OkUuidResponse),       
+        (status = 200, description = "Permission is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Permission not found", body = ErrorResponse),
     )
 )]
 async fn delete_permission(
@@ -95,8 +105,11 @@ async fn delete_permission(
     get,
     path = "/permissions/{permission_id}",
     tag = TAG,
+    summary = "Get permission by ID",
     responses(
-        (status = 200, description = "Permission Data", body = PermissionDataResponse),       
+        (status = 200, description = "Permission Data", body = PermissionDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Permission not found", body = ErrorResponse),
     )
 )]
 async fn get_permission(
@@ -111,12 +124,14 @@ async fn get_permission(
     get,
     path = "/permissions",
     tag = TAG,
+    summary = "Filter permissions",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Permission", body = QueryResultResponse<PermissionData>),       
+        (status = 200, description = "Filtered Permission", body = QueryResultResponse<PermissionData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_permissions(

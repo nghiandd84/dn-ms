@@ -8,7 +8,7 @@ use features_auth_model::{
     state::{AuthAppState, AuthCacheState},
 };
 use features_auth_stream::PRODUCER_KEY;
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::PublicAccess;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -28,8 +28,10 @@ const TAG: &str = "request";
     request_body = AuthenticationCreateRequest,
     path = REQUEST_CODE,
     tag = TAG,
+    summary = "Request authorization code",
     responses(
-        (status = 200, description= "Request success", body= OkUuidResponse),       
+        (status = 200, description= "Request success", body= OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
     )
 )]
 async fn request_code(
@@ -48,8 +50,11 @@ async fn request_code(
     request_body = AuthLoginRequest,
     path = REQUEST_LOGIN,
     tag = TAG,
+    summary = "Login",
     responses(
-        (status = 200, description= "Request success", body= AuthLoginDataResponse),       
+        (status = 200, description= "Request success", body= AuthLoginDataResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Invalid credentials", body = ErrorResponse),
     )
 )]
 async fn request_login(
@@ -65,8 +70,11 @@ async fn request_login(
     request_body = AuthRegisterRequest,
     path = REQUEST_REGISTER,
     tag = TAG,
+    summary = "Register",
     responses(
-        (status = 200, description= "Request success", body= AuthRegisterDataResponse),       
+        (status = 200, description= "Request success", body= AuthRegisterDataResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 409, description = "User already exists", body = ErrorResponse),
     )
 )]
 async fn request_register(

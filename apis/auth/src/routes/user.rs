@@ -11,7 +11,7 @@ use features_auth_model::{
     user::{UserData, UserDataFilterParams, UserDataResponse},
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::ResponseJson,
@@ -32,8 +32,11 @@ const TAG: &str = "user";
     delete,
     path = "/users/{user_id}",
     tag = TAG,
+    summary = "Delete user",
     responses(
-        (status = 200, description = "User is deleted", body = OkUuidResponse),       
+        (status = 200, description = "User is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "User not found", body = ErrorResponse),
     )
 )]
 async fn delete_user(
@@ -48,8 +51,11 @@ async fn delete_user(
     get,
     path = "/users/{user_id}",
     tag = TAG,
+    summary = "Get user by ID",
     responses(
-        (status = 200, description = "User is deleted", body = UserDataResponse),       
+        (status = 200, description = "User Data", body = UserDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "User not found", body = ErrorResponse),
     )
 )]
 async fn get_user(
@@ -64,12 +70,14 @@ async fn get_user(
     get,
     path = "/users",
     tag = TAG,
+    summary = "Filter users",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered user data", body = QueryResultResponse<UserData>),       
+        (status = 200, description = "Filtered user data", body = QueryResultResponse<UserData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 #[instrument(level = Level::INFO, skip_all)]

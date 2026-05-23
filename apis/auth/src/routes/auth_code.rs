@@ -14,7 +14,7 @@ use features_auth_model::{
     state::AuthCacheState,
 };
 
-use shared_shared_app::state::AppState;
+use shared_shared_app::{doc::ErrorResponse, state::AppState};
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
@@ -37,8 +37,11 @@ const TAG: &str = "auth_code";
     request_body = AuthCodeForCreateRequest,
     path = "/auth-codes",
     tag = TAG,
+    summary = "Create auth code",
     responses(
-        (status = 200, description = "Auth Code is created", body = OkUuidResponse),       
+        (status = 200, description = "Auth Code is created", body = OkUuidResponse),
+        (status = 400, description = "Bad request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn create_auth_code(
@@ -57,8 +60,11 @@ async fn create_auth_code(
     delete,
     path = "/auth-codes/{auth_code_id}",
     tag = TAG,
+    summary = "Delete auth code",
     responses(
-        (status = 200, description = "Auth Code is deleted", body = OkUuidResponse),       
+        (status = 200, description = "Auth Code is deleted", body = OkUuidResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Auth code not found", body = ErrorResponse),
     )
 )]
 async fn delete_auth_code(
@@ -73,8 +79,11 @@ async fn delete_auth_code(
     get,
     path = "/auth-codes/{auth_code_id}",
     tag = TAG,
+    summary = "Get auth code by ID",
     responses(
-        (status = 200, description = "Auth Code Data", body = AuthCodeDataResponse),       
+        (status = 200, description = "Auth Code Data", body = AuthCodeDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Auth code not found", body = ErrorResponse),
     )
 )]
 async fn get_auth_code(
@@ -89,12 +98,14 @@ async fn get_auth_code(
     get,
     path = "/auth-codes",
     tag = TAG,
+    summary = "Filter auth codes",
     params  (
         Order,
         Pagination
     ),
     responses(
-        (status = 200, description = "Filtered Auth Code", body = QueryResultResponse<AuthCodeData>),       
+        (status = 200, description = "Filtered Auth Code", body = QueryResultResponse<AuthCodeData>),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
     )
 )]
 async fn filter_auth_codes(
