@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tracing::debug;
+use tracing::{debug, error};
 
 use crate::{
     config::{proxy::http::Session, source_config::InterceptorConfig},
@@ -61,15 +61,17 @@ pub trait Interceptor: Send + Sync {
 pub async fn execute_interceptors<'a>(
     interceptors: &Vec<Arc<dyn Interceptor>>,
     session: &mut Session<'a>,
+    phase: &Phase,
 ) -> PhaseResult {
     for interceptor in interceptors.iter() {
-        let execute = execute_interceptor(interceptor, session).await;
+        let execute = execute_interceptor(interceptor, session, phase).await;
         match execute {
             Ok(exec) => {
                 if exec {
-                    debug!(
-                        "Interceptor {:?} short-circuited the processing.",
-                        interceptor.interceptor_type()
+                    error!(
+                        "Fail to execute Interceptor {:?} at filter {:?}.",
+                        interceptor.interceptor_type(),
+                        session.get_filter()
                     );
                     return Ok(true);
                 }
@@ -82,31 +84,24 @@ pub async fn execute_interceptors<'a>(
 async fn execute_interceptor<'a>(
     interceptor: &Arc<dyn Interceptor>,
     session: &mut Session<'a>,
+    phase: &Phase,
 ) -> PhaseResult {
-    let mask_phase = interceptor.phase_mask();
-
-    match mask_phase {
-        m if m == Phase::Init.mask() => {
-            // handle Init phase
-            interceptor.init(session).await
-        }
-        m if m == Phase::RequestFilter.mask() => {
-            // handle RequestFilter phase
+    match phase {
+        Phase::Init => interceptor.init(session).await,
+        Phase::RequestFilter => {
             debug!(
                 "Executing RequestFilter for interceptor: {:?}",
                 interceptor.interceptor_type()
             );
             interceptor.request_filter(session).await
         }
-        m if m == Phase::PostUpstreamResponse.mask() => {
-            // handle RequestFilter phase
+        Phase::PostUpstreamResponse => {
             debug!(
                 "Executing PostUpstreamResponse for interceptor: {:?}",
                 interceptor.interceptor_type()
             );
             interceptor.post_upstream_response(session).await
         }
-
-        _ => Ok(true),
+        _ => Ok(false),
     }
 }

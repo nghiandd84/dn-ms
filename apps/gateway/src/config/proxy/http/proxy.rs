@@ -110,13 +110,19 @@ impl ProxyHttp for Proxy {
 
         let state = self.gateway_state_store.get_state();
         let gateway_config = state.gateway_config();
-        let filter = find_filter_config(gateway_config, session.ds_req_path())
-            .expect(format!("Not found filter for path {}", session.ds_req_path()).as_str());
-        let filter_interceptors = self.get_interceptors(Phase::Init, filter.name.clone());
+        let filter = match find_filter_config(gateway_config, session.ds_req_path()) {
+            Ok(f) => f,
+            Err(_) => {
+                error!("Not found filter for path {}", session.ds_req_path());
+                return Err(Error::new_str("Not found filter for path"));
+            }
+        };
+        session.flush_path_and_query(&filter);
+        let filter_name = filter.name.clone();
+        session.set_filter(filter);
 
-        // let _execute = execute_interceptors(&filter_interceptors, &mut session).await;
-
-        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        let filter_interceptors = self.get_interceptors(Phase::Init, filter_name);
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session, &Phase::Init).await;
         match invalid_execute {
             Ok(success) => {
                 debug!(
@@ -127,8 +133,6 @@ impl ProxyHttp for Proxy {
                     let err = Error::new_str("Terminated by early_request_filter interceptor");
                     return Err(err.into());
                 }
-                session.flush_path_and_query(&filter);
-                ctx.set_filter(filter);
                 return Ok(());
             }
             Err(e) => {
@@ -151,7 +155,7 @@ impl ProxyHttp for Proxy {
             "Executing request_filter interceptors with length {}",
             filter_interceptors.len()
         );
-        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session, &Phase::RequestFilter).await;
         match invalid_execute {
             Ok(success) => {
                 debug!(
@@ -218,7 +222,7 @@ impl ProxyHttp for Proxy {
         session.upstream_response(upstream_response);
         let filter_interceptors =
             self.get_interceptors(Phase::PostUpstreamResponse, filter.name.clone());
-        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session).await;
+        let invalid_execute = execute_interceptors(&filter_interceptors, &mut session, &Phase::PostUpstreamResponse).await;
         match invalid_execute {
             Ok(success) => {
                 debug!(
