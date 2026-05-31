@@ -59,6 +59,15 @@ impl<'a> Session<'a> {
             None => None,
         }
     }
+
+    pub fn set_filter(&mut self, filter: Filter) {
+        debug!("set filter to session {:?}", filter);
+        self.ctx.set_filter(filter);
+    }
+
+    pub fn get_filter(&self) -> Option<Filter> {
+        self.ctx.get_filter().cloned()
+    }
 }
 
 impl<'a> Session<'a> {
