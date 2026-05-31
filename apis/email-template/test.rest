@@ -10,7 +10,7 @@
 @placeholderId = 1
 
 ### healthchecker
-GET {{baseUrl}}/healthchecker
+GET {{baseUrl}}/public/healthchecker
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/

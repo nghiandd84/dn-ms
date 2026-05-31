@@ -11,7 +11,7 @@ use crate::doc::ErrorResponse;
 
 #[utoipa::path(
     get,
-    path = "/healthchecker",
+    path = "/public/healthchecker",
     tag = "Health Checker",
     summary = "Health check",
     responses(

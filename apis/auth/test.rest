@@ -1,6 +1,6 @@
 ### Variables
 @baseUrl = http://localhost:5011
-# @baseUrl = http://localhost:6101
+
 @userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
 @clientId = 5ed8e536-12ae-463d-ae9b-8c78cc5481e1
 # @authCode = 
@@ -12,7 +12,7 @@
 @userPassword = Test@123456
 
 ### healthchecker
-GET {{baseUrl}}/healthchecker
+GET {{baseUrl}}/public/healthchecker
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/
@@ -123,7 +123,7 @@ Content-Type: application/json
 baggage: {{baggage}}
 
 ### healthchecker
-GET {{baseUrl}}/healthchecker
+GET {{baseUrl}}/public/healthchecker
 Content-Type: application/json
 tracestate: 00-6eac2b714dd57b47498837ce4b023876-c8e10305886ac80f-01
 
@@ -278,8 +278,35 @@ baggage: {{baggage}}
   ]
 }
 
+
+### Get Client
+POST {{baseUrl}}/clients
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "allowed_grants": [
+    "id",
+    "email",
+    "profile"
+  ],
+  "client_secret": "AuthServer@123456",
+  "client_key": "AuthServer",
+  "description": "Auth Server Description",
+  "name": "Auth Server",
+  "redirect_uris": [
+    "http://localhost:8080"
+  ]
+}
+
 ### Get Client
 GET {{baseUrl}}/clients/{{clientId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+@baseGatewayUrl = http://localhost:6001/api/auth
+### Filter Client
+GET {{baseGatewayUrl}}/clients
 Content-Type: application/json
 baggage: {{baggage}}
 

@@ -4,7 +4,7 @@
 @baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
 ### healthchecker
-GET {{baseUrl}}/healthchecker
+GET {{baseUrl}}/public/healthchecker
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/

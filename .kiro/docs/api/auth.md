@@ -102,7 +102,7 @@ Roles support `?includes=permissions` on GET endpoints to eager-load associated 
 
 | Method | Path | Response |
 |--------|------|----------|
-| GET | `/healthchecker` | Health status |
+| GET | `/public/healthchecker` | Health status |
 
 ---
 

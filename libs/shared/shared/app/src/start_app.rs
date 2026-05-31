@@ -137,7 +137,7 @@ where
             let mut app_state = AppState::new(&db_write_connection, cache, state);
 
             let axum_layer = OtelAxumLayer::default().filter(|str| {
-                let prefixs = vec!["/healthchecker", "/swagger-ui", "/api-docs"];
+                let prefixs = vec!["/public/healthchecker", "/swagger-ui", "/api-docs"];
                 for p in prefixs {
                     if str.starts_with(p) || str.contains(p) {
                         return false;
@@ -151,7 +151,7 @@ where
 
             let public_paths: &'static [&'static str] = self.public_paths();
             let routes_all = Router::new()
-                .route("/healthchecker", get(health_checker_handler))
+                .route("/public/healthchecker", get(health_checker_handler))
                 .merge(self.routes(&app_state))
                 .layer(middleware::from_fn(move |req, next| {
                     shared_shared_auth::permission::require_baggage_header(req, next, public_paths)

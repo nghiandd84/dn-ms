@@ -168,7 +168,7 @@ pub async fn require_baggage_header(
 
     let path = request.uri().path().to_string();
 
-    let infra_paths = ["/healthchecker", "/swagger-ui", "/api-docs"];
+    let infra_paths = ["/public/healthchecker", "/swagger-ui", "/api-docs"];
     if infra_paths.iter().any(|p| path.starts_with(p)) {
         return next.run(request).await;
     }

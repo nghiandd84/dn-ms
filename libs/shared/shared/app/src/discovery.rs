@@ -29,7 +29,7 @@ pub async fn register_service(
     let mut definition: HashMap<String, String> = HashMap::new();
     definition.insert(
         "http".to_string(),
-        format!("{}/healthchecker", service_address),
+        format!("{}/public/healthchecker", service_address),
     );
     definition.insert("method".to_string(), "GET".to_string());
     definition.insert("tls_skip_verify".to_string(), "false".to_string());

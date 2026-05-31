@@ -35,7 +35,7 @@ Handles authentication, authorization, and user identity management.
 	- `POST /public/requests/code` — Request authentication code (for MFA, passwordless, etc.)
 
 - **Health Check**
-	- `GET /healthchecker` — Service health endpoint
+	- `GET /public/healthchecker` — Service health endpoint
 
 ## Data Models
 - `UserData`, `UserForCreateRequest` — User info and registration

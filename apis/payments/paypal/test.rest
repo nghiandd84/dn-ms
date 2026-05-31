@@ -8,7 +8,7 @@
 @paypalOrderId = 5O190127TN364715T
 
 ### healthchecker
-GET {{baseUrl}}/healthchecker
+GET {{baseUrl}}/public/healthchecker
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/

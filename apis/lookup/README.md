@@ -133,7 +133,7 @@ cargo run --bin migrations_lookup -- -v -u "postgresql://dn_ms:password123@local
 ### Health Check
 
 ```http
-GET /healthchecker
+GET /public/healthchecker
 ```
 
 ### Swagger Documentation

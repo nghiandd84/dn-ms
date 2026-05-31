@@ -134,7 +134,7 @@ baggage: accesses=ROLE_A*key1|ROLE_B*,user_id=<uuid>,client_id=<uuid>
 
 ### require_baggage_header Middleware
 Applied globally in `start_app.rs`. Rejects requests without a `baggage` header, except:
-- Infrastructure paths: `/healthchecker`, `/swagger-ui`, `/api-docs`
+- Infrastructure paths: `/public/healthchecker`, `/swagger-ui`, `/api-docs`
 - Paths listed in `public_paths()` override
 
 ```rust
