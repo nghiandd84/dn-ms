@@ -3,12 +3,18 @@
 @baseUrl = http://localhost:6001
 @userId = 3158787f-7b76-4b04-b79d-4d8fac17d841
 @clientId = b9794d29-c2a2-47f5-9ed2-a9821b4a92a7
-
-@Origin = http://localhost:4200
+@Origin = https://mydomain.com
 
 @acessToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJhY2Nlc3NlcyI6W3sicm9sZV9uYW1lIjoiRE5BUFBfR1VFU1QiLCJrZXkiOiJhY2Nlc3Nfa2V5In1dfSwiZXhwIjoxNzY5MDcwNTAwLCJpYXQiOjE3Njg5ODQxMDAsImp0aSI6ImJiZjhhMGJjLWQ1MDItNDRjYy1iYzdhLTZlOTIxYzg4ZDFhZCJ9.2ueM2nDBGwLMil0tWIwPptrM3Bn7xr0JAFgOJmh6TBQ
 @refreshToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkbl9kYXRhIjp7InVzZXJfaWQiOiIwNjZkZjdiMC1kY2QxLTRlN2MtOTRhMS05YjVmNjg3OTRjYTciLCJjbGllbnRfaWQiOiI1ZWQ4ZTUzNi0xMmFlLTQ2M2QtYWU5Yi04Yzc4Y2M1NDgxZTEiLCJ0b2tlbl9pZCI6IjY5OTJjMzQ0LTE4Y2MtNGYxOS1iZjI3LTljOGE0NDkwOWQ1MiJ9LCJleHAiOjE3NzE0MTMwMDMsImlhdCI6MTc2ODgyMTAwMywianRpIjoiMGZiMDNmYjctNzM1MS00YjRjLWEyMzMtMjA3MjFiZWI4ZWIwIn0.GMGGS9fP3y9zYVEo1_P7InHGkL_7e1E7exzu_LmqB1Y
 ### 
+
+
+GET {{baseUrl}}/api/bakery/public/healthchecker
+Content-Type: application/json
+Origin: {{Origin}}
+
+###
 
 GET {{baseUrl}}/api/bakery/bakeries
 Content-Type: application/json
@@ -45,11 +51,11 @@ Content-Type: application/json
 Authorization: Bearer {{acessToken}}
 
 # AUTH
-### Generate token http://localhost:6001/api/auth/tokens/oauth
+### Generate token http://localhost:6001/api/auth/public/tokens/oauth
 # @name generateRequest
-POST {{baseUrl}}/api/auth/tokens/oauth
+POST {{baseUrl}}/api/auth/public/tokens/oauth
 Content-Type: application/json
-Origin: http://localhost1:4200
+Origin: http://localhost:4200
 
 {
     "client_id":"5ed8e536-12ae-463d-ae9b-8c78cc5481e1",

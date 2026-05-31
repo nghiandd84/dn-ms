@@ -52,13 +52,13 @@ gateways:
         upstream_nodes:
           - address:
               host: 127.0.0.1
-              port: 5201
+              port: 5021
             tls: false
             sni: null
             weight: 1
           - address:
               host: 127.0.0.1
-              port: 5202
+              port: 5022
             tls: false
             sni: null
             weight: 2
