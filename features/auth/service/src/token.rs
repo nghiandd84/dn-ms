@@ -6,9 +6,9 @@ use shared_shared_auth::{
     claim::{AccessTokenStruct, UserAccessData},
     data::AuthorizationCodeData,
     token::{
-        create_access_token, create_refresh_token, decode_access_token, decode_refresh_token,
-        get_access_token_cache_key, get_refresh_token_cache_key, insecured_decode_access_token,
-        REFRESH_TOKEN_EXPIRATION, TOKEN_EXPIRATION, TOKEN_TYPE,
+        create_access_token, create_refresh_token, decode_access_token_with_jti,
+        decode_refresh_token, get_access_token_cache_key, get_refresh_token_cache_key,
+        insecured_decode_access_token, REFRESH_TOKEN_EXPIRATION, TOKEN_EXPIRATION, TOKEN_TYPE,
     },
 };
 
@@ -117,10 +117,13 @@ impl TokenService {
         Ok(authorization_data)
     }
 
-    pub async fn verify_token(token_request: &TokenForVerifyRequest) -> Result<AccessTokenStruct> {
+    pub async fn verify_token(
+        cache: &Cache<String, AuthCacheState>,
+        token_request: &TokenForVerifyRequest,
+    ) -> Result<AccessTokenStruct> {
         let token = token_request.token.clone().unwrap_or_default();
         let access_token = insecured_decode_access_token(token.as_str());
-        let access_token = access_token.unwrap();
+        let access_token = access_token.map_err(|e| AppError::Token(e))?;
         let client = ClientQuery::get(access_token.client_id).await;
         if client.is_err() {
             return Err(AppError::EntityNotFound {
@@ -130,8 +133,19 @@ impl TokenService {
         let client = client.unwrap();
         debug!("Client found: {:?}", client);
         let client_secret = client.client_secret.unwrap_or_default();
-        let access_data =
-            decode_access_token(&token, &client_secret).map_err(|error| AppError::Token(error))?;
+        let (access_data, jti) = decode_access_token_with_jti(&token, &client_secret)
+            .map_err(|error| AppError::Token(error))?;
+
+        // Check JTI against cache - if not present, token has been revoked
+        let cache_key = get_access_token_cache_key(access_data.user_id);
+        let cached = cache.get(&cache_key).map_err(|_| AppError::Unknown)?;
+        match cached {
+            Some(AuthCacheState::AccessToken(cached_jti)) if cached_jti == jti => {}
+            _ => {
+                return Err(AppError::Token(TokenError::InvalidToken));
+            }
+        }
+
         Ok(access_data)
     }
 }
@@ -218,8 +232,8 @@ pub async fn create_refresh_token_authorization_data<'a>(
     old_refresh_token: &str,
     client_secret: &str,
 ) -> Result<AuthorizationCodeData> {
-    let (refresh_data, refresh_jti) =
-        decode_refresh_token(old_refresh_token, client_secret).unwrap();
+    let (refresh_data, refresh_jti) = decode_refresh_token(old_refresh_token, client_secret)
+        .map_err(|e| AppError::Token(e))?;
     let user_id = refresh_data.user_id;
     let token_id = refresh_data.token_id;
     let client_id = refresh_data.client_id;

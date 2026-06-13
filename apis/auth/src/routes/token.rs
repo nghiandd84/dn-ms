@@ -75,11 +75,12 @@ async fn create_token(
 )]
 async fn verify_token(
     _public: PublicAccess,
+    state: State<AppState<AuthAppState, AuthCacheState>>,
     ValidJson(request): ValidJson<TokenForVerifyRequest>,
 ) -> Result<ResponseJson<AccessTokenStruct>> {
     debug!("Verify token with request: {:?}", request);
-    // Create Logic Service to convert request to DTO
-    let access_token_struct = TokenService::verify_token(&request).await?;
+    let cache = &state.cache;
+    let access_token_struct = TokenService::verify_token(cache, &request).await?;
 
     Ok(ResponseJson(access_token_struct))
 }

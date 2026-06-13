@@ -135,6 +135,31 @@ pub fn decode_access_token(
     }
 }
 
+pub fn decode_access_token_with_jti(
+    token: &str,
+    client_secret: &str,
+) -> Result<(AccessTokenStruct, Uuid), TokenError> {
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.validate_nbf = true;
+    validation.reject_tokens_expiring_in_less_than = 10;
+    let claims = decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(client_secret.as_ref()),
+        &validation,
+    )
+    .map_err(|e| {
+        error!("Failed to decode access token: {}", e);
+        TokenError::InvalidToken
+    })?;
+    let jti =
+        Uuid::from_str(claims.claims.jti.as_str()).map_err(|_| TokenError::InvalidToken)?;
+
+    match claims.claims.dn_data {
+        ClaimSubject::AccessToken(token_data) => Ok((token_data, jti)),
+        _ => Err(TokenError::InvalidToken),
+    }
+}
+
 pub fn decode_refresh_token(
     refresh_token: &str,
     client_secret: &str,

@@ -1,3 +1,4 @@
+use chrono::Utc;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
@@ -41,7 +42,13 @@ impl AuthCodeQuery {
             raw_value: code.to_string(),
             operator: FilterOperator::Equal,
         });
-        let filters: FilterCondition = vec![client_id_filter, code_filter].into();
+        let expires_filter = FilterEnum::DateTime(FilterParam {
+            name: Column::ExpiresAt.to_string(),
+            value: Some(Utc::now().naive_utc()),
+            raw_value: "".to_string(),
+            operator: FilterOperator::Greater,
+        });
+        let filters: FilterCondition = vec![client_id_filter, code_filter, expires_filter].into();
         let query_result = Self::search(&paging, &order, &filters).await?;
         if query_result.result.is_empty() {
             return Err(DbErr::RecordNotFound(format!(

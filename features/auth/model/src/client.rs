@@ -132,6 +132,7 @@ use shared_shared_data_core::{
 };
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct ClientData {
+    #[serde(skip_serializing)]
     pub client_secret: Option<String>,
     pub allowed_grants: Option<VecString>,
     pub client_key: Option<String>,
