@@ -9,5 +9,6 @@ pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> Ac
     set_if_some!(active_model.user_id, model_option.user_id);
     set_if_some!(active_model.code, model_option.code);
     set_if_some!(active_model.is_used, model_option.is_used);
+    set_if_some!(active_model.is_sent, model_option.is_sent);
     active_model
 }

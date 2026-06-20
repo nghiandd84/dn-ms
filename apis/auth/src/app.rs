@@ -23,6 +23,7 @@ use features_auth_stream::PRODUCER_KEY;
 use crate::{
     doc::ApiDoc,
     routes::{
+        active_code::routes as active_code_routes,
         auth_code::routes as auth_code_routes, authentication::routes as authentication_routes,
         client::routes as client_routes, permission::routes as permission_routes,
         role::routes as role_routes, scope::routes as scope_routes, token::routes as token_routes,
@@ -99,6 +100,7 @@ impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
 
     fn routes(&self, app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
         let all_routes = Router::new()
+            .merge(active_code_routes(app_state))
             .merge(auth_code_routes(app_state))
             .merge(authentication_routes(app_state))
             .merge(client_routes(app_state))

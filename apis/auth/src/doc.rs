@@ -17,6 +17,7 @@ use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
     ),
     paths(
         shared_shared_app::health::health_checker_handler,
+        crate::routes::active_code::mark_as_sent,
         crate::routes::authentication::request_code,
         crate::routes::authentication::request_login,
         crate::routes::authentication::request_register,

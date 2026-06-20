@@ -1,3 +1,4 @@
+pub mod active_code;
 pub mod auth_code;
 pub mod authentication;
 pub mod client;

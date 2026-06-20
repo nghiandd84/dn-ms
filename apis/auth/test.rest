@@ -2,7 +2,7 @@
 @baseUrl = http://localhost:5011
 
 @userId = a8cf9071-4c48-46cf-a3c7-8acb0bfeb757
-@clientId = 5ed8e536-12ae-463d-ae9b-8c78cc5481e1
+@clientId = 4177fdc9-ecc5-48e2-bbe9-01054ca199bf
 # @authCode = 
 @AccessToken = 
 @RefreshToken = 
@@ -41,7 +41,7 @@ Content-Type: application/json
 {
     "client_id": "{{clientId}}",
     "scopes": ["email", "profile"],
-    "redirect_uri": "http://localhost:8081/auth_result",
+    "redirect_uri": "http://localhost:8080/auth_result",
     "response_type": "code",
     "state": "eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ=="
 }
@@ -304,10 +304,17 @@ GET {{baseUrl}}/clients/{{clientId}}
 Content-Type: application/json
 baggage: {{baggage}}
 
+
+### Filter Client
+GET {{baseUrl}}/clients
+Content-Type: application/json
+baggage: {{baggage}}
+
 @baseGatewayUrl = http://localhost:6001/api/auth
 ### Filter Client
 GET {{baseGatewayUrl}}/clients
 Content-Type: application/json
+Origin: http://localhost:4200
 baggage: {{baggage}}
 
 ### Filter Client

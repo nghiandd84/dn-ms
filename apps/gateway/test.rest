@@ -63,6 +63,20 @@ Origin: http://localhost:4200
     "code":"71PKnyOhGvtjB5LxhfqOahkNyoCg5H7gE5uZGxHYnLUojGvuzWvUSbdDoQa0dHCP"
 }
 
+### Request new code
+POST {{baseUrl}}/api/auth/public/requests/code
+Content-Type: application/json
+Origin: http://localhost:4200
+
+{
+    "client_id":"4177fdc9-ecc5-48e2-bbe9-01054ca199bf",
+    "scopes": ["email", "id" ],
+    "redirect_uri": "http://localhost:8080",
+    "response_type": "code",
+    "state": "eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ==""
+}
+
+
 ### Verify token
 POST {{baseUrl}}/api/auth/tokens/verify
 Content-Type: application/json

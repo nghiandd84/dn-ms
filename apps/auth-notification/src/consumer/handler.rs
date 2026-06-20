@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use tracing::{debug, error};
 
 use features_auth_model::state::AuthAppState;
+use features_auth_remote::ActiveCodeRemoteService;
 use features_auth_stream::{signup::SignUpMessage, AuthMessage};
 use features_email_template_remote::{
     EmailTemplateService, TemplatePlaceholderService, TemplateTranslationService,
@@ -49,46 +50,72 @@ async fn handle_signup_message<'a>(
                 "User signed up successfully: user_id={:?}, email={}, app_key={}, active_code={}, language_code={}",
                 user_id, email, app_key, active_code, language_code
             );
+
+            // Atomically mark as sent — if returns false, another consumer already handled it
+            let marked = ActiveCodeRemoteService::mark_as_sent(user_id, active_code.clone())
+                .await
+                .map_err(|e| {
+                    error!("Failed to call mark_as_sent for user_id={}: {}", user_id, e);
+                    ConsumerError::NotFound {
+                        message: format!("mark_as_sent failed: {}", e),
+                    }
+                })?;
+
+            if !marked {
+                debug!("Active code already sent for user_id={}, skipping email", user_id);
+                return Ok(());
+            }
+
+            // 1. Fetch email template
             let key = format!("{}_ACTIVE_CODE", app_key);
-            let email_template = EmailTemplateService::get_email_template_by_key(key).await;
-            let template = match email_template {
-                Ok(template) => {
-                    debug!("Fetched email template: {:?}", template);
-                    template
+            let template =
+                EmailTemplateService::get_email_template_by_key(key.clone())
+                    .await
+                    .map_err(|e| {
+                        error!("Failed to fetch email template '{}': {}", key, e);
+                        ConsumerError::NotFound {
+                            message: format!("Email template '{}': {}", key, e),
+                        }
+                    })?;
+
+            let template_id = template.get_id().ok_or_else(|| {
+                error!("Email template '{}' has no ID", key);
+                ConsumerError::NotFound {
+                    message: format!("Email template '{}' has no ID", key),
                 }
-                Err(e) => {
-                    error!("Failed to fetch email template: {}", e);
-                    return Err(Box::new(ConsumerError::NotFound { message: e }));
-                }
-            };
-            let template_id = template.get_id().ok_or_else(|| ConsumerError::NotFound {
-                message: "Email template ID".to_string(),
             })?;
-            debug!("Using email template ID: {}", template_id);
+
+            // 2. Fetch translation for user's language
             let translation = TemplateTranslationService::get_template_translations(
                 template_id,
                 language_code.clone(),
             )
-            .await;
-            let translation = match translation {
-                Ok(translation) => translation,
-                Err(e) => {
-                    error!("Failed to fetch template translation: {}", e);
-                    return Err(Box::new(ConsumerError::NotFound { message: e }));
+            .await
+            .map_err(|e| {
+                error!(
+                    "Failed to fetch translation for template_id={}, language={}: {}",
+                    template_id, language_code, e
+                );
+                ConsumerError::NotFound {
+                    message: format!("Translation (template={}, lang={}): {}", template_id, language_code, e),
                 }
-            };
-            debug!("Fetched template translation: {:?}", translation);
-            let placeholders =
-                TemplatePlaceholderService::get_template_holder_by_template_id(template_id).await;
-            let placeholders = match placeholders {
-                Ok(placeholders) => placeholders,
-                Err(e) => {
-                    error!("Failed to fetch template placeholders: {}", e);
-                    return Err(Box::new(ConsumerError::NotFound { message: e }));
-                }
-            };
-            debug!("Fetched placeholders: {:?}", placeholders);
+            })?;
 
+            // 3. Fetch placeholders
+            let placeholders =
+                TemplatePlaceholderService::get_template_holder_by_template_id(template_id)
+                    .await
+                    .map_err(|e| {
+                        error!(
+                            "Failed to fetch placeholders for template_id={}: {}",
+                            template_id, e
+                        );
+                        ConsumerError::NotFound {
+                            message: format!("Placeholders (template={}): {}", template_id, e),
+                        }
+                    })?;
+
+            // 4. Build placeholder map
             let mut placeholder_maps: HashMap<String, String> = HashMap::new();
             for placeholder in placeholders.iter() {
                 placeholder_maps.insert(
@@ -97,26 +124,23 @@ async fn handle_signup_message<'a>(
                 );
             }
             placeholder_maps.insert("ACTIVE_CODE".to_string(), active_code.clone());
-            let from = client_email;
-            let to = email.clone();
-            let subject = translation.get_subject();
-            let html = translation.get_body();
-            let placeholder = Some(placeholder_maps.clone());
 
-            let send_mail = SendMail::new(from, to, subject, html, placeholder);
-            debug!("SendMail struct: {:?}", send_mail);
-            let send_result = send_email(&send_mail).await;
-            match send_result {
-                Ok(_) => {
-                    debug!("Activation email sent successfully to {}", email);
+            // 5. Send email
+            let send_mail = SendMail::new(
+                client_email,
+                email.clone(),
+                translation.get_subject(),
+                translation.get_body(),
+                Some(placeholder_maps),
+            );
+            send_email(&send_mail).await.map_err(|e| {
+                error!("Failed to send activation email to {}: {}", email, e);
+                ConsumerError::SendEmailError {
+                    message: format!("To {}: {}", email, e),
                 }
-                Err(e) => {
-                    error!("Failed to send activation email to {}: {}", email, e);
-                    return Err(Box::new(ConsumerError::SendEmailError {
-                        message: e.to_string(),
-                    }));
-                }
-            }
+            })?;
+
+            debug!("Activation email sent successfully to {}", email);
         }
     }
 
