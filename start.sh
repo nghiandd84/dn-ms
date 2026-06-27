@@ -352,7 +352,7 @@ echo "------------ Start Auth-Server ------------"
 echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
 # Execute the program
-# $APP_DIRECTORY/app-gateway  &
+$APP_DIRECTORY/app-gateway  &
 sleep 1s
 
 #wait

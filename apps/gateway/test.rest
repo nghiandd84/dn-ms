@@ -76,6 +76,7 @@ Origin: http://localhost:4200
     "state": "eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ==""
 }
 
+### 
 
 ### Verify token
 POST {{baseUrl}}/api/auth/tokens/verify

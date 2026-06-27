@@ -46,6 +46,20 @@ Content-Type: application/json
     "state": "eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ=="
 }
 
+
+### Request Register
+# @name authenticationRequest
+POST {{baseUrl}}/public/requests/register
+Content-Type: application/json
+
+{
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}",
+    "language": "en-US",
+    "state": ""
+}
+
+
 ### Request Login
 # @name authLoginRequest
 POST {{baseUrl}}/requests/login
@@ -162,7 +176,7 @@ Content-Type: application/json
 baggage: {{baggage}}
 
 ### Get All Roles with permissions
-GET {{baseUrl}}/roles?includes=permissions
+GET {{baseUrl}}/roles?includes=permissions&name=in|DNAPP_GUEST
 Content-Type: application/json
 baggage: {{baggage}}
 
