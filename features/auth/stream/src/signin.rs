@@ -16,4 +16,9 @@ pub enum SignInMessage {
         ip_address: String,
         reason: String,
     },
+    LoginCode {
+        user_id: String,
+        email: String,
+        login_code: String,
+    },
 }

@@ -36,3 +36,21 @@ pub struct LoginRequest {
 pub struct LoginData {
     pub code: String,
 }
+
+#[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
+pub struct LoginCodeRequest {
+    pub user_id: Uuid,
+    #[validate(length(
+        min = 1,
+        max = 10,
+        code = "login_code",
+        message = "the length of login_code must be between 1 and 10"
+    ))]
+    pub login_code: String,
+}
+
+#[derive(Debug, Serialize, ToSchema, Response)]
+pub struct LoginCodeResponse {
+    pub auth_code: String,
+    pub redirect_uri: String,
+}

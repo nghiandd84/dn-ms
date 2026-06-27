@@ -26,6 +26,13 @@ Provides authentication, authorization, and identity management for the platform
 | POST | `/public/requests/login` | `AuthLoginRequest` | `AuthLoginDataResponse` |
 | POST | `/public/requests/register` | `AuthRegisterRequest` | `AuthRegisterDataResponse` |
 
+### Signup & Login Verification — Public (`/public/signup`, `/public/login`)
+
+| Method | Path | Request Body | Response |
+|--------|------|-------------|----------|
+| POST | `/public/signup/active` | `SignupActiveRequest` | `SignupActiveResponseResponse` |
+| POST | `/public/login/code` | `LoginCodeRequest` | `LoginCodeResponseResponse` |
+
 ### Token Management (`/tokens`, `/public/tokens`)
 
 | Method | Path | Request Body | Response |
@@ -188,15 +195,28 @@ Roles support `?includes=permissions` on GET endpoints to eager-load associated 
 |-------|--------|
 | code  | String |
 
-#### AuthLoginData
+#### LoginCodeResponse
 | Field        | Type   |
 |--------------|--------|
-| id_token     | String |
+| auth_code    | String |
 | redirect_uri | String |
+
+#### SignupActiveResponse
+| Field        | Type   |
+|--------------|--------|
+| ok           | bool   |
+| auth_code    | String |
+| redirect_uri | String |
+
+#### AuthLoginData
+| Field    | Type |
+|----------|------|
+| user_id  | UUID |
 
 #### AuthRegisterData
 | Field        | Type   |
 |--------------|--------|
+| user_id      | UUID   |
 | id_token     | String |
 | redirect_uri | String |
 
@@ -233,6 +253,18 @@ Roles support `?includes=permissions` on GET endpoints to eager-load associated 
 | email    | String | required   |
 | password | String | required   |
 | state    | String | required   |
+
+#### LoginCodeRequest
+| Field      | Type   | Validation   |
+|------------|--------|--------------|
+| user_id    | UUID   | required     |
+| login_code | String | 1–10 chars   |
+
+#### SignupActiveRequest
+| Field   | Type   | Validation |
+|---------|--------|------------|
+| user_id | UUID   | required   |
+| code    | String | 1–10 chars |
 
 #### AuthRegisterRequest
 | Field    | Type   | Validation |
@@ -373,6 +405,7 @@ AuthCode → Client   (via `client_id`)
 | scopes            | UUID        | name (unique), description |
 | tokens            | UUID        | access_token, refresh_token, user_id, client_id, scopes, expires_at |
 | auth_codes        | UUID        | code (unique, auto-generated 64-char), user_id, client_id, scopes, expires_at (1 min) |
+| active_codes      | UUID        | code (unique), user_id, is_used, is_sent, expiration_time (10 min) |
 
 ---
 

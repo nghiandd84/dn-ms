@@ -25,13 +25,13 @@ use features_auth_model::{
 use features_auth_repo::{
     access::AccessMutation,
     active_code::mutation::ActiveCodeMutation,
-    auth_code::{AuthCodeMutation, AuthCodeQuery},
+    auth_code::AuthCodeMutation,
     authentication::{AuthenticationRequestMutation, AuthenticationRequestQuery},
     client::ClientQuery,
     role::RoleQuery,
     user::{UserMutation, UserQuery},
 };
-use features_auth_stream::{signup::SignUpMessage, AuthMessage};
+use features_auth_stream::{signin::SignInMessage, signup::SignUpMessage, AuthMessage};
 
 use rand::{thread_rng, Rng};
 
@@ -43,7 +43,10 @@ impl AuthenticationRequestService {
         Ok(request_id.unwrap())
     }
 
-    pub async fn login<'a>(request: AuthLoginRequest) -> Result<AuthLoginData> {
+    pub async fn login<'a>(
+        producer: &'a Producer,
+        request: AuthLoginRequest,
+    ) -> Result<AuthLoginData> {
         // Get request data from request.state\
         let state_id = Uuid::parse_str(&request.state.unwrap()).map_err(|_| AppError::Unknown)?;
         let request_code_data = AuthenticationRequestQuery::get(state_id).await;
@@ -54,6 +57,7 @@ impl AuthenticationRequestService {
         }
         // Validate email and password
         let request_code_data = request_code_data.unwrap();
+        let email = request.email.clone().unwrap();
         let user_data = UserQuery::get_user_by_email_and_password(
             request.email.unwrap(),
             request.password.unwrap(),
@@ -65,20 +69,52 @@ impl AuthenticationRequestService {
             });
         }
         let user_data = user_data.unwrap();
-        let redirect_uri = request_code_data.redirect_uri.clone().unwrap_or_default();
-        let auth_code_request: AuthCodeForCreateRequest = AuthCodeForCreateRequest {
+        let user_id = user_data.id.unwrap();
+
+        // Create auth_code from authentication request data
+        let auth_code_request = AuthCodeForCreateRequest {
             client_id: Some(request_code_data.client_id.unwrap()),
             redirect_uri: Some(request_code_data.redirect_uri.unwrap()),
             scopes: Some(request_code_data.scopes.unwrap()),
             user_id: user_data.id,
         };
-        let code_id = AuthCodeMutation::create(auth_code_request.into()).await?;
-        let auth_code = AuthCodeQuery::get(code_id).await?;
-        let result = AuthLoginData {
-            id_token: auth_code.code.unwrap(),
-            redirect_uri: redirect_uri,
+        AuthCodeMutation::create(auth_code_request.into())
+            .await
+            .map_err(|_| AppError::Unknown)?;
+
+        // Generate login code (6 digits)
+        let login_code: String = thread_rng()
+            .sample_iter(&rand::distributions::Uniform::from(0..10))
+            .take(6)
+            .map(|n| n.to_string())
+            .collect();
+
+        // Store login code as active_code
+        let active_code_dto = ActiveCodeForCreateDto {
+            user_id,
+            code: login_code.clone(),
         };
-        Ok(result)
+        ActiveCodeMutation::create(active_code_dto)
+            .await
+            .map_err(|_| AppError::Unknown)?;
+
+        // Send Kafka event with login code
+        let auth_message = AuthMessage::SignIn {
+            message: SignInMessage::LoginCode {
+                user_id: user_id.to_string(),
+                email,
+                login_code,
+            },
+        };
+        let message = ProducerMessage {
+            payload: auth_message,
+            key: None,
+        };
+        if let Err(e) = producer.send(&message).await {
+            debug!("Error sending login code message to Kafka: {:?}", e.reason);
+        }
+
+        Ok(AuthLoginData { user_id })
     }
 
     pub async fn register<'a>(
