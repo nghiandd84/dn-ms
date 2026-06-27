@@ -5,5 +5,6 @@ pub mod client;
 pub mod permission;
 pub mod role;
 pub mod scope;
+pub mod signup;
 pub mod token;
 pub mod user;

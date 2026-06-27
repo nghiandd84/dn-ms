@@ -244,6 +244,7 @@ impl AuthenticationRequestService {
         }
 
         let result = AuthRegisterData {
+            user_id,
             id_token: auth_code,
             redirect_uri,
         };

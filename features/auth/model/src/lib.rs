@@ -8,6 +8,7 @@ pub mod profile;
 pub mod role;
 pub mod role_permission;
 pub mod scope;
+pub mod signup;
 pub mod state;
 pub mod token;
 pub mod user;

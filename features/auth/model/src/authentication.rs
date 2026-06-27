@@ -119,6 +119,7 @@ pub struct AuthRegisterRequest {
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Response, Debug)]
 pub struct AuthRegisterData {
+    pub user_id: Uuid,
     pub id_token: String,
     pub redirect_uri: String,
 }

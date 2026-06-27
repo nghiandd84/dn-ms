@@ -26,7 +26,8 @@ use crate::{
         active_code::routes as active_code_routes,
         auth_code::routes as auth_code_routes, authentication::routes as authentication_routes,
         client::routes as client_routes, permission::routes as permission_routes,
-        role::routes as role_routes, scope::routes as scope_routes, token::routes as token_routes,
+        role::routes as role_routes, scope::routes as scope_routes,
+        signup::routes as signup_routes, token::routes as token_routes,
         user::routes as user_routes,
     },
 };
@@ -106,6 +107,7 @@ impl<'a> StartApp<AuthAppState, AuthCacheState> for MyApp<'a> {
             .merge(client_routes(app_state))
             .merge(role_routes(app_state))
             .merge(scope_routes(app_state))
+            .merge(signup_routes(app_state))
             .merge(token_routes(app_state))
             .merge(user_routes(app_state))
             .merge(permission_routes(app_state))

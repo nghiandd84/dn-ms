@@ -10,7 +10,7 @@ use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
         description = "Complete Auth Restful API"
     ),
     security(
-        ("token" = [])
+        ("baggage" = [])
     ),
     components(
         schemas(ErrorResponse)
@@ -55,6 +55,7 @@ use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
         crate::routes::user::delete_user,
         crate::routes::user::filter_users,
         crate::routes::user::get_user,
+        crate::routes::signup::activate,
     ),
     tags(
         (name = "Rust REST API", description = "Authentication in Rust Endpoints")

@@ -2,7 +2,7 @@ use sea_orm::ConnectionTrait;
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::user::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto, UserForUpdateDto,
 };
 
 use crate::user::util::assign;
@@ -29,6 +29,13 @@ impl UserMutation {
         active_model.not_set(Column::Id);
         let result = active_model.insert(txn).await?;
         Ok(result.id)
+    }
+
+    pub fn update<'a>(
+        id: Uuid,
+        data: UserForUpdateDto,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        UserMutationManager::update_by_id_uuid(id, data.into())
     }
 
     pub fn delete_user<'a>(

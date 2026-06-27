@@ -1,7 +1,7 @@
 use serde::Serialize;
 use utoipa::{
     openapi::{
-        security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
+        security::{ApiKey, ApiKeyValue, SecurityScheme},
         ServerBuilder,
     },
     Modify, ToSchema,
@@ -36,13 +36,11 @@ impl Modify for JwtSecurityAddon {
     fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
         let components = openapi.components.as_mut().unwrap();
         components.add_security_scheme(
-            "token",
-            SecurityScheme::Http(
-                HttpBuilder::new()
-                    .scheme(HttpAuthScheme::Bearer)
-                    .bearer_format("JWT")
-                    .build(),
-            ),
+            "baggage",
+            SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::with_description(
+                "baggage",
+                "Format: accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000",
+            ))),
         );
     }
 }

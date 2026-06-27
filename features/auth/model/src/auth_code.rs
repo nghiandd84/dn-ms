@@ -51,7 +51,7 @@ pub struct AuthCodeData {
     pub client_id: Option<Uuid>,
     pub id: Option<Uuid>,
     pub code: Option<String>,
-    redirect_uri: Option<String>,
+    pub redirect_uri: Option<String>,
     expires_at: Option<DateTime>,
     created_at: Option<DateTime>,
     updated_at: Option<DateTime>,

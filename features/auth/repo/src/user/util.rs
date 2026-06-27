@@ -8,6 +8,7 @@ use features_auth_entities::user::{ActiveModel, ModelOptionDto};
 pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> ActiveModel {
     set_if_some!(active_model.id, model_option.id);
     set_if_some!(active_model.email, model_option.email);
+    set_if_some!(active_model.is_active, model_option.is_active);
     if let Some(password) = model_option.password {
         warn!("Password is changing");
         active_model.password = Set(password);
