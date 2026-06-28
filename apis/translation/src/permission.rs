@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // PROJECT Permission
-const PROJECT_RESOURCE: &str = "TRANSLATION_PROJECT";
+const PROJECT_RESOURCE: &str = "TRANSLATION:PROJECT";
 
 define_resource_perms! {
     CanCreateProject => (CREATE, PROJECT_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // KEY Permission
-const KEY_RESOURCE: &str = "TRANSLATION_KEY";
+const KEY_RESOURCE: &str = "TRANSLATION:KEY";
 
 define_resource_perms! {
     CanCreateKey => (CREATE, KEY_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // TAG Permission
-const TAG_RESOURCE: &str = "TRANSLATION_TAG";
+const TAG_RESOURCE: &str = "TRANSLATION:TAG";
 
 define_resource_perms! {
     CanCreateTag => (CREATE, TAG_RESOURCE),
@@ -35,7 +35,7 @@ define_resource_perms! {
 }
 
 // VERSION Permission
-const VERSION_RESOURCE: &str = "TRANSLATION_VERSION";
+const VERSION_RESOURCE: &str = "TRANSLATION:VERSION";
 
 define_resource_perms! {
     CanCreateVersion => (CREATE, VERSION_RESOURCE),

@@ -4,9 +4,9 @@ use shared_shared_auth::{
     ResourcePermission,
 };
 
-const LOOKUP_TYPE_RESOURCE: &str = "LOOKUP_TYPE";
-const LOOKUP_ITEM_RESOURCE: &str = "LOOKUP_ITEM";
-const LOOKUP_ITEM_TRANSLATION_RESOURCE: &str = "LOOKUP_ITEM_TRANSLATION";
+const LOOKUP_TYPE_RESOURCE: &str = "LOOKUP:TYPE";
+const LOOKUP_ITEM_RESOURCE: &str = "LOOKUP:ITEM";
+const LOOKUP_ITEM_TRANSLATION_RESOURCE: &str = "LOOKUP:ITEM_TRANSLATION";
 
 define_resource_perms! {
     CanCreateLookupType => (CREATE, LOOKUP_TYPE_RESOURCE),

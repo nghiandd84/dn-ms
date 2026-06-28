@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // PAYMENT_INTENT Permission
-const PAYMENT_INTENT_RESOURCE: &str = "STRIPE_PAYMENT_INTENT";
+const PAYMENT_INTENT_RESOURCE: &str = "PAYMENT_STRIPE:PAYMENT_INTENT";
 
 define_resource_perms! {
     CanCreatePaymentIntent => (CREATE, PAYMENT_INTENT_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // WEBHOOK_EVENT Permission
-const WEBHOOK_EVENT_RESOURCE: &str = "STRIPE_WEBHOOK_EVENT";
+const WEBHOOK_EVENT_RESOURCE: &str = "PAYMENT_STRIPE:WEBHOOK_EVENT";
 
 define_resource_perms! {
     CanCreateWebhookEvent => (CREATE, WEBHOOK_EVENT_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // REFUND Permission
-const REFUND_RESOURCE: &str = "STRIPE_REFUND";
+const REFUND_RESOURCE: &str = "PAYMENT_STRIPE:REFUND";
 
 define_resource_perms! {
     CanCreateRefund => (CREATE, REFUND_RESOURCE),
@@ -35,7 +35,7 @@ define_resource_perms! {
 }
 
 // API_LOG Permission
-const API_LOG_RESOURCE: &str = "STRIPE_API_LOG";
+const API_LOG_RESOURCE: &str = "PAYMENT_STRIPE:API_LOG";
 
 define_resource_perms! {
     CanCreateApiLog => (CREATE, API_LOG_RESOURCE),

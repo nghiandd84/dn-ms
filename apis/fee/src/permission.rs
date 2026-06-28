@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // CONFIGURATION Permission
-const CONFIGURATION_RESOURCE: &str = "FEE_CONFIGURATION";
+const CONFIGURATION_RESOURCE: &str = "FEE:CONFIGURATION";
 
 define_resource_perms! {
     CanCreateConfiguration => (CREATE, CONFIGURATION_RESOURCE),

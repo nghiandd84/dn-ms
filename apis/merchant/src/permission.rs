@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // MERCHANT Permission
-const MERCHANT_RESOURCE: &str = "MERCHANT_MERCHANT";
+const MERCHANT_RESOURCE: &str = "MERCHANT:MERCHANT";
 
 define_resource_perms! {
     CanCreateMerchant => (CREATE, MERCHANT_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // API_KEY Permission
-const API_KEY_RESOURCE: &str = "MERCHANT_API_KEY";
+const API_KEY_RESOURCE: &str = "MERCHANT:API_KEY";
 
 define_resource_perms! {
     CanCreateApiKey => (CREATE, API_KEY_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // WEBHOOK Permission
-const WEBHOOK_RESOURCE: &str = "MERCHANT_WEBHOOK";
+const WEBHOOK_RESOURCE: &str = "MERCHANT:WEBHOOK";
 
 define_resource_perms! {
     CanCreateWebhook => (CREATE, WEBHOOK_RESOURCE),

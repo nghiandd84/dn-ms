@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // PROFILE Permission
-const PROFILE_RESOURCE: &str = "PROFILE_PROFILE";
+const PROFILE_RESOURCE: &str = "PROFILE:PROFILE";
 
 define_resource_perms! {
     CanCreateProfile => (CREATE, PROFILE_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // PREFERENCE Permission
-const PREFERENCE_RESOURCE: &str = "PROFILE_PREFERENCE";
+const PREFERENCE_RESOURCE: &str = "PROFILE:PREFERENCE";
 
 define_resource_perms! {
     CanCreatePreference => (CREATE, PREFERENCE_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // SOCIAL_LINK Permission
-const SOCIAL_LINK_RESOURCE: &str = "PROFILE_SOCIAL_LINK";
+const SOCIAL_LINK_RESOURCE: &str = "PROFILE:SOCIAL_LINK";
 
 define_resource_perms! {
     CanCreateSocialLink => (CREATE, SOCIAL_LINK_RESOURCE),

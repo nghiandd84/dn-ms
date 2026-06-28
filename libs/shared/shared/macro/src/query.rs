@@ -236,12 +236,21 @@ pub fn query_impl(input: QueryInput) -> TokenStream {
                             _ => Condition::all(),
                         }
                     }
-                    FilterEnum::String(filter) => match filter.operator {
-                        FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
-                        FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
-                        FilterOperator::StartWith => Condition::any().add(column.starts_with(filter.value.as_deref().unwrap_or_default())),
-                        FilterOperator::Like => Condition::any().add(column.contains(filter.value.as_deref().unwrap_or_default())),
-                        _ => Condition::all(),
+                    FilterEnum::String(filter) => {
+                        let values: Vec<String> = filter
+                            .raw_value
+                            .split(",")
+                            .map(|s| s.to_string())
+                            .collect();
+                        match filter.operator {
+                            FilterOperator::Equal => Condition::any().add(column.eq(filter.value.clone())),
+                            FilterOperator::NotEqual => Condition::any().add(column.ne(filter.value.clone())),
+                            FilterOperator::StartWith => Condition::any().add(column.starts_with(filter.value.as_deref().unwrap_or_default())),
+                            FilterOperator::Like => Condition::any().add(column.contains(filter.value.as_deref().unwrap_or_default())),
+                            FilterOperator::In => Condition::any().add(column.is_in(values)),
+                            FilterOperator::NotIn => Condition::any().add(column.is_not_in(values)),
+                            _ => Condition::all(),
+                        }
                     },
                     FilterEnum::VecString(filter) => match filter.operator {
                         FilterOperator::In => vec_string_filter!(filter, "$1  && $2 ::varchar[]"),

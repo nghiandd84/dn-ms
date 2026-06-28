@@ -17,6 +17,7 @@ mod m20260104_add_role_permission_table;
 mod m20260127_add_remove_profile_fields;
 mod m20260413_seed_roles_and_permissions_for_admin_all;
 mod m20260613_add_is_sent_to_active_codes;
+mod m20260628_drop_unique_on_permission_resource;
 
 pub struct Migrator;
 
@@ -40,6 +41,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260104_add_role_permission_table::Migration),
             Box::new(m20260127_add_remove_profile_fields::Migration),
             Box::new(m20260613_add_is_sent_to_active_codes::Migration),
+            Box::new(m20260628_drop_unique_on_permission_resource::Migration),
 
             // Alawys keep this seeding migration at the end of the list, as it depends on all previous migrations to be applied first.
             Box::new(m20260413_seed_roles_and_permissions_for_admin_all::Migration),

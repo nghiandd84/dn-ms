@@ -24,8 +24,8 @@ impl PermissionService {
         let condition = FilterCondition::leaf(FilterEnum::String(FilterParam {
             name: "permissions[resource]".to_string(),
             operator: FilterOperator::StartWith,
-            value: Some(service_key.clone()),
-            raw_value: service_key,
+            value: Some(format!("{}:", service_key)),
+            raw_value: format!("{}:", service_key),
         }));
 
         let query_string = condition.to_query_string();

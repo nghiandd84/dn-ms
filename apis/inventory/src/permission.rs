@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // SEAT Permission
-const SEAT_RESOURCE: &str = "INVENTORY_SEAT";
+const SEAT_RESOURCE: &str = "INVENTORY:SEAT";
 
 define_resource_perms! {
     CanCreateSeat => (CREATE, SEAT_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // RESERVATION Permission
-const RESERVATION_RESOURCE: &str = "INVENTORY_RESERVATION";
+const RESERVATION_RESOURCE: &str = "INVENTORY:RESERVATION";
 
 define_resource_perms! {
     CanCreateReservation => (CREATE, RESERVATION_RESOURCE),

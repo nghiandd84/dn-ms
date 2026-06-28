@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // WALLET Permission
-const WALLET_RESOURCE: &str = "WALLET_WALLET";
+const WALLET_RESOURCE: &str = "WALLET:WALLET";
 
 define_resource_perms! {
     CanCreateWallet => (CREATE, WALLET_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // TRANSACTION Permission
-const TRANSACTION_RESOURCE: &str = "WALLET_TRANSACTION";
+const TRANSACTION_RESOURCE: &str = "WALLET:TRANSACTION";
 
 define_resource_perms! {
     CanCreateTransaction => (CREATE, TRANSACTION_RESOURCE),
@@ -23,7 +23,7 @@ define_resource_perms! {
 }
 
 // P2P_TRANSFER Permission
-const P2P_TRANSFER_RESOURCE: &str = "WALLET_P2P_TRANSFER";
+const P2P_TRANSFER_RESOURCE: &str = "WALLET:P2P_TRANSFER";
 
 define_resource_perms! {
     CanCreateP2pTransfer => (CREATE, P2P_TRANSFER_RESOURCE),
@@ -31,7 +31,7 @@ define_resource_perms! {
 }
 
 // TOP_UP Permission
-const TOP_UP_RESOURCE: &str = "WALLET_TOP_UP";
+const TOP_UP_RESOURCE: &str = "WALLET:TOP_UP";
 
 define_resource_perms! {
     CanCreateTopUp => (CREATE, TOP_UP_RESOURCE),
@@ -39,7 +39,7 @@ define_resource_perms! {
 }
 
 // WITHDRAWAL Permission
-const WITHDRAWAL_RESOURCE: &str = "WALLET_WITHDRAWAL";
+const WITHDRAWAL_RESOURCE: &str = "WALLET:WITHDRAWAL";
 
 define_resource_perms! {
     CanCreateWithdrawal => (CREATE, WITHDRAWAL_RESOURCE),
@@ -48,7 +48,7 @@ define_resource_perms! {
 }
 
 // IDEMPOTENCY Permission
-const IDEMPOTENCY_RESOURCE: &str = "WALLET_IDEMPOTENCY";
+const IDEMPOTENCY_RESOURCE: &str = "WALLET:IDEMPOTENCY";
 
 define_resource_perms! {
     CanCreateIdempotency => (CREATE, IDEMPOTENCY_RESOURCE),

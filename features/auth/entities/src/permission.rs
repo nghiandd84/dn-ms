@@ -12,7 +12,7 @@ use shared_shared_macro::Dto;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
-    #[sea_orm(column_type = "String(StringLen::N(1204))", unique)]
+    #[sea_orm(column_type = "String(StringLen::N(1204))")]
     pub resource: String,
     pub description: Option<String>,
     pub mask: i32,

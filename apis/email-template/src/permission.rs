@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // EMAIL_TEMPLATE Permission
-const EMAIL_TEMPLATE_RESOURCE: &str = "EMAIL_TEMPLATE";
+const EMAIL_TEMPLATE_RESOURCE: &str = "EMAIL_TEMPLATE:EMAIL_TEMPLATE";
 
 define_resource_perms! {
     CanCreateEmailTemplate => (CREATE, EMAIL_TEMPLATE_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // TEMPLATE_TRANSLATION Permission
-const TEMPLATE_TRANSLATION_RESOURCE: &str = "TEMPLATE_TRANSLATION";
+const TEMPLATE_TRANSLATION_RESOURCE: &str = "EMAIL_TEMPLATE:TEMPLATE_TRANSLATION";
 
 define_resource_perms! {
     CanCreateTemplateTranslation => (CREATE, TEMPLATE_TRANSLATION_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // TEMPLATE_PLACEHOLDER Permission
-const TEMPLATE_PLACEHOLDER_RESOURCE: &str = "TEMPLATE_PLACEHOLDER";
+const TEMPLATE_PLACEHOLDER_RESOURCE: &str = "EMAIL_TEMPLATE:TEMPLATE_PLACEHOLDER";
 
 define_resource_perms! {
     CanCreateTemplatePlaceholder => (CREATE, TEMPLATE_PLACEHOLDER_RESOURCE),

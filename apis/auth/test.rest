@@ -175,8 +175,8 @@ GET {{baseUrl}}/roles?name=li|GUEST&description=li|all&_condition=or&page=0&page
 Content-Type: application/json
 baggage: {{baggage}}
 
-### Get All Roles with permissions
-GET {{baseUrl}}/roles?includes=permissions&name=in|DNAPP_GUEST
+### Get roles in array with permissions
+GET {{baseUrl}}/roles?includes=permissions&name=in|ADMIN_AUTH
 Content-Type: application/json
 baggage: {{baggage}}
 

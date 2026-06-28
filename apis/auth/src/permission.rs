@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // USER Permission
-const USER_RESOURCE: &str = "AUTH_USER";
+const USER_RESOURCE: &str = "AUTH:USER";
 
 define_resource_perms! {
     CanReadUser => (READ, USER_RESOURCE),
@@ -13,7 +13,7 @@ define_resource_perms! {
 }
 
 // ROLE Permission
-const ROLE_RESOURCE: &str = "AUTH_ROLE";
+const ROLE_RESOURCE: &str = "AUTH:ROLE";
 
 define_resource_perms! {
     CanCreateRole => (CREATE, ROLE_RESOURCE),
@@ -23,7 +23,7 @@ define_resource_perms! {
 }
 
 // PERMISSION Permission
-const PERMISSION_RESOURCE: &str = "AUTH_PERMISSION";
+const PERMISSION_RESOURCE: &str = "AUTH:PERMISSION";
 
 define_resource_perms! {
     CanCreatePermission => (CREATE, PERMISSION_RESOURCE),
@@ -33,7 +33,7 @@ define_resource_perms! {
 }
 
 // SCOPE Permission
-const SCOPE_RESOURCE: &str = "AUTH_SCOPE";
+const SCOPE_RESOURCE: &str = "AUTH:SCOPE";
 
 define_resource_perms! {
     CanCreateScope => (CREATE, SCOPE_RESOURCE),
@@ -43,7 +43,7 @@ define_resource_perms! {
 }
 
 // CLIENT Permission
-const CLIENT_RESOURCE: &str = "AUTH_CLIENT";
+const CLIENT_RESOURCE: &str = "AUTH:CLIENT";
 
 define_resource_perms! {
     CanCreateClient => (CREATE, CLIENT_RESOURCE),
@@ -53,14 +53,14 @@ define_resource_perms! {
 }
 
 // TOKEN Permission
-const TOKEN_RESOURCE: &str = "AUTH_TOKEN";
+const TOKEN_RESOURCE: &str = "AUTH:TOKEN";
 
 define_resource_perms! {
     CanReadToken => (READ, TOKEN_RESOURCE)
 }
 
 // AUTH_CODE Permission
-const AUTH_CODE_RESOURCE: &str = "AUTH_AUTH_CODE";
+const AUTH_CODE_RESOURCE: &str = "AUTH:AUTH_CODE";
 
 define_resource_perms! {
     CanCreateAuthCode => (CREATE, AUTH_CODE_RESOURCE),

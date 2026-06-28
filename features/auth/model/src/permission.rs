@@ -8,14 +8,30 @@ use features_auth_entities::permission::{
     Model, ModelOptionDto, PermissionForCreateDto, PermissionForCreateRequestDto,
 };
 
+fn validate_resource_format(resource: &str) -> Result<(), validator::ValidationError> {
+    if !resource.contains(':') {
+        return Err(validator::ValidationError::new("resource_format")
+            .with_message("resource must contain ':' separator (e.g. SERVICE_KEY:ENTITY_KEY)".into()));
+    }
+    let parts: Vec<&str> = resource.splitn(2, ':').collect();
+    if parts[0].is_empty() || parts[1].is_empty() {
+        return Err(validator::ValidationError::new("resource_format")
+            .with_message("resource must have non-empty service key and entity key".into()));
+    }
+    let valid_chars = |s: &str| s.chars().all(|c| c.is_ascii_uppercase() || c == '_' || c.is_ascii_digit());
+    if !valid_chars(parts[0]) || !valid_chars(parts[1]) {
+        return Err(validator::ValidationError::new("resource_format")
+            .with_message("resource must use UPPER_SNAKE_CASE (e.g. AUTH:ROLE)".into()));
+    }
+    Ok(())
+}
+
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct PermissionForCreateRequest {
-    #[validate(length(
-        min = 5,
-        max = 1024,
-        code = "resource_lenght",
-        message = "the length of resource must be between 5 and 1024"
-    ))]
+    #[validate(
+        length(min = 5, max = 1024, code = "resource_length", message = "the length of resource must be between 5 and 1024"),
+        custom(function = "validate_resource_format")
+    )]
     pub resource: String,
     pub description: Option<String>,
     pub mask: Option<i32>,
@@ -33,12 +49,10 @@ impl Into<PermissionForCreateDto> for PermissionForCreateRequest {
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
 pub struct PermissionForUpdateRequest {
-    #[validate(length(
-        min = 5,
-        max = 1024,
-        code = "resource_lenght",
-        message = "the length of resource must be between 5 and 1024"
-    ))]
+    #[validate(
+        length(min = 5, max = 1024, code = "resource_length", message = "the length of resource must be between 5 and 1024"),
+        custom(function = "validate_resource_format")
+    )]
     pub resource: String,
     pub description: Option<String>,
     pub mask: Option<i32>,

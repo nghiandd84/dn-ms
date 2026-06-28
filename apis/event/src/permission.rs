@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // EVENT Permission
-const EVENT_RESOURCE: &str = "EVENT_EVENT";
+const EVENT_RESOURCE: &str = "EVENT:EVENT";
 
 define_resource_perms! {
     CanCreateEvent => (CREATE, EVENT_RESOURCE),

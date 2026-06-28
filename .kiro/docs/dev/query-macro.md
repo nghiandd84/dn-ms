@@ -23,6 +23,18 @@ Specifies the primary key type. Determines which `get_by_id_*` variant is implem
 
 Specifies the SeaORM `Column` enum to use for building filter conditions. Generates `filter_condition_<column_name>` which handles all `FilterEnum` variants (`String`, `Bool`, `I32`, `U32`, `I64`, `U64`, `F32`, `F64`, `Uuid`, `VecString`, `DateTime`).
 
+#### Supported Operators per Type
+
+| FilterEnum | Operators |
+|---|---|
+| `String` | `Equal`, `NotEqual`, `Like`, `StartWith`, `In`, `NotIn` |
+| `Bool` | `Equal`, `NotEqual` |
+| `Uuid` | `Equal`, `NotEqual`, `In`, `NotIn` |
+| `I32`, `U32`, `I64`, `U64`, `F32`, `F64` | `Equal`, `NotEqual`, `Less`, `LessEqual`, `Greater`, `GreaterEqual`, `In`, `NotIn` |
+| `VecString` | `In` (array overlap `&&`), `NotIn` (array not contains) |
+
+For `String` `In`/`NotIn`, the `raw_value` is split by comma to build the value list. Example: `name=in|admin,user` → `WHERE name IN ('admin', 'user')`.
+
 When exactly one `#[query_filter]` is specified, the macro also auto-generates `build_filter_condition`. For multiple `#[query_filter]` attributes (e.g., cross-entity filtering), you must implement `build_filter_condition` manually.
 
 ### `#[query_related(entity(...), column(...), field(...), name("..."))]`

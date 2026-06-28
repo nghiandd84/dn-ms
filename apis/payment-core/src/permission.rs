@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // PAYMENT Permission
-const PAYMENT_RESOURCE: &str = "PAYMENT_PAYMENT";
+const PAYMENT_RESOURCE: &str = "PAYMENT_CORE:PAYMENT";
 
 define_resource_perms! {
     CanCreatePayment => (CREATE, PAYMENT_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // METHOD Permission
-const METHOD_RESOURCE: &str = "PAYMENT_METHOD";
+const METHOD_RESOURCE: &str = "PAYMENT_CORE:METHOD";
 
 define_resource_perms! {
     CanCreateMethod => (CREATE, METHOD_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // ATTEMPT Permission
-const ATTEMPT_RESOURCE: &str = "PAYMENT_ATTEMPT";
+const ATTEMPT_RESOURCE: &str = "PAYMENT_CORE:ATTEMPT";
 
 define_resource_perms! {
     CanCreateAttempt => (CREATE, ATTEMPT_RESOURCE),
@@ -35,7 +35,7 @@ define_resource_perms! {
 }
 
 // METHOD_LIMIT Permission
-const METHOD_LIMIT_RESOURCE: &str = "PAYMENT_METHOD_LIMIT";
+const METHOD_LIMIT_RESOURCE: &str = "PAYMENT_CORE:METHOD_LIMIT";
 
 define_resource_perms! {
     CanCreateMethodLimit => (CREATE, METHOD_LIMIT_RESOURCE),

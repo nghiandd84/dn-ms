@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // BAKER Permission
-const BAKER_RESOURCE: &str = "BAKERY_BAKER";
+const BAKER_RESOURCE: &str = "BAKERY:BAKER";
 
 define_resource_perms! {
     CanDeleteBaker  => (DELETE, BAKER_RESOURCE),
@@ -16,7 +16,7 @@ define_resource_perms! {
 }
 
 // BAKERY Permission
-const BAKERY_RESOURCE: &str = "BAKERY_BAKERY";
+const BAKERY_RESOURCE: &str = "BAKERY:BAKERY";
 
 define_resource_perms! {
     CanCreateBakery => (CREATE, BAKERY_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // CAKE Permission
-const CAKE_RESOURCE: &str = "BAKERY_CAKE";
+const CAKE_RESOURCE: &str = "BAKERY:CAKE";
 
 define_resource_perms! {
     CanCreateCake => (CREATE, CAKE_RESOURCE),
@@ -34,7 +34,7 @@ define_resource_perms! {
 }
 
 // CAKE_BAKER Permission
-const CAKE_BAKER_RESOURCE: &str = "BAKERY_CAKE_BAKER";
+const CAKE_BAKER_RESOURCE: &str = "BAKERY:CAKE_BAKER";
 
 define_resource_perms! {
     CanCreateCakeBaker => (CREATE, CAKE_BAKER_RESOURCE),
@@ -43,7 +43,7 @@ define_resource_perms! {
 }
 
 // CUSTOMER Permission
-const CUSTOMER_RESOURCE: &str = "BAKERY_CUSTOMER";
+const CUSTOMER_RESOURCE: &str = "BAKERY:CUSTOMER";
 
 define_resource_perms! {
     CanCreateCustomer => (CREATE, CUSTOMER_RESOURCE),
@@ -52,7 +52,7 @@ define_resource_perms! {
 }
 
 // ORDER Permission
-const ORDER_RESOURCE: &str = "BAKERY_ORDER";
+const ORDER_RESOURCE: &str = "BAKERY:ORDER";
 
 define_resource_perms! {
     CanCreateOrder => (CREATE, ORDER_RESOURCE),
@@ -61,7 +61,7 @@ define_resource_perms! {
 }
 
 // LINEITEM Permission
-const LINEITEM_RESOURCE: &str = "BAKERY_LINEITEM";
+const LINEITEM_RESOURCE: &str = "BAKERY:LINEITEM";
 
 define_resource_perms! {
     CanCreateLineitem => (CREATE, LINEITEM_RESOURCE),

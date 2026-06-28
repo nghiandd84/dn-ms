@@ -5,7 +5,7 @@ use shared_shared_auth::{
 };
 
 // ORDER Permission
-const ORDER_RESOURCE: &str = "PAYPAL_ORDER";
+const ORDER_RESOURCE: &str = "PAYMENT_PAYPAL:ORDER";
 
 define_resource_perms! {
     CanCreateOrder => (CREATE, ORDER_RESOURCE),
@@ -15,7 +15,7 @@ define_resource_perms! {
 }
 
 // WEBHOOK_EVENT Permission
-const WEBHOOK_EVENT_RESOURCE: &str = "PAYPAL_WEBHOOK_EVENT";
+const WEBHOOK_EVENT_RESOURCE: &str = "PAYMENT_PAYPAL:WEBHOOK_EVENT";
 
 define_resource_perms! {
     CanCreateWebhookEvent => (CREATE, WEBHOOK_EVENT_RESOURCE),
@@ -25,7 +25,7 @@ define_resource_perms! {
 }
 
 // REFUND Permission
-const REFUND_RESOURCE: &str = "PAYPAL_REFUND";
+const REFUND_RESOURCE: &str = "PAYMENT_PAYPAL:REFUND";
 
 define_resource_perms! {
     CanCreateRefund => (CREATE, REFUND_RESOURCE),
@@ -35,7 +35,7 @@ define_resource_perms! {
 }
 
 // API_LOG Permission
-const API_LOG_RESOURCE: &str = "PAYPAL_API_LOG";
+const API_LOG_RESOURCE: &str = "PAYMENT_PAYPAL:API_LOG";
 
 define_resource_perms! {
     CanCreateApiLog => (CREATE, API_LOG_RESOURCE),
