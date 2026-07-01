@@ -84,11 +84,6 @@ This document summarizes the core technologies, frameworks, and tools used in th
 	- Each apis/<service>/test.rest file contains sample requests
 
 
-## Frontend (Apps)
-- **Tailwind CSS** — Utility-first CSS framework (for auth-web)
-- **JavaScript/TypeScript** — For web UIs (auth-web, etc.)
-	- Used in apps/auth-web and other frontend apps
-
 
 ## Other Libraries & Utilities
 - **uuid** — Unique identifiers

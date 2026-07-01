@@ -5,7 +5,7 @@ A Rust-based microservices platform built with Axum, SeaORM, and Pingora.
 ## Architecture
 
 ```
-apps/           → Standalone applications (gateway, notification, auth-web)
+apps/           → Standalone applications (gateway, notification)
 apis/           → HTTP API services
 features/       → Domain feature modules (entities, model, repo, service, migrations)
 libs/           → Shared libraries and tools

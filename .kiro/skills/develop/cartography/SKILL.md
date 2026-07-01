@@ -46,7 +46,6 @@ dn-ms/
 │   └── wallet
 ├── apps/                    # Standalone applications
 │   ├── auth-notification
-│   ├── auth-web
 │   ├── gateway
 │   ├── gateway-bk
 │   └── notification

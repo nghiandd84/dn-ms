@@ -146,7 +146,6 @@ members = [
     "apis/payments/paypal",
     "apis/anomaly_detector",
     "apps/auth-notification",
-    "apps/auth-web",
     "apps/gateway", 
     "apps/notification"
  
@@ -174,8 +173,7 @@ clap = { version = "3.2.25", features = ["derive"] }
 config = { version = "0.15.11"}
 crossbeam-epoch = "0.9.18"
 dashmap = "6.1.0"
-dioxus = { version = "0.7.0", features = ["fullstack"] }
-dioxus-i18n = { version = "0.5.0" }
+
 dotenv = "0.15.0"
 futures-util = "0.3.31"
 http = { version = "1.0.0" }
@@ -217,12 +215,10 @@ thiserror = { version="2" }
 time = { version="0.3.31" }
 tokio = { version="1", features = ["full"] }
 tower = { version="0.5" }
-tower-sessions = { version="0.14.0" }
 tracing = { version = "0.1.41" }
 tracing-appender = { version = "0.2.4" }
 tracing-opentelemetry = { version = "0.32.0"}
 tracing-subscriber = { version = "0.3.17"}
-unic-langid = { version = "0.9" }
 url = { version = "2.5" }
 utoipa = { version = "5.3.1", features = ["chrono", "axum_extras"] }
 utoipa-axum = { version = "0.2" }

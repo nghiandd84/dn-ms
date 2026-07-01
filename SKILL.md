@@ -13,7 +13,7 @@ This SKILL.md documents key coding conventions, workflows, and reusable patterns
   - `features/<name>/` — Feature crates (entities, model, repo, service, migrations, stream, remote)
   - `libs/shared/` — Shared libraries (data, app, observability, config, extractor, middleware, macro, auth)
   - `libs/tools/` — Tool libraries (e.g., dn-consul)
-  - `apps/` — Standalone apps (gateway, notification, auth-web)
+  - `apps/` — Standalone apps (gateway, notification)
 
 ## Key Conventions
 

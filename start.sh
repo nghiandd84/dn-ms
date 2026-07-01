@@ -346,8 +346,6 @@ for i in {1..2}; do
 done
 sleep 1s
 
-echo "------------ Start Auth-Server ------------"
-# IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/web/server >> $RUST_LOG_DIRECTORY/auth-server.log &
 
 echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
@@ -355,14 +353,6 @@ echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
 $APP_DIRECTORY/app-gateway  &
 sleep 1s
 
-#wait
-
-# Build Auth-web to release
-# IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/debug/web/auth-web
-# dx bundle --package auth-web --release
-# Run Auth-web from release
-# IP=0.0.0.0 PORT=8080 ./target/dx/auth-web/release/web/auth-web
-# IP=0.0.0.0 PORT=8080 RUST_LOG=debug RUST_BACKTRACE=1 ./target/dx/auth-web/release/web/auth-web
 
 echo "All done"
 # Wait for all process are finished
