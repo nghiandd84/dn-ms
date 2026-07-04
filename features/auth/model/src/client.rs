@@ -134,18 +134,51 @@ use shared_shared_data_core::{
 pub struct ClientData {
     #[serde(skip_serializing)]
     pub client_secret: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_grants: Option<VecString>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub client_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     id: Option<Uuid>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     redirect_uris: Option<VecString>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     email: Option<String>,
 }
 
 impl ClientData {
     pub fn get_email(&self) -> Option<String> {
         self.email.clone()
+    }
+
+    /// Return a new ClientData with only the selected fields populated.
+    pub fn filter_fields(mut self, fields: &Vec<String>) -> Self {
+        if !fields.contains(&"id".to_string()) {
+            self.id = None;
+        }
+        if !fields.contains(&"name".to_string()) {
+            self.name = None;
+        }
+        if !fields.contains(&"description".to_string()) {
+            self.description = None;
+        }
+        if !fields.contains(&"email".to_string()) {
+            self.email = None;
+        }
+        if !fields.contains(&"client_key".to_string()) {
+            self.client_key = None;
+        }
+        if !fields.contains(&"redirect_uris".to_string()) {
+            self.redirect_uris = None;
+        }
+        if !fields.contains(&"allowed_grants".to_string()) {
+            self.allowed_grants = None;
+        }
+        self
     }
 }
 
@@ -161,6 +194,21 @@ impl Into<ClientData> for ModelOptionDto {
             redirect_uris: self.redirect_uris,
             allowed_grants: self.allowed_grants,
             ..Default::default()
+        }
+    }
+}
+
+impl Into<ClientData> for features_auth_entities::client::Model {
+    fn into(self) -> ClientData {
+        ClientData {
+            id: Some(self.id),
+            name: Some(self.name),
+            description: Some(self.description),
+            client_secret: Some(self.client_secret),
+            client_key: Some(self.client_key),
+            email: Some(self.email),
+            redirect_uris: Some(self.redirect_uris),
+            allowed_grants: Some(self.allowed_grants),
         }
     }
 }

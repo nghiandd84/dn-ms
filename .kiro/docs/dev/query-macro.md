@@ -151,6 +151,7 @@ struct LookupTypeQueryManager;
 ### With related entity filtering
 
 ```rust
+use features_auth_entities::client::Entity as ClientEntity;
 use features_auth_entities::permission::Column as PermissionColumn;
 use features_auth_entities::permission::Entity as PermissionEntity;
 
@@ -163,7 +164,42 @@ use features_auth_entities::permission::Entity as PermissionEntity;
     field(permissions),
     name("permissions")
 )]
+#[query_related(
+    entity(ClientEntity),
+    field(client),
+    name("client")
+)]
 struct RoleQueryManager;
+```
+
+Multiple `query_related` attributes can be specified. The macro generates loading logic for each. For **belongs_to** relations (e.g., Role → Client), the entity field should be `Vec<ClientModel>` with `#[sea_orm(ignore)]` — SeaORM's `find_with_related` returns `Vec<(parent, Vec<related>)>` even for belongs_to (with 0 or 1 items). The consuming code takes the first element:
+
+```rust
+let client_data: Option<ClientData> = model.client
+    .and_then(|c| c.into_iter().next().map(|m| m.into()));
+```
+
+### Entity setup for belongs_to relation
+
+```rust
+// In features/auth/entities/src/role.rs:
+#[sea_orm(ignore)]
+pub client: Vec<ClientModel>,
+
+// Add to Relation enum:
+#[sea_orm(
+    belongs_to = "super::client::Entity",
+    from = "Column::ClientId",
+    to = "super::client::Column::Id"
+)]
+Client,
+
+// Add Related impl:
+impl Related<super::client::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Client.def()
+    }
+}
 ```
 
 ### Usage in repo layer

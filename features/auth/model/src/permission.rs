@@ -74,10 +74,33 @@ use shared_shared_data_core::{
 };
 #[derive(Serialize, Deserialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct PermissionData {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub resource: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mask: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<Uuid>,
+}
+
+impl PermissionData {
+    /// Return a new PermissionData with only the selected fields populated.
+    pub fn filter_fields(mut self, fields: &Vec<String>) -> Self {
+        if !fields.contains(&"id".to_string()) {
+            self.id = None;
+        }
+        if !fields.contains(&"resource".to_string()) {
+            self.resource = None;
+        }
+        if !fields.contains(&"description".to_string()) {
+            self.description = None;
+        }
+        if !fields.contains(&"mask".to_string()) {
+            self.mask = None;
+        }
+        self
+    }
 }
 
 impl Into<PermissionData> for ModelOptionDto {

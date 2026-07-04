@@ -9,6 +9,7 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::Query;
 
+use features_auth_entities::client::Entity as ClientEntity;
 use features_auth_entities::permission::Column as PermissionColumn;
 use features_auth_entities::permission::Entity as PermissionEntity;
 use features_auth_entities::role::{ActiveModel, Column, Entity, ModelOptionDto};
@@ -22,6 +23,11 @@ use features_auth_model::role::RoleData;
     column(PermissionColumn),
     field(permissions),
     name("permissions")
+)]
+#[query_related(
+    entity(ClientEntity),
+    field(client),
+    name("client")
 )]
 struct RoleQueryManager;
 
@@ -41,8 +47,9 @@ impl RoleQuery {
             &related_filters_vec,
         )
         .await?;
-        let user_data: RoleData = model.into();
-        Ok(user_data)
+        let mut role_data: RoleData = model.into();
+        role_data.apply_field_filter(query_params);
+        Ok(role_data)
     }
 
     pub async fn search<'a>(
@@ -73,7 +80,15 @@ impl RoleQuery {
         debug!("RoleQuery::search result: {:?}", result);
         let mapped_result = QueryResult {
             total_page: result.total_page,
-            result: result.result.into_iter().map(|m| m.into()).collect(),
+            result: result
+                .result
+                .into_iter()
+                .map(|m| {
+                    let mut role_data: RoleData = m.into();
+                    role_data.apply_field_filter(query_params);
+                    role_data
+                })
+                .collect(),
         };
         debug!("RoleQuery::search mapped_result: {:?}", mapped_result);
         Ok(mapped_result)

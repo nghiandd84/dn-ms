@@ -5,6 +5,7 @@ use serde::Serialize;
 
 use shared_shared_macro::Dto;
 
+use crate::client::Model as ClientModel;
 use crate::permission::Model as PermissionModel;
 
 #[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
@@ -30,12 +31,21 @@ pub struct Model {
 
     #[sea_orm(ignore)]
     pub permissions: Vec<PermissionModel>,
+
+    #[sea_orm(ignore)]
+    pub client: Vec<ClientModel>,
 }
 
 #[derive(Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::access::Entity")]
     Access,
+    #[sea_orm(
+        belongs_to = "super::client::Entity",
+        from = "Column::ClientId",
+        to = "super::client::Column::Id"
+    )]
+    Client,
 }
 
 impl Related<super::access::Entity> for Entity {
@@ -66,6 +76,12 @@ impl Related<super::permission::Entity> for Entity {
 
     fn via() -> Option<RelationDef> {
         Some(super::role_permission::Relation::Role.def().rev())
+    }
+}
+
+impl Related<super::client::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Client.def()
     }
 }
 

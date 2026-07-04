@@ -64,7 +64,13 @@ Provides authentication, authorization, and identity management for the platform
 | POST | `/roles/{role_id}/assign-permissions` | `AssignPermissionToRoleRequest` | `OkUuidResponse` |
 | POST | `/roles/{role_id}/unassign-permissions` | `AssignPermissionToRoleRequest` | `OkUuidResponse` |
 
-Roles support `?includes=permissions` on GET endpoints to eager-load associated permissions.
+Roles support `?includes=permissions` and `?includes=client` on GET endpoints to eager-load associated permissions and/or client data.
+
+Roles also support **field selection**:
+- `?fields=id,name` — only return specified top-level fields
+- `?includes=client[id,name]` — only return specified fields within included relations
+- `?includes=permissions[id,resource],client[name]` — field selection on multiple includes
+- `?fields=id,name&includes=client[name]` — combine both; included relations are always preserved regardless of `fields`
 
 ### Permission Management (`/permissions`)
 
@@ -134,6 +140,9 @@ Roles support `?includes=permissions` on GET endpoints to eager-load associated 
 | client_id   | UUID                     |       |
 | is_default  | bool                     |       |
 | permissions | Vec\<PermissionData\>    | Only when `?includes=permissions` |
+| client      | ClientData               | Only when `?includes=client` |
+
+All fields use `#[serde(skip_serializing_if = "Option::is_none")]` — fields set to None by field selection are omitted from the JSON response.
 
 #### PermissionData
 | Field       | Type   |
@@ -358,7 +367,7 @@ Same fields as create, all optional.
 
 ## Query Parameters
 
-All list endpoints support pagination, ordering, and column-based filtering.
+All list endpoints support pagination, ordering, column-based filtering, field selection, and eager-loading.
 
 | Param           | Description                                      | Example                              |
 |-----------------|--------------------------------------------------|--------------------------------------|
@@ -366,8 +375,20 @@ All list endpoints support pagination, ordering, and column-based filtering.
 | page_size       | Items per page                                   | `?page_size=20`                      |
 | order_name      | Column to order by                               | `?order_name=name`                   |
 | order_direction | 0 = ASC, 1 = DESC                               | `?order_direction=1`                 |
-| includes        | Eager-load related entities (roles only)         | `?includes=permissions`              |
+| fields          | Select top-level fields to return                | `?fields=id,name`                    |
+| includes        | Eager-load related entities with optional field selection | `?includes=permissions,client[id,name]` |
 | {column}        | Filter by column with operator prefix            | `?resource=sw\|AUTH`, `?email=eq\|test@test.com` |
+
+### Field Selection (`fields` param)
+When `?fields=id,name` is specified, only those top-level entity fields are returned. Omitted fields are excluded from the JSON response. Included relations (from `includes`) are always preserved regardless of `fields`.
+
+### Include Field Selection (bracket syntax)
+The `includes` parameter supports bracket syntax to select specific fields within related entities:
+- `?includes=client` — load client with all fields
+- `?includes=client[id,name]` — load client with only id and name
+- `?includes=permissions[id,resource],client[id,name]` — field selection on multiple includes
+
+The parser splits on commas not inside brackets, so `client[id,name]` is treated as one include parameter.
 
 ### Filter Operators
 | Operator | Meaning       | Example                                    |
@@ -420,7 +441,7 @@ API (apis/auth/src/routes/*.rs)
 
 - **Entity**: SeaORM models with `before_save` hooks for auto-timestamps. `Dto` macro generates `ForCreateDto`, `ForUpdateDto`, and `ModelOptionDto`.
 - **Model**: Request DTOs with validation (`ValidJson`), response DTOs with `Response` + `ParamFilter` derives for auto-generated filter params.
-- **Repo**: `*Query` structs use `#[derive(Query)]` macro for filtered/paginated queries. `*Mutation` structs use `#[derive(Mutation)]` macro for create/update/delete. Role queries support `query_related` for eager-loading permissions.
+- **Repo**: `*Query` structs use `#[derive(Query)]` macro for filtered/paginated queries. `*Mutation` structs use `#[derive(Mutation)]` macro for create/update/delete. Role queries support `query_related` for eager-loading permissions and client. Field selection (`?fields`, `?includes=x[fields]`) is applied in the repo layer via `apply_field_filter()` on the response DTOs.
 - **Service**: Business logic layer — handles password hashing, token generation, role assignment, OAuth2 flows. Delegates persistence to repo.
 - **API Routes**: Axum handlers with `ValidJson` for validated input, `Query<Pagination>`, `Query<Order>`, `Query<FilterParams>` for list queries. All registered under `Router` with `AppState<AuthAppState, AuthCacheState>`.
 
@@ -474,6 +495,15 @@ Content-Type: application/json
 
 ### List roles with permissions
 GET /roles?includes=permissions&page=1&page_size=10
+
+### List roles with client data
+GET /roles?includes=client&page=1&page_size=10
+
+### List roles with field selection
+GET /roles?fields=id,name&page=1&page_size=10
+
+### List roles with field selection and includes
+GET /roles?fields=id,name&includes=client[name],permissions[id,resource]&page=1&page_size=10
 
 ### Create a permission
 POST /permissions
