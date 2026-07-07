@@ -4,6 +4,13 @@ edition = "2021"
 version.workspace = true
 authors.workspace = true
 
+[[bin]]
+name = "api-auth"
+path = "src/main.rs"
+
+[lib]
+name = "api_auth"
+path = "src/lib.rs"
 
 [dependencies]
 axum = { workspace = true }
@@ -43,3 +50,20 @@ features-auth-entities = { workspace = true }
 features-auth-repo = { workspace = true }
 features-auth-service = { workspace = true }
 features-auth-stream = { workspace = true }
+
+[dev-dependencies]
+axum = { workspace = true }
+chrono = { workspace = true }
+http = { workspace = true }
+http-body = { workspace = true }
+hyper = { version = "1.0", features = ["full"] }
+sea-orm = { workspace = true, features = ["mock"] }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true, features = ["util"] }
+uuid = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-config = { workspace = true }
+shared-shared-data-cache = { workspace = true }
+features-auth-entities = { workspace = true }
+features-auth-model = { workspace = true }

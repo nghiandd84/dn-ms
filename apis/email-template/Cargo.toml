@@ -4,6 +4,14 @@ edition = "2021"
 version.workspace = true
 authors.workspace = true
 
+[[bin]]
+name = "api-email-template"
+path = "src/main.rs"
+
+[lib]
+name = "api_email_template"
+path = "src/lib.rs"
+
 
 [dependencies]
 axum = { workspace = true }
@@ -40,3 +48,20 @@ features-email-template-entities = { workspace = true }
 features-email-template-migrations = { workspace = true }
 features-email-template-model = { workspace = true }
 features-email-template-service = { workspace = true }
+
+[dev-dependencies]
+axum = { workspace = true }
+chrono = { workspace = true }
+http = { workspace = true }
+http-body = { workspace = true }
+hyper = { version = "1.0", features = ["full"] }
+sea-orm = { workspace = true, features = ["mock"] }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true, features = ["util"] }
+uuid = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-config = { workspace = true }
+shared-shared-data-cache = { workspace = true }
+features-email-template-entities = { workspace = true }
+features-email-template-model = { workspace = true }

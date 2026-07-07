@@ -106,7 +106,7 @@ cargo test -p <package-name>
 ### Code coverage
 
 ```bash
-cargo tarpaulin -p <package-name> --out stdout
+cargo tarpaulin --skip-clean -p <package-name> --out stdout
 ```
 
 ## Infrastructure URLs (local)

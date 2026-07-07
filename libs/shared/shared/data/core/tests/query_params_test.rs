@@ -18,7 +18,7 @@ fn query_params_single_include() {
 fn query_params_empty_string() {
     let json = r#"{"includes":""}"#;
     let params: QueryParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.includes(), vec![""]);
+    assert!(params.includes().is_empty());
 }
 
 #[test]

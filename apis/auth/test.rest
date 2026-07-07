@@ -175,14 +175,14 @@ GET {{baseUrl}}/roles?name=li|GUEST&description=li|all&_condition=or&page=0&page
 Content-Type: application/json
 baggage: {{baggage}}
 
-### Get roles in array with permissions
-GET {{baseUrl}}/roles?includes=permissions&name=in|ADMIN_AUTH
+### Get roles in array with permissions, client and use includes for top resource
+GET {{baseUrl}}/roles?includes=permissions[id,resource],client[name]&fields=name,id,permissions&name=in|ADMIN_AUTH
 Content-Type: application/json
 baggage: {{baggage}}
 
 
 ### Search Roles by permissions[resource]
-GET {{baseUrl}}/roles?permissions[resource]=sw|LOOKUP
+GET {{baseUrl}}/roles?permissions[resource]=sw|AUTH
 Content-Type: application/json
 baggage: {{baggage}}
 
