@@ -200,3 +200,64 @@ pub trait DetectionRule: Send + Sync {
 
 2. Add the module to `rules/mod.rs`
 3. Instantiate and add to the `rules` vec in `builder.rs`
+
+## Future Detection Rules (Ideas for Implementation)
+
+### Challenge-Based (soft block)
+
+| Rule | Response | Description |
+|------|----------|-------------|
+| **CaptchaChallengeRule** | `200` with challenge page | For medium-risk requests, serve a CAPTCHA instead of hard-blocking. Require the client to solve and retry with a proof token. |
+| **JsChallengeRule** | `200` with JS proof-of-work | Cloudflare-style: serve a JavaScript challenge that requires browser computation. Block clients that can't execute JS (bots). |
+| **EmailOtpVerificationRule** | `200` with OTP form | After detected suspicious login, require additional email verification before proceeding. |
+
+### Behavioral & Analysis
+
+| Rule | Response | Description |
+|------|----------|-------------|
+| **UserRateLimiterRule** | `429` | Token bucket per authenticated `user_id` (not just IP). Track via `user:{id}:rate`. |
+| **DeviceFingerprintCorrelationRule** | `403` | Cross-check inconsistency between fingerprint signals — e.g., screen_resolution says iPhone but user_agent says Linux, or Accept-Language mismatch with IP geo. |
+| **VelocityCheckRule** | `429` / `403` | Track operation speed per-client: e.g., 50 items added to cart in 1 second, or 10 concurrent logins from different IPs with the same credentials. Redis: `anomaly:{client_id}:velocity:{operation}` counter. |
+| **TemporalAnomalyRule** | `403` | Learn user's typical access hours (stored in Redis with decay). Flag requests at hours the user has never accessed before. |
+
+### WAF-Style
+
+| Rule | Response | Description |
+|------|----------|-------------|
+| **InputValidationRule** | `400` | Block SQL injection patterns (`' OR 1=1--`), XSS payloads (`<script>`), path traversal (`../`). Stateless regex check on query params and body. |
+| **HoneypotRule** | `403` + block | Define hidden endpoint paths (e.g., `/admin`, `/wp-admin`, `/.env`). Any request hitting these is automatically blocked and the client fingerprint is banned. |
+| **HeaderValidationRule** | `400` | Reject requests with inconsistent/missing headers — e.g., a browser claiming Chrome but missing `Sec-CH-UA`, or no `Accept-Language` but present `Referer`. |
+
+### External Intelligence
+
+| Rule | Response | Description |
+|------|----------|-------------|
+| **IpReputationRule** | `403` | Check client IP against a threat intelligence feed (e.g., AbuseIPDB) or known VPN/Tor exit node list. Cache results in Redis with TTL. |
+| **GeoblockingRule** | `403` | Allow/block traffic by geo region (MaxMind GeoIP). Per-service configurable in `config.yaml`. |
+
+### Account Security
+
+| Rule | Response | Description |
+|------|----------|-------------|
+| **NewDeviceDetectionRule** | Challenge (step-up auth) | Track known device fingerprints per user. When a login occurs from an unseen fingerprint, require additional verification before issuing the token. |
+| **CredentialStuffingRule** | Rate limit + block | Track failed login attempts per-IP per-credential hash (not just per-IP). Block when the same credential is tried from many IPs. |
+
+### Implementation Pattern
+
+All rules follow the same `DetectionRule` trait:
+
+```rust
+#[async_trait]
+pub trait DetectionRule: Send + Sync {
+    async fn check(&self, ctx: &RequestContext, cache: &Cache<String, String>) -> Option<Violation>;
+    async fn post_response(&self, _ctx: &RequestContext, _session: &mut Session, _cache: &Cache<String, String>) {}
+    async fn respond(&self, session: &mut Session, violation: &Violation) -> PhaseResult;
+}
+```
+
+Steps to implement any of the above:
+1. Create `apps/gateway/src/gateway/interceptors/anomaly_detector/rules/<name>.rs`
+2. Implement `DetectionRule` for your struct
+3. Register in `rules/mod.rs`
+4. Add config fields to `builder.rs`
+5. Add config parameters to the YAML under `apps/gateway/config/config.yaml`

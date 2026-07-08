@@ -1,5 +1,12 @@
 # DN Microservices — Project Guide
 
+## Knowledge Sources (Search Order)
+
+When answering questions about this project, always search in this order:
+1. `.kiro/docs/` — Markdown docs with architecture overviews, API specs, schemas, dev guides (fastest)
+2. `AGENTS.md` — This file (project conventions, patterns, testing)
+3. Source code (`apis/`, `features/`, `apps/`, `libs/`) — For implementation details not covered in docs
+
 ## Overview
 
 Rust monorepo of microservices for event ticketing/booking/merchant management with payments, wallet, notifications, i18n, and a Pingora-based gateway.
