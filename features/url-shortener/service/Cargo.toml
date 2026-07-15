@@ -1,0 +1,30 @@
+[package]
+name = "features-url-shortener-service"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_url_shortener_service"
+path = "src/lib.rs"
+
+[dependencies]
+chrono = { workspace = true }
+once_cell = { workspace = true }
+opentelemetry = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+shared-shared-app = { workspace = true }
+shared-shared-data-cache = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+
+features-url-shortener-entities = { workspace = true }
+features-url-shortener-model = { workspace = true }
+features-url-shortener-repo = { workspace = true }

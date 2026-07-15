@@ -82,6 +82,12 @@ members = [
     "features/lookup/service", 
     "features/lookup/migrations", 
 
+    "features/url-shortener/entities",
+    "features/url-shortener/model",
+    "features/url-shortener/repo",
+    "features/url-shortener/service",
+    "features/url-shortener/migrations",
+
     "features/notification/model", 
     "features/notification/stream", 
 
@@ -140,6 +146,7 @@ members = [
     "apis/fee",
     "apis/wallet",
     "apis/lookup",
+    "apis/url-shortener",
     "apis/notification",
     "apis/payment-core",
     "apis/paypments/stripe",
@@ -365,6 +372,13 @@ features-lookup-model = { path = "./features/lookup/model"}
 features-lookup-repo = { path = "./features/lookup/repo"}
 features-lookup-service = { path = "./features/lookup/service"}
 features-lookup-migrations = { path = "./features/lookup/migrations"}
+
+# URL Shortener feature
+features-url-shortener-entities = { path = "./features/url-shortener/entities"}
+features-url-shortener-model = { path = "./features/url-shortener/model"}
+features-url-shortener-repo = { path = "./features/url-shortener/repo"}
+features-url-shortener-service = { path = "./features/url-shortener/service"}
+features-url-shortener-migrations = { path = "./features/url-shortener/migrations"}
 
 # Tools
 dn-consul = { path = "./libs/tools/dn-consul"}

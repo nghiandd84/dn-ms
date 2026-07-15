@@ -1,0 +1,20 @@
+[package]
+name = "features-url-shortener-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_url_shortener_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_url_shortener"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+sea-orm-migration = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+features-url-shortener-entities = { workspace = true }

@@ -30,6 +30,7 @@ export PAYMENT_STRIPE_PORT=5121
 export PAYMENT_PAYPAL_PORT=5181
 export NOTIFICATION_APP_PORT=4001
 export ANOMALY_DETECTOR_PORT=5191
+export URL_SHORTENER_PORT=5201
 #export KAFKA_CLUSTER_ID=I-vULn-DS7yWYemeCtBj_A
 export OTEL_VERSION=0.96.0
 # update varibale when startup
@@ -131,6 +132,11 @@ done
 # Kill Anomaly Detector port
 for i in {1..2}; do 
     fuser -k -15 519$i/tcp 
+done
+
+# Kill URL Shortener port
+for i in {1..2}; do 
+    fuser -k -15 520$i/tcp 
 done
 
 
@@ -343,6 +349,15 @@ for i in {1..2}; do
     echo "---  LOOKUP on port $PORT ---"
     # Execute the program
     ANOMALY_DETECTOR_PORT=519$i $APP_DIRECTORY/api-anomaly-detector  &
+done
+sleep 1s
+
+echo "------------ Start URL SHORTENER API ------------"
+for i in {1..2}; do
+    PORT=520$i
+    echo "---  URL SHORTENER on port $PORT ---"
+    # Execute the program
+    URL_SHORTENER_PORT=520$i $APP_DIRECTORY/api-url-shortener  &
 done
 sleep 1s
 

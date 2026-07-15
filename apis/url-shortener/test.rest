@@ -1,0 +1,138 @@
+@baseUrl = http://localhost:5201
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000,tenant_id=default
+@urlId = dd3e1923-5427-4d0c-bd97-2796eed445be
+@apiKeyId = 660e8400-e29b-41d4-a716-446655440000
+@shortCode = JJpHoUW
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== SHORTENED URLS =====
+
+### Create Shortened URL (auto-generated code)
+POST {{baseUrl}}/urls
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "original_url": "https://example.com/very/long/path/to/some/resource?param=value",
+  "title": "Example Link"
+}
+
+### Create Shortened URL (custom code)
+POST {{baseUrl}}/urls
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "original_url": "https://github.com/rust-lang/rust",
+  "custom_code": "rust-lang",
+  "title": "Rust Language GitHub"
+}
+
+### Create Shortened URL (with expiration)
+POST {{baseUrl}}/urls
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "original_url": "https://example.com/promo",
+  "title": "Promo Link",
+  "expires_at": "2026-12-31T23:59:59"
+}
+
+### List User's URLs
+GET {{baseUrl}}/urls
+baggage: {{baggage}}
+
+### List URLs with pagination
+GET {{baseUrl}}/urls?page=1&page_size=10&order_name=created_at&order_direction=-1
+baggage: {{baggage}}
+
+### List URLs with filter
+GET {{baseUrl}}/urls?is_active=eq|true
+baggage: {{baggage}}
+
+### Get URL by ID
+GET {{baseUrl}}/urls/{{urlId}}
+baggage: {{baggage}}
+
+### Update URL (change title)
+PATCH {{baseUrl}}/urls/{{urlId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "title": "Updated Title"
+}
+
+### Update URL (deactivate)
+PATCH {{baseUrl}}/urls/{{urlId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "is_active": false
+}
+
+### Update URL (set expiration)
+PATCH {{baseUrl}}/urls/{{urlId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "expires_at": "2026-08-01T00:00:00"
+}
+
+### Delete URL
+DELETE {{baseUrl}}/urls/{{urlId}}
+baggage: {{baggage}}
+
+
+### ===== REDIRECT =====
+
+### Redirect (public - no auth needed)
+GET {{baseUrl}}/r/{{shortCode}}
+
+### Redirect custom code
+GET {{baseUrl}}/r/rust-lang
+
+
+### ===== CLICK ANALYTICS =====
+
+### Get Clicks for a URL
+GET {{baseUrl}}/urls/{{urlId}}/clicks
+baggage: {{baggage}}
+
+### Get Clicks with pagination
+GET {{baseUrl}}/urls/{{urlId}}/clicks?page=1&page_size=20
+baggage: {{baggage}}
+
+
+### ===== API KEYS =====
+
+### Create API Key
+POST {{baseUrl}}/api-keys
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "name": "My Integration Key"
+}
+
+### Create another API Key
+POST {{baseUrl}}/api-keys
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "name": "CI/CD Pipeline Key"
+}
+
+### List API Keys
+GET {{baseUrl}}/api-keys
+baggage: {{baggage}}
+
+### Revoke API Key
+DELETE {{baseUrl}}/api-keys/{{apiKeyId}}
+baggage: {{baggage}}
