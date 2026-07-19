@@ -20,6 +20,7 @@ serde_json = { workspace = true }
 tracing = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 
+shared-shared-auth = { workspace = true }
 shared-shared-macro = { workspace = true}
 
 [dev-dependencies]

@@ -2,6 +2,7 @@ pub mod access;
 pub mod auth_code;
 pub mod authentication;
 pub mod client;
+pub mod field_permission;
 pub mod login;
 pub mod permission;
 pub mod profile;

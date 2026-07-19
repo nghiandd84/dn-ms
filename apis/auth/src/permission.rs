@@ -67,3 +67,13 @@ define_resource_perms! {
     CanReadAuthCode => (READ, AUTH_CODE_RESOURCE),
     CanDeleteAuthCode => (DELETE, AUTH_CODE_RESOURCE)
 }
+
+// FIELD_PERMISSION Permission
+const FIELD_PERMISSION_RESOURCE: &str = "AUTH:FIELD_PERMISSION";
+
+define_resource_perms! {
+    CanCreateFieldPermission => (CREATE, FIELD_PERMISSION_RESOURCE),
+    CanReadFieldPermission => (READ, FIELD_PERMISSION_RESOURCE),
+    CanUpdateFieldPermission => (UPDATE, FIELD_PERMISSION_RESOURCE),
+    CanDeleteFieldPermission => (DELETE, FIELD_PERMISSION_RESOURCE)
+}

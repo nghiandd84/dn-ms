@@ -12,6 +12,17 @@ use shared_shared_data_cache::cache::Cache;
 
 use crate::event_task::producer::Producer;
 
+/// A single field-level permission entry: which fields a role can access for a given resource+action.
+#[derive(Clone, Debug)]
+pub struct FieldPermissionEntry {
+    /// Resource identifier (e.g., "LOOKUP:TYPE")
+    pub resource: String,
+    /// Action bitmask: READ=1, UPDATE=4
+    pub action: u32,
+    /// Allowed field names for this role+resource+action
+    pub fields: Vec<String>,
+}
+
 pub struct AppState<T, C = ()>
 where
     C: Clone + Serialize + DeserializeOwned + Default + Sync,
@@ -22,6 +33,8 @@ where
     pub state: Option<T>,
     pub producer: Arc<Mutex<HashMap<String, Producer>>>,
     pub permissions_map: Arc<Mutex<HashMap<String, Vec<(String, u32)>>>>,
+    /// Field-level permissions: role_name → Vec<FieldPermissionEntry>
+    pub field_permissions_map: Arc<Mutex<HashMap<String, Vec<FieldPermissionEntry>>>>,
 }
 
 impl<T, C> Clone for AppState<T, C>
@@ -36,6 +49,7 @@ where
             state: self.state.clone(),
             producer: self.producer.clone(),
             permissions_map: self.permissions_map.clone(),
+            field_permissions_map: self.field_permissions_map.clone(),
         }
     }
 }
@@ -60,9 +74,31 @@ where
         }
     }
 
-    async fn pull_permission(&self) -> Result<(), AuthError> {
-        // TODO: Implement the logic to poll permissions from the database and update the permissions_map
+    fn get_field_permissions(&self, role_name: &str, resource: &str, action: u32) -> Vec<String> {
+        let map = match self.field_permissions_map.lock() {
+            Ok(guard) => guard,
+            Err(_) => return vec![],
+        };
+        map.get(role_name)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .filter(|e| e.resource == resource && e.action == action)
+                    .flat_map(|e| e.fields.clone())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
 
+    fn has_field_permissions(&self, resource: &str) -> bool {
+        let map = match self.field_permissions_map.lock() {
+            Ok(guard) => guard,
+            Err(_) => return false,
+        };
+        map.values().any(|entries| entries.iter().any(|e| e.resource == resource))
+    }
+
+    async fn pull_permission(&self) -> Result<(), AuthError> {
         Ok(())
     }
 }
@@ -79,6 +115,7 @@ where
             state,
             producer: Arc::new(Mutex::new(HashMap::new())),
             permissions_map: Arc::new(Mutex::new(HashMap::new())),
+            field_permissions_map: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -95,6 +132,24 @@ where
             }
         };
         permission_map.insert(role_name, permissions);
+    }
+
+    pub fn set_field_permission_map(
+        &mut self,
+        role_name: String,
+        entries: Vec<FieldPermissionEntry>,
+    ) {
+        let mut map = match self.field_permissions_map.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => {
+                error!(
+                    "Failed to acquire lock on field permissions map: {}",
+                    poisoned
+                );
+                return;
+            }
+        };
+        map.insert(role_name, entries);
     }
 
     pub fn get_producer(&self, key: String) -> Option<Producer> {

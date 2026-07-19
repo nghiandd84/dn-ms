@@ -1,5 +1,6 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
 use shared_shared_data_error::{app::AppError, auth::AuthError};
+use std::collections::{HashMap, HashSet};
 use std::marker::PhantomData;
 use tracing::debug;
 use uuid::Uuid;
@@ -13,6 +14,18 @@ pub const DELETE: u32 = 1 << 3; // 8
 pub const ADMIN: u32 = 1 << 4; // 16 (The "Super User" bit)
 
 const SUPER_ADMIN_ROLE: &str = "ADMIN_ALL";
+
+/// Field-level access control data injected into request extensions by `Auth<R>`.
+/// Used by `field_access_middleware` to filter response fields and validate update payloads.
+#[derive(Clone, Debug)]
+pub struct AllowedFields {
+    /// None = admin/bypass (all fields allowed)
+    /// Some(map) = resource → allowed field names for READ
+    pub read_fields: Option<HashMap<String, Vec<String>>>,
+    /// None = admin/bypass (all fields allowed)
+    /// Some(map) = resource → allowed field names for UPDATE
+    pub update_fields: Option<HashMap<String, Vec<String>>>,
+}
 
 pub struct Auth<R: ResourcePermission> {
     pub mask: u32,
@@ -36,6 +49,8 @@ where
 
 pub trait StatePermission {
     fn get_permission_map(&self, role_name: String, resource_name: String) -> u32;
+    fn get_field_permissions(&self, role_name: &str, resource: &str, action: u32) -> Vec<String>;
+    fn has_field_permissions(&self, resource: &str) -> bool;
     fn pull_permission(&self) -> impl std::future::Future<Output = Result<(), AuthError>>;
 }
 
@@ -68,6 +83,10 @@ where
             .find(|a| a.role_name == SUPER_ADMIN_ROLE)
         {
             parts.extensions.insert(AccessChecked);
+            parts.extensions.insert(AllowedFields {
+                read_fields: None,
+                update_fields: None,
+            });
             return Ok(Auth {
                 mask: u32::MAX,
                 user_id: access_token.user_id,
@@ -119,10 +138,41 @@ where
 
         parts.extensions.insert(AccessChecked);
 
+        // Resolve field-level permissions for this resource across all user roles
+        if state.has_field_permissions(R::RESOURCE) {
+            let mut read_fields_set: HashSet<String> = HashSet::new();
+            let mut update_fields_set: HashSet<String> = HashSet::new();
+
+            for access in &access_token.accesses {
+                let rf = state.get_field_permissions(&access.role_name, R::RESOURCE, READ);
+                read_fields_set.extend(rf);
+
+                let uf = state.get_field_permissions(&access.role_name, R::RESOURCE, UPDATE);
+                update_fields_set.extend(uf);
+            }
+
+            let mut read_map = HashMap::new();
+            read_map.insert(R::RESOURCE.to_string(), read_fields_set.into_iter().collect());
+
+            let mut update_map = HashMap::new();
+            update_map.insert(R::RESOURCE.to_string(), update_fields_set.into_iter().collect());
+
+            parts.extensions.insert(AllowedFields {
+                read_fields: Some(read_map),
+                update_fields: Some(update_map),
+            });
+        } else {
+            // No field permissions configured for this resource — allow all fields (migration mode)
+            parts.extensions.insert(AllowedFields {
+                read_fields: None,
+                update_fields: None,
+            });
+        }
+
         Ok(Auth {
             mask: user_mask,
-            user_id: access_token.user_id, // Extracted from token claims
-            access_key: access_key, // Placeholder, can be extracted from token claims if needed
+            user_id: access_token.user_id,
+            access_key: access_key,
             phantom_r: PhantomData,
         })
     }

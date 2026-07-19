@@ -53,6 +53,12 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
             .merge(lookup_item_routes(app_state))
             .merge(lookup_item_translation_routes(app_state))
             .layer(axum::middleware::from_fn(
+                shared_shared_middleware::field_update_guard,
+            ))
+            .layer(axum::middleware::from_fn(
+                shared_shared_middleware::field_access_middleware,
+            ))
+            .layer(axum::middleware::from_fn(
                 shared_shared_middleware::field_filter_middleware,
             ))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
@@ -78,6 +84,8 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
                     );
                     let consul_client = get_consul_client().unwrap();
                     PermissionService::update_remote(&consul_client).await;
+
+                    // Sync resource-level permissions
                     let all_permissions =
                         PermissionService::get_roles_by_service_name(service_key.clone()).await;
                     debug!(
@@ -100,6 +108,20 @@ impl<'a> StartApp<LookupAppState, LookupCacheState> for MyApp<'a> {
                             role_name, mask_permissions
                         );
                         clone_app_state.set_permission_map(role_name, mask_permissions);
+                    }
+
+                    // Sync field-level permissions
+                    let field_permissions =
+                        PermissionService::get_field_permissions_by_service_name(
+                            service_key.clone(),
+                        )
+                        .await;
+                    debug!(
+                        "Field permissions for service {}: {:?}",
+                        service_key, field_permissions
+                    );
+                    for (role_name, entries) in field_permissions {
+                        clone_app_state.set_field_permission_map(role_name, entries);
                     }
                 }
             });
