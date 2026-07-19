@@ -24,10 +24,10 @@ impl UrlClickQuery {
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<UrlClickData>, AppError> {
-        let filters: FilterCondition = vec![FilterEnum::String(FilterParam {
+        let filters: FilterCondition = vec![FilterEnum::Uuid(FilterParam {
             name: Column::UrlId.to_string(),
             operator: FilterOperator::Equal,
-            value: Some(url_id.to_string()),
+            value: Some(*url_id),
             raw_value: url_id.to_string(),
         })]
         .into();

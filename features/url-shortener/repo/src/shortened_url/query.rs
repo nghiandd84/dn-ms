@@ -57,10 +57,10 @@ impl ShortenedUrlQuery {
         filters: &FilterCondition,
     ) -> Result<QueryResult<ShortenedUrlData>, AppError> {
         let mut filters = filters.clone();
-        filters.push_leaf(FilterEnum::String(FilterParam {
+        filters.push_leaf(FilterEnum::Uuid(FilterParam {
             name: Column::UserId.to_string(),
             operator: FilterOperator::Equal,
-            value: Some(user_id.to_string()),
+            value: Some(*user_id),
             raw_value: user_id.to_string(),
         }));
 

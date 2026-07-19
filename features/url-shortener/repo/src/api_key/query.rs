@@ -46,10 +46,10 @@ impl ApiKeyQuery {
         pagination: &Pagination,
         order: &Order,
     ) -> Result<QueryResult<ApiKeyData>, AppError> {
-        let filters: FilterCondition = vec![FilterEnum::String(FilterParam {
+        let filters: FilterCondition = vec![FilterEnum::Uuid(FilterParam {
             name: Column::UserId.to_string(),
             operator: FilterOperator::Equal,
-            value: Some(user_id.to_string()),
+            value: Some(*user_id),
             raw_value: user_id.to_string(),
         })]
         .into();
