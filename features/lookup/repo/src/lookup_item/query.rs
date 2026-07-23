@@ -5,16 +5,19 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
 
 use features_lookup_entities::lookup_item::{ActiveModel, Column, Entity, ModelOptionDto};
+use features_lookup_entities::lookup_type::Entity as LookupTypeEntity;
 use features_lookup_model::lookup_item::LookupItemData;
 
 #[derive(Query)]
 #[query(key_type(Uuid))]
 #[query_filter(column_name(Column))]
+#[query_related(entity(LookupTypeEntity), field(lookup_type), name("lookup_type"))]
 struct LookupItemQueryManager;
 
 pub struct LookupItemQuery;
@@ -29,8 +32,21 @@ impl LookupItemQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &FilterCondition,
+        query_params: &QueryParams,
     ) -> Result<QueryResult<LookupItemData>, AppError> {
-        let result = LookupItemQueryManager::filter(pagination, order, filters).await?;
+        let includes = query_params.includes();
+        let result = if !includes.is_empty() {
+            LookupItemQueryManager::filter_with_related_entities(
+                pagination,
+                order,
+                filters,
+                &includes,
+                &vec![],
+            )
+            .await?
+        } else {
+            LookupItemQueryManager::filter(pagination, order, filters).await?
+        };
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

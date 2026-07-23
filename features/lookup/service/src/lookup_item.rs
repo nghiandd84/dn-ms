@@ -5,6 +5,7 @@ use shared_shared_data_core::{
     filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_data_error::app::AppError;
 
@@ -31,6 +32,15 @@ impl LookupItemService {
         };
         Ok(id)
     }
+    pub async fn get_items(
+        filters: &FilterCondition,
+        pagination: &Pagination,
+        order: &Order,
+        query_params: &QueryParams,
+    ) -> Result<QueryResult<LookupItemData>, AppError> {
+        LookupItemQuery::get_lookup_items(pagination, order, filters, query_params).await
+    }
+
     pub async fn get_lookup_items_by_type_code(
         tenant_id: &str,
         type_code: &str,

@@ -8,6 +8,7 @@ use uuid::Uuid;
 use shared_shared_macro::Dto;
 
 use super::lookup_type;
+use super::lookup_type::Model as LookupTypeModel;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "lookup_items")]
@@ -56,6 +57,9 @@ pub struct Model {
     pub sort_order: i32,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    pub lookup_type: Vec<LookupTypeModel>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

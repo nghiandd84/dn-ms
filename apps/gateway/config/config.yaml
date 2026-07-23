@@ -42,6 +42,8 @@ gateways:
         filter: email_template_router_filter
       - upstream: merchant
         filter: merchant_router_filter
+      - upstream: lookup
+        filter: lookup_router_filter
       - upstream: anomaly_detector
         filter: detector_router_filter
       
@@ -231,6 +233,23 @@ gateways:
             tls: false
             sni: null
             weight: 1
+
+      - name: lookup
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5161
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5162
+            tls: false
+            sni: null
+            weight: 2
       
     
     interceptors:
@@ -509,6 +528,32 @@ gateways:
           refill_rate: 5
           refill_interval: 10
 
+      # Lookup
+      - name: lookup_request_id
+        type: request_id
+        enabled: true
+        filter: lookup_router_filter
+      - name: lookup_token_auth
+        type: token_auth
+        enabled: true
+        filter: lookup_router_filter
+        config:
+          use_auth_service: true
+      - name: lookup_cors
+        type: cors
+        enabled: true
+        filter: lookup_router_filter
+        config:
+          allowed_domains: localhost
+      - name: lookup_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: lookup_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
+
     filters:
       - name: auth_router_filter
         path:
@@ -557,6 +602,11 @@ gateways:
         path:
           operator: start_with
           value: /api/merchant
+
+      - name: lookup_router_filter
+        path:
+          operator: start_with
+          value: /api/lookup
 
       - name: detector_router_filter
         path:

@@ -16,6 +16,7 @@ use features_lookup_entities::lookup_item::{
 };
 
 use super::lookup_item_translation::LookupItemTranslationData;
+use super::lookup_type::LookupTypeData;
 
 #[derive(Serialize, Deserialize, Debug, Clone, ToSchema, Default, Response, ParamFilter)]
 pub struct LookupItemData {
@@ -32,6 +33,12 @@ pub struct LookupItemData {
     pub sort_order: Option<i32>,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
+
+    // nested data
+    #[skip_param]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = Option<Object>)]
+    pub lookup_type: Option<LookupTypeData>,
 }
 
 impl Into<LookupItemData> for Model {
@@ -50,12 +57,17 @@ impl Into<LookupItemData> for Model {
             sort_order: Some(self.sort_order),
             created_at: Some(self.created_at),
             updated_at: Some(self.updated_at),
+            lookup_type: None,
         }
     }
 }
 
 impl Into<LookupItemData> for ModelOptionDto {
     fn into(self) -> LookupItemData {
+        let lookup_type_data: Option<LookupTypeData> = self
+            .lookup_type
+            .and_then(|lt| lt.into_iter().next().map(|m| m.into()));
+
         LookupItemData {
             id: self.id,
             lookup_type_id: self.lookup_type_id,
@@ -70,6 +82,7 @@ impl Into<LookupItemData> for ModelOptionDto {
             sort_order: self.sort_order,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            lookup_type: lookup_type_data,
             ..Default::default()
         }
     }

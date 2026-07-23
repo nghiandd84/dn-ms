@@ -34,6 +34,30 @@ use crate::permission::{
 
 #[utoipa::path(
     get,
+    path = "/translations",
+    tag = TAG,
+    params(Pagination),
+    responses(
+        (status = 200, description = "Search translations across all items", body = QueryResultResponse<LookupItemTranslationData>),
+    )
+)]
+#[instrument(level = Level::INFO, skip_all)]
+pub async fn search_translations(
+    _public: PublicAccess,
+    query_pagination: Query<Pagination>,
+    query_order: Query<Order>,
+    filter_params: FilterParams<LookupItemTranslationDataFilterParams>,
+) -> Result<ResponseJson<QueryResult<LookupItemTranslationData>>> {
+    let pagination = query_pagination.0;
+    let order = query_order.0;
+    let filters = filter_params.0.all_filters();
+    let result =
+        LookupItemTranslationService::get_translations(&filters, &pagination, &order).await?;
+    Ok(ResponseJson(result))
+}
+
+#[utoipa::path(
+    get,
     path = "/lookup-types/{type_code}/items/{item_id}/translations",
     tag = TAG,
     responses(
@@ -128,6 +152,7 @@ pub async fn delete_translation(
 
 pub fn routes(app_state: &AppState<LookupAppState, LookupCacheState>) -> Router {
     Router::new()
+        .route("/translations", get(search_translations))
         .route(
             "/lookup-types/{type_code}/items/{item_id}/translations",
             get(get_translations),

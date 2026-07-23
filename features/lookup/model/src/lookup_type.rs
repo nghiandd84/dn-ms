@@ -11,7 +11,7 @@ use shared_shared_data_core::{
 use shared_shared_macro::{ParamFilter, Response};
 
 use features_lookup_entities::lookup_type::{
-    LookupTypeForCreateDto, LookupTypeForUpdateDto, ModelOptionDto,
+    LookupTypeForCreateDto, LookupTypeForUpdateDto, Model, ModelOptionDto,
 };
 
 use crate::lookup_item::LookupItemData;
@@ -29,6 +29,8 @@ pub struct LookupTypeData {
 
     // nested data
     #[skip_param]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = Option<Vec<Object>>)]
     pub items: Option<Vec<LookupItemData>>,
 }
 
@@ -46,6 +48,27 @@ impl From<ModelOptionDto> for LookupTypeData {
             items: val
                 .items
                 .map(|items| items.into_iter().map(|item| item.into()).collect()),
+            ..Default::default()
+        }
+    }
+}
+
+impl Into<LookupTypeData> for Model {
+    fn into(self) -> LookupTypeData {
+        LookupTypeData {
+            id: Some(self.id),
+            tenant_id: Some(self.tenant_id),
+            code: Some(self.code),
+            name: Some(self.name),
+            description: Some(self.description),
+            is_active: Some(self.is_active),
+            created_at: Some(self.created_at),
+            updated_at: Some(self.updated_at),
+            items: if self.items.is_empty() {
+                None
+            } else {
+                Some(self.items.into_iter().map(|item| item.into()).collect())
+            },
             ..Default::default()
         }
     }

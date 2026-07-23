@@ -27,6 +27,7 @@ use shared_shared_data_app::{
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 use shared_shared_extractor::TenantId;
 
@@ -34,6 +35,31 @@ use crate::middleware::cache_lookup_items_middleware;
 use crate::permission::{CanCreateLookupItem, CanDeleteLookupItem, CanUpdateLookupItem};
 
 const TAG: &str = "lookup-item";
+
+#[utoipa::path(
+    get,
+    path = "/items",
+    tag = TAG,
+    params(Pagination),
+    responses(
+        (status = 200, description = "Search lookup items across all types", body = QueryResultResponse<LookupItemData>),
+    )
+)]
+#[instrument(level = Level::INFO, skip_all)]
+pub async fn search_items(
+    _public: PublicAccess,
+    query_pagination: Query<Pagination>,
+    query_order: Query<Order>,
+    filter_params: FilterParams<LookupItemDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
+) -> Result<ResponseJson<QueryResult<LookupItemData>>> {
+    let pagination = query_pagination.0;
+    let order = query_order.0;
+    let filters = filter_params.0.all_filters();
+    let result =
+        LookupItemService::get_items(&filters, &pagination, &order, &query_params).await?;
+    Ok(ResponseJson(result))
+}
 
 #[utoipa::path(
     get,
@@ -161,6 +187,7 @@ pub async fn delete_lookup_item(
 
 pub fn routes(app_state: &AppState<LookupAppState, LookupCacheState>) -> Router {
     Router::new()
+        .route("/items", get(search_items))
         .route(
             "/lookup-types/{type_code}/items",
             get(get_lookup_items).layer(from_fn_with_state(
