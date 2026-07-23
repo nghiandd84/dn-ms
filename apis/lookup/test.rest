@@ -60,6 +60,11 @@ baggage: {{baggage}}
 
 ### ===== LOOKUP ITEMS =====
 
+
+### Get All Lookup Items
+GET {{baseUrl}}/items?order_name=sort_order&order_direction=1&includes=lookup_type[id,code]
+baggage: {{baggage}}
+
 ### Get All Lookup Items
 GET {{baseUrl}}/lookup-types/{{typeCode}}/items?order_name=sort_order&order_direction=1
 

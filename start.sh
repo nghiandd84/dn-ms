@@ -346,7 +346,7 @@ sleep 1s
 echo "------------ Start ANOMALY DETECTOR API ------------"
 for i in {1..2}; do
     PORT=519$i
-    echo "---  LOOKUP on port $PORT ---"
+    echo "---  ANOMALY_DETECTOR on port $PORT ---"
     # Execute the program
     ANOMALY_DETECTOR_PORT=519$i $APP_DIRECTORY/api-anomaly-detector  &
 done
