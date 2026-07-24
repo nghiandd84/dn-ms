@@ -583,7 +583,7 @@ gateways:
       - name: lookup_router_filter
         path:
           operator: start_with
-          value: /lookup
+          value: /api/lookup
       - name: url_shortener_router_filter
         path:
           operator: start_with

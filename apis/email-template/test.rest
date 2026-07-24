@@ -24,6 +24,7 @@ baggage: {{baggage}}
 
 {
     "name": "Email Template Name",
+    "key": "EMAIL_TEMPLATE_KEY",
     "description": "Template Description for testing"
 }
 
