@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::{async_trait, MigrationTrait, MigratorTrait}
 
 mod m20250801_create_email_template_tables;
 mod m20251229_add_key_to_email_templates;
+mod m20260724_add_user_id_to_template_tables;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20250801_create_email_template_tables::Migration),
             Box::new(m20251229_add_key_to_email_templates::Migration),
+            Box::new(m20260724_add_user_id_to_template_tables::Migration),
         ]
     }
 }

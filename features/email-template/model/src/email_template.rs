@@ -5,7 +5,8 @@ use uuid::Uuid;
 use validator::Validate;
 
 use features_email_template_entities::email_templates::{
-    EmailTemplateForCreateDto, EmailTemplateForUpdateDto, ModelOptionDto,
+    EmailTemplateForCreateDto, EmailTemplateForUpdateDto, Model as EmailTemplateModel,
+    ModelOptionDto,
 };
 
 #[derive(Deserialize, Serialize, Validate, Debug, ToSchema)]
@@ -117,6 +118,20 @@ impl Into<EmailTemplateData> for ModelOptionDto {
             is_active: self.is_active,
             key: self.key,
             user_id: self.user_id,
+            ..Default::default()
+        }
+    }
+}
+
+impl Into<EmailTemplateData> for EmailTemplateModel {
+    fn into(self) -> EmailTemplateData {
+        EmailTemplateData {
+            id: Some(self.id),
+            name: Some(self.name),
+            description: Some(self.description),
+            key: Some(self.key),
+            is_active: Some(self.is_active),
+            user_id: Some(self.user_id),
             ..Default::default()
         }
     }

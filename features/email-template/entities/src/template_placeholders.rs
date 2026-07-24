@@ -4,11 +4,13 @@ use sea_orm::{entity::prelude::*, ActiveValue};
 use serde::{Deserialize, Serialize};
 use shared_shared_macro::Dto;
 
+use super::email_templates::Model as EmailTemplateModel;
+
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "template_placeholders")]
 #[dto(
     name(TemplatePlaceholderForCreate),
-    columns(template_id, placeholder_key, description, example_value, is_required)
+    columns(template_id, placeholder_key, description, example_value, is_required, user_id)
 )]
 #[dto(
     name(TemplatePlaceholderForUpdate),
@@ -34,8 +36,14 @@ pub struct Model {
     #[sea_orm(default_value = false)]
     pub is_required: bool,
 
+    #[sea_orm(column_type = "Uuid")]
+    pub user_id: Uuid,
+
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    pub email_templates: Vec<EmailTemplateModel>,
 }
 
 #[async_trait]
@@ -61,4 +69,10 @@ pub enum Relation {
         to = "super::email_templates::Column::Id"
     )]
     EmailTemplates,
+}
+
+impl Related<super::email_templates::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EmailTemplates.def()
+    }
 }

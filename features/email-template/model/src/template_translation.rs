@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime as DateTime;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 use validator::Validate;
 
 use shared_shared_macro::{ParamFilter, Response};
@@ -43,6 +44,9 @@ pub struct TemplateTranslationForCreateRequest {
         message = "the length of name must be between 2 and 50"
     ))]
     pub version_name: String,
+
+    #[schema(ignore)]
+    pub user_id: Option<Uuid>,
 }
 
 impl Into<TemplateTranslationForCreateDto> for TemplateTranslationForCreateRequest {
@@ -53,6 +57,7 @@ impl Into<TemplateTranslationForCreateDto> for TemplateTranslationForCreateReque
             subject: self.subject,
             body: self.body,
             version_name: self.version_name,
+            user_id: self.user_id.unwrap(),
         }
     }
 }
@@ -103,6 +108,8 @@ impl Into<TemplateTranslationForUpdateDto> for TemplateTranslationForUpdateReque
     }
 }
 
+use crate::email_template::{EmailTemplateData, EmailTemplateDataFilterParams};
+
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
@@ -115,8 +122,13 @@ pub struct TemplateTranslationData {
     subject: Option<String>,
     body: Option<String>,
     version_name: Option<String>,
+    user_id: Option<Uuid>,
     created_at: Option<DateTime>,
     updated_at: Option<DateTime>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = Option<Object>)]
+    pub email_template: Option<EmailTemplateData>,
 }
 
 impl TemplateTranslationData {
@@ -126,10 +138,20 @@ impl TemplateTranslationData {
     pub fn get_body(&self) -> String {
         self.body.clone().unwrap_or_default()
     }
+    pub fn get_template_id(&self) -> Option<i32> {
+        self.template_id
+    }
+    pub fn set_email_template(&mut self, template: EmailTemplateData) {
+        self.email_template = Some(template);
+    }
 }
 
 impl Into<TemplateTranslationData> for ModelOptionDto {
     fn into(self) -> TemplateTranslationData {
+        let email_template_data: Option<EmailTemplateData> = self
+            .email_templates
+            .and_then(|et| et.into_iter().next().map(|m| m.into()));
+
         TemplateTranslationData {
             id: self.id,
             template_id: self.template_id,
@@ -137,8 +159,10 @@ impl Into<TemplateTranslationData> for ModelOptionDto {
             subject: self.subject,
             body: self.body,
             version_name: self.version_name,
+            user_id: self.user_id,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            email_template: email_template_data,
             ..Default::default()
         }
     }

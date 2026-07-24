@@ -41,9 +41,10 @@ const TAG: &str = "Email-Template";
     )
 )]
 async fn create_email_template(
-    _auth: Auth<CanCreateEmailTemplate>,
-    ValidJson(request): ValidJson<EmailTemplateForCreateRequest>,
+    auth: Auth<CanCreateEmailTemplate>,
+    ValidJson(mut request): ValidJson<EmailTemplateForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
+    request.user_id = Some(auth.user_id);
     let template_id = EmailTemplateService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,

@@ -13,12 +13,14 @@ use crate::permission::{
     CanUpdateTemplatePlaceholder,
 };
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
 };
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 
 use features_email_template_model::{
@@ -43,9 +45,10 @@ const TAG: &str = "Template-Plaeceholder";
     )
 )]
 async fn create_template_placeholder(
-    _auth: Auth<CanCreateTemplatePlaceholder>,
-    ValidJson(request): ValidJson<TemplatePlaceholderForCreateRequest>,
+    auth: Auth<CanCreateTemplatePlaceholder>,
+    ValidJson(mut request): ValidJson<TemplatePlaceholderForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
+    request.user_id = Some(auth.user_id);
     let placeholder_id = TemplatePlaceholderService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
@@ -102,9 +105,10 @@ async fn delete_template_placeholder(
 async fn get_template_placeholder(
     _auth: Auth<CanReadTemplatePlaceholder>,
     Path(placeholder_id): Path<i32>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<TemplatePlaceholderData>> {
-    let scope = TemplatePlaceholderService::get(placeholder_id).await?;
-    Ok(ResponseJson(scope))
+    let data = TemplatePlaceholderService::get(placeholder_id, &query_params).await?;
+    Ok(ResponseJson(data))
 }
 
 #[utoipa::path(
@@ -123,13 +127,16 @@ async fn filter_template_placeholder(
     _auth: Auth<CanReadTemplatePlaceholder>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
-    filter: Query<TemplatePlaceholderDataFilterParams>,
+    filter_params: FilterParams<TemplatePlaceholderDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<QueryResult<TemplatePlaceholderData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let all_filters = filter.0.all_filters();
+    let all_filters = filter_params.0.all_filters();
 
-    let result = TemplatePlaceholderService::search(&pagination, &order, &all_filters).await?;
+    let result =
+        TemplatePlaceholderService::search(&pagination, &order, &all_filters, &query_params)
+            .await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }

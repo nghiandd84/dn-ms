@@ -4,11 +4,13 @@ use sea_orm::{entity::prelude::*, ActiveValue};
 use serde::{Deserialize, Serialize};
 use shared_shared_macro::Dto;
 
+use super::email_templates::Model as EmailTemplateModel;
+
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "template_translations")]
 #[dto(
     name(TemplateTranslationForCreate),
-    columns(template_id, language_code, subject, body, version_name)
+    columns(template_id, language_code, subject, body, version_name, user_id)
 )]
 #[dto(
     name(TemplateTranslationForUpdate),
@@ -34,8 +36,14 @@ pub struct Model {
     #[sea_orm(column_type = "String(StringLen::N(50))")]
     pub version_name: String,
 
+    #[sea_orm(column_type = "Uuid")]
+    pub user_id: Uuid,
+
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    pub email_templates: Vec<EmailTemplateModel>,
 }
 
 #[async_trait]

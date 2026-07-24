@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime as DateTime;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 use validator::Validate;
 
 use shared_shared_macro::{ParamFilter, Response};
@@ -39,6 +40,9 @@ pub struct TemplatePlaceholderForCreateRequest {
 
     #[validate(required(message = "is_required is required"))]
     pub is_required: Option<bool>,
+
+    #[schema(ignore)]
+    pub user_id: Option<Uuid>,
 }
 
 impl Into<TemplatePlaceholderForCreateDto> for TemplatePlaceholderForCreateRequest {
@@ -49,6 +53,7 @@ impl Into<TemplatePlaceholderForCreateDto> for TemplatePlaceholderForCreateReque
             description: self.description,
             example_value: self.example_value,
             is_required: self.is_required.unwrap_or(false),
+            user_id: self.user_id.unwrap(),
         }
     }
 }
@@ -92,6 +97,8 @@ impl Into<TemplatePlaceholderForUpdateDto> for TemplatePlaeholderForUpdateReques
     }
 }
 
+use crate::email_template::{EmailTemplateData, EmailTemplateDataFilterParams};
+
 use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
@@ -104,8 +111,13 @@ pub struct TemplatePlaceholderData {
     description: Option<String>,
     example_value: Option<String>,
     is_required: Option<bool>,
+    user_id: Option<Uuid>,
     created_at: Option<DateTime>,
     updated_at: Option<DateTime>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(value_type = Option<Object>)]
+    pub email_template: Option<EmailTemplateData>,
 }
 
 impl TemplatePlaceholderData {
@@ -115,10 +127,20 @@ impl TemplatePlaceholderData {
     pub fn get_example_value(&self) -> String {
         self.example_value.clone().unwrap_or_default()
     }
+    pub fn get_template_id(&self) -> Option<i32> {
+        self.template_id
+    }
+    pub fn set_email_template(&mut self, template: EmailTemplateData) {
+        self.email_template = Some(template);
+    }
 }
 
 impl Into<TemplatePlaceholderData> for ModelOptionDto {
     fn into(self) -> TemplatePlaceholderData {
+        let email_template_data: Option<EmailTemplateData> = self
+            .email_templates
+            .and_then(|et| et.into_iter().next().map(|m| m.into()));
+
         TemplatePlaceholderData {
             id: self.id,
             template_id: self.template_id,
@@ -126,8 +148,10 @@ impl Into<TemplatePlaceholderData> for ModelOptionDto {
             description: self.description,
             example_value: self.example_value,
             is_required: self.is_required,
+            user_id: self.user_id,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            email_template: email_template_data,
             ..Default::default()
         }
     }

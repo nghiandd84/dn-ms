@@ -13,12 +13,14 @@ use crate::permission::{
     CanUpdateTemplateTranslation,
 };
 use shared_shared_data_app::{
+    filter_param::FilterParams,
     json::{ResponseJson, ValidJson},
     result::{OkI32, OkI32Response, OkUuid, Result},
 };
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 
 use features_email_template_model::{
@@ -43,10 +45,11 @@ const TAG: &str = "Template-Translation";
     )
 )]
 async fn create_template_translation(
-    _auth: Auth<CanCreateTemplateTranslation>,
+    auth: Auth<CanCreateTemplateTranslation>,
     _state: State<AppState<EmailTemplateCacheState>>,
-    ValidJson(request): ValidJson<TemplateTranslationForCreateRequest>,
+    ValidJson(mut request): ValidJson<TemplateTranslationForCreateRequest>,
 ) -> Result<ResponseJson<OkI32>> {
+    request.user_id = Some(auth.user_id);
     let translation_id = TemplateTranslationService::create(request).await?;
     Ok(ResponseJson(OkI32 {
         ok: true,
@@ -103,9 +106,10 @@ async fn delete_template_translation(
 async fn get_template_translation(
     _auth: Auth<CanReadTemplateTranslation>,
     Path(translation_id): Path<i32>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<TemplateTranslationData>> {
-    let scope = TemplateTranslationService::get(translation_id).await?;
-    Ok(ResponseJson(scope))
+    let data = TemplateTranslationService::get(translation_id, &query_params).await?;
+    Ok(ResponseJson(data))
 }
 
 #[utoipa::path(
@@ -124,13 +128,16 @@ async fn filter_template_translation(
     _auth: Auth<CanReadTemplateTranslation>,
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
-    filter: Query<TemplateTranslationDataFilterParams>,
+    filter_params: FilterParams<TemplateTranslationDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<QueryResult<TemplateTranslationData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
-    let all_filters = filter.0.all_filters();
+    let all_filters = filter_params.0.all_filters();
 
-    let result = TemplateTranslationService::search(&pagination, &order, &all_filters).await?;
+    let result =
+        TemplateTranslationService::search(&pagination, &order, &all_filters, &query_params)
+            .await?;
     debug!("{:?}", result);
     Ok(ResponseJson(result))
 }
