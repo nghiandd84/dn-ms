@@ -54,6 +54,23 @@ When `query_related` is present, the macro generates:
 
 When `column` is specified, related filters narrow the **parent result set** via JOIN subquery (e.g., "only return roles that have a permission matching the filter").
 
+### API Query Syntax for Related Entity Filtering
+
+The API uses **bracket notation** (`serde_qs`) for nested filter params — NOT dot notation:
+
+```
+GET /roles?permissions[resource]=sw|AUTH&includes=permissions
+GET /template-placeholders?email_template[name]=li|TEST&includes=email_template
+```
+
+The `FilterParams` extractor uses `serde_qs` which expects bracket syntax for nested objects. Internally, the `ParamFilter` macro calls `add_name_prefix` to produce dot-separated names (e.g., `email_template.name`) for the repo layer to route to the correct column. But the **client-facing query param** must use brackets.
+
+| Layer | Format | Example |
+|-------|--------|---------|
+| API query param (client) | `related[field]=op\|value` | `?permissions[resource]=sw\|AUTH` |
+| Internal FilterEnum name | `related.field` | `"permissions.resource"` |
+| Repo `separate_filters` | checks `name.starts_with("related.")` | splits parent vs related |
+
 ---
 
 ## Auto-Generated vs Manual
