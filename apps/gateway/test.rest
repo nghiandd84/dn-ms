@@ -90,3 +90,18 @@ Content-Type: application/json
 
 GET {{baseUrl}}/api/profile/profiles?page=1&page_size=15&first_name=like|NGHIA
 Content-Type: application/json
+
+### Admin - Health check
+GET http://localhost:7000/admin/health
+
+### Admin - Reload config (authenticated)
+@apiKey = your-secret-key
+POST http://localhost:7000/admin/reload
+X-Admin-Key: {{apiKey}}
+
+### Admin - Reload config (should fail - no auth)
+POST http://localhost:7000/admin/reload
+
+### Admin - Reload config (should fail - wrong key)
+POST http://localhost:7000/admin/reload
+X-Admin-Key: wrong-key
