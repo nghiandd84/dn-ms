@@ -20,7 +20,7 @@ use features_event_migrations::{Migrator, MigratorTrait};
 use features_event_model::state::{EventAppState, EventCacheState};
 use features_event_stream::PRODUCER_KEY;
 
-use crate::{doc::ApiDoc, routes::event::routes as event_routes};
+use crate::{doc::ApiDoc, routes::event::routes as event_routes, routes::public_event::routes as public_event_routes};
 
 struct MyApp<'a> {
     config: &'a AppConfig,
@@ -29,6 +29,10 @@ struct MyApp<'a> {
 impl<'a> StartApp<EventAppState, EventCacheState> for MyApp<'a> {
     fn app_config(&self) -> &AppConfig {
         &self.config
+    }
+
+    fn public_paths(&self) -> &'static [&'static str] {
+        &["/public/events"]
     }
 
     fn custom_handler(
@@ -87,6 +91,7 @@ impl<'a> StartApp<EventAppState, EventCacheState> for MyApp<'a> {
     fn routes(&self, app_state: &AppState<EventAppState, EventCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(event_routes(app_state))
+            .merge(public_event_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }

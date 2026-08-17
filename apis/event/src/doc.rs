@@ -16,9 +16,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::event::filter_events,
         crate::routes::event::update_event,
         crate::routes::event::delete_event,
+        crate::routes::public_event::search_public_events,
+        crate::routes::public_event::get_public_event,
     ),
     tags(
         (name = "event", description = "Event management endpoints"),
+        (name = "public-event", description = "Public event endpoints"),
     ),
     modifiers(&JwtSecurityAddon),
 )]
