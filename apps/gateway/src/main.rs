@@ -12,7 +12,7 @@ use pingora::{
     server::{configuration::ServerConf, Server},
 };
 use std::{sync::Arc, time::Duration};
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use shared_shared_observability::init_log_trace_metric;
 
@@ -56,9 +56,14 @@ async fn main() {
     }
 
     // Start admin API server for hot-reload
+    let admin_api_key = app_config.admin_api_key.clone();
+    if admin_api_key.is_none() {
+        warn!("GATEWAY_ADMIN_API_KEY not set — admin reload endpoint is open (no auth required)");
+    }
     let admin_state = Arc::new(AdminState {
         dp: app_config.dp.clone(),
         gateway_stores,
+        admin_api_key,
     });
     let admin_port = app_config.admin_port;
     let admin_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", admin_port))

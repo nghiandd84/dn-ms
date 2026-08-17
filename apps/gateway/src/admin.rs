@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::State as AxumState,
-    http::StatusCode,
+    extract::{FromRequestParts, Request, State as AxumState},
+    http::{request::Parts, StatusCode},
+    middleware::Next,
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
@@ -18,6 +19,7 @@ use crate::{
 pub struct AdminState {
     pub dp: String,
     pub gateway_stores: Vec<Arc<GatewayStateStore>>,
+    pub admin_api_key: Option<String>,
 }
 
 async fn health() -> impl IntoResponse {
@@ -65,9 +67,42 @@ async fn reload(AxumState(state): AxumState<Arc<AdminState>>) -> impl IntoRespon
     )
 }
 
+/// Middleware: verify X-Admin-Key header against the configured admin API key.
+/// Skips check if no key is configured (open mode).
+async fn verify_admin_key(
+    AxumState(state): AxumState<Arc<AdminState>>,
+    request: Request,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    // If no admin key is configured, allow all requests (open mode)
+    if let Some(expected_key) = &state.admin_api_key {
+        let provided_key = request
+            .headers()
+            .get("X-Admin-Key")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("");
+
+        if provided_key != expected_key {
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                Json(json!({
+                    "error": "unauthorized",
+                    "message": "Missing or invalid X-Admin-Key header",
+                })),
+            ));
+        }
+    }
+
+    Ok(next.run(request).await)
+}
+
 pub fn admin_router(admin_state: Arc<AdminState>) -> Router {
     Router::new()
         .route("/admin/health", get(health))
         .route("/admin/reload", post(reload))
+        .layer(axum::middleware::from_fn_with_state(
+            admin_state.clone(),
+            verify_admin_key,
+        ))
         .with_state(admin_state)
 }

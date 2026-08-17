@@ -37,6 +37,9 @@ pub struct AppConfig {
 
     /// Port for the admin API (reload, health check). Default: 7000.
     pub admin_port: u16,
+
+    /// API key for admin endpoints. Required for /admin/reload. Set via GATEWAY_ADMIN_API_KEY.
+    pub admin_api_key: Option<String>,
 }
 
 impl Default for AppConfig {
@@ -52,6 +55,7 @@ impl Default for AppConfig {
             upgrade: false,
             addr: "0.0.0.0:5000".to_owned(),
             admin_port: 7000,
+            admin_api_key: None,
         }
     }
 }
