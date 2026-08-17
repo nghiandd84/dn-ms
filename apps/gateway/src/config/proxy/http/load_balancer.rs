@@ -29,7 +29,7 @@ pub struct UpStreamLoadBalaner {
 }
 
 impl UpStreamLoadBalaner {
-    pub async fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+    fn build_from_upstreams(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
         let mut upstream_load_balancers: Vec<UpStreamLoadBalaner> = vec![];
         for upstream in upstreams {
             let mut backends: BTreeSet<Backend> = BTreeSet::new();
@@ -47,9 +47,6 @@ impl UpStreamLoadBalaner {
 
             let discovery = discovery::Static::new(backends);
             let backends = Backends::new(discovery);
-            // Do not remove update
-            backends.update(|_| {}).await.unwrap();
-            // Do not remove update
 
             if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::RoundRobin {
                 let lb = LoadBalancer::from_backends(backends);
@@ -67,6 +64,16 @@ impl UpStreamLoadBalaner {
         }
 
         upstream_load_balancers
+    }
+
+    pub fn from_upstream_config_sync(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+        Self::build_from_upstreams(upstreams)
+    }
+
+    pub async fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+        let result = Self::build_from_upstreams(upstreams);
+        // Rebuild is a fresh creation, no need for the legacy update() call
+        result
     }
 
     pub fn get_backend(&self) -> Backend {

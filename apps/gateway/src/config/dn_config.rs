@@ -32,7 +32,14 @@ pub struct DnConfig {
 
 impl DnConfig {
     pub fn from_args(app_config: &AppConfig) -> Self {
-        let directory_path = app_config.dp.as_str();
+        let mut dn_config = Self::load_from_path(&app_config.dp);
+        dn_config.dp = app_config.dp.clone();
+        dn_config
+    }
+
+    /// Re-read and re-parse config.yaml from disk. Used by the admin reload endpoint.
+    pub fn load_from_path(dp: &str) -> Self {
+        let directory_path = dp;
         let config_path = Path::new(directory_path).join("config/config.yaml");
         debug!("Loading config from path: {:?}", config_path);
         let raw_config = fs::read_to_string(&config_path).unwrap();
@@ -50,7 +57,7 @@ impl DnConfig {
         };
         let mut dn_config: DnConfig = config.try_deserialize().unwrap();
         dn_config.version = 0;
-        dn_config.dp = app_config.dp.clone();
+        dn_config.dp = dp.to_string();
         debug!("\n{:#?}", dn_config);
         dn_config
     }

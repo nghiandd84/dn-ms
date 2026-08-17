@@ -34,6 +34,9 @@ pub struct AppConfig {
     // TODO will remove because it will config in gateway
     // Binding port 0.0.0.0:5000
     pub addr: String,
+
+    /// Port for the admin API (reload, health check). Default: 7000.
+    pub admin_port: u16,
 }
 
 impl Default for AppConfig {
@@ -48,6 +51,7 @@ impl Default for AppConfig {
             debug: false,
             upgrade: false,
             addr: "0.0.0.0:5000".to_owned(),
+            admin_port: 7000,
         }
     }
 }
