@@ -42,7 +42,12 @@ impl DnConfig {
         let directory_path = dp;
         let config_path = Path::new(directory_path).join("config/config.yaml");
         debug!("Loading config from path: {:?}", config_path);
-        let raw_config = fs::read_to_string(&config_path).unwrap();
+        let raw_config = fs::read_to_string(&config_path).unwrap_or_else(|e| {
+            panic!(
+                "Failed to read config from {:?}: {}. Set GATEWAY_DP to the directory containing config/config.yaml",
+                config_path, e
+            );
+        });
         let config = Config::builder()
             .add_source(File::from_str(raw_config.as_str(), FileFormat::Yaml))
             .build();
