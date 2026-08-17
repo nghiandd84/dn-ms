@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use shared_shared_macro::Dto;
 
-#[derive(Debug, Clone, DeriveEntityModel, Serialize, Default, Dto)]
+#[derive(Debug, Clone, PartialEq, DeriveEntityModel, Serialize, Default, Dto)]
 #[dto(name(AccessForCreate), columns(user_id, role_id, key))]
 #[dto(name(AccessForUpdate), columns(user_id, role_id, key), option)]
 #[sea_orm(table_name = "access")]

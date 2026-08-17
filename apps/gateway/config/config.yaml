@@ -44,6 +44,8 @@ gateways:
         filter: merchant_router_filter
       - upstream: lookup
         filter: lookup_router_filter
+      - upstream: url_shortener
+        filter: url_shortener_router_filter
       - upstream: anomaly_detector
         filter: detector_router_filter
       
@@ -121,13 +123,13 @@ gateways:
         upstream_nodes:
           - address:
               host: 127.0.0.1
-              port: 5601
+              port: 5061
             tls: false
             sni: null
             weight: 1
           - address:
               host: 127.0.0.1
-              port: 5602
+              port: 5062
             tls: false
             sni: null
             weight: 2
@@ -138,13 +140,13 @@ gateways:
         upstream_nodes:
           - address:
               host: 127.0.0.1
-              port: 5701
+              port: 5071
             tls: false
             sni: null
             weight: 1
           - address:
               host: 127.0.0.1
-              port: 5702
+              port: 5072
             tls: false
             sni: null
             weight: 2
@@ -247,6 +249,23 @@ gateways:
           - address:
               host: 127.0.0.1
               port: 5162
+            tls: false
+            sni: null
+            weight: 2
+
+      - name: url_shortener
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5201
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5202
             tls: false
             sni: null
             weight: 2
@@ -554,6 +573,32 @@ gateways:
           refill_rate: 5
           refill_interval: 10
 
+      # URL Shortener
+      - name: url_shortener_request_id
+        type: request_id
+        enabled: true
+        filter: url_shortener_router_filter
+      - name: url_shortener_token_auth
+        type: token_auth
+        enabled: true
+        filter: url_shortener_router_filter
+        config:
+          use_auth_service: true
+      - name: url_shortener_cors
+        type: cors
+        enabled: true
+        filter: url_shortener_router_filter
+        config:
+          allowed_domains: localhost
+      - name: url_shortener_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: url_shortener_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
+
     filters:
       - name: auth_router_filter
         path:
@@ -607,6 +652,11 @@ gateways:
         path:
           operator: start_with
           value: /api/lookup
+
+      - name: url_shortener_router_filter
+        path:
+          operator: start_with
+          value: /api/url-shortener
 
       - name: detector_router_filter
         path:

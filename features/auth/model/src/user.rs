@@ -65,20 +65,31 @@ use shared_shared_data_core::{
     filter_deserialize::*,
 };
 
+use crate::access::AccessData;
+
 #[derive(Serialize, Debug, ToSchema, Default, Response, ParamFilter)]
 pub struct UserData {
     pub id: Option<Uuid>,
     email: Option<String>,
     age: Option<u32>,
     language: Option<String>,
+
+    #[skip_param]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accesses: Option<Vec<AccessData>>,
 }
 
 impl Into<UserData> for ModelOptionDto {
     fn into(self) -> UserData {
+        let accesses_data: Option<Vec<AccessData>> = self
+            .accesses
+            .map(|a| a.into_iter().map(|m| m.into()).collect());
+
         UserData {
             email: self.email,
             id: self.id,
             language: self.language,
+            accesses: accesses_data,
             ..Default::default()
         }
     }

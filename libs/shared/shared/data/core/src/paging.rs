@@ -24,9 +24,9 @@ where
 {
     let value: Option<u64> = Option::deserialize(deserializer)?;
     if let Some(size) = value {
-        if size > 20 {
+        if size > 100 {
             return Err(serde::de::Error::custom(
-                "page_size must be less than or equal to 20",
+                "page_size must be less than or equal to 100",
             ));
         }
     }

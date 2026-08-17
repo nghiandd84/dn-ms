@@ -4,6 +4,7 @@
 /apps/**/package-lock.json
 /apps/**/target
 /apis/**/target
+graphify-out
 Cargo.lock
 expand.rs
 tarpaulin-report.html

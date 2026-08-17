@@ -9,6 +9,7 @@ const USER_RESOURCE: &str = "AUTH:USER";
 
 define_resource_perms! {
     CanReadUser => (READ, USER_RESOURCE),
+    CanUpdateUser => (UPDATE, USER_RESOURCE),
     CanDeleteUser => (DELETE, USER_RESOURCE)
 }
 

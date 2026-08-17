@@ -61,6 +61,8 @@ use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
         crate::routes::user::delete_user,
         crate::routes::user::filter_users,
         crate::routes::user::get_user,
+        crate::routes::user::assign_roles,
+        crate::routes::user::unassign_roles,
         crate::routes::signup::activate,
     ),
     tags(

@@ -49,7 +49,10 @@ Provides authentication, authorization, and identity management for the platform
 | GET | `/users` | — | `QueryResultResponse<UserData>` |
 | GET | `/users/{user_id}` | — | `UserDataResponse` |
 | DELETE | `/users/{user_id}` | — | `OkUuidResponse` |
-| GET | `/test_users` | — | `QueryResultResponse<UserData>` |
+| POST | `/users/{user_id}/assign-roles` | `AssignRoleToUserRequest` | `OkUuidResponse` |
+| POST | `/users/{user_id}/unassign-roles` | `AssignRoleToUserRequest` | `OkUuidResponse` |
+
+Users support `?includes=accesses` on GET endpoints to eager-load associated access (role assignment) data.
 
 ### Role Management (`/roles`)
 
@@ -124,12 +127,20 @@ Roles also support **field selection**:
 ### Response Models
 
 #### UserData
-| Field    | Type   |
-|----------|--------|
-| id       | UUID   |
-| email    | String |
-| age      | u32    |
-| language | String |
+| Field    | Type              | Notes  |
+|----------|-------------------|--------|
+| id       | UUID              |        |
+| email    | String            |        |
+| age      | u32               |        |
+| language | String            |        |
+| accesses | Vec\<AccessData\> | Only when `?includes=accesses` |
+
+#### AccessData
+| Field   | Type   |
+|---------|--------|
+| id      | UUID   |
+| role_id | UUID   |
+| key     | String |
 
 #### RoleData
 | Field       | Type                     | Notes |
@@ -316,6 +327,12 @@ All fields use `#[serde(skip_serializing_if = "Option::is_none")]` — fields se
 |----------------|------------|
 | permission_ids | Vec\<UUID\> |
 
+#### AssignRoleToUserRequest
+| Field    | Type        | Validation |
+|----------|-------------|------------|
+| role_ids | Vec\<UUID\> | required   |
+| key      | String?     | optional   |
+
 #### PermissionForCreateRequest
 | Field       | Type    | Validation    |
 |-------------|---------|---------------|
@@ -372,7 +389,7 @@ All list endpoints support pagination, ordering, column-based filtering, field s
 | Param           | Description                                      | Example                              |
 |-----------------|--------------------------------------------------|--------------------------------------|
 | page            | Page number                                      | `?page=1`                            |
-| page_size       | Items per page                                   | `?page_size=20`                      |
+| page_size       | Items per page (max 100)                         | `?page_size=20`                      |
 | order_name      | Column to order by                               | `?order_name=name`                   |
 | order_direction | 0 = ASC, 1 = DESC                               | `?order_direction=1`                 |
 | fields          | Select top-level fields to return                | `?fields=id,name`                    |
@@ -421,7 +438,7 @@ AuthCode → Client   (via `client_id`)
 | roles             | UUID        | name (unique), description, client_id, is_default |
 | permissions       | UUID        | resource (unique), mask, description |
 | role_permissions  | UUID        | role_id, permission_id (junction table) |
-| access            | UUID        | user_id, role_id (junction table) |
+| access            | UUID        | user_id, role_id, key (junction table for user-role assignment) |
 | clients           | UUID        | client_secret, client_key, name, email, redirect_uris, allowed_grants |
 | scopes            | UUID        | name (unique), description |
 | tokens            | UUID        | access_token, refresh_token, user_id, client_id, scopes, expires_at |
@@ -441,8 +458,8 @@ API (apis/auth/src/routes/*.rs)
 
 - **Entity**: SeaORM models with `before_save` hooks for auto-timestamps. `Dto` macro generates `ForCreateDto`, `ForUpdateDto`, and `ModelOptionDto`.
 - **Model**: Request DTOs with validation (`ValidJson`), response DTOs with `Response` + `ParamFilter` derives for auto-generated filter params.
-- **Repo**: `*Query` structs use `#[derive(Query)]` macro for filtered/paginated queries. `*Mutation` structs use `#[derive(Mutation)]` macro for create/update/delete. Role queries support `query_related` for eager-loading permissions and client. Field selection (`?fields`, `?includes=x[fields]`) is applied in the repo layer via `apply_field_filter()` on the response DTOs.
-- **Service**: Business logic layer — handles password hashing, token generation, role assignment, OAuth2 flows. Delegates persistence to repo.
+- **Repo**: `*Query` structs use `#[derive(Query)]` macro for filtered/paginated queries. `*Mutation` structs use `#[derive(Mutation)]` macro for create/update/delete. Role queries support `query_related` for eager-loading permissions and client. User queries support `query_related` for eager-loading accesses. Field selection (`?fields`, `?includes=x[fields]`) is applied in the repo layer via `apply_field_filter()` on the response DTOs.
+- **Service**: Business logic layer — handles password hashing, token generation, role assignment, user role management, OAuth2 flows. Delegates persistence to repo.
 - **API Routes**: Axum handlers with `ValidJson` for validated input, `Query<Pagination>`, `Query<Order>`, `Query<FilterParams>` for list queries. All registered under `Router` with `AppState<AuthAppState, AuthCacheState>`.
 
 ## Security & Patterns
@@ -525,4 +542,27 @@ Content-Type: application/json
 
 ### Filter permissions by resource
 GET /permissions?resource=sw|AUTH&page=1&page_size=20
+
+### List users with access data
+GET /users?includes=accesses&page=1&page_size=10
+
+### Get user with access data
+GET /users/{user_id}?includes=accesses
+
+### Assign roles to a user
+POST /users/{user_id}/assign-roles
+Content-Type: application/json
+
+{
+  "role_ids": ["<role_uuid>"],
+  "key": "optional_key"
+}
+
+### Unassign roles from a user
+POST /users/{user_id}/unassign-roles
+Content-Type: application/json
+
+{
+  "role_ids": ["<role_uuid>"]
+}
 ```

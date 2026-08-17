@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use shared_shared_macro::Dto;
 use uuid::Uuid;
 
+use crate::access::Model as AccessModel;
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "users")]
 #[dto(name(UserForCreate), columns(email, language, password))]
@@ -31,6 +33,10 @@ pub struct Model {
     pub is_active: bool,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+
+    #[sea_orm(ignore)]
+    #[serde(skip_deserializing)]
+    pub accesses: Vec<AccessModel>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

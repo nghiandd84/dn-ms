@@ -175,10 +175,44 @@ where
     D: Deserializer<'de>,
 {
     let value = String::deserialize(deserializer)?;
-    parse_filter_param::<DateTime, _>(&value, chrono::NaiveDateTime::MIN, |s| {
-        s.parse::<DateTime>().unwrap()
-    })
-    .map_err(serde::de::Error::custom)
+    let (first_str, last_str) = value.split_once('|').unwrap_or(("", ""));
+
+    // Normalize: if datetime value has no seconds part, append :00
+    let normalized = normalize_datetime_str(last_str);
+
+    let parsed_value = chrono::NaiveDateTime::parse_from_str(&normalized, "%Y-%m-%dT%H:%M:%S")
+        .unwrap_or(chrono::NaiveDateTime::MIN);
+
+    let data = format!(
+        r#"{{
+            "name": "",
+            "operator": "{}",
+            "value": "{}",
+            "raw_value": "{}"
+        }}"#,
+        first_str, parsed_value, last_str
+    );
+
+    debug!("Data {}", data);
+
+    match serde_json::from_str::<FilterParam<DateTime>>(data.as_str()) {
+        Ok(filter_param) => Ok(Some(filter_param)),
+        Err(err) => {
+            debug!("Failed to parse datetime filter parameter: {}", err);
+            Ok(None)
+        }
+    }
+}
+
+/// Normalize a datetime string by appending `:00` for seconds if missing.
+/// Handles formats like `2024-01-01T10:30` -> `2024-01-01T10:30:00`
+fn normalize_datetime_str(s: &str) -> String {
+    if let Some(time_part) = s.split('T').nth(1) {
+        if time_part.matches(':').count() < 2 {
+            return format!("{}:00", s);
+        }
+    }
+    s.to_string()
 }
 
 // Bool

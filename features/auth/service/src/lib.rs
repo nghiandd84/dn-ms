@@ -6,6 +6,7 @@ mod permission;
 mod register;
 mod role;
 mod token;
+mod user;
 
 pub use active_code::ActiveCodeService;
 pub use authentication::AuthenticationRequestService;
@@ -15,3 +16,4 @@ pub use permission::PermissionService;
 pub use register::RegisterService;
 pub use role::RoleService;
 pub use token::TokenService;
+pub use user::UserService;

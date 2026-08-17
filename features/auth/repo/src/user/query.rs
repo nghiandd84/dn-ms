@@ -9,6 +9,7 @@ use shared_shared_data_core::{
     filter::{FilterEnum, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
+    query_params::QueryParams,
 };
 use shared_shared_data_error::{app::AppError, auth::AuthError};
 use shared_shared_macro::Query;
@@ -23,6 +24,11 @@ use features_auth_model::user::UserData;
 #[query_filter(column_name(AccessColumn))]
 #[query_filter(column_name(RoleColumn))]
 #[query_filter(column_name(Column))]
+#[query_related(
+    entity(AccessEntity),
+    field(accesses),
+    name("accesses")
+)]
 struct UserQueryManager;
 
 impl UserQueryManager {
@@ -131,8 +137,15 @@ impl UserQuery {
             return Err(DbErr::RecordNotFound("Not found".to_string()));
         }
     }
-    pub async fn get<'a>(user_id: Uuid) -> Result<UserData, DbErr> {
-        let model = UserQueryManager::get_by_id_uuid(user_id).await?;
+    pub async fn get<'a>(user_id: Uuid, query_params: &QueryParams) -> Result<UserData, DbErr> {
+        let includes = query_params.includes();
+        let related_filters_vec: Vec<FilterEnum> = vec![];
+        let model = UserQueryManager::get_by_id_uuid_with_related_entities(
+            user_id,
+            &includes,
+            &related_filters_vec,
+        )
+        .await?;
         let user_data: UserData = model.into();
         Ok(user_data)
     }
@@ -141,8 +154,18 @@ impl UserQuery {
         pagination: &Pagination,
         order: &Order,
         filters: &FilterCondition,
+        query_params: &QueryParams,
     ) -> Result<QueryResult<UserData>, DbErr> {
-        let result = UserQueryManager::filter(pagination, order, &filters).await?;
+        let includes = query_params.includes();
+        let related_filters_vec: Vec<FilterEnum> = vec![];
+        let result = UserQueryManager::filter_with_related_entities(
+            pagination,
+            order,
+            filters,
+            &includes,
+            &related_filters_vec,
+        )
+        .await?;
         let mapped_result = QueryResult {
             total_page: result.total_page,
             result: result.result.into_iter().map(|m| m.into()).collect(),

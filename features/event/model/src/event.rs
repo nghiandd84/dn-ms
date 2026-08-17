@@ -5,6 +5,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 use shared_shared_data_core::{
+    deserialize::{deserialize_datetime, deserialize_optional_datetime},
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
@@ -49,6 +50,7 @@ pub struct EventForCreateRequest {
         message = "the length of event_name must be between 1 and 255"
     ))]
     pub event_name: String,
+    #[serde(deserialize_with = "deserialize_datetime")]
     pub event_date: DateTime,
     #[validate(length(
         min = 1,
@@ -64,6 +66,7 @@ pub struct EventForCreateRequest {
     ))]
     pub total_seats: u32,
     pub status: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
     pub sale_start_time: Option<DateTime>,
 }
 
@@ -83,10 +86,12 @@ impl Into<EventForCreateDto> for EventForCreateRequest {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate, ToSchema)]
 pub struct EventForUpdateRequest {
     pub event_name: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
     pub event_date: Option<DateTime>,
     pub venue_name: Option<String>,
     pub total_seats: Option<u32>,
     pub status: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
     pub sale_start_time: Option<DateTime>,
 }
 

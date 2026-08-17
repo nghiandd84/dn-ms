@@ -33,6 +33,7 @@ fn sample_model() -> UserModel {
         version: 1,
         created_at: Utc::now().naive_utc(),
         updated_at: Utc::now().naive_utc(),
+        accesses: vec![],
     }
 }
 

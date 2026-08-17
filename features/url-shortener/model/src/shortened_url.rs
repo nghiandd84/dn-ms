@@ -5,6 +5,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 use shared_shared_data_core::{
+    deserialize::deserialize_optional_datetime,
     filter::{FilterEnum, FilterParam},
     filter_deserialize::*,
 };
@@ -71,6 +72,7 @@ pub struct CreateShortenedUrlRequest {
     ))]
     pub title: Option<String>,
 
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
     pub expires_at: Option<DateTime>,
 
     #[serde(skip)]
@@ -98,6 +100,7 @@ pub struct UpdateShortenedUrlRequest {
     ))]
     pub title: Option<String>,
     pub is_active: Option<bool>,
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
     pub expires_at: Option<DateTime>,
 }
 
