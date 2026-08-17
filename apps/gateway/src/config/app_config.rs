@@ -65,7 +65,7 @@ pub fn load_app_config() -> AppConfig {
         .add_source(
             Environment::with_prefix("GATEWAY")
                 .try_parsing(true)
-                .separator("_"),
+                .separator("__"),
         )
         .build()
         .unwrap();
