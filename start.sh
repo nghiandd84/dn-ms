@@ -33,6 +33,7 @@ export ANOMALY_DETECTOR_PORT=5191
 export URL_SHORTENER_PORT=5201
 #export KAFKA_CLUSTER_ID=I-vULn-DS7yWYemeCtBj_A
 export OTEL_VERSION=0.96.0
+export GATEWAY_DP=/home/nddnghia/Training/dn-ms/apps/gateway
 # update varibale when startup
 # sudo nano ~/.bashrc
 
@@ -365,7 +366,7 @@ sleep 1s
 echo "------------ Start Gateway App ------------"
 echo "--- Gateway start on Portal 6000, 6001, 6002 ---"
 # Execute the program
-$APP_DIRECTORY/app-gateway  &
+# $APP_DIRECTORY/app-gateway  &
 sleep 1s
 
 

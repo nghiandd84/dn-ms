@@ -76,7 +76,6 @@ Origin: http://localhost:4200
     "state": "eyJmaW5nZXJwcmludCI6Ik15UHJpbmdlcnByaW50IiwidGltZXN0YW1wIjoxNzYxODc5MzEwNzU5fQ==""
 }
 
-### 
 
 ### Verify token
 POST {{baseUrl}}/api/auth/tokens/verify
@@ -95,7 +94,7 @@ Content-Type: application/json
 GET http://localhost:7000/admin/health
 
 ### Admin - Reload config (authenticated)
-@apiKey = your-secret-key
+@apiKey = API-Gateway-Secrect-Key
 POST http://localhost:7000/admin/reload
 X-Admin-Key: {{apiKey}}
 
