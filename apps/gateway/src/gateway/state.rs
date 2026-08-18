@@ -19,7 +19,23 @@ pub struct GatewayState {
 }
 
 impl GatewayState {
-    pub fn build(gateway_config: GatewayConfig) -> Self {
+    pub async fn build(gateway_config: GatewayConfig) -> Self {
+        let interceptor_builder_registry = InterceptorBuilderRegistry::build();
+        let interceptors =
+            build_interceptors(&gateway_config, &interceptor_builder_registry).unwrap_or_default();
+        debug!("Loaded {} interceptors", interceptors.len());
+
+        let upstream_load_balancers =
+            UpStreamLoadBalaner::from_upstream_config(gateway_config.upstreams.clone()).await;
+
+        Self {
+            gateway_config,
+            interceptors,
+            upstream_load_balancers: Arc::new(upstream_load_balancers),
+        }
+    }
+
+    pub fn build_sync(gateway_config: GatewayConfig) -> Self {
         let interceptor_builder_registry = InterceptorBuilderRegistry::build();
         let interceptors =
             build_interceptors(&gateway_config, &interceptor_builder_registry).unwrap_or_default();
@@ -83,7 +99,13 @@ impl GatewayStateStore {
 }
 
 pub fn build_gateway_state(gateway_config: GatewayConfig) -> GatewayState {
-    let gateway_state = GatewayState::build(gateway_config);
+    let gateway_state = GatewayState::build_sync(gateway_config);
+    debug!("Gateway state loaded with interceptors and load balancers");
+    gateway_state
+}
+
+pub async fn build_gateway_state_async(gateway_config: GatewayConfig) -> GatewayState {
+    let gateway_state = GatewayState::build(gateway_config).await;
     debug!("Gateway state loaded with interceptors and load balancers");
     gateway_state
 }

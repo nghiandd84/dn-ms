@@ -13,7 +13,7 @@ use tracing::{debug, error, info};
 
 use crate::{
     config::dn_config::DnConfig,
-    gateway::state::{build_gateway_state, GatewayStateStore},
+    gateway::state::{build_gateway_state_async, GatewayStateStore},
 };
 
 pub struct AdminState {
@@ -52,7 +52,7 @@ async fn reload(AxumState(state): AxumState<Arc<AdminState>>) -> impl IntoRespon
 
     let mut reloaded = 0usize;
     for (i, gateway_config) in new_dn_config.gateways.iter().enumerate() {
-        let new_state = build_gateway_state(gateway_config.clone());
+        let new_state = build_gateway_state_async(gateway_config.clone()).await;
         state.gateway_stores[i].update_state(new_state).await;
         reloaded += 1;
         info!("Reloaded gateway config: {}", gateway_config.name);

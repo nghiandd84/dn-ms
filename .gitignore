@@ -5,6 +5,7 @@
 /apps/**/target
 /apis/**/target
 graphify-out
+opencode
 Cargo.lock
 expand.rs
 tarpaulin-report.html

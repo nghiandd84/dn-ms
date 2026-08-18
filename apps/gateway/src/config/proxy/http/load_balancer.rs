@@ -29,7 +29,7 @@ pub struct UpStreamLoadBalaner {
 }
 
 impl UpStreamLoadBalaner {
-    fn build_from_upstreams(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
+    async fn build_from_upstreams(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
         let mut upstream_load_balancers: Vec<UpStreamLoadBalaner> = vec![];
         for upstream in upstreams {
             let mut backends: BTreeSet<Backend> = BTreeSet::new();
@@ -50,12 +50,18 @@ impl UpStreamLoadBalaner {
 
             if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::RoundRobin {
                 let lb = LoadBalancer::from_backends(backends);
+                lb.update()
+                    .await
+                    .expect("Failed to update RoundRobin load balancer backends");
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
                     load_balancer: LoadBalancerEnum::RoundRobin { lb },
                 });
             } else if upstream.traffic_distribution_policy == LoadBalancerAlgorithm::Random {
                 let lb = LoadBalancer::from_backends(backends);
+                lb.update()
+                    .await
+                    .expect("Failed to update Random load balancer backends");
                 upstream_load_balancers.push(UpStreamLoadBalaner {
                     name: upstream.name,
                     load_balancer: LoadBalancerEnum::Random { lb },
@@ -67,13 +73,16 @@ impl UpStreamLoadBalaner {
     }
 
     pub fn from_upstream_config_sync(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
-        Self::build_from_upstreams(upstreams)
+        // Use a temporary tokio runtime for sync context
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create tokio runtime for LB init");
+        rt.block_on(Self::build_from_upstreams(upstreams))
     }
 
     pub async fn from_upstream_config(upstreams: Vec<UpstreamConfig>) -> Vec<Self> {
-        let result = Self::build_from_upstreams(upstreams);
-        // Rebuild is a fresh creation, no need for the legacy update() call
-        result
+        Self::build_from_upstreams(upstreams).await
     }
 
     pub fn get_backend(&self) -> Backend {

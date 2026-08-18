@@ -61,16 +61,33 @@ impl Default for AppConfig {
 }
 
 pub fn load_app_config() -> AppConfig {
+    let defaults = AppConfig::default();
+
     let config = Config::builder()
+        .set_default("dp", defaults.dp).unwrap()
+        .set_default("watch", defaults.watch).unwrap()
+        .set_default("reload", defaults.reload).unwrap()
+        .set_default("test", defaults.test).unwrap()
+        .set_default("version", defaults.version).unwrap()
+        .set_default("verbose", defaults.verbose).unwrap()
+        .set_default("debug", defaults.debug).unwrap()
+        .set_default("upgrade", defaults.upgrade).unwrap()
+        .set_default("addr", defaults.addr).unwrap()
+        .set_default("admin_port", defaults.admin_port as i64).unwrap()
         .add_source(
             Environment::with_prefix("GATEWAY")
+                .prefix_separator("_")
                 .try_parsing(true)
                 .separator("__"),
         )
         .build()
         .unwrap();
 
-    let app_config: AppConfig = config.try_deserialize().unwrap_or(AppConfig::default());
-    tracing::debug!("{:?}", app_config);
+    let app_config: AppConfig = config.try_deserialize().unwrap_or_else(|e| {
+        tracing::warn!("Failed to deserialize AppConfig: {}. Using defaults.", e);
+        AppConfig::default()
+    });
+
+    tracing::debug!("Loaded AppConfig: {:?}", app_config);
     app_config
 }

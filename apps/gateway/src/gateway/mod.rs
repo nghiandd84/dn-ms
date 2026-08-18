@@ -13,7 +13,7 @@ use super::Proxy;
 
 pub type HttpGateway = Service<HttpProxy<Proxy>>;
 
-pub async fn build_http(
+pub fn build_http(
     gateway_state_store: Arc<GatewayStateStore>,
     server_conf: Arc<ServerConf>,
 ) -> HttpGateway {

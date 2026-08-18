@@ -4,12 +4,14 @@ mod error;
 mod gateway;
 mod poller;
 
+use async_trait::async_trait;
 use dotenv::dotenv;
 use opentelemetry::global;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use pingora::{
     prelude::background_service,
-    server::{configuration::ServerConf, Server},
+    server::{configuration::ServerConf, Server, ShutdownWatch},
+    services::background::BackgroundService,
 };
 use std::{sync::Arc, time::Duration};
 use tracing::{debug, info, warn};
@@ -24,8 +26,35 @@ use gateway::{
 
 use crate::{admin::{admin_router, AdminState}, poller::ApiPoller};
 
-#[async_std::main]
-async fn main() {
+/// Background service that runs the admin Axum server inside Pingora's runtime.
+pub struct AdminBackgroundService {
+    pub admin_state: Arc<AdminState>,
+    pub admin_port: u16,
+}
+
+#[async_trait]
+impl BackgroundService for AdminBackgroundService {
+    async fn start(&self, mut shutdown: ShutdownWatch) {
+        let admin_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", self.admin_port))
+            .await
+            .expect("Failed to bind admin port");
+        info!("Admin API listening on 0.0.0.0:{}", self.admin_port);
+
+        let router = admin_router(self.admin_state.clone());
+        tokio::select! {
+            result = axum::serve(admin_listener, router) => {
+                if let Err(e) = result {
+                    tracing::error!("Admin server error: {}", e);
+                }
+            }
+            _ = shutdown.changed() => {
+                debug!("Shutting down admin API server");
+            }
+        }
+    }
+}
+
+fn main() {
     dotenv().ok();
     let service_key = "GATEWAY".to_string();
     let (_log_provider, _trace_provider, _metrics_provider) =
@@ -50,12 +79,12 @@ async fn main() {
         let gateway_state: gateway::state::GatewayState = build_gateway_state(clone_gateway_config);
         let gateway_state_store = Arc::new(GatewayStateStore::new(gateway_state));
         let server_conf: ServerConf = dn_config_clone.clone().into();
-        let service = build_http(gateway_state_store.clone(), Arc::new(server_conf)).await;
+        let service = build_http(gateway_state_store.clone(), Arc::new(server_conf));
         server.add_service(service);
         gateway_stores.push(gateway_state_store);
     }
 
-    // Start admin API server for hot-reload
+    // Admin API as a background service (runs inside Pingora's Tokio runtime)
     let admin_api_key = app_config.admin_api_key.clone();
     if admin_api_key.is_none() {
         warn!("GATEWAY_ADMIN_API_KEY not set — admin reload endpoint is open (no auth required)");
@@ -66,16 +95,9 @@ async fn main() {
         admin_api_key,
     });
     let admin_port = app_config.admin_port;
-    let admin_listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", admin_port))
-        .await
-        .expect("Failed to bind admin port");
-    info!("Admin API listening on 0.0.0.0:{}", admin_port);
-
-    let _admin_handle = tokio::spawn(async move {
-        axum::serve(admin_listener, admin_router(admin_state))
-            .await
-            .expect("Admin server failed");
-    });
+    let admin_bg = AdminBackgroundService { admin_state, admin_port };
+    let admin_service = background_service("Admin API", admin_bg);
+    server.add_service(admin_service);
 
     // Create your background API poller
     let poller = ApiPoller {
