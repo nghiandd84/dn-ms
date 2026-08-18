@@ -103,6 +103,52 @@ impl UserQuery {
         Ok(dto.into())
     }
 
+    pub async fn get_user_by_email<'a>(email: String) -> Result<ModelOptionDto, AppError> {
+        let pagination = Pagination::new(1, 1);
+        let order = Order::default();
+
+        let param: FilterParam<String> = FilterParam {
+            name: Column::Email.to_string(),
+            operator: FilterOperator::Equal,
+            value: Some(email.clone()),
+            raw_value: email,
+        };
+        let email_filter = FilterEnum::String(param);
+        let filters: Vec<FilterEnum> = vec![email_filter];
+
+        let result =
+            UserQueryManager::filter(&pagination, &order, &FilterCondition::from(filters)).await?;
+
+        let dto = result.result.into_iter().next();
+        if dto.is_none() {
+            return Err(AppError::Auth(AuthError::NotFoundUser));
+        }
+        Ok(dto.unwrap())
+    }
+
+    pub async fn get_user_by_id_raw<'a>(user_id: Uuid) -> Result<ModelOptionDto, AppError> {
+        let pagination = Pagination::new(1, 1);
+        let order = Order::default();
+
+        let param: FilterParam<Uuid> = FilterParam {
+            name: Column::Id.to_string(),
+            operator: FilterOperator::Equal,
+            value: Some(user_id),
+            raw_value: user_id.to_string(),
+        };
+        let id_filter = FilterEnum::Uuid(param);
+        let filters: Vec<FilterEnum> = vec![id_filter];
+
+        let result =
+            UserQueryManager::filter(&pagination, &order, &FilterCondition::from(filters)).await?;
+
+        let dto = result.result.into_iter().next();
+        if dto.is_none() {
+            return Err(AppError::Auth(AuthError::NotFoundUser));
+        }
+        Ok(dto.unwrap())
+    }
+
     pub async fn get_access_data_by_user_id<'a>(id: Uuid) -> Result<Vec<UserAccessData>, DbErr> {
         let models = Entity::find()
             .filter(Column::Id.eq(id))

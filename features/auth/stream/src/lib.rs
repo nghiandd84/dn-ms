@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{signin::SignInMessage, signup::SignUpMessage};
+use crate::{password::PasswordMessage, signin::SignInMessage, signup::SignUpMessage};
 
+pub mod password;
 pub mod signin;
 pub mod signup;
 
@@ -12,4 +13,5 @@ pub const PRODUCER_KEY: &str = "auth";
 pub enum AuthMessage {
     SignIn { message: SignInMessage },
     SignUp { message: SignUpMessage },
+    Password { message: PasswordMessage },
 }

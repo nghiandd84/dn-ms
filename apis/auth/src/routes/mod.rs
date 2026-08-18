@@ -3,6 +3,7 @@ pub mod auth_code;
 pub mod authentication;
 pub mod client;
 pub mod field_permission;
+pub mod password;
 pub mod permission;
 pub mod role;
 pub mod scope;

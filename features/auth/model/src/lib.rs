@@ -4,6 +4,7 @@ pub mod authentication;
 pub mod client;
 pub mod field_permission;
 pub mod login;
+pub mod password;
 pub mod permission;
 pub mod profile;
 pub mod role;

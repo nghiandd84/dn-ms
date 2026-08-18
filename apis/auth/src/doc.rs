@@ -64,6 +64,10 @@ use shared_shared_app::doc::{ErrorResponse, JwtSecurityAddon, ServerAddon};
         crate::routes::user::assign_roles,
         crate::routes::user::unassign_roles,
         crate::routes::signup::activate,
+        crate::routes::password::request_change_password,
+        crate::routes::password::change_password,
+        crate::routes::password::request_reset,
+        crate::routes::password::reset_password,
     ),
     tags(
         (name = "Rust REST API", description = "Authentication in Rust Endpoints")

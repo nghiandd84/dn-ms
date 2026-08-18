@@ -2,7 +2,8 @@ use sea_orm::ConnectionTrait;
 use shared_shared_macro::Mutation;
 
 use features_auth_entities::user::{
-    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto, UserForUpdateDto,
+    ActiveModel, Column, Entity, Model, ModelOptionDto, UserForCreateDto,
+    UserForPasswordChangeDto, UserForUpdateDto,
 };
 
 use crate::user::util::assign;
@@ -34,6 +35,13 @@ impl UserMutation {
     pub fn update<'a>(
         id: Uuid,
         data: UserForUpdateDto,
+    ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
+        UserMutationManager::update_by_id_uuid(id, data.into())
+    }
+
+    pub fn update_password<'a>(
+        id: Uuid,
+        data: UserForPasswordChangeDto,
     ) -> impl std::future::Future<Output = Result<bool, DbErr>> + 'a {
         UserMutationManager::update_by_id_uuid(id, data.into())
     }

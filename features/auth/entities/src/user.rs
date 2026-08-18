@@ -15,6 +15,7 @@ use crate::access::Model as AccessModel;
     columns(email, language, password, confirmed, two_factor_enabled, is_active),
     option
 )]
+#[dto(name(UserForPasswordChange), columns(password))]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,

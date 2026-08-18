@@ -3,7 +3,7 @@ use tracing::{debug, error};
 
 use features_auth_model::state::AuthAppState;
 use features_auth_remote::ActiveCodeRemoteService;
-use features_auth_stream::{signup::SignUpMessage, AuthMessage};
+use features_auth_stream::{password::PasswordMessage, signup::SignUpMessage, AuthMessage};
 use features_email_template_remote::{
     EmailTemplateService, TemplatePlaceholderService, TemplateTranslationService,
 };
@@ -26,6 +26,10 @@ pub async fn handle_consumer_message(
             let _ = handle_signup_message(auth_state, message).await?;
 
             Ok(())
+        }
+        AuthMessage::Password { message } => {
+            debug!("Handling password message: {:?}", message);
+            handle_password_message(message).await
         }
     };
     result
@@ -141,6 +145,47 @@ async fn handle_signup_message<'a>(
             })?;
 
             debug!("Activation email sent successfully to {}", email);
+        }
+    }
+
+    Ok(())
+}
+
+#[tracing::instrument(name = "handle_password_message", skip(message))]
+async fn handle_password_message(
+    message: PasswordMessage,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    match message {
+        PasswordMessage::ChangeRequest {
+            user_id,
+            email,
+            change_code: _change_code,
+            language_code,
+        } => {
+            debug!(
+                "Password change requested: user_id={}, email={}, language={}",
+                user_id, email, language_code
+            );
+            // TODO: Fetch email template and send change code email
+        }
+        PasswordMessage::ResetRequest {
+            user_id,
+            email,
+            reset_code: _reset_code,
+            language_code,
+        } => {
+            debug!(
+                "Password reset requested: user_id={}, email={}, language={}",
+                user_id, email, language_code
+            );
+            // TODO: Fetch email template and send reset code email
+        }
+        PasswordMessage::Changed { user_id, email } => {
+            debug!(
+                "Password changed: user_id={}, email={}",
+                user_id, email
+            );
+            // TODO: Send password changed confirmation email
         }
     }
 

@@ -26,6 +26,10 @@ pub enum AuthError {
     UnknowRole,
     #[error("Insufficient permission")]
     InsufficientPermission,
+    #[error("Password reset code not found")]
+    PasswordResetCodeNotFound,
+    #[error("Password reset code expired")]
+    PasswordResetCodeExpired,
     #[error("Unknow error")]
     Unknow,
 }
@@ -38,6 +42,8 @@ impl AuthError {
             AuthError::WrongPassword => StatusCode::UNAUTHORIZED,
             AuthError::InsufficientPermission => StatusCode::FORBIDDEN,
             AuthError::ExistingUser => StatusCode::CONFLICT,
+            AuthError::PasswordResetCodeNotFound => StatusCode::NOT_FOUND,
+            AuthError::PasswordResetCodeExpired => StatusCode::GONE,
             AuthError::Unknow => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
