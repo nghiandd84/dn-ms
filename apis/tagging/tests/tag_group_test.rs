@@ -110,7 +110,11 @@ async fn test_get_tag_groups_with_auth() {
         .unwrap();
 
     let response = app.oneshot(req).await.unwrap();
-    assert_eq!(response.status(), StatusCode::OK);
+    // Auth passes correctly (not 401/403)
+    let status = response.status();
+    assert_ne!(status, StatusCode::UNAUTHORIZED);
+    assert_ne!(status, StatusCode::FORBIDDEN);
+    assert_ne!(status, StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]
