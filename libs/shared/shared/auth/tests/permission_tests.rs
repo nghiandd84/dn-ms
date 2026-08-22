@@ -19,6 +19,12 @@ impl StatePermission for DummyState {
     fn get_permission_map(&self, _role_name: String, _resource_name: String) -> u32 {
         READ | CREATE | UPDATE | DELETE | ADMIN
     }
+    fn get_field_permissions(&self, _role_name: &str, _resource: &str, _action: u32) -> Vec<String> {
+        vec![]
+    }
+    fn has_field_permissions(&self, _resource: &str) -> bool {
+        false
+    }
     async fn pull_permission(&self) -> Result<(), AuthError> {
         Ok(())
     }

@@ -7,7 +7,7 @@ use axum::{
 use chrono::Utc;
 use http::header;
 use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::sync::{Arc, Once};
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -17,7 +17,6 @@ use shared_shared_config::db::{DB_READ, DB_WRITE};
 use shared_shared_data_cache::cache::Cache;
 
 use features_tagging_entities::entity_tag::Model as EntityTagModel;
-use features_tagging_entities::tag::Model as TagModel;
 use features_tagging_model::state::{TaggingAppState, TaggingCacheState};
 
 const BAGGAGE_ADMIN: &str = "accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000,tenant_id=test-tenant";
@@ -34,25 +33,6 @@ fn sample_entity_tag() -> EntityTagModel {
         tagged_by: Uuid::new_v4(),
         created_at: Utc::now().naive_utc(),
         tag: vec![],
-    }
-}
-
-fn sample_tag() -> TagModel {
-    TagModel {
-        id: Uuid::new_v4(),
-        tenant_id: "test-tenant".to_string(),
-        tag_group_id: Uuid::new_v4(),
-        name: "Rock".to_string(),
-        slug: "rock".to_string(),
-        color: "#FF5733".to_string(),
-        description: "Rock music genre".to_string(),
-        alias_of: None,
-        is_active: true,
-        sort_order: 1,
-        usage_count: 5,
-        created_at: Utc::now().naive_utc(),
-        updated_at: Utc::now().naive_utc(),
-        tag_group: vec![],
     }
 }
 
@@ -90,13 +70,6 @@ fn build_app() -> Router {
 
     api_tagging::routes::entity_tag::routes(&app_state)
         .layer(middleware::map_response(main_response_mapper))
-}
-
-async fn parse_body(response: axum::response::Response) -> Value {
-    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
-    serde_json::from_slice(&bytes).unwrap()
 }
 
 #[tokio::test]

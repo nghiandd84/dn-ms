@@ -10,6 +10,7 @@ use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
 use serde_json::{json, Value};
 use std::sync::{Arc, Once};
 use tower::ServiceExt;
+use uuid::Uuid;
 
 use shared_shared_app::{mapper::main_response_mapper, state::AppState};
 use shared_shared_config::db::{DB_READ, DB_WRITE};
@@ -30,8 +31,10 @@ fn sample_model() -> TemplatePlaceholderModel {
         description: "The name of the user".to_string(),
         example_value: "John Doe".to_string(),
         is_required: true,
+        user_id: Uuid::new_v4(),
         created_at: Utc::now().naive_utc(),
         updated_at: Utc::now().naive_utc(),
+        email_templates: vec![],
     }
 }
 

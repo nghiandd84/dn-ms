@@ -38,6 +38,7 @@ fn sample_item_model() -> LookupItemModel {
         sort_order: 1,
         created_at: Utc::now().naive_utc(),
         updated_at: Utc::now().naive_utc(),
+        lookup_type: vec![],
     }
 }
 

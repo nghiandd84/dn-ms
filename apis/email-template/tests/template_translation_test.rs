@@ -10,6 +10,7 @@ use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
 use serde_json::{json, Value};
 use std::sync::{Arc, Once};
 use tower::ServiceExt;
+use uuid::Uuid;
 
 use shared_shared_app::{mapper::main_response_mapper, state::AppState};
 use shared_shared_config::db::{DB_READ, DB_WRITE};
@@ -30,8 +31,10 @@ fn sample_model() -> TemplateTranslationModel {
         subject: "Welcome to our platform".to_string(),
         body: "<h1>Welcome!</h1><p>Thank you for signing up.</p>".to_string(),
         version_name: "v1.0".to_string(),
+        user_id: Uuid::new_v4(),
         created_at: Utc::now().naive_utc(),
         updated_at: Utc::now().naive_utc(),
+        email_templates: vec![],
     }
 }
 

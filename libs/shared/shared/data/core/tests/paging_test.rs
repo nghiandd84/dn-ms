@@ -32,7 +32,7 @@ fn pagination_deserialize_custom() {
 
 #[test]
 fn pagination_page_size_exceeds_max() {
-    let json = r#"{"page": 1, "page_size": 21}"#;
+    let json = r#"{"page": 1, "page_size": 101}"#;
     let result = serde_json::from_str::<Pagination>(json);
     assert!(result.is_err());
 }
