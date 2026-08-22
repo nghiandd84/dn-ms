@@ -1,0 +1,20 @@
+[package]
+name = "features-tagging-migrations"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_tagging_migrations"
+path = "src/lib.rs"
+
+[[bin]]
+name = "migrations_tagging"
+path = "src/main.rs"
+
+[dependencies]
+async-std = { workspace = true }
+sea-orm-migration = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+features-tagging-entities = { workspace = true }

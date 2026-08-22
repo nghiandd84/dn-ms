@@ -329,6 +329,18 @@ services:
     networks:
       - dn-ms-network
 
+  migrations-tagging:
+    build:
+      context: ..
+      dockerfile: docker/migrations/tagging/Dockerfile
+    container_name: dn-ms-migrations-tagging
+    command: ["./target/release/migrations_tagging", "-v", "-u", "postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}", "-s", "tagging"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dn-ms-network
+
   # ═══════════════════════════════════════════════════════════
   # API SERVICES
   # ═══════════════════════════════════════════════════════════
@@ -1658,6 +1670,72 @@ services:
         condition: service_started
       kafka-init-topics:
         condition: service_completed_successfully
+      consul:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - dn-ms-network
+
+  api-tagging-1:
+    build:
+      context: ..
+      dockerfile: docker/apis/tagging/Dockerfile
+    container_name: dn-ms-api-tagging-1
+    environment:
+      TAGGING_PORT: 5211
+      TAGGING_DATABASE_READ_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      TAGGING_DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      TAGGING_DATABASE_SCHEME: tagging
+      TAGGING_REDIS_URL: redis://:${REDIS_PASSWORD:-Redis!123}@redis:6379
+      ERROR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ERROR_KAFKA_TOPIC: error_log
+      RUST_LOG: ${RUST_LOG:-debug}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      HTTP_PROTOCOL: http
+      CONSUL_HTTP_ADDR: http://consul:8500
+    ports:
+      - "5211:5211"
+    depends_on:
+      migrations-tagging:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - dn-ms-network
+
+  api-tagging-2:
+    build:
+      context: ..
+      dockerfile: docker/apis/tagging/Dockerfile
+    container_name: dn-ms-api-tagging-2
+    environment:
+      TAGGING_PORT: 5212
+      TAGGING_DATABASE_READ_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      TAGGING_DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-dn_ms}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-dn_ms}
+      TAGGING_DATABASE_SCHEME: tagging
+      TAGGING_REDIS_URL: redis://:${REDIS_PASSWORD:-Redis!123}@redis:6379
+      ERROR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ERROR_KAFKA_TOPIC: error_log
+      RUST_LOG: ${RUST_LOG:-debug}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      HTTP_PROTOCOL: http
+      CONSUL_HTTP_ADDR: http://consul:8500
+    ports:
+      - "5212:5212"
+    depends_on:
+      migrations-tagging:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       consul:
         condition: service_started
       otel-collector:

@@ -1,0 +1,55 @@
+[package]
+name = "api-tagging"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api-tagging"
+path = "src/main.rs"
+
+[lib]
+name = "api_tagging"
+path = "src/lib.rs"
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+utoipa = { workspace = true }
+uuid = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+serde = { workspace = true }
+
+shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-auth = { workspace = true }
+shared-shared-data-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-extractor = { workspace = true }
+shared-shared-middleware = { workspace = true }
+shared-shared-observability = { workspace = true }
+
+features-auth-remote = { workspace = true }
+
+features-tagging-model = { workspace = true }
+features-tagging-migrations = { workspace = true }
+features-tagging-service = { workspace = true }
+
+[dev-dependencies]
+axum = { workspace = true }
+chrono = { workspace = true }
+http = { workspace = true }
+http-body = { workspace = true }
+hyper = { version = "1.0", features = ["full"] }
+sea-orm = { workspace = true, features = ["mock"] }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true, features = ["util"] }
+uuid = { workspace = true }
+shared-shared-app = { workspace = true }
+shared-shared-config = { workspace = true }
+shared-shared-data-cache = { workspace = true }
+features-tagging-entities = { workspace = true }
+features-tagging-model = { workspace = true }

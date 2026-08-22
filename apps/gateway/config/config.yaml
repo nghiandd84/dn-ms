@@ -48,6 +48,8 @@ gateways:
         filter: url_shortener_router_filter
       - upstream: anomaly_detector
         filter: detector_router_filter
+      - upstream: tagging
+        filter: tagging_router_filter
       
     upstreams:
       - name: bakery
@@ -270,7 +272,23 @@ gateways:
             sni: null
             weight: 2
       
-    
+      - name: tagging
+        default: false
+        traffic_distribution_policy: random
+        upstream_nodes:
+          - address:
+              host: 127.0.0.1
+              port: 5211
+            tls: false
+            sni: null
+            weight: 1
+          - address:
+              host: 127.0.0.1
+              port: 5212
+            tls: false
+            sni: null
+            weight: 2
+
     interceptors:
       # Anomaly Detector - Global (applies to all routes)
       - name: global_anomaly_detector
@@ -599,6 +617,32 @@ gateways:
           refill_rate: 5
           refill_interval: 10
 
+      # Tagging
+      - name: tagging_request_id
+        type: request_id
+        enabled: true
+        filter: tagging_router_filter
+      - name: tagging_token_auth
+        type: token_auth
+        enabled: true
+        filter: tagging_router_filter
+        config:
+          use_auth_service: true
+      - name: tagging_cors
+        type: cors
+        enabled: true
+        filter: tagging_router_filter
+        config:
+          allowed_domains: localhost
+      - name: tagging_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: tagging_router_filter
+        config:
+          capacity: 10
+          refill_rate: 5
+          refill_interval: 10
+
     filters:
       - name: auth_router_filter
         path:
@@ -662,3 +706,8 @@ gateways:
         path:
           operator: start_with
           value: /detector
+
+      - name: tagging_router_filter
+        path:
+          operator: start_with
+          value: /api/tagging

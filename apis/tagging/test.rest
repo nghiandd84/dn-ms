@@ -1,0 +1,173 @@
+@baseUrl = http://localhost:5221
+@baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000,tenant_id=test-tenant
+@tagGroupId = 00000000-0000-0000-0000-000000000001
+@subGroupId = 00000000-0000-0000-0000-000000000002
+@tagId = 00000000-0000-0000-0000-000000000010
+@tagId2 = 00000000-0000-0000-0000-000000000011
+@entityId = 00000000-0000-0000-0000-000000000100
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### ===== TAG GROUPS =====
+
+### Get All Tag Groups
+GET {{baseUrl}}/tag-groups
+baggage: {{baggage}}
+
+### Get Tag Groups filtered by tenant
+GET {{baseUrl}}/tag-groups?tenant_id=eq|test-tenant
+baggage: {{baggage}}
+
+### Get Top-Level Groups only (no parent)
+GET {{baseUrl}}/tag-groups?parent_id=eq|null
+baggage: {{baggage}}
+
+### Create Tag Group (top level)
+POST {{baseUrl}}/tag-groups
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "code": "GENRE",
+  "name": "Genre",
+  "description": "Music/event genres",
+  "sort_order": 1
+}
+
+### Create Sub-Group under a parent
+POST {{baseUrl}}/tag-groups
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "code": "MUSIC_GENRE",
+  "name": "Music Genre",
+  "description": "Specific music genres",
+  "parent_id": "{{tagGroupId}}",
+  "sort_order": 1
+}
+
+### Get Tag Group by ID
+GET {{baseUrl}}/tag-groups/{{tagGroupId}}
+baggage: {{baggage}}
+
+### Update Tag Group
+PATCH {{baseUrl}}/tag-groups/{{tagGroupId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "name": "Updated Genre Name",
+  "description": "Updated description"
+}
+
+### Delete Tag Group
+DELETE {{baseUrl}}/tag-groups/{{tagGroupId}}
+baggage: {{baggage}}
+
+### ===== TAGS =====
+
+### Get All Tags
+GET {{baseUrl}}/tags
+baggage: {{baggage}}
+
+### Get Tags with tag_group included
+GET {{baseUrl}}/tags?includes=tag_group
+baggage: {{baggage}}
+
+### Get Tags filtered by group
+GET {{baseUrl}}/tags?tag_group_id=eq|{{tagGroupId}}
+baggage: {{baggage}}
+
+### Search Tags (autocomplete)
+GET {{baseUrl}}/tags/search?search=rock&limit=5
+baggage: {{baggage}}
+
+### Create Tag
+POST {{baseUrl}}/tags
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "tag_group_id": "{{tagGroupId}}",
+  "name": "Rock",
+  "slug": "rock",
+  "color": "#FF5733",
+  "description": "Rock music genre",
+  "sort_order": 1
+}
+
+### Get Tag by ID
+GET {{baseUrl}}/tags/{{tagId}}
+baggage: {{baggage}}
+
+### Update Tag
+PATCH {{baseUrl}}/tags/{{tagId}}
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "name": "Classic Rock",
+  "color": "#FF0000"
+}
+
+### Get Tag Usage Count
+GET {{baseUrl}}/tags/{{tagId}}/usage
+baggage: {{baggage}}
+
+### Merge Tag (merge tagId into tagId2)
+POST {{baseUrl}}/tags/{{tagId}}/merge
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "target_tag_id": "{{tagId2}}"
+}
+
+### Delete Tag
+DELETE {{baseUrl}}/tags/{{tagId}}
+baggage: {{baggage}}
+
+### ===== ENTITY TAGS =====
+
+### Assign Tag to Entity
+POST {{baseUrl}}/entity-tags
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "tag_id": "{{tagId}}",
+  "entity_type": "event",
+  "entity_id": "{{entityId}}"
+}
+
+### Bulk Assign Tags
+POST {{baseUrl}}/entity-tags/bulk
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "tag_ids": ["{{tagId}}", "{{tagId2}}"],
+  "entity_type": "event",
+  "entity_ids": ["{{entityId}}"]
+}
+
+### Bulk Remove Tags
+POST {{baseUrl}}/entity-tags/bulk-remove
+Content-Type: application/json
+baggage: {{baggage}}
+
+{
+  "tag_ids": ["{{tagId}}"],
+  "entity_type": "event",
+  "entity_ids": ["{{entityId}}"]
+}
+
+### Get Tags for Entity
+GET {{baseUrl}}/entities/event/{{entityId}}/tags
+baggage: {{baggage}}
+
+### Get Entities for Tag
+GET {{baseUrl}}/tags/{{tagId}}/entities
+baggage: {{baggage}}

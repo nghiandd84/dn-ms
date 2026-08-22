@@ -1,0 +1,27 @@
+[package]
+name = "features-tagging-repo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "features_tagging_repo"
+path = "src/lib.rs"
+
+[dependencies]
+chrono = { workspace = true }
+sea-orm = { workspace = true, features = ["sqlx-postgres"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+
+shared-shared-config = { workspace = true }
+shared-shared-data-app = { workspace = true }
+shared-shared-data-core = { workspace = true }
+shared-shared-data-error = { workspace = true }
+shared-shared-macro = { workspace = true }
+shared-shared-macro-rule = { workspace = true }
+
+features-tagging-entities = { workspace = true }
+features-tagging-model = { workspace = true }
