@@ -1,10 +1,10 @@
-@baseUrl = http://localhost:5221
+@baseUrl = http://localhost:5211
 @baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000,tenant_id=test-tenant
-@tagGroupId = 00000000-0000-0000-0000-000000000001
-@subGroupId = 00000000-0000-0000-0000-000000000002
-@tagId = 00000000-0000-0000-0000-000000000010
+@tagGroupId = 3202e56b-b340-4fe1-be6a-3a4dcd055923
+@subGroupId = cd62912b-535e-4969-b8dd-1582c4c1f57c
+@tagId = fd4b6c0a-026f-46a6-b2db-075b8c718444
 @tagId2 = 00000000-0000-0000-0000-000000000011
-@entityId = 00000000-0000-0000-0000-000000000100
+@entityId = 553c6ffb-f233-43c0-9ced-4f374026ccb0
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/
