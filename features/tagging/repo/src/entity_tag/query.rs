@@ -23,6 +23,32 @@ struct EntityTagQueryManager;
 pub struct EntityTagQuery;
 
 impl EntityTagQuery {
+    pub async fn search_entity_tags(
+        pagination: &Pagination,
+        order: &Order,
+        filters: &FilterCondition,
+        query_params: &QueryParams,
+    ) -> Result<QueryResult<EntityTagData>, AppError> {
+        let includes = query_params.includes();
+        let result = if !includes.is_empty() {
+            EntityTagQueryManager::filter_with_related_entities(
+                pagination,
+                order,
+                filters,
+                &includes,
+                &vec![],
+            )
+            .await?
+        } else {
+            EntityTagQueryManager::filter(pagination, order, filters).await?
+        };
+        let mapped_result = QueryResult {
+            total_page: result.total_page,
+            result: result.result.into_iter().map(|m| m.into()).collect(),
+        };
+        Ok(mapped_result)
+    }
+
     pub async fn get_tags_for_entity(
         tenant_id: &str,
         entity_type: &str,

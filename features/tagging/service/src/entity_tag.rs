@@ -2,6 +2,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 use shared_shared_data_core::{
+    filter::FilterCondition,
     order::Order,
     paging::{Pagination, QueryResult},
     query_params::QueryParams,
@@ -143,5 +144,15 @@ impl EntityTagService {
         order: &Order,
     ) -> Result<QueryResult<EntityTagData>, AppError> {
         EntityTagQuery::get_entities_for_tag(tenant_id, tag_id, pagination, order).await
+    }
+
+    /// Search entity tags with filters, pagination, ordering, and includes
+    pub async fn search_entity_tags(
+        filters: &FilterCondition,
+        pagination: &Pagination,
+        order: &Order,
+        query_params: &QueryParams,
+    ) -> Result<QueryResult<EntityTagData>, AppError> {
+        EntityTagQuery::search_entity_tags(pagination, order, filters, query_params).await
     }
 }

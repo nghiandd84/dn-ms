@@ -9,7 +9,7 @@ use uuid::Uuid;
 use features_tagging_model::{
     entity_tag::{
         BulkTagRequest, BulkTagResponse, BulkUntagRequest, EntityTagData,
-        EntityTagForCreateRequest,
+        EntityTagDataFilterParams, EntityTagForCreateRequest,
     },
     state::{TaggingAppState, TaggingCacheState},
 };
@@ -19,6 +19,7 @@ use shared_shared_app::state::AppState;
 use shared_shared_auth::permission::Auth;
 use shared_shared_data_app::result::{OkUuid, OkUuidResponse, Result};
 use shared_shared_data_app::json::{ResponseJson, ValidJson};
+use shared_shared_data_app::filter_param::FilterParams;
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
@@ -29,6 +30,31 @@ use shared_shared_extractor::TenantId;
 use crate::permission::{CanCreateEntityTag, CanDeleteEntityTag, CanReadEntityTag};
 
 const TAG: &str = "entity-tag";
+
+#[utoipa::path(
+    get,
+    path = "/entity-tags",
+    tag = TAG,
+    params(Pagination),
+    responses(
+        (status = 200, description = "Search entity tags", body = QueryResultResponse<EntityTagData>),
+    )
+)]
+#[instrument(level = Level::INFO, skip_all)]
+pub async fn search_entity_tags(
+    _auth: Auth<CanReadEntityTag>,
+    query_pagination: Query<Pagination>,
+    query_order: Query<Order>,
+    filter_params: FilterParams<EntityTagDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
+) -> Result<ResponseJson<QueryResult<EntityTagData>>> {
+    let pagination = query_pagination.0;
+    let order = query_order.0;
+    let filters = filter_params.0.all_filters();
+    let result =
+        EntityTagService::search_entity_tags(&filters, &pagination, &order, &query_params).await?;
+    Ok(ResponseJson(result))
+}
 
 #[utoipa::path(
     post,
@@ -149,7 +175,7 @@ pub async fn get_entities_for_tag(
 
 pub fn routes(app_state: &AppState<TaggingAppState, TaggingCacheState>) -> Router {
     Router::new()
-        .route("/entity-tags", post(assign_tag))
+        .route("/entity-tags", get(search_entity_tags).post(assign_tag))
         .route("/entity-tags/bulk", post(bulk_assign_tags))
         .route("/entity-tags/bulk-remove", post(bulk_remove_tags))
         .route(
