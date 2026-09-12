@@ -175,26 +175,34 @@ where
                 .unwrap();
 
             info!("Gracefully shutting down");
+
+            // Deregister from Consul FIRST, before anything that could panic/hang.
+            // Ensures the instance is removed promptly on a clean shutdown instead of
+            // relying on Consul's `deregister_critical_service_after` timeout.
+            if let Err(e) =
+                deregister_service(&consul_client, &service_name, instance_id.as_str()).await
+            {
+                tracing::error!("Failed to deregister service from Consul: {}", e);
+            }
+
             // Close DB connections
             db_read.disconnect().await;
             db_write.disconnect().await;
             info!("Database connection closed");
 
-            log_provider
-                .shutdown()
-                .expect("Shutdown log provider failed");
-            trace_provider
-                .shutdown()
-                .expect("Shutdown trace provider failed");
-
-            metric_provider
-                .shutdown()
-                .expect("Shutdown metric provider failed");
+            // Best-effort provider shutdowns: never panic during shutdown.
+            if let Err(e) = log_provider.shutdown() {
+                tracing::error!("Shutdown log provider failed: {:?}", e);
+            }
+            if let Err(e) = trace_provider.shutdown() {
+                tracing::error!("Shutdown trace provider failed: {:?}", e);
+            }
+            if let Err(e) = metric_provider.shutdown() {
+                tracing::error!("Shutdown metric provider failed: {:?}", e);
+            }
 
             // TODO disconnect Cache
             info!("Cache connection closed");
-
-            deregister_service(&consul_client, &service_name, instance_id.as_str()).await?;
 
             debug!("Stopped {} app", app_config.app_key);
             Ok(())

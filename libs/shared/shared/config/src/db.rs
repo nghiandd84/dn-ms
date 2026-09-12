@@ -19,9 +19,9 @@ impl Database {
             .parse::<u32>()
             .unwrap_or(1);
         let max_connections = std::env::var("DB_MAX_CONNECTIONS")
-            .unwrap_or("2".to_string())
+            .unwrap_or("1".to_string())
             .parse::<u32>()
-            .unwrap_or(2);
+            .unwrap_or(1);
         let mut opt = ConnectOptions::new(con_str.clone());
         opt.max_connections(max_connections)
             .min_connections(min_connections)
