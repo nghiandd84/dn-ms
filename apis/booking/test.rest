@@ -1,25 +1,152 @@
 @baseUrl = http://localhost:5091
 # @baseUrl = http://localhost:6001/api/booking
-@bookingId = 887712cc-1571-492c-b55b-99dc65b9202b
-@bookingSeatId = 25a14c7f-2775-482a-b0f0-a98dd2c2ece8
+@bookingId = 2b2f611e-da33-4403-8635-ee20082010ea
+@bookingItemId = 78156544-4292-42dc-b2dd-6f3f70727f15
 
 @origin = http://localhost
 @baggage = accesses=ADMIN_ALL*,user_id=00000000-0000-0000-0000-000000000000,client_id=00000000-0000-0000-0000-000000000000
 
-### Booking API Test requests
+### =====================================================================
+### Booking API — multi-type bookings
+###
+### Every booking has:
+###   booking_type : free-form label (EVENT, HOTEL_ROOM, CAR_RENTAL, ...)
+###   booking_mode : WINDOW | CAPACITY | RECURRENCE | APPROVAL | QUEUE | DISPATCH
+### Exactly one mode block matching booking_mode must be supplied.
+### =====================================================================
 
-### Create a new booking
+### --- WINDOW mode: hotel room / car / table / appointment (time range) ---
+### Overlap guard: if resource_type + resource_id are set, an overlapping
+### active booking for the same resource is rejected.
 POST {{baseUrl}}/bookings
 Content-Type: application/json
 Origin: {{origin}}
 baggage: {{baggage}}
 
 {
-  "event_id": "12345678-1234-1234-1234-123456789022",
+  "booking_type": "HOTEL_ROOM",
+  "booking_mode": "WINDOW",
+  "resource_type": "room",
+  "resource_id": "12345678-1234-1234-1234-123456789022",
   "user_id": "87654321-4321-4321-4321-210987654221",
   "total_amount": 150.50,
+  "currency": "USD",
   "status": "PENDING",
-  "booking_reference": "BOOKING002"
+  "booking_reference": "BOOKING-WINDOW-001",
+  "window": {
+    "starts_at": "2026-10-01T14:00:00",
+    "ends_at": "2026-10-03T11:00:00",
+    "party_size": 2
+  }
+}
+
+### --- CAPACITY mode: airline seat / workshop / event ticket ---
+### Optional counter guard: set metadata.capacity_limit to cap total booked
+### quantity for the container.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+{
+  "booking_type": "AIRLINE_SEAT",
+  "booking_mode": "CAPACITY",
+  "resource_type": "flight",
+  "resource_id": "22222222-2222-2222-2222-222222222222",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 320.00,
+  "currency": "USD",
+  "status": "PENDING",
+  "booking_reference": "BOOKING-CAPACITY-001",
+  "metadata": { "capacity_limit": 180 },
+  "capacity": {
+    "container_id": "22222222-2222-2222-2222-222222222222",
+    "quantity": 2
+  }
+}
+
+### --- RECURRENCE mode: weekly cleaning / transit pass / parking permit ---
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+{
+  "booking_type": "CLEANING_SERVICE",
+  "booking_mode": "RECURRENCE",
+  "resource_type": "cleaner",
+  "resource_id": "33333333-3333-3333-3333-333333333333",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 400.00,
+  "currency": "USD",
+  "status": "PENDING",
+  "booking_reference": "BOOKING-RECURRENCE-001",
+  "recurrence": {
+    "rrule": "FREQ=WEEKLY;BYDAY=MO",
+    "valid_from": "2026-10-01T09:00:00",
+    "valid_to": "2026-12-31T09:00:00"
+  }
+}
+
+### --- APPROVAL mode: request-to-book / emergency plumbing / gated beta ---
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+{
+  "booking_type": "REQUEST_TO_BOOK",
+  "booking_mode": "APPROVAL",
+  "resource_type": "apartment",
+  "resource_id": "44444444-4444-4444-4444-444444444444",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 900.00,
+  "currency": "USD",
+  "status": "PENDING",
+  "booking_reference": "BOOKING-APPROVAL-001",
+  "approval": {
+    "hold_expires_at": "2026-10-05T00:00:00"
+  }
+}
+
+### --- QUEUE mode: restaurant waitlist / beta waitlist ---
+### Position is assigned automatically per queue_key.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+{
+  "booking_type": "RESTAURANT_WAITLIST",
+  "booking_mode": "QUEUE",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 0.00,
+  "currency": "USD",
+  "status": "PENDING",
+  "booking_reference": "BOOKING-QUEUE-001",
+  "queue": {
+    "queue_key": "restaurant:55555555-5555-5555-5555-555555555555"
+  }
+}
+
+### --- DISPATCH mode: food/courier delivery / on-demand plumbing ---
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+{
+  "booking_type": "FOOD_DELIVERY",
+  "booking_mode": "DISPATCH",
+  "user_id": "87654321-4321-4321-4321-210987654221",
+  "total_amount": 25.00,
+  "currency": "USD",
+  "status": "PENDING",
+  "booking_reference": "BOOKING-DISPATCH-001",
+  "dispatch": {
+    "pickup_location": { "lat": 40.7128, "lng": -74.0060, "label": "Restaurant" },
+    "dropoff_location": { "lat": 40.7306, "lng": -73.9352, "label": "Home" }
+  }
 }
 
 ### Get booking by ID
@@ -27,18 +154,51 @@ GET {{baseUrl}}/bookings/{{bookingId}}
 Origin: {{origin}}
 baggage: {{baggage}}
 
+### Get booking by ID with line items
+GET {{baseUrl}}/bookings/{{bookingId}}?includes=items
+Origin: {{origin}}
+baggage: {{baggage}}
 
-### List all bookings with filters
+### Get booking by ID with its mode data (WINDOW)
+GET {{baseUrl}}/bookings/{{bookingId}}?includes=window
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Get booking by ID with items + mode data combined
+GET {{baseUrl}}/bookings/{{bookingId}}?includes=items,capacity
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Includes for the other modes
+# ?includes=recurrence | ?includes=approval | ?includes=queue | ?includes=dispatch
+GET {{baseUrl}}/bookings/{{bookingId}}?includes=dispatch
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### List all bookings
 GET {{baseUrl}}/bookings
 Origin: {{origin}}
 baggage: {{baggage}}
 
-
-### List all bookings with filters
-GET {{baseUrl}}/bookings?status=li|PENDING1
+### List bookings with mode data eager-loaded
+GET {{baseUrl}}/bookings?includes=window
 Origin: {{origin}}
 baggage: {{baggage}}
 
+### Filter bookings by status
+GET {{baseUrl}}/bookings?status=eq|PENDING
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Filter bookings by type
+GET {{baseUrl}}/bookings?booking_type=eq|HOTEL_ROOM
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Filter bookings by resource
+GET {{baseUrl}}/bookings?resource_type=eq|room&resource_id=eq|12345678-1234-1234-1234-123456789022
+Origin: {{origin}}
+baggage: {{baggage}}
 
 ### Update booking
 PATCH {{baseUrl}}/bookings/{{bookingId}}
@@ -47,43 +207,71 @@ Origin: {{origin}}
 baggage: {{baggage}}
 
 {
-  "status": "CONFIRMED"
+  "status": "CONFIRMED",
+  "payment_status": "SUCCESS"
 }
 
-### Delete booking
-DELETE {{baseUrl}}/bookings/6c1303c9-3f43-4538-ada1-5d2402787732
+### Delete booking (SOFT-DELETE: sets status=CANCELLED, keeps row + history)
+DELETE {{baseUrl}}/bookings/{{bookingId}}
 Origin: {{origin}}
 baggage: {{baggage}}
 
-### Create booking seat
-POST {{baseUrl}}/booking-seats
+### Get booking lifecycle history
+GET {{baseUrl}}/bookings/{{bookingId}}/history
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Get booking history, newest first
+GET {{baseUrl}}/bookings/{{bookingId}}/history?order_name=created_at&order_direction=1
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Filter booking history by event type
+GET {{baseUrl}}/bookings/{{bookingId}}/history?event_type=eq|STATUS_CHANGED
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### =====================================================================
+### Booking Items — concrete units within a booking
+### item_type: seat | table | room | car | desk | slot
+### =====================================================================
+
+### Create booking item
+POST {{baseUrl}}/booking-items
 Content-Type: application/json
 Origin: {{origin}}
 baggage: {{baggage}}
 
 {
   "booking_id": "{{bookingId}}",
-  "seat_id": "11111111-1111-1111-1111-111111111112",
-  "price": 75.25
+  "item_type": "seat",
+  "item_id": "11111111-1111-1111-1111-111111111112",
+  "price": 75.25,
+  "metadata": { "row": "12", "seat": "A" }
 }
 
-### Get booking seat by ID
-GET {{baseUrl}}/booking-seats/{{bookingSeatId}}
+### Get booking item by ID
+GET {{baseUrl}}/booking-items/{{bookingItemId}}
 Origin: {{origin}}
 baggage: {{baggage}}
 
-### List all booking seats
-GET {{baseUrl}}/booking-seats
+### List all booking items
+GET {{baseUrl}}/booking-items
 Origin: {{origin}}
 baggage: {{baggage}}
 
-### Search all booking seats
-GET {{baseUrl}}/booking-seats?price=le|300
+### Filter booking items by booking
+GET {{baseUrl}}/booking-items?booking_id=eq|{{bookingId}}
 Origin: {{origin}}
 baggage: {{baggage}}
 
-### Update booking seat
-PATCH {{baseUrl}}/booking-seats/{{bookingSeatId}}
+### Search booking items by price
+GET {{baseUrl}}/booking-items?price=le|300
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Update booking item
+PATCH {{baseUrl}}/booking-items/{{bookingItemId}}
 Content-Type: application/json
 Origin: {{origin}}
 baggage: {{baggage}}
@@ -92,7 +280,7 @@ baggage: {{baggage}}
   "price": 80.00
 }
 
-### Delete booking seat
-DELETE {{baseUrl}}/booking-seats/6090b514-38df-487f-80d5-faf15b53ceeb
+### Delete booking item
+DELETE {{baseUrl}}/booking-items/6090b514-38df-487f-80d5-faf15b53ceeb
 Origin: {{origin}}
 baggage: {{baggage}}

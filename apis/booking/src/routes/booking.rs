@@ -10,6 +10,7 @@ use features_booking_model::{
     booking::{
         BookingData, BookingDataFilterParams, BookingForCreateRequest, BookingForUpdateRequest,
     },
+    booking_history::BookingHistoryData,
     state::{BookingAppState, BookingCacheState},
 };
 
@@ -23,6 +24,7 @@ use shared_shared_data_app::{
 use shared_shared_data_core::{
     order::Order,
     paging::{Pagination, QueryResult, QueryResultResponse},
+    query_params::QueryParams,
 };
 
 use crate::permission::{CanCreateBooking, CanDeleteBooking, CanReadBooking, CanUpdateBooking};
@@ -41,10 +43,10 @@ const TAG: &str = "booking";
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn create_booking(
-    _auth: Auth<CanCreateBooking>,
+    auth: Auth<CanCreateBooking>,
     ValidJson(req): ValidJson<BookingForCreateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    let booking_id = BookingService::create_booking(req).await?;
+    let booking_id = BookingService::create_booking(req, auth.user_id()).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
@@ -62,8 +64,9 @@ async fn create_booking(
 async fn get_booking(
     _auth: Auth<CanReadBooking>,
     Path(booking_id): Path<Uuid>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<BookingData>> {
-    let booking = BookingService::get_booking_by_id(booking_id).await?;
+    let booking = BookingService::get_booking_by_id(booking_id, &query_params).await?;
     Ok(ResponseJson(booking))
 }
 
@@ -85,11 +88,12 @@ async fn filter_bookings(
     query_pagination: Query<Pagination>,
     query_order: Query<Order>,
     filter_params: FilterParams<BookingDataFilterParams>,
+    Query(query_params): Query<QueryParams>,
 ) -> Result<ResponseJson<QueryResult<BookingData>>> {
     let pagination = query_pagination.0;
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
-    let result = BookingService::get_bookings(&filters, &pagination, &order).await?;
+    let result = BookingService::get_bookings(&filters, &pagination, &order, &query_params).await?;
     Ok(ResponseJson(result))
 }
 
@@ -104,11 +108,11 @@ async fn filter_bookings(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn update_booking(
-    _auth: Auth<CanUpdateBooking>,
+    auth: Auth<CanUpdateBooking>,
     Path(booking_id): Path<Uuid>,
     ValidJson(req): ValidJson<BookingForUpdateRequest>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingService::update_booking(booking_id, req).await?;
+    BookingService::update_booking(booking_id, req, auth.user_id()).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
@@ -125,14 +129,39 @@ async fn update_booking(
 )]
 #[instrument(level = Level::INFO, skip_all)]
 async fn delete_booking(
-    _auth: Auth<CanDeleteBooking>,
+    auth: Auth<CanDeleteBooking>,
     Path(booking_id): Path<Uuid>,
 ) -> Result<ResponseJson<OkUuid>> {
-    BookingService::delete_booking(booking_id).await?;
+    BookingService::delete_booking(booking_id, auth.user_id()).await?;
     Ok(ResponseJson(OkUuid {
         ok: true,
         id: Some(booking_id),
     }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/bookings/{booking_id}/history",
+    tag = TAG,
+    params(
+        Order,
+        Pagination
+    ),
+    responses(
+        (status = 200, description = "Booking lifecycle history", body = QueryResultResponse<BookingHistoryData>),
+    )
+)]
+#[instrument(level = Level::INFO, skip_all)]
+async fn get_booking_history(
+    _auth: Auth<CanReadBooking>,
+    Path(booking_id): Path<Uuid>,
+    query_pagination: Query<Pagination>,
+    query_order: Query<Order>,
+) -> Result<ResponseJson<QueryResult<BookingHistoryData>>> {
+    let pagination = query_pagination.0;
+    let order = query_order.0;
+    let result = BookingService::get_booking_history(booking_id, &pagination, &order).await?;
+    Ok(ResponseJson(result))
 }
 
 pub fn routes(app_state: &AppState<BookingAppState, BookingCacheState>) -> Router {
@@ -142,5 +171,6 @@ pub fn routes(app_state: &AppState<BookingAppState, BookingCacheState>) -> Route
         .route("/bookings/{booking_id}", get(get_booking))
         .route("/bookings/{booking_id}", patch(update_booking))
         .route("/bookings/{booking_id}", delete(delete_booking))
+        .route("/bookings/{booking_id}/history", get(get_booking_history))
         .with_state(app_state.clone())
 }

@@ -17,7 +17,7 @@ use features_booking_model::state::{BookingAppState, BookingCacheState};
 
 use crate::{
     doc::ApiDoc,
-    routes::{booking::routes as booking_routes, booking_seat::routes as booking_seat_routes},
+    routes::{booking::routes as booking_routes, booking_item::routes as booking_item_routes},
 };
 
 struct MyApp<'a> {
@@ -75,7 +75,7 @@ impl<'a> StartApp<BookingAppState, BookingCacheState> for MyApp<'a> {
     fn routes(&self, app_state: &AppState<BookingAppState, BookingCacheState>) -> Router {
         let all_routes = Router::new()
             .merge(booking_routes(app_state))
-            .merge(booking_seat_routes(app_state))
+            .merge(booking_item_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }

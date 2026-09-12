@@ -13,6 +13,7 @@ sea-orm = { workspace = true , features = ["sqlx-postgres"]}
 tracing = { workspace = true }
 uuid = { workspace = true }
 
+shared-shared-config = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 

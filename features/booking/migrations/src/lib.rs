@@ -1,7 +1,7 @@
 pub use sea_orm_migration::prelude::{async_trait, MigrationTrait, MigratorTrait};
 
 pub mod m20260212_000001_create_booking_tables;
-pub mod m20260213_000001_add_currency_to_bookings;
+pub mod m20260214_000001_create_booking_history;
 
 pub struct Migrator;
 
@@ -10,7 +10,7 @@ impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         vec![
             Box::new(m20260212_000001_create_booking_tables::Migration),
-            Box::new(m20260213_000001_add_currency_to_bookings::Migration),
+            Box::new(m20260214_000001_create_booking_history::Migration),
         ]
     }
 }

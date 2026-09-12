@@ -14,12 +14,12 @@ define_resource_perms! {
     CanDeleteBooking => (DELETE, BOOKING_RESOURCE)
 }
 
-// SEAT Permission
-const SEAT_RESOURCE: &str = "BOOKING:SEAT";
+// ITEM Permission (booking line items: seats, tables, rooms, cars, slots, ...)
+const ITEM_RESOURCE: &str = "BOOKING:ITEM";
 
 define_resource_perms! {
-    CanCreateSeat => (CREATE, SEAT_RESOURCE),
-    CanReadSeat => (READ, SEAT_RESOURCE),
-    CanUpdateSeat => (UPDATE, SEAT_RESOURCE),
-    CanDeleteSeat => (DELETE, SEAT_RESOURCE)
+    CanCreateItem => (CREATE, ITEM_RESOURCE),
+    CanReadItem => (READ, ITEM_RESOURCE),
+    CanUpdateItem => (UPDATE, ITEM_RESOURCE),
+    CanDeleteItem => (DELETE, ITEM_RESOURCE)
 }
