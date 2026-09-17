@@ -10,13 +10,18 @@ path = "src/lib.rs"
 
 [dependencies]
 sea-orm = { workspace = true , features = ["sqlx-postgres"]}
+chrono = { workspace = true }
+rand = { workspace = true }
+sha2 = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
 shared-shared-config = { workspace = true }
+shared-shared-app = { workspace = true }
 shared-shared-data-core = { workspace = true }
 shared-shared-data-error = { workspace = true }
 
 features-booking-entities = { workspace = true }
 features-booking-model = { workspace = true }
 features-booking-repo = { workspace = true }
+features-booking-stream = { workspace = true }

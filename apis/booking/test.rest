@@ -284,3 +284,149 @@ baggage: {{baggage}}
 DELETE {{baseUrl}}/booking-items/6090b514-38df-487f-80d5-faf15b53ceeb
 Origin: {{origin}}
 baggage: {{baggage}}
+
+
+### =====================================================================
+### Guest Booking API — unauthenticated event booking + promotion
+###
+### Flow:
+###   1. Guest browses events (event service) and picks seats.
+###   2. POST /public/guest-bookings          -> create guest booking (PENDING)
+###      One booking item is created per entry in `seats`.
+###      A one-time confirm token is generated server-side; only its hash is
+###      stored. The plaintext token is NOT returned here — it is published to
+###      the booking Kafka topic (event_type=guest_booking_confirm_token) and
+###      delivered to the guest by email (separate consumer feature).
+###      The booking has a 20-minute confirmation window (`expires_at`).
+###   3. POST .../{id}/confirm                 -> guest booking CONFIRMED
+###      Requires the emailed `confirm_token` (no OAuth, but token-gated).
+###      Rejected (status -> EXPIRED) if the 20-minute window has elapsed.
+###      On success, starts a 1-hour payment window (`payment_expires_at`).
+###   4. After OAuth login + payment:
+###      POST /guest-bookings/{id}/promote     -> real booking + booking_items
+###                                              (AUTH required; needs baggage)
+###      Rejected (status -> PAYMENT_EXPIRED) if the 1-hour window has elapsed.
+###
+### Security: the confirm endpoint is public (no OAuth) but authorized by a
+### 256-bit one-time token delivered out-of-band (email). Only its SHA-256 hash
+### is stored server-side, and the presented token is compared in constant time.
+### Knowing the booking id alone is NOT enough to confirm.
+###
+### The /public/* routes require NO baggage header (exempt from the
+### require_baggage_header middleware). The promote route DOES require it.
+### =====================================================================
+
+@guestBookingId = 00000000-0000-0000-0000-000000000000
+@eventId = ffbaa1ea-af8c-43b6-ab85-95dfa8c808b9
+# Paste the token delivered to the guest email (from the Kafka event) here:
+@confirmToken = REPLACE_WITH_EMAILED_TOKEN
+
+### Create guest booking (PUBLIC, no baggage) — one item per seat
+### Response body.data: { ok, id }  (NO token; token is emailed out-of-band)
+# @name createGuestBooking
+POST {{baseUrl}}/public/guest-bookings
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "event_id": "{{eventId}}",
+  "site_origin": "https://site-a.com",
+  "confirm_path": "/path/confirm_booking",
+  "guest_email": "guest@example.com",
+  "guest_name": "Jane Guest",
+  "currency": "USD",
+  "metadata": { "source": "web" },
+  "seats": [
+    { "item_id": "11111111-1111-1111-1111-111111111101", "item_type": "seat", "price": 75.00, "metadata": { "row": "A", "seat": "1" } },
+    { "item_id": "11111111-1111-1111-1111-111111111102", "item_type": "seat", "price": 75.00, "metadata": { "row": "A", "seat": "2" } }
+  ]
+}
+
+### Captured booking id from the create response (adjust to your envelope).
+@guestBookingIdFromCreate = {{createGuestBooking.response.body.data.id}}
+
+### Get guest booking by ID (PUBLIC) — note: confirm token is NEVER returned here
+GET {{baseUrl}}/public/guest-bookings/{{guestBookingIdFromCreate}}
+Origin: {{origin}}
+
+### Get guest booking with seat items (PUBLIC)
+GET {{baseUrl}}/public/guest-bookings/{{guestBookingIdFromCreate}}?includes=items
+Origin: {{origin}}
+
+### Confirm guest booking (PUBLIC) — requires the emailed one-time confirm_token
+POST {{baseUrl}}/public/guest-bookings/{{guestBookingIdFromCreate}}/confirm
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "confirm_token": "{{confirmToken}}",
+  "metadata": { "confirmed_via": "web" }
+}
+
+### Negative: confirm with a WRONG token (should fail — insufficient permission)
+POST {{baseUrl}}/public/guest-bookings/{{guestBookingIdFromCreate}}/confirm
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "confirm_token": "0000000000000000000000000000000000000000000000000000000000000000"
+}
+
+### Negative: confirm with a MISSING token (should fail validation)
+POST {{baseUrl}}/public/guest-bookings/{{guestBookingIdFromCreate}}/confirm
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "metadata": { "confirmed_via": "web" }
+}
+
+### Promote guest booking -> real booking (AUTHENTICATED; requires baggage)
+### Run after OAuth login + payment. Binds the real booking to the auth user.
+POST {{baseUrl}}/guest-bookings/{{guestBookingIdFromCreate}}/promote
+Content-Type: application/json
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Verify the promoted (real) booking with its items
+### Use the id returned by the promote call.
+GET {{baseUrl}}/bookings/2b2f611e-da33-4403-8635-ee20082010ea?includes=items,capacity
+Origin: {{origin}}
+baggage: {{baggage}}
+
+### Negative: promote without baggage (should fail — auth required)
+POST {{baseUrl}}/guest-bookings/{{guestBookingIdFromCreate}}/promote
+Content-Type: application/json
+Origin: {{origin}}
+
+### Negative: create with no seats (should fail validation)
+POST {{baseUrl}}/public/guest-bookings
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "event_id": "{{eventId}}",
+  "site_origin": "https://site-a.com",
+  "guest_email": "guest@example.com",
+  "currency": "USD",
+  "seats": []
+}
+
+### Negative: create with a disallowed site_origin (should fail — not allowlisted)
+### Server allowlist comes from env GUEST_BOOKING_ALLOWED_ORIGINS (comma-separated).
+POST {{baseUrl}}/public/guest-bookings
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "event_id": "{{eventId}}",
+  "site_origin": "https://evil.example.com",
+  "guest_email": "guest@example.com",
+  "currency": "USD",
+  "seats": [
+    { "item_id": "11111111-1111-1111-1111-111111111101", "item_type": "seat", "price": 75.00 }
+  ]
+}
+
+
+

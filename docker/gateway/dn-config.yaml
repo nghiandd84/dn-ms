@@ -439,6 +439,14 @@ gateways:
         filter: booking_router_filter
         config:
           allowed_domains: localhost
+      - name: booking_rate_limiter
+        type: rate_limiter
+        enabled: true
+        filter: booking_router_filter
+        config:
+          capacity: 5
+          refill_rate: 2
+          refill_interval: 10
 
       # Email Template
       - name: email_template_cors

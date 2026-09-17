@@ -38,3 +38,4 @@ features-booking-model = { workspace = true }
 features-booking-entities = { workspace = true }
 features-booking-repo = { workspace = true }
 features-booking-service = { workspace = true }
+features-booking-stream = { workspace = true }

@@ -8,16 +8,24 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use shared_shared_app::{
-    config::AppConfig, discovery::get_consul_client, start_app::StartApp, state::AppState,
+    config::AppConfig,
+    discovery::get_consul_client,
+    event_task::producer::{Producer, ProducerConfig},
+    start_app::StartApp,
+    state::AppState,
 };
 use shared_shared_config::db::Database;
 
 use features_booking_migrations::{Migrator, MigratorTrait};
 use features_booking_model::state::{BookingAppState, BookingCacheState};
+use features_booking_stream::PRODUCER_KEY;
 
 use crate::{
     doc::ApiDoc,
-    routes::{booking::routes as booking_routes, booking_item::routes as booking_item_routes},
+    routes::{
+        booking::routes as booking_routes, booking_item::routes as booking_item_routes,
+        guest_booking::routes as guest_booking_routes,
+    },
 };
 
 struct MyApp<'a> {
@@ -34,7 +42,17 @@ impl<'a> StartApp<BookingAppState, BookingCacheState> for MyApp<'a> {
         app_state: &mut AppState<BookingAppState, BookingCacheState>,
     ) -> impl std::future::Future<Output = Result<(), Box<dyn std::error::Error>>> {
         let mut clone_app_state = app_state.clone();
+        let app_key = self.config.app_key.clone();
         async move {
+            // Kafka producer for the booking topic (guest-booking confirm-token events).
+            let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
+            let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
+            let producer_config =
+                ProducerConfig::from_env(kafka_server_env, kafka_topic_env);
+            debug!("Creating Kafka producer with config {:?}", producer_config);
+            let producer = Producer::from_config(producer_config).await;
+            clone_app_state.set_producer(PRODUCER_KEY.to_string(), producer);
+
             spawn(async move {
                 let service_key = "BOOKING".to_string();
                 let mut interval = interval(Duration::from_secs(30));
@@ -76,6 +94,7 @@ impl<'a> StartApp<BookingAppState, BookingCacheState> for MyApp<'a> {
         let all_routes = Router::new()
             .merge(booking_routes(app_state))
             .merge(booking_item_routes(app_state))
+            .merge(guest_booking_routes(app_state))
             .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
         all_routes
     }

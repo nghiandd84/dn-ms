@@ -36,6 +36,7 @@ members = [
     "features/booking/migrations", 
     "features/booking/repo", 
     "features/booking/service", 
+    "features/booking/stream", 
 
     "features/event/entities", 
     "features/event/migrations", 
@@ -290,6 +291,7 @@ features-booking-model = { path = "./features/booking/model"}
 features-booking-migrations = { path = "./features/booking/migrations"}
 features-booking-repo = { path = "./features/booking/repo"}
 features-booking-service = { path = "./features/booking/service"}
+features-booking-stream = { path = "./features/booking/stream"}
 
 # Event Feature
 features-event-entities = { path = "./features/event/entities"}

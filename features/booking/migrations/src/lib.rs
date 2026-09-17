@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::{async_trait, MigrationTrait, MigratorTrait}
 
 pub mod m20260212_000001_create_booking_tables;
 pub mod m20260214_000001_create_booking_history;
+pub mod m20260216_000001_create_guest_booking_tables;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20260212_000001_create_booking_tables::Migration),
             Box::new(m20260214_000001_create_booking_history::Migration),
+            Box::new(m20260216_000001_create_guest_booking_tables::Migration),
         ]
     }
 }

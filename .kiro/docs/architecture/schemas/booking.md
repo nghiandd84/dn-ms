@@ -91,6 +91,36 @@ erDiagram
         jsonb metadata
         timestamp created_at
     }
+    guest_bookings {
+        uuid id PK
+        uuid event_id
+        varchar site_origin
+        varchar confirm_path
+        varchar guest_email
+        varchar guest_name
+        real total_amount
+        varchar currency
+        varchar status
+        varchar booking_reference
+        varchar confirm_token_hash
+        timestamp expires_at
+        timestamp payment_expires_at
+        jsonb metadata
+        uuid promoted_booking_id
+        timestamp created_at
+        timestamp updated_at
+        timestamp confirmed_at
+    }
+    guest_booking_items {
+        uuid id PK
+        uuid guest_booking_id FK
+        varchar item_type
+        uuid item_id
+        real price
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+    }
     bookings ||--o{ booking_items : "has items"
     bookings ||--o| booking_windows : "WINDOW"
     bookings ||--o| booking_capacity : "CAPACITY"
@@ -99,6 +129,8 @@ erDiagram
     bookings ||--o| booking_queue : "QUEUE"
     bookings ||--o| booking_dispatch : "DISPATCH"
     bookings ||--o{ booking_history : "history"
+    guest_bookings ||--o{ guest_booking_items : "has items"
+    guest_bookings ||..o| bookings : "promoted_booking_id"
 ```
 
 ## Database Schema (booking)
@@ -227,6 +259,54 @@ Index: `idx_booking_queue_key_pos (queue_key, position)`.
 | eta              | timestamp |             | NULL        |
 
 Index: `idx_booking_dispatch_provider (provider_id, dispatch_state)`.
+
+### Guest booking
+
+Unauthenticated event booking that is later promoted into a real `bookings` row.
+See `dev/guest-booking-flow.md` for the full flow, security model, and windows.
+
+#### guest_bookings
+| Column              | Type         | Default           | Constraints  |
+|---------------------|--------------|-------------------|--------------|
+| id                  | uuid         | gen_random_uuid() | PK, NOT NULL |
+| event_id            | uuid         |                   | NOT NULL     |
+| site_origin         | varchar      |                   | NOT NULL (allowlist-validated) |
+| confirm_path        | varchar(255) |                   | NOT NULL     |
+| guest_email         | varchar      |                   | NOT NULL     |
+| guest_name          | varchar      |                   | NULL         |
+| total_amount        | real         | 0                 | NOT NULL     |
+| currency            | varchar      | 'USD'             | NOT NULL     |
+| status              | varchar      | 'PENDING'         | NOT NULL (PENDING, CONFIRMED, PROMOTED, CANCELLED, EXPIRED, PAYMENT_EXPIRED) |
+| booking_reference   | varchar(100) |                   | NOT NULL     |
+| confirm_token_hash  | varchar(64)  |                   | NULL (SHA-256 hex of one-time token; plaintext never stored) |
+| expires_at          | timestamp    |                   | NOT NULL (confirm deadline = created_at + 20min) |
+| payment_expires_at  | timestamp    |                   | NULL (payment deadline = confirmed_at + 60min) |
+| metadata            | jsonb        |                   | NULL         |
+| promoted_booking_id | uuid         |                   | NULL (set on promotion → bookings(id)) |
+| created_at          | timestamp    | CURRENT_TIMESTAMP | NOT NULL     |
+| updated_at          | timestamp    | CURRENT_TIMESTAMP | NOT NULL     |
+| confirmed_at        | timestamp    |                   | NULL         |
+
+Indexes: `idx_guest_bookings_event (event_id)`, `idx_guest_bookings_status (status)`,
+`idx_guest_bookings_reference (booking_reference)`,
+`idx_guest_bookings_status_expires (status, expires_at)`.
+
+#### guest_booking_items (one row per selected seat)
+| Column           | Type      | Default           | Constraints                        |
+|------------------|-----------|-------------------|------------------------------------|
+| id               | uuid      | gen_random_uuid() | PK, NOT NULL                       |
+| guest_booking_id | uuid      |                   | NOT NULL, FK → guest_bookings(id)  |
+| item_type        | varchar   |                   | NOT NULL (e.g. "seat")             |
+| item_id          | uuid      |                   | NOT NULL                           |
+| price            | real      |                   | NOT NULL                           |
+| metadata         | jsonb     |                   | NULL                               |
+| created_at       | timestamp | CURRENT_TIMESTAMP | NOT NULL                           |
+| updated_at       | timestamp | CURRENT_TIMESTAMP | NOT NULL                           |
+
+Indexes: `idx_guest_booking_items_guest_booking (guest_booking_id)`,
+`idx_guest_booking_items_unit (item_type, item_id)`. FK cascade: `ON DELETE CASCADE`.
+
+Migration: `m20260216_000001_create_guest_booking_tables`.
 
 #### seaql_migrations
 | Column     | Type    | Constraints |
