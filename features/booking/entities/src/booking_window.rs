@@ -10,7 +10,10 @@ use crate::booking;
 /// (car rentals, equipment, hotel rooms, tables, desks, appointments)
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "booking_windows")]
-#[dto(name(BookingWindowForCreate), columns(booking_id, starts_at, ends_at, party_size))]
+#[dto(
+    name(BookingWindowForCreate),
+    columns(booking_id, starts_at, ends_at, party_size)
+)]
 #[dto(
     name(BookingWindowForUpdate),
     columns(starts_at, ends_at, party_size),

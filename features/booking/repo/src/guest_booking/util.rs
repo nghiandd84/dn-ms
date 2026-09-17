@@ -6,7 +6,11 @@ use features_booking_entities::guest_booking::{ActiveModel, ModelOptionDto};
 
 pub fn assign(mut active_model: ActiveModel, model_option: ModelOptionDto) -> ActiveModel {
     set_if_some!(active_model.id, model_option.id);
-    set_if_some!(active_model.event_id, model_option.event_id);
+    set_if_some!(active_model.booking_type, model_option.booking_type);
+    set_if_some!(active_model.booking_mode, model_option.booking_mode);
+    set_if_some!(active_model.resource_type, model_option.resource_type);
+    set_if_some!(active_model.resource_id, model_option.resource_id);
+    set_if_some!(active_model.external_ref, model_option.external_ref);
     set_if_some!(active_model.site_origin, model_option.site_origin);
     set_if_some!(active_model.confirm_path, model_option.confirm_path);
     set_if_some!(active_model.guest_email, model_option.guest_email);

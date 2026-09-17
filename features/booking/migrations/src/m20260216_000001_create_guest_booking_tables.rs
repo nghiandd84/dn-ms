@@ -26,10 +26,34 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
+                    // classification
                     .col(
-                        ColumnDef::new(guest_booking::Column::EventId)
+                        ColumnDef::new(guest_booking::Column::BookingType)
+                            .string()
+                            .not_null()
+                            .default("EVENT"),
+                    )
+                    .col(
+                        ColumnDef::new(guest_booking::Column::BookingMode)
+                            .string()
+                            .not_null()
+                            .default("CAPACITY"),
+                    )
+                    // polymorphic target (owned by another service)
+                    .col(
+                        ColumnDef::new(guest_booking::Column::ResourceType)
+                            .string()
+                            .null(),
+                    )
+                    .col(
+                        ColumnDef::new(guest_booking::Column::ResourceId)
                             .uuid()
-                            .not_null(),
+                            .null(),
+                    )
+                    .col(
+                        ColumnDef::new(guest_booking::Column::ExternalRef)
+                            .string()
+                            .null(),
                     )
                     .col(
                         ColumnDef::new(guest_booking::Column::SiteOrigin)
@@ -123,9 +147,10 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx_guest_bookings_event")
+                    .name("idx_guest_bookings_resource")
                     .table(guest_booking::Entity)
-                    .col(guest_booking::Column::EventId)
+                    .col(guest_booking::Column::ResourceType)
+                    .col(guest_booking::Column::ResourceId)
                     .to_owned(),
             )
             .await?;

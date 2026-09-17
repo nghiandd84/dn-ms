@@ -57,7 +57,11 @@ impl BookingQuery {
             BookingQueryManager::filter(pagination, order, filters).await?
         } else {
             BookingQueryManager::filter_with_related_entities(
-                pagination, order, filters, &includes, &vec![],
+                pagination,
+                order,
+                filters,
+                &includes,
+                &vec![],
             )
             .await?
         };

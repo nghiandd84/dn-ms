@@ -8,5 +8,6 @@ pub mod booking_queue;
 pub mod booking_recurrence;
 pub mod booking_window;
 pub mod guest_booking;
+pub mod guest_booking_history;
 pub mod guest_booking_item;
 pub mod state;

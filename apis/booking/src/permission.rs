@@ -23,3 +23,13 @@ define_resource_perms! {
     CanUpdateItem => (UPDATE, ITEM_RESOURCE),
     CanDeleteItem => (DELETE, ITEM_RESOURCE)
 }
+
+// GUEST BOOKING Permission (admin management of guest bookings)
+const GUEST_BOOKING_RESOURCE: &str = "BOOKING:GUEST_BOOKING";
+
+define_resource_perms! {
+    CanCreateGuestBooking => (CREATE, GUEST_BOOKING_RESOURCE),
+    CanReadGuestBooking => (READ, GUEST_BOOKING_RESOURCE),
+    CanUpdateGuestBooking => (UPDATE, GUEST_BOOKING_RESOURCE),
+    CanDeleteGuestBooking => (DELETE, GUEST_BOOKING_RESOURCE)
+}

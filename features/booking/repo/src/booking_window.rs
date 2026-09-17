@@ -8,9 +8,7 @@ use uuid::Uuid;
 use shared_shared_config::db::DB_READ;
 use shared_shared_data_error::app::AppError;
 
-use features_booking_entities::booking::{
-    Column as BookingColumn, Entity as BookingEntity,
-};
+use features_booking_entities::booking::{Column as BookingColumn, Entity as BookingEntity};
 use features_booking_entities::booking_window::{
     BookingWindowForCreateDto, Column, Entity, Model, ModelOptionDto,
 };
@@ -76,7 +74,9 @@ impl BookingWindowMutation {
 pub struct BookingWindowQuery;
 
 impl BookingWindowQuery {
-    pub async fn get_by_booking_id(booking_id: Uuid) -> Result<Option<BookingWindowData>, AppError> {
+    pub async fn get_by_booking_id(
+        booking_id: Uuid,
+    ) -> Result<Option<BookingWindowData>, AppError> {
         let db = DB_READ.get().expect("DB_READ not initialized");
         let model = Entity::find_by_id(booking_id)
             .one(db.as_ref())

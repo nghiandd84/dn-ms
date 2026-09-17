@@ -12,16 +12,26 @@ use crate::guest_booking_item::Model as GuestBookingItemModel;
 
 /// Guest booking record.
 ///
-/// Holds an event booking made by an unauthenticated guest. After the guest
-/// confirms and pays (via OAuth), a guest booking is *promoted* into a real
-/// `bookings` row (+ `booking_items`), and `promoted_booking_id` is set while
-/// `status` transitions to PROMOTED.
+/// Holds a booking made by an unauthenticated guest. After the guest confirms
+/// and pays (via OAuth), a guest booking is *promoted* into a real `bookings`
+/// row (+ `booking_items`), and `promoted_booking_id` is set while `status`
+/// transitions to PROMOTED.
+///
+/// What is being booked is expressed polymorphically via `resource_type` +
+/// `resource_id` (mirroring the core `bookings` table), so a guest booking is
+/// not limited to events — it can target rooms, cars, tables, appointments,
+/// etc. `booking_type` classifies the booking and `booking_mode` selects the
+/// reservation strategy applied on promotion (defaults to CAPACITY).
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "guest_bookings")]
 #[dto(
     name(GuestBookingForCreate),
     columns(
-        event_id,
+        booking_type,
+        booking_mode,
+        resource_type,
+        resource_id,
+        external_ref,
         site_origin,
         confirm_path,
         guest_email,
@@ -55,8 +65,27 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
 
-    // target event (owned by the event service)
-    pub event_id: Uuid,
+    // classification
+    /// What kind of booking this is, e.g. EVENT, HOTEL_ROOM, CAR_RENTAL,
+    /// APPOINTMENT, WORKSHOP, ...
+    pub booking_type: String,
+    /// Reservation strategy applied when the guest booking is promoted into a
+    /// real booking: WINDOW | CAPACITY | RECURRENCE | APPROVAL | QUEUE |
+    /// DISPATCH. Defaults to CAPACITY.
+    pub booking_mode: String,
+
+    // polymorphic target (owned by another service)
+    /// Kind of target, e.g. event, room, car, table, doctor, desk, ...
+    #[sea_orm(nullable)]
+    pub resource_type: Option<String>,
+    /// Concrete target id in the owning service.
+    #[sea_orm(nullable)]
+    pub resource_id: Option<Uuid>,
+    /// Opaque external identifier for the target when it has no UUID (non-native
+    /// resource, e.g. a slug or vendor id). Used only when `resource_id` cannot
+    /// carry the reference.
+    #[sea_orm(nullable)]
+    pub external_ref: Option<String>,
 
     /// Origin (scheme + host[:port]) of the front-end site the guest booked
     /// from, e.g. `https://site-a.com`. Validated against an allowlist at

@@ -46,9 +46,7 @@ impl BookingQueueMutation {
 pub struct BookingQueueQuery;
 
 impl BookingQueueQuery {
-    pub async fn get_by_booking_id(
-        booking_id: Uuid,
-    ) -> Result<Option<BookingQueueData>, AppError> {
+    pub async fn get_by_booking_id(booking_id: Uuid) -> Result<Option<BookingQueueData>, AppError> {
         let db = DB_READ.get().expect("DB_READ not initialized");
         let model = Entity::find_by_id(booking_id)
             .one(db.as_ref())

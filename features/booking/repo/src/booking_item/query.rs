@@ -17,7 +17,9 @@ struct BookingItemQueryManager;
 pub struct BookingItemQuery;
 
 impl BookingItemQuery {
-    pub async fn get_booking_item_by_id(booking_item_id: Uuid) -> Result<BookingItemData, AppError> {
+    pub async fn get_booking_item_by_id(
+        booking_item_id: Uuid,
+    ) -> Result<BookingItemData, AppError> {
         let model = BookingItemQueryManager::get_by_id_uuid(booking_item_id).await?;
         Ok(model.into())
     }

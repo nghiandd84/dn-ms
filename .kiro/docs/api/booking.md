@@ -23,6 +23,12 @@ What is being booked is expressed polymorphically via `resource_type` +
 `resource_id` (the target lives in another service). Concrete units within a
 booking (seats, tables, rooms, cars, slots) are stored as **booking items**.
 
+When a target has no UUID (e.g. a slug or vendor id from a non-native service),
+use `external_ref` (an opaque string) instead of `resource_id`. `resource_id`
+stays the native UUID path; `external_ref` is the escape hatch — typically only
+one of the two identifies a given target. Note that CAPACITY promotion needs a
+UUID container, so CAPACITY bookings must use `resource_id`, not `external_ref`.
+
 ### Booking Modes
 
 | Mode | Use cases | Child data | Availability guard |
@@ -53,6 +59,41 @@ A create request must include exactly one mode block matching `booking_mode`.
 - `PATCH /booking-items/{booking_item_id}` — Update an item (Auth: `CanUpdateItem`)
 - `DELETE /booking-items/{booking_item_id}` — Delete an item (Auth: `CanDeleteItem`)
 
+### Guest Bookings
+
+Bookings made by unauthenticated guests, later promoted into real bookings after
+token-gated confirmation and OAuth-authenticated payment. Like core bookings,
+guest bookings are **not event-specific**: they carry `booking_type`,
+`booking_mode`, and a polymorphic `resource_type` + `resource_id`. See
+`dev/guest-booking-flow.md` for the full flow, security model, and timed windows.
+
+**Public flow** (no auth; `/public/*` is exempt from the baggage requirement):
+- `POST /public/guest-bookings` — Create a guest booking (one item per unit)
+- `GET /public/guest-bookings/{id}` — Get a guest booking (`?includes=items`); never returns the token/hash
+- `POST /public/guest-bookings/{id}/confirm` — Confirm within the window (requires the one-time `confirm_token`)
+
+**Authenticated promotion:**
+- `POST /guest-bookings/{id}/promote` — Promote to a real booking after payment (Auth: `CanCreateBooking`)
+
+**Admin management** (authenticated CRUD + search + history):
+- `POST /guest-bookings` — Create a guest booking directly, bypassing the confirm-token/email flow (Auth: `CanCreateGuestBooking`)
+- `GET /guest-bookings` — List/filter guest bookings with pagination (Auth: `CanReadGuestBooking`)
+- `GET /guest-bookings/{id}` — Get a guest booking by ID (Auth: `CanReadGuestBooking`)
+- `PATCH /guest-bookings/{id}` — Update a guest booking (Auth: `CanUpdateGuestBooking`)
+- `DELETE /guest-bookings/{id}` — Cancel a guest booking, **soft-delete** → `CANCELLED` (Auth: `CanDeleteGuestBooking`)
+- `GET /guest-bookings/{id}/history` — Guest booking lifecycle history (Auth: `CanReadGuestBooking`)
+
+Guest-booking history is an append-only log (table `guest_booking_history`)
+recording every lifecycle transition — `CREATED`, `CONFIRMED`, `PROMOTED`,
+`EXPIRED`, `PAYMENT_EXPIRED` (from the public/promote flow) and `STATUS_CHANGED`
+/ `UPDATED` / `CANCELLED` (from admin actions, with `actor_id` set to the admin
+user). Read it the same way as booking history:
+```
+GET /guest-bookings/{id}/history?page=1&page_size=20&order_name=created_at&order_direction=0
+```
+Returns `QueryResultResponse<GuestBookingHistoryData>` (same shape as
+`BookingHistoryData` but keyed by `guest_booking_id`).
+
 ## Create Request
 
 ### Common fields
@@ -62,6 +103,7 @@ A create request must include exactly one mode block matching `booking_mode`.
 | `booking_mode` | enum | `WINDOW`/`CAPACITY`/`RECURRENCE`/`APPROVAL`/`QUEUE`/`DISPATCH` |
 | `resource_type` | String? | e.g. `room`, `flight`, `car` |
 | `resource_id` | UUID? | id in the owning service |
+| `external_ref` | String? | opaque non-UUID target reference; use instead of `resource_id` for resources that have no UUID |
 | `user_id` | UUID | |
 | `total_amount` | f32 (>= 0) | |
 | `currency` | String (3) | ISO 4217 |
@@ -181,6 +223,7 @@ Standard filtering applies, e.g. `?event_type=eq|STATUS_CHANGED`.
 |----------|-------------|
 | `BOOKING:BOOKING` | CREATE, READ, UPDATE, DELETE |
 | `BOOKING:ITEM` | CREATE, READ, UPDATE, DELETE |
+| `BOOKING:GUEST_BOOKING` | CREATE, READ, UPDATE, DELETE (admin management of guest bookings) |
 
 ## Query Parameters
 
@@ -190,6 +233,8 @@ Standard pagination, ordering, field selection, and column filtering apply:
 - `?resource_type=eq|room&resource_id=eq|<uuid>`
 - `?booking_id=eq|<uuid>` (on `/booking-items`)
 - `?price=lte|300` (on `/booking-items`)
+- `?guest_email=eq|guest@example.com` (on `/guest-bookings`)
+- `?event_type=eq|CONFIRMED` (on `/guest-bookings/{id}/history`)
 - `?page=1&page_size=20&order_name=created_at&order_direction=1`
 
 ### Eager-loading related data (`?includes=`)

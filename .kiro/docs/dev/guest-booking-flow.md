@@ -1,21 +1,27 @@
 # Guest Booking Flow
 
-Unauthenticated event booking with token-gated confirmation, timed windows, and
+Unauthenticated booking with token-gated confirmation, timed windows, and
 promotion into a real booking after OAuth-authenticated payment. Part of the
 `booking` feature; reached through the gateway at `/api/booking`.
 
+Guest bookings are **not tied to events**: like core bookings they carry a
+`booking_type` (domain label), a `booking_mode` (promotion strategy, default
+CAPACITY), and a polymorphic target `resource_type` + `resource_id`. So a guest
+can book an event, a hotel room, a car, an appointment, etc. For targets without
+a UUID, an opaque `external_ref` string can be supplied instead of `resource_id`.
+
 ## Overview
 
-A guest (no account) books event seats, confirms via an emailed one-time token,
-authenticates with OAuth to pay, and the guest booking is then **promoted** into
-a real `bookings` + `booking_items` record. One booking item is created per
-seat.
+A guest (no account) books one or more units, confirms via an emailed one-time
+token, authenticates with OAuth to pay, and the guest booking is then
+**promoted** into a real `bookings` + `booking_items` record. One booking item
+is created per selected unit.
 
 ```
 Guest (site-a.com)
   │  POST /api/booking/public/guest-bookings         (public, no auth)
   ▼
-guest_bookings (PENDING)  ── one guest_booking_item per seat
+guest_bookings (PENDING)  ── one guest_booking_item per unit
   │  Kafka: booking topic  event_type=guest_booking_confirm_token
   ▼  (email consumer — separate feature — emails the confirm link)
 Guest clicks emailed link → site confirm page
@@ -27,15 +33,20 @@ guest_bookings (CONFIRMED, confirmed_at set, payment window starts)
   ▼
   POST /api/booking/guest-bookings/{id}/promote     (AUTH: Auth<CanCreateBooking>)
   ▼
-bookings (EVENT / CAPACITY, CONFIRMED) + one booking_item per seat + history
+bookings (booking_type / booking_mode / resource, CONFIRMED) + one booking_item per unit + history
 guest_bookings (PROMOTED, promoted_booking_id set)
 ```
 
+Administrators can also manage guest bookings directly (create/search/update/
+cancel) and read their history — see **Admin management** below.
+
 ## Endpoints
+
+### Public + promotion
 
 | Method | Path | Auth | Purpose |
 |--------|------|------|---------|
-| POST | `/public/guest-bookings` | Public | Create guest booking (one item per seat) |
+| POST | `/public/guest-bookings` | Public | Create guest booking (one item per unit) |
 | GET | `/public/guest-bookings/{id}` | Public | Get guest booking (`?includes=items`); never returns the token/hash |
 | POST | `/public/guest-bookings/{id}/confirm` | Public + confirm token | Confirm within the 20-min window |
 | POST | `/guest-bookings/{id}/promote` | `Auth<CanCreateBooking>` | Promote to a real booking after payment |
@@ -44,22 +55,47 @@ guest_bookings (PROMOTED, promoted_booking_id set)
 they need no `baggage`/JWT. The promote route is NOT under `/public` and
 requires the gateway-injected baggage (real `user_id`).
 
+### Admin management
+
+Authenticated CRUD + search + history over guest bookings, guarded by the
+`BOOKING:GUEST_BOOKING` permission resource.
+
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/guest-bookings` | `Auth<CanCreateGuestBooking>` | Create directly, bypassing the confirm-token/email flow |
+| GET | `/guest-bookings` | `Auth<CanReadGuestBooking>` | List/filter with pagination |
+| GET | `/guest-bookings/{id}` | `Auth<CanReadGuestBooking>` | Get by ID |
+| PATCH | `/guest-bookings/{id}` | `Auth<CanUpdateGuestBooking>` | Update |
+| DELETE | `/guest-bookings/{id}` | `Auth<CanDeleteGuestBooking>` | Cancel (soft-delete → `CANCELLED`) |
+| GET | `/guest-bookings/{id}/history` | `Auth<CanReadGuestBooking>` | Lifecycle history (paged) |
+
+Admin create is transactional and takes no confirmation token (the record is
+created with an explicit `status`, default `PENDING`); it generates a
+`booking_reference` and `expires_at` if not supplied. Admin delete is a
+**soft-delete**: it sets `status = CANCELLED` and records a `CANCELLED` history
+event rather than removing the row.
+
 ## Data model
 
-New tables in the `booking` feature (`features/booking/entities`,
-migration `m20260216_000001_create_guest_booking_tables`).
+Tables in the `booking` feature (`features/booking/entities`), created by
+migration `m20260216_000001_create_guest_booking_tables` (guest booking + items)
+and `m20260218_000001_create_guest_booking_history` (history).
 
 **`guest_bookings`**
 
 | Column | Notes |
 |--------|-------|
 | `id` (uuid, pk) | |
-| `event_id` (uuid) | target event |
+| `booking_type` (string) | domain label, e.g. EVENT, HOTEL_ROOM, CAR_RENTAL; default EVENT |
+| `booking_mode` (string) | promotion strategy: WINDOW/CAPACITY/RECURRENCE/APPROVAL/QUEUE/DISPATCH; default CAPACITY |
+| `resource_type` (string, null) | kind of target: event, room, car, ... |
+| `resource_id` (uuid, null) | concrete target id in the owning service |
+| `external_ref` (string, null) | opaque non-UUID target reference; used instead of `resource_id` for non-native resources |
 | `site_origin` (string) | booking site origin, allowlist-validated |
 | `confirm_path` (string) | path used to build the confirm link |
 | `guest_email` (string) | |
 | `guest_name` (string, null) | |
-| `total_amount` (float) | computed from seat prices |
+| `total_amount` (float) | computed from unit prices (public flow) |
 | `currency` (string) | ISO 4217 |
 | `status` (string) | PENDING → CONFIRMED → PROMOTED; or EXPIRED / PAYMENT_EXPIRED / CANCELLED |
 | `booking_reference` (string) | generated, e.g. `GBK-1A2B3C4D` |
@@ -70,10 +106,18 @@ migration `m20260216_000001_create_guest_booking_tables`).
 | `promoted_booking_id` (uuid, null) | set on promotion |
 | `created_at` / `updated_at` / `confirmed_at` | |
 
-Indexes: `event_id`, `status`, `booking_reference`, `(status, expires_at)`.
+Indexes: `(resource_type, resource_id)`, `status`, `booking_reference`,
+`(status, expires_at)`.
 
-**`guest_booking_items`** — one row per seat: `id, guest_booking_id (fk cascade),
-item_type ("seat"), item_id, price, metadata, created_at, updated_at`.
+**`guest_booking_items`** — one row per unit: `id, guest_booking_id (fk cascade),
+item_type ("seat" by default), item_id, price, metadata, created_at, updated_at`.
+
+**`guest_booking_history`** — append-only lifecycle log: `id,
+guest_booking_id (fk cascade), event_type, from_status, to_status,
+actor_id (admin user for admin changes), note, metadata, created_at`. Indexed on
+`(guest_booking_id, created_at)`. Written in the same transaction as the change
+it records. Event types: `CREATED`, `CONFIRMED`, `PROMOTED`, `EXPIRED`,
+`PAYMENT_EXPIRED`, `STATUS_CHANGED`, `UPDATED`, `CANCELLED`.
 
 ## Security
 
@@ -143,7 +187,9 @@ Message (`features/booking/stream`): `BookingMessage`, serde-tagged by
   "event_type": "guest_booking_confirm_token",
   "message": {
     "guest_booking_id": "…",
-    "event_id": "…",
+    "resource_type": "event",
+    "resource_id": "…",
+    "external_ref": null,
     "guest_email": "guest@example.com",
     "guest_name": "Jane Guest",
     "booking_reference": "GBK-1A2B3C4D",
@@ -165,13 +211,19 @@ one transaction:
 
 1. Load + validate: status must be `CONFIRMED`, not already promoted, payment
    window not elapsed (else → PAYMENT_EXPIRED).
-2. Create core `bookings` row: `booking_type=EVENT`, `booking_mode=CAPACITY`,
-   `resource_type=event`, `resource_id=event_id`, `user_id` (authenticated),
-   `status=CONFIRMED`, `payment_status=SUCCESS`, generated reference.
-3. Create the CAPACITY child row (`container_id=event_id`, `quantity=#seats`).
-4. Create one `booking_item` per guest seat item.
+2. Create core `bookings` row carrying the guest booking's own classification and
+   target: `booking_type`, `booking_mode`, `resource_type`, `resource_id`,
+   `user_id` (authenticated), `status=CONFIRMED`, `payment_status=SUCCESS`,
+   generated reference.
+3. Mode child row: for `booking_mode = CAPACITY` (the default) create the
+   capacity row (`container_id = resource_id`, `quantity = #units`). CAPACITY
+   promotion therefore **requires a `resource_id`** (rejected with an error if
+   missing). Other modes are carried on the core row but do not yet create a
+   child row (future work).
+4. Create one `booking_item` per guest unit item.
 5. Append a `booking_history` CREATED entry noting the source guest booking.
-6. Mark the guest booking `PROMOTED` and set `promoted_booking_id`.
+6. Mark the guest booking `PROMOTED`, set `promoted_booking_id`, and append a
+   `guest_booking_history` `PROMOTED` entry.
 
 ## Configuration
 
@@ -188,10 +240,10 @@ Gateway: `booking_rate_limiter` interceptor on `booking_router_filter` in
 
 | Layer | Path |
 |-------|------|
-| Entities | `features/booking/entities/src/guest_booking.rs`, `guest_booking_item.rs` |
-| Migration | `features/booking/migrations/src/m20260216_000001_create_guest_booking_tables.rs` |
-| Model | `features/booking/model/src/guest_booking.rs`, `guest_booking_item.rs` |
-| Repo | `features/booking/repo/src/guest_booking/`, `guest_booking_item/` |
+| Entities | `features/booking/entities/src/guest_booking.rs`, `guest_booking_item.rs`, `guest_booking_history.rs` |
+| Migration | `features/booking/migrations/src/m20260216_000001_create_guest_booking_tables.rs`, `m20260218_000001_create_guest_booking_history.rs` |
+| Model | `features/booking/model/src/guest_booking.rs`, `guest_booking_item.rs`, `guest_booking_history.rs` |
+| Repo | `features/booking/repo/src/guest_booking/`, `guest_booking_item/`, `guest_booking_history/` |
 | Service | `features/booking/service/src/guest_booking.rs` (`GuestBookingService`) |
 | Stream | `features/booking/stream/src/lib.rs` (`BookingMessage`, `PRODUCER_KEY`) |
 | API routes | `apis/booking/src/routes/guest_booking.rs` |

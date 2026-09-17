@@ -47,8 +47,7 @@ impl<'a> StartApp<BookingAppState, BookingCacheState> for MyApp<'a> {
             // Kafka producer for the booking topic (guest-booking confirm-token events).
             let kafka_server_env = format!("{}_KAFKA_BOOTSTRAP_SERVERS", app_key);
             let kafka_topic_env = format!("{}_KAFKA_TOPIC", app_key);
-            let producer_config =
-                ProducerConfig::from_env(kafka_server_env, kafka_topic_env);
+            let producer_config = ProducerConfig::from_env(kafka_server_env, kafka_topic_env);
             debug!("Creating Kafka producer with config {:?}", producer_config);
             let producer = Producer::from_config(producer_config).await;
             clone_app_state.set_producer(PRODUCER_KEY.to_string(), producer);

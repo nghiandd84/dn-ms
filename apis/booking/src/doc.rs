@@ -26,6 +26,12 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::guest_booking::get_guest_booking,
         crate::routes::guest_booking::confirm_guest_booking,
         crate::routes::guest_booking::promote_guest_booking,
+        crate::routes::guest_booking::create_guest_booking_admin,
+        crate::routes::guest_booking::filter_guest_bookings,
+        crate::routes::guest_booking::get_guest_booking_admin,
+        crate::routes::guest_booking::update_guest_booking_admin,
+        crate::routes::guest_booking::delete_guest_booking_admin,
+        crate::routes::guest_booking::get_guest_booking_history,
     ),
     tags(
         (name = "booking", description = "Booking management endpoints"),

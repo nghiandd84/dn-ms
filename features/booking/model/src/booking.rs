@@ -11,7 +11,9 @@ use shared_shared_data_core::{
 };
 use shared_shared_macro::{ParamFilter, Response};
 
-use features_booking_entities::booking::{BookingForCreateDto, BookingForUpdateDto, ModelOptionDto};
+use features_booking_entities::booking::{
+    BookingForCreateDto, BookingForUpdateDto, ModelOptionDto,
+};
 
 use super::booking_approval::{BookingApprovalData, BookingApprovalInput};
 use super::booking_capacity::{BookingCapacityData, BookingCapacityInput};
@@ -23,10 +25,11 @@ use super::booking_window::{BookingWindowData, BookingWindowInput};
 
 /// Booking behavior discriminator. Selects which mode-specific data and
 /// reservation strategy apply. Serialized as an UPPER_SNAKE string.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum BookingMode {
     Window,
+    #[default]
     Capacity,
     Recurrence,
     Approval,
@@ -54,6 +57,7 @@ pub struct BookingData {
     pub booking_mode: Option<String>,
     pub resource_type: Option<String>,
     pub resource_id: Option<Uuid>,
+    pub external_ref: Option<String>,
     pub user_id: Option<Uuid>,
     pub total_amount: Option<f32>,
     pub currency: Option<String>,
@@ -111,6 +115,7 @@ impl Into<BookingData> for ModelOptionDto {
             booking_mode: self.booking_mode,
             resource_type: self.resource_type.flatten(),
             resource_id: self.resource_id.flatten(),
+            external_ref: self.external_ref.flatten(),
             user_id: self.user_id,
             total_amount: self.total_amount,
             currency: self.currency,
@@ -126,7 +131,9 @@ impl Into<BookingData> for ModelOptionDto {
             items: self
                 .items
                 .map(|items| items.into_iter().map(|i| i.into()).collect()),
-            window: self.window.and_then(|v| v.into_iter().next().map(Into::into)),
+            window: self
+                .window
+                .and_then(|v| v.into_iter().next().map(Into::into)),
             capacity: self
                 .capacity
                 .and_then(|v| v.into_iter().next().map(Into::into)),
@@ -136,7 +143,9 @@ impl Into<BookingData> for ModelOptionDto {
             approval: self
                 .approval
                 .and_then(|v| v.into_iter().next().map(Into::into)),
-            queue: self.queue.and_then(|v| v.into_iter().next().map(Into::into)),
+            queue: self
+                .queue
+                .and_then(|v| v.into_iter().next().map(Into::into)),
             dispatch: self
                 .dispatch
                 .and_then(|v| v.into_iter().next().map(Into::into)),
@@ -159,6 +168,9 @@ pub struct BookingForCreateRequest {
     pub booking_mode: BookingMode,
     pub resource_type: Option<String>,
     pub resource_id: Option<Uuid>,
+    /// Opaque external identifier for the target when it has no UUID; use instead
+    /// of `resource_id` for non-native resources.
+    pub external_ref: Option<String>,
     pub user_id: Uuid,
     #[validate(range(
         min = 0.0,
@@ -213,6 +225,7 @@ impl BookingForCreateRequest {
             booking_mode: self.booking_mode.as_str().to_string(),
             resource_type: self.resource_type.clone(),
             resource_id: self.resource_id,
+            external_ref: self.external_ref.clone(),
             user_id: self.user_id,
             total_amount: self.total_amount,
             currency: self.currency.clone(),
@@ -229,6 +242,7 @@ pub struct BookingForUpdateRequest {
     pub booking_type: Option<String>,
     pub resource_type: Option<String>,
     pub resource_id: Option<Uuid>,
+    pub external_ref: Option<String>,
     pub total_amount: Option<f32>,
     pub currency: Option<String>,
     pub status: Option<String>,
@@ -246,6 +260,7 @@ impl Into<BookingForUpdateDto> for BookingForUpdateRequest {
             booking_mode: None,
             resource_type: Some(self.resource_type),
             resource_id: Some(self.resource_id),
+            external_ref: Some(self.external_ref),
             total_amount: self.total_amount,
             currency: self.currency,
             status: self.status,

@@ -11,7 +11,10 @@ use crate::booking;
 /// (request-to-book rentals, emergency plumbing intake, gated beta access)
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "booking_approval")]
-#[dto(name(BookingApprovalForCreate), columns(booking_id, approval_status, hold_expires_at))]
+#[dto(
+    name(BookingApprovalForCreate),
+    columns(booking_id, approval_status, hold_expires_at)
+)]
 #[dto(
     name(BookingApprovalForUpdate),
     columns(approval_status, approver_id, decided_at, hold_expires_at, reason),

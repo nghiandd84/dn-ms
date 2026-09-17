@@ -3,9 +3,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use features_booking_entities::booking_window::{
-    BookingWindowForCreateDto, Model, ModelOptionDto,
-};
+use features_booking_entities::booking_window::{BookingWindowForCreateDto, Model, ModelOptionDto};
 
 /// WINDOW-mode input block supplied inside a create-booking request.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

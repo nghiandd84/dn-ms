@@ -7,18 +7,18 @@ use uuid::Uuid;
 
 use shared_shared_macro::Dto;
 
+use crate::booking_approval::Model as BookingApprovalModel;
+use crate::booking_capacity::Model as BookingCapacityModel;
+use crate::booking_dispatch::Model as BookingDispatchModel;
 use crate::booking_item;
 use crate::booking_item::Model as BookingItemModel;
+use crate::booking_queue::Model as BookingQueueModel;
+use crate::booking_recurrence::Model as BookingRecurrenceModel;
+use crate::booking_window::Model as BookingWindowModel;
 use crate::{
     booking_approval, booking_capacity, booking_dispatch, booking_queue, booking_recurrence,
     booking_window,
 };
-use crate::booking_approval::Model as BookingApprovalModel;
-use crate::booking_capacity::Model as BookingCapacityModel;
-use crate::booking_dispatch::Model as BookingDispatchModel;
-use crate::booking_queue::Model as BookingQueueModel;
-use crate::booking_recurrence::Model as BookingRecurrenceModel;
-use crate::booking_window::Model as BookingWindowModel;
 
 /// Core booking record.
 ///
@@ -37,6 +37,7 @@ use crate::booking_window::Model as BookingWindowModel;
         booking_mode,
         resource_type,
         resource_id,
+        external_ref,
         user_id,
         total_amount,
         currency,
@@ -53,6 +54,7 @@ use crate::booking_window::Model as BookingWindowModel;
         booking_mode,
         resource_type,
         resource_id,
+        external_ref,
         total_amount,
         currency,
         status,
@@ -77,6 +79,12 @@ pub struct Model {
     pub resource_type: Option<String>, // event, room, car, table, doctor, desk, garage, ...
     #[sea_orm(nullable)]
     pub resource_id: Option<Uuid>,
+    /// Opaque external identifier for the target when it has no UUID (non-native
+    /// resource, e.g. a slug or vendor id). Used only when `resource_id` cannot
+    /// carry the reference; exactly one of `resource_id` / `external_ref` is
+    /// expected to identify the target.
+    #[sea_orm(nullable)]
+    pub external_ref: Option<String>,
 
     // ownership
     pub user_id: Uuid,

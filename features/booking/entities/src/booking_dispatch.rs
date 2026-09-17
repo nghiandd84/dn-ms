@@ -17,7 +17,14 @@ use crate::booking;
 )]
 #[dto(
     name(BookingDispatchForUpdate),
-    columns(dispatch_state, provider_id, assigned_at, pickup_location, dropoff_location, eta),
+    columns(
+        dispatch_state,
+        provider_id,
+        assigned_at,
+        pickup_location,
+        dropoff_location,
+        eta
+    ),
     option
 )]
 pub struct Model {

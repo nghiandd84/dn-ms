@@ -68,7 +68,11 @@ impl BookingService {
                     booking_request.resource_id,
                 ) {
                     let overlaps = BookingWindowMutation::count_overlapping_with_txn(
-                        rtype, rid, w.starts_at, w.ends_at, &txn,
+                        rtype,
+                        rid,
+                        w.starts_at,
+                        w.ends_at,
+                        &txn,
                     )
                     .await
                     .map_err(|e| {
@@ -90,20 +94,21 @@ impl BookingService {
                     })?;
             }
             BookingMode::Capacity => {
-                let c = booking_request.capacity.as_ref().expect("validated present");
+                let c = booking_request
+                    .capacity
+                    .as_ref()
+                    .expect("validated present");
 
                 // Counter guard: enforce only if the caller declares a limit
                 // via metadata.capacity_limit.
                 if let Some(limit) = Self::metadata_i64(&booking_request, "capacity_limit") {
-                    let booked = BookingCapacityMutation::sum_booked_quantity_with_txn(
-                        c.container_id,
-                        &txn,
-                    )
-                    .await
-                    .map_err(|e| {
-                        debug!("Error summing capacity: {:?}", e);
-                        AppError::Internal("Failed to check capacity".to_string())
-                    })?;
+                    let booked =
+                        BookingCapacityMutation::sum_booked_quantity_with_txn(c.container_id, &txn)
+                            .await
+                            .map_err(|e| {
+                                debug!("Error summing capacity: {:?}", e);
+                                AppError::Internal("Failed to check capacity".to_string())
+                            })?;
                     if booked + c.quantity as i64 > limit {
                         return Err(AppError::Internal(
                             "capacity limit exceeded for container".to_string(),
@@ -146,13 +151,12 @@ impl BookingService {
             BookingMode::Queue => {
                 let q = booking_request.queue.as_ref().expect("validated present");
                 // Assign the next position in the queue within the transaction.
-                let position =
-                    BookingQueueMutation::next_position_with_txn(&q.queue_key, &txn)
-                        .await
-                        .map_err(|e| {
-                            debug!("Error computing queue position: {:?}", e);
-                            AppError::Internal("Failed to assign queue position".to_string())
-                        })?;
+                let position = BookingQueueMutation::next_position_with_txn(&q.queue_key, &txn)
+                    .await
+                    .map_err(|e| {
+                        debug!("Error computing queue position: {:?}", e);
+                        AppError::Internal("Failed to assign queue position".to_string())
+                    })?;
                 BookingQueueMutation::create_with_txn(q.to_dto(booking_id, position), &txn)
                     .await
                     .map_err(|e| {
@@ -335,16 +339,13 @@ impl BookingService {
         let db = DB_WRITE.get().expect("DB_WRITE is not initialized");
         let txn = db.begin().await.map_err(|_| AppError::Unknown)?;
 
-        let updated = BookingMutation::update_booking_with_txn(
-            booking_id,
-            booking_request.into(),
-            &txn,
-        )
-        .await
-        .map_err(|e| {
-            debug!("Error updating booking: {:?}", e);
-            AppError::Internal("Failed to update booking".to_string())
-        })?;
+        let updated =
+            BookingMutation::update_booking_with_txn(booking_id, booking_request.into(), &txn)
+                .await
+                .map_err(|e| {
+                    debug!("Error updating booking: {:?}", e);
+                    AppError::Internal("Failed to update booking".to_string())
+                })?;
 
         if !updated {
             txn.rollback().await.ok();
@@ -354,9 +355,10 @@ impl BookingService {
         // Record a STATUS_CHANGED event if status actually changed.
         if let Some(to) = new_status {
             if Some(&to) != prev_status.as_ref() {
-                let entry = BookingHistoryEntry::new(booking_id, BookingHistoryEvent::STATUS_CHANGED)
-                    .with_status_change(prev_status.clone(), Some(to))
-                    .with_actor(actor_id);
+                let entry =
+                    BookingHistoryEntry::new(booking_id, BookingHistoryEvent::STATUS_CHANGED)
+                        .with_status_change(prev_status.clone(), Some(to))
+                        .with_actor(actor_id);
                 Self::append_history(entry, &txn).await?;
             }
         }
@@ -364,13 +366,14 @@ impl BookingService {
         // Record a PAYMENT_UPDATED event if payment_status actually changed.
         if let Some(to_payment) = new_payment {
             if Some(&to_payment) != prev_payment.as_ref() {
-                let entry = BookingHistoryEntry::new(booking_id, BookingHistoryEvent::PAYMENT_UPDATED)
-                    .with_actor(actor_id)
-                    .with_note(Some(format!(
-                        "payment_status: {} -> {}",
-                        prev_payment.unwrap_or_default(),
-                        to_payment
-                    )));
+                let entry =
+                    BookingHistoryEntry::new(booking_id, BookingHistoryEvent::PAYMENT_UPDATED)
+                        .with_actor(actor_id)
+                        .with_note(Some(format!(
+                            "payment_status: {} -> {}",
+                            prev_payment.unwrap_or_default(),
+                            to_payment
+                        )));
                 Self::append_history(entry, &txn).await?;
             }
         }
@@ -399,6 +402,7 @@ impl BookingService {
             booking_type: None,
             resource_type: None,
             resource_id: None,
+            external_ref: None,
             total_amount: None,
             currency: None,
             status: Some("CANCELLED".to_string()),
@@ -407,13 +411,12 @@ impl BookingService {
             metadata: None,
             confirmed_at: None,
         };
-        let updated =
-            BookingMutation::update_booking_with_txn(booking_id, cancel_dto.into(), &txn)
-                .await
-                .map_err(|e| {
-                    debug!("Error cancelling booking: {:?}", e);
-                    AppError::Internal("Failed to cancel booking".to_string())
-                })?;
+        let updated = BookingMutation::update_booking_with_txn(booking_id, cancel_dto.into(), &txn)
+            .await
+            .map_err(|e| {
+                debug!("Error cancelling booking: {:?}", e);
+                AppError::Internal("Failed to cancel booking".to_string())
+            })?;
 
         if !updated {
             txn.rollback().await.ok();

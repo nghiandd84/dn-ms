@@ -1,6 +1,6 @@
 use chrono::Utc;
 use rand::RngCore;
-use sea_orm::TransactionTrait;
+use sea_orm::{Iden, TransactionTrait};
 use sha2::{Digest, Sha256};
 use tracing::debug;
 use uuid::Uuid;
@@ -8,7 +8,7 @@ use uuid::Uuid;
 use shared_shared_app::event_task::producer::{Producer, ProducerMessage};
 use shared_shared_config::db::DB_WRITE;
 use shared_shared_data_core::{
-    filter::FilterCondition,
+    filter::{FilterCondition, FilterEnum, FilterOperator, FilterParam},
     order::Order,
     paging::{Pagination, QueryResult},
     query_params::QueryParams,
@@ -18,8 +18,11 @@ use shared_shared_data_error::app::AppError;
 use features_booking_model::booking::BookingMode;
 use features_booking_model::booking_history::{BookingHistoryEntry, BookingHistoryEvent};
 use features_booking_model::guest_booking::{
-    GuestBookingConfirmRequest, GuestBookingData, GuestBookingForCreateRequest,
-    GuestBookingForUpdateRequest, GuestBookingStatus,
+    GuestBookingAdminForCreateRequest, GuestBookingConfirmRequest, GuestBookingData,
+    GuestBookingForCreateRequest, GuestBookingForUpdateRequest, GuestBookingStatus,
+};
+use features_booking_model::guest_booking_history::{
+    GuestBookingHistoryData, GuestBookingHistoryEntry, GuestBookingHistoryEvent,
 };
 use features_booking_stream::{BookingMessage, GuestBookingConfirmTokenMessage};
 
@@ -32,9 +35,10 @@ use features_booking_repo::booking_capacity::BookingCapacityMutation;
 use features_booking_repo::booking_history::BookingHistoryMutation;
 use features_booking_repo::booking_item::BookingItemMutation;
 use features_booking_repo::guest_booking::{GuestBookingMutation, GuestBookingQuery};
-use features_booking_repo::guest_booking_item::{
-    GuestBookingItemMutation, GuestBookingItemQuery,
+use features_booking_repo::guest_booking_history::{
+    GuestBookingHistoryMutation, GuestBookingHistoryQuery,
 };
+use features_booking_repo::guest_booking_item::{GuestBookingItemMutation, GuestBookingItemQuery};
 
 pub struct GuestBookingService {}
 
@@ -85,7 +89,10 @@ impl GuestBookingService {
         // This prevents confirmation emails from linking to arbitrary domains.
         let site_origin = Self::normalize_origin(&request.site_origin);
         if !Self::is_origin_allowed(&site_origin) {
-            debug!("Rejected guest booking: site_origin not allowed: {}", site_origin);
+            debug!(
+                "Rejected guest booking: site_origin not allowed: {}",
+                site_origin
+            );
             return Err(AppError::Internal(
                 "site_origin is not an allowed site".to_string(),
             ));
@@ -131,13 +138,12 @@ impl GuestBookingService {
             confirm_token_hash,
             expires_at,
         );
-        let guest_booking_id =
-            GuestBookingMutation::create_guest_booking_with_txn(core_dto, &txn)
-                .await
-                .map_err(|e| {
-                    debug!("Error creating guest booking: {:?}", e);
-                    AppError::Internal("Failed to create guest booking".to_string())
-                })?;
+        let guest_booking_id = GuestBookingMutation::create_guest_booking_with_txn(core_dto, &txn)
+            .await
+            .map_err(|e| {
+                debug!("Error creating guest booking: {:?}", e);
+                AppError::Internal("Failed to create guest booking".to_string())
+            })?;
 
         // 2. One item per seat.
         for seat in &request.seats {
@@ -151,6 +157,13 @@ impl GuestBookingService {
                 AppError::Internal("Failed to create guest booking item".to_string())
             })?;
         }
+
+        // 3. Record the CREATED lifecycle event in the same transaction.
+        let history =
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::CREATED)
+                .with_status_change(None, Some(GuestBookingStatus::PENDING.to_string()))
+                .with_note(Some("guest booking created (public)".to_string()));
+        Self::append_history(history, &txn).await?;
 
         txn.commit().await.map_err(|_| AppError::Unknown)?;
 
@@ -166,7 +179,9 @@ impl GuestBookingService {
         let payload = BookingMessage::GuestBookingConfirmToken {
             message: GuestBookingConfirmTokenMessage {
                 guest_booking_id,
-                event_id: request.event_id,
+                resource_type: request.resource_type.clone(),
+                resource_id: request.resource_id,
+                external_ref: request.external_ref.clone(),
                 guest_email: request.guest_email.clone(),
                 guest_name: request.guest_name.clone(),
                 booking_reference,
@@ -206,6 +221,203 @@ impl GuestBookingService {
         GuestBookingQuery::get_guest_bookings(pagination, order, filters, query_params).await
     }
 
+    /// Paginated lifecycle history for a guest booking.
+    pub async fn get_guest_booking_history(
+        guest_booking_id: Uuid,
+        pagination: &Pagination,
+        order: &Order,
+    ) -> Result<QueryResult<GuestBookingHistoryData>, AppError> {
+        let param: FilterParam<Uuid> = FilterParam {
+            name: features_booking_entities::guest_booking_history::Column::GuestBookingId
+                .to_string(),
+            operator: FilterOperator::Equal,
+            value: Some(guest_booking_id),
+            raw_value: guest_booking_id.to_string(),
+        };
+        let filters: FilterCondition = vec![FilterEnum::Uuid(param)].into();
+        GuestBookingHistoryQuery::list(pagination, order, &filters).await
+    }
+
+    /// Append a guest booking history entry within an existing transaction,
+    /// mapping errors uniformly.
+    async fn append_history(
+        entry: GuestBookingHistoryEntry,
+        txn: &impl sea_orm::ConnectionTrait,
+    ) -> Result<(), AppError> {
+        GuestBookingHistoryMutation::append_with_txn(entry.into(), txn)
+            .await
+            .map_err(|e| {
+                debug!("Error recording guest booking history: {:?}", e);
+                AppError::Internal("Failed to record guest booking history".to_string())
+            })?;
+        Ok(())
+    }
+
+    /// Admin: create a guest booking record directly, bypassing the public
+    /// confirm-token / Kafka email flow. The administrator supplies the status
+    /// and (optionally) a booking reference and expiry. No confirmation token is
+    /// generated or stored. Returns the new guest booking id.
+    pub async fn create_guest_booking_admin(
+        request: GuestBookingAdminForCreateRequest,
+        actor_id: Option<Uuid>,
+    ) -> Result<Uuid, AppError> {
+        let booking_reference = request
+            .booking_reference
+            .clone()
+            .filter(|r| !r.trim().is_empty())
+            .unwrap_or_else(|| Self::generate_reference("GBK"));
+
+        let expires_at = request.expires_at.unwrap_or_else(|| {
+            Utc::now().naive_utc() + chrono::Duration::minutes(Self::CONFIRM_WINDOW_MINUTES)
+        });
+
+        let status = request.status.clone();
+        let core_dto = request.to_core_dto(booking_reference, expires_at);
+
+        let db = DB_WRITE.get().expect("DB_WRITE is not initialized");
+        let txn = db.begin().await.map_err(|_| AppError::Unknown)?;
+
+        let guest_booking_id = GuestBookingMutation::create_guest_booking_with_txn(core_dto, &txn)
+            .await
+            .map_err(|e| {
+                debug!("Error creating guest booking (admin): {:?}", e);
+                AppError::Internal("Failed to create guest booking".to_string())
+            })?;
+
+        // Record the CREATED lifecycle event in the same transaction.
+        let history =
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::CREATED)
+                .with_status_change(None, Some(status))
+                .with_actor(actor_id)
+                .with_note(Some("guest booking created by administrator".to_string()));
+        Self::append_history(history, &txn).await?;
+
+        txn.commit().await.map_err(|_| AppError::Unknown)?;
+
+        Ok(guest_booking_id)
+    }
+
+    /// Admin: update an existing guest booking record and record the change in
+    /// the history log. A status change is recorded as STATUS_CHANGED (with
+    /// from/to), otherwise as UPDATED. Returns false if the booking does not
+    /// exist.
+    pub async fn update_guest_booking_admin(
+        guest_booking_id: Uuid,
+        request: GuestBookingForUpdateRequest,
+        actor_id: Option<Uuid>,
+    ) -> Result<bool, AppError> {
+        let db = DB_WRITE.get().expect("DB_WRITE is not initialized");
+        let txn = db.begin().await.map_err(|_| AppError::Unknown)?;
+
+        // Load current state to detect status transitions for the history log.
+        let existing = GuestBookingQuery::get_by_id_with_txn(guest_booking_id, &txn)
+            .await
+            .map_err(|_| AppError::Unknown)?;
+        let Some(existing) = existing else {
+            txn.rollback().await.ok();
+            return Ok(false);
+        };
+        let prev_status = existing.status.clone();
+        let new_status = request.status.clone();
+
+        let updated = GuestBookingMutation::update_guest_booking_with_txn(
+            guest_booking_id,
+            request.into(),
+            &txn,
+        )
+        .await
+        .map_err(|e| {
+            debug!("Error updating guest booking (admin): {:?}", e);
+            AppError::Internal("Failed to update guest booking".to_string())
+        })?;
+
+        if !updated {
+            txn.rollback().await.ok();
+            return Ok(false);
+        }
+
+        // Choose the event type based on whether the status actually changed.
+        let status_changed = matches!(&new_status, Some(s) if *s != prev_status);
+        let history = if status_changed {
+            GuestBookingHistoryEntry::new(
+                guest_booking_id,
+                GuestBookingHistoryEvent::STATUS_CHANGED,
+            )
+            .with_status_change(Some(prev_status), new_status)
+            .with_actor(actor_id)
+            .with_note(Some("guest booking updated by administrator".to_string()))
+        } else {
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::UPDATED)
+                .with_actor(actor_id)
+                .with_note(Some("guest booking updated by administrator".to_string()))
+        };
+        Self::append_history(history, &txn).await?;
+
+        txn.commit().await.map_err(|_| AppError::Unknown)?;
+        Ok(true)
+    }
+
+    /// Admin: cancel a guest booking (soft delete) and record a CANCELLED event.
+    /// The row (and its history) is preserved for the audit trail. Returns false
+    /// if the booking does not exist.
+    pub async fn delete_guest_booking_admin(
+        guest_booking_id: Uuid,
+        actor_id: Option<Uuid>,
+    ) -> Result<bool, AppError> {
+        let db = DB_WRITE.get().expect("DB_WRITE is not initialized");
+        let txn = db.begin().await.map_err(|_| AppError::Unknown)?;
+
+        let existing = GuestBookingQuery::get_by_id_with_txn(guest_booking_id, &txn)
+            .await
+            .map_err(|_| AppError::Unknown)?;
+        let Some(existing) = existing else {
+            txn.rollback().await.ok();
+            return Ok(false);
+        };
+        let prev_status = existing.status.clone();
+
+        let cancel_update = GuestBookingForUpdateRequest {
+            guest_email: None,
+            guest_name: None,
+            total_amount: None,
+            currency: None,
+            status: Some(GuestBookingStatus::CANCELLED.to_string()),
+            booking_reference: None,
+            metadata: None,
+            promoted_booking_id: None,
+            confirmed_at: None,
+            payment_expires_at: None,
+        };
+        let updated = GuestBookingMutation::update_guest_booking_with_txn(
+            guest_booking_id,
+            cancel_update.into(),
+            &txn,
+        )
+        .await
+        .map_err(|e| {
+            debug!("Error cancelling guest booking (admin): {:?}", e);
+            AppError::Internal("Failed to cancel guest booking".to_string())
+        })?;
+
+        if !updated {
+            txn.rollback().await.ok();
+            return Ok(false);
+        }
+
+        let history =
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::CANCELLED)
+                .with_status_change(
+                    Some(prev_status),
+                    Some(GuestBookingStatus::CANCELLED.to_string()),
+                )
+                .with_actor(actor_id)
+                .with_note(Some("guest booking cancelled by administrator".to_string()));
+        Self::append_history(history, &txn).await?;
+
+        txn.commit().await.map_err(|_| AppError::Unknown)?;
+        Ok(true)
+    }
+
     /// Confirm a PENDING guest booking: set status CONFIRMED + confirmed_at.
     ///
     /// Requires the one-time `confirm_token` issued at creation. The presented
@@ -241,14 +453,10 @@ impl GuestBookingService {
             ));
         }
         if existing.status == GuestBookingStatus::CANCELLED {
-            return Err(AppError::Internal(
-                "guest booking is cancelled".to_string(),
-            ));
+            return Err(AppError::Internal("guest booking is cancelled".to_string()));
         }
         if existing.status == GuestBookingStatus::EXPIRED {
-            return Err(AppError::Internal(
-                "guest booking has expired".to_string(),
-            ));
+            return Err(AppError::Internal("guest booking has expired".to_string()));
         }
 
         // Enforce the confirmation window. If the deadline has passed while the
@@ -273,6 +481,15 @@ impl GuestBookingService {
                 &txn,
             )
             .await;
+            // Record the EXPIRED transition (best-effort, same txn).
+            let history =
+                GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::EXPIRED)
+                    .with_status_change(
+                        Some(existing.status.clone()),
+                        Some(GuestBookingStatus::EXPIRED.to_string()),
+                    )
+                    .with_note(Some("confirmation window elapsed".to_string()));
+            let _ = Self::append_history(history, &txn).await;
             txn.commit().await.map_err(|_| AppError::Unknown)?;
             return Err(AppError::Internal(
                 "guest booking has expired; confirmation window elapsed".to_string(),
@@ -305,16 +522,29 @@ impl GuestBookingService {
             AppError::Internal("Failed to confirm guest booking".to_string())
         })?;
 
+        // Record the CONFIRMED lifecycle event in the same transaction.
+        let history =
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::CONFIRMED)
+                .with_status_change(
+                    Some(existing.status.clone()),
+                    Some(GuestBookingStatus::CONFIRMED.to_string()),
+                )
+                .with_note(Some("guest confirmed booking".to_string()));
+        Self::append_history(history, &txn).await?;
+
         txn.commit().await.map_err(|_| AppError::Unknown)?;
         Ok(ok)
     }
 
     /// Promote a CONFIRMED guest booking into a real booking.
     ///
-    /// In a single transaction: creates a core `bookings` row (EVENT / CAPACITY),
-    /// its capacity child row, one `booking_item` per guest seat item, a
-    /// `booking_history` CREATED entry, then marks the guest booking PROMOTED and
-    /// records the new booking id. Returns the new booking id.
+    /// In a single transaction: creates a core `bookings` row carrying the guest
+    /// booking's `booking_type` / `booking_mode` and polymorphic target
+    /// (`resource_type` / `resource_id`); for CAPACITY bookings also creates the
+    /// capacity child row (container = `resource_id`); one `booking_item` per
+    /// guest seat item; a `booking_history` CREATED entry; then marks the guest
+    /// booking PROMOTED and records the new booking id. Returns the new booking
+    /// id.
     pub async fn promote_guest_booking(
         guest_booking_id: Uuid,
         user_id: Option<Uuid>,
@@ -364,6 +594,18 @@ impl GuestBookingService {
                     &txn,
                 )
                 .await;
+                // Record the PAYMENT_EXPIRED transition (best-effort, same txn).
+                let history = GuestBookingHistoryEntry::new(
+                    guest_booking_id,
+                    GuestBookingHistoryEvent::PAYMENT_EXPIRED,
+                )
+                .with_status_change(
+                    Some(guest.status.clone()),
+                    Some(GuestBookingStatus::PAYMENT_EXPIRED.to_string()),
+                )
+                .with_actor(Some(user_id))
+                .with_note(Some("payment window elapsed".to_string()));
+                let _ = Self::append_history(history, &txn).await;
                 txn.commit().await.map_err(|_| AppError::Unknown)?;
                 return Err(AppError::Internal(
                     "guest booking payment window has elapsed".to_string(),
@@ -381,13 +623,16 @@ impl GuestBookingService {
             ));
         }
 
-        // 3. Create the core booking row (EVENT / CAPACITY).
+        // 3. Create the core booking row, carrying over the guest booking's
+        //    classification (booking_type / booking_mode) and polymorphic target
+        //    (resource_type / resource_id). No longer event-specific.
         let booking_reference = Self::generate_reference("BK");
         let core_dto = BookingForCreateDto {
-            booking_type: "EVENT".to_string(),
-            booking_mode: BookingMode::Capacity.as_str().to_string(),
-            resource_type: Some("event".to_string()),
-            resource_id: Some(guest.event_id),
+            booking_type: guest.booking_type.clone(),
+            booking_mode: guest.booking_mode.clone(),
+            resource_type: guest.resource_type.clone(),
+            resource_id: guest.resource_id,
+            external_ref: guest.external_ref.clone(),
             user_id,
             total_amount: guest.total_amount,
             currency: guest.currency.clone(),
@@ -403,20 +648,32 @@ impl GuestBookingService {
                 AppError::Internal("Failed to create booking".to_string())
             })?;
 
-        // 4. CAPACITY child row (container = event, quantity = number of seats).
-        BookingCapacityMutation::create_with_txn(
-            BookingCapacityForCreateDto {
-                booking_id,
-                container_id: guest.event_id,
-                quantity: items.len() as i32,
-            },
-            &txn,
-        )
-        .await
-        .map_err(|e| {
-            debug!("Error creating booking capacity during promotion: {:?}", e);
-            AppError::Internal("Failed to create booking capacity".to_string())
-        })?;
+        // 4. Mode-specific child row. Today promotion supports the CAPACITY
+        //    strategy (the default): the container is the polymorphic target
+        //    (`resource_id`) and quantity is the number of seat items. Other
+        //    modes are carried on the core row but have no child row created
+        //    here yet (future work).
+        if guest.booking_mode == BookingMode::Capacity.as_str() {
+            let container_id = guest.resource_id.ok_or_else(|| {
+                AppError::Internal(
+                    "CAPACITY guest booking requires a resource_id (container) to promote"
+                        .to_string(),
+                )
+            })?;
+            BookingCapacityMutation::create_with_txn(
+                BookingCapacityForCreateDto {
+                    booking_id,
+                    container_id,
+                    quantity: items.len() as i32,
+                },
+                &txn,
+            )
+            .await
+            .map_err(|e| {
+                debug!("Error creating booking capacity during promotion: {:?}", e);
+                AppError::Internal("Failed to create booking capacity".to_string())
+            })?;
+        }
 
         // 5. One booking_item per guest seat item.
         for item in &items {
@@ -438,13 +695,14 @@ impl GuestBookingService {
         }
 
         // 6. History entry.
-        let history: BookingHistoryEntry = BookingHistoryEntry::new(booking_id, BookingHistoryEvent::CREATED)
-            .with_status_change(None, Some("CONFIRMED".to_string()))
-            .with_actor(Some(user_id))
-            .with_note(Some(format!(
-                "promoted from guest booking {}",
-                guest_booking_id
-            )));
+        let history: BookingHistoryEntry =
+            BookingHistoryEntry::new(booking_id, BookingHistoryEvent::CREATED)
+                .with_status_change(None, Some("CONFIRMED".to_string()))
+                .with_actor(Some(user_id))
+                .with_note(Some(format!(
+                    "promoted from guest booking {}",
+                    guest_booking_id
+                )));
         BookingHistoryMutation::append_with_txn(history.into(), &txn)
             .await
             .map_err(|e| {
@@ -471,6 +729,18 @@ impl GuestBookingService {
                 debug!("Error marking guest booking promoted: {:?}", e);
                 AppError::Internal("Failed to update guest booking".to_string())
             })?;
+
+        // 8. Record the PROMOTED lifecycle event on the guest booking, linking
+        //    the newly created real booking id.
+        let history =
+            GuestBookingHistoryEntry::new(guest_booking_id, GuestBookingHistoryEvent::PROMOTED)
+                .with_status_change(
+                    Some(guest.status.clone()),
+                    Some(GuestBookingStatus::PROMOTED.to_string()),
+                )
+                .with_actor(Some(user_id))
+                .with_note(Some(format!("promoted to booking {}", booking_id)));
+        Self::append_history(history, &txn).await?;
 
         txn.commit().await.map_err(|_| AppError::Unknown)?;
         Ok(booking_id)

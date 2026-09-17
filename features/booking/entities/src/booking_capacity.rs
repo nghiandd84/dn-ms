@@ -10,8 +10,15 @@ use crate::booking;
 /// (airline seats, workshops, event tickets, reserved transit seats)
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "booking_capacity")]
-#[dto(name(BookingCapacityForCreate), columns(booking_id, container_id, quantity))]
-#[dto(name(BookingCapacityForUpdate), columns(container_id, quantity), option)]
+#[dto(
+    name(BookingCapacityForCreate),
+    columns(booking_id, container_id, quantity)
+)]
+#[dto(
+    name(BookingCapacityForUpdate),
+    columns(container_id, quantity),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub booking_id: Uuid,

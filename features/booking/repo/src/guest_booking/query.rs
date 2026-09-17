@@ -7,7 +7,9 @@ use shared_shared_data_core::{
 use shared_shared_data_error::app::AppError;
 use shared_shared_macro::Query;
 
-use features_booking_entities::guest_booking::{ActiveModel, Column, Entity, Model, ModelOptionDto};
+use features_booking_entities::guest_booking::{
+    ActiveModel, Column, Entity, Model, ModelOptionDto,
+};
 use features_booking_entities::guest_booking_item::Entity as GuestBookingItemEntity;
 use features_booking_model::guest_booking::GuestBookingData;
 
@@ -45,7 +47,11 @@ impl GuestBookingQuery {
             GuestBookingQueryManager::filter(pagination, order, filters).await?
         } else {
             GuestBookingQueryManager::filter_with_related_entities(
-                pagination, order, filters, &includes, &vec![],
+                pagination,
+                order,
+                filters,
+                &includes,
+                &vec![],
             )
             .await?
         };
@@ -78,9 +84,10 @@ impl GuestBookingQuery {
             .expect("DB_READ not initialized");
         Entity::find()
             .filter(Column::GuestEmail.eq(guest_email))
-            .filter(Column::Status.eq(
-                features_booking_model::guest_booking::GuestBookingStatus::PENDING,
-            ))
+            .filter(
+                Column::Status
+                    .eq(features_booking_model::guest_booking::GuestBookingStatus::PENDING),
+            )
             .filter(Column::CreatedAt.gte(since))
             .count(db.as_ref())
             .await

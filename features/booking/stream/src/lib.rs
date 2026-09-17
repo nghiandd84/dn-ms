@@ -19,7 +19,12 @@ pub enum BookingMessage {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GuestBookingConfirmTokenMessage {
     pub guest_booking_id: Uuid,
-    pub event_id: Uuid,
+    /// Kind of target being booked, e.g. event, room, car, ... (optional).
+    pub resource_type: Option<String>,
+    /// Concrete target id in the owning service (optional).
+    pub resource_id: Option<Uuid>,
+    /// Opaque external target reference when it has no UUID (optional).
+    pub external_ref: Option<String>,
     pub guest_email: String,
     pub guest_name: Option<String>,
     pub booking_reference: String,

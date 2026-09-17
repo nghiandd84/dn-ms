@@ -7,9 +7,7 @@ use uuid::Uuid;
 use shared_shared_config::db::DB_READ;
 use shared_shared_data_error::app::AppError;
 
-use features_booking_entities::booking::{
-    Column as BookingColumn, Entity as BookingEntity,
-};
+use features_booking_entities::booking::{Column as BookingColumn, Entity as BookingEntity};
 use features_booking_entities::booking_capacity::{
     BookingCapacityForCreateDto, Column, Entity, Model, ModelOptionDto,
 };

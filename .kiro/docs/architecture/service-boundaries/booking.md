@@ -17,6 +17,12 @@ events.
 - Maintain an append-only lifecycle history (`booking_history`) recording
   creation, status changes, payment updates, and cancellations, written
   transactionally with each change.
+- Support **guest bookings** (`guest_bookings`): unauthenticated, token-gated,
+  timed booking that is promoted into a real booking after payment, plus admin
+  management (CRUD + search) and its own append-only history
+  (`guest_booking_history`). Guest bookings use the same polymorphic
+  `booking_type` / `booking_mode` / `resource_type` / `resource_id` model and
+  are not event-specific. See `dev/guest-booking-flow.md`.
 
 ## Booking Modes
 - `WINDOW` — time-range reservation of a unit (overlap guard).
@@ -30,8 +36,9 @@ events.
 - Owns the `bookings`, `booking_items`, and six mode child tables.
 - Does **not** own the booked resources — those live in other services and are
   referenced polymorphically via `resource_type` + `resource_id` (and container
-  ids for CAPACITY). The booking service does not currently validate that the
-  referenced resource exists.
+  ids for CAPACITY). Targets without a UUID may instead be referenced by an
+  opaque `external_ref` string. The booking service does not currently validate
+  that the referenced resource exists.
 - Payment state is tracked on the booking (`payment_id`, `payment_status`) but
   payment processing itself is owned by the payment/wallet services.
 
@@ -45,6 +52,8 @@ events.
 - `/bookings`, `/bookings/{id}`
 - `/bookings/{id}/history`
 - `/booking-items`, `/booking-items/{id}`
+- `/public/guest-bookings`, `/public/guest-bookings/{id}`, `/public/guest-bookings/{id}/confirm` (public guest flow)
+- `/guest-bookings`, `/guest-bookings/{id}`, `/guest-bookings/{id}/promote`, `/guest-bookings/{id}/history` (authenticated: promotion + admin management)
 
 ## Delete policy
 `DELETE /bookings/{id}` is a **soft-delete**: it sets `status = CANCELLED` and

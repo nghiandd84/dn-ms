@@ -10,8 +10,15 @@ use crate::booking;
 /// (weekly cleaning, recurring desk rentals, transit passes, permits)
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default, Dto)]
 #[sea_orm(table_name = "booking_recurrence")]
-#[dto(name(BookingRecurrenceForCreate), columns(booking_id, rrule, valid_from, valid_to))]
-#[dto(name(BookingRecurrenceForUpdate), columns(rrule, valid_from, valid_to), option)]
+#[dto(
+    name(BookingRecurrenceForCreate),
+    columns(booking_id, rrule, valid_from, valid_to)
+)]
+#[dto(
+    name(BookingRecurrenceForUpdate),
+    columns(rrule, valid_from, valid_to),
+    option
+)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub booking_id: Uuid,

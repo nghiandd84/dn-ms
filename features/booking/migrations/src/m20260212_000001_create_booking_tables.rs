@@ -39,8 +39,13 @@ impl MigrationTrait for Migration {
                             .string()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(booking::Column::ResourceType).string().null())
+                    .col(
+                        ColumnDef::new(booking::Column::ResourceType)
+                            .string()
+                            .null(),
+                    )
                     .col(ColumnDef::new(booking::Column::ResourceId).uuid().null())
+                    .col(ColumnDef::new(booking::Column::ExternalRef).string().null())
                     .col(ColumnDef::new(booking::Column::UserId).uuid().not_null())
                     .col(
                         ColumnDef::new(booking::Column::TotalAmount)
@@ -72,7 +77,11 @@ impl MigrationTrait for Migration {
                             .string_len(100)
                             .not_null(),
                     )
-                    .col(ColumnDef::new(booking::Column::Metadata).json_binary().null())
+                    .col(
+                        ColumnDef::new(booking::Column::Metadata)
+                            .json_binary()
+                            .null(),
+                    )
                     .col(
                         ColumnDef::new(booking::Column::Version)
                             .integer()
@@ -91,7 +100,11 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .extra("DEFAULT CURRENT_TIMESTAMP"),
                     )
-                    .col(ColumnDef::new(booking::Column::ConfirmedAt).date_time().null())
+                    .col(
+                        ColumnDef::new(booking::Column::ConfirmedAt)
+                            .date_time()
+                            .null(),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -238,7 +251,11 @@ impl MigrationTrait for Migration {
                             .date_time()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(booking_window::Column::PartySize).integer().null())
+                    .col(
+                        ColumnDef::new(booking_window::Column::PartySize)
+                            .integer()
+                            .null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_booking_windows_booking")
@@ -286,7 +303,10 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_booking_capacity_booking")
-                            .from(booking_capacity::Entity, booking_capacity::Column::BookingId)
+                            .from(
+                                booking_capacity::Entity,
+                                booking_capacity::Column::BookingId,
+                            )
                             .to(booking::Entity, booking::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
@@ -391,7 +411,10 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_booking_approval_booking")
-                            .from(booking_approval::Entity, booking_approval::Column::BookingId)
+                            .from(
+                                booking_approval::Entity,
+                                booking_approval::Column::BookingId,
+                            )
                             .to(booking::Entity, booking::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
@@ -416,7 +439,11 @@ impl MigrationTrait for Migration {
                             .string_len(100)
                             .not_null(),
                     )
-                    .col(ColumnDef::new(booking_queue::Column::Position).integer().null())
+                    .col(
+                        ColumnDef::new(booking_queue::Column::Position)
+                            .integer()
+                            .null(),
+                    )
                     .col(
                         ColumnDef::new(booking_queue::Column::EstimatedReady)
                             .date_time()
@@ -491,11 +518,18 @@ impl MigrationTrait for Migration {
                             .json_binary()
                             .null(),
                     )
-                    .col(ColumnDef::new(booking_dispatch::Column::Eta).date_time().null())
+                    .col(
+                        ColumnDef::new(booking_dispatch::Column::Eta)
+                            .date_time()
+                            .null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_booking_dispatch_booking")
-                            .from(booking_dispatch::Entity, booking_dispatch::Column::BookingId)
+                            .from(
+                                booking_dispatch::Entity,
+                                booking_dispatch::Column::BookingId,
+                            )
                             .to(booking::Entity, booking::Column::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )

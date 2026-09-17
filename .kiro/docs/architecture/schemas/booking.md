@@ -14,6 +14,7 @@ erDiagram
         varchar booking_mode
         varchar resource_type
         uuid resource_id
+        varchar external_ref
         uuid user_id
         real total_amount
         varchar currency
@@ -93,7 +94,11 @@ erDiagram
     }
     guest_bookings {
         uuid id PK
-        uuid event_id
+        varchar booking_type
+        varchar booking_mode
+        varchar resource_type
+        uuid resource_id
+        varchar external_ref
         varchar site_origin
         varchar confirm_path
         varchar guest_email
@@ -121,6 +126,17 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+    guest_booking_history {
+        uuid id PK
+        uuid guest_booking_id FK
+        varchar event_type
+        varchar from_status
+        varchar to_status
+        uuid actor_id
+        varchar note
+        jsonb metadata
+        timestamp created_at
+    }
     bookings ||--o{ booking_items : "has items"
     bookings ||--o| booking_windows : "WINDOW"
     bookings ||--o| booking_capacity : "CAPACITY"
@@ -130,6 +146,7 @@ erDiagram
     bookings ||--o| booking_dispatch : "DISPATCH"
     bookings ||--o{ booking_history : "history"
     guest_bookings ||--o{ guest_booking_items : "has items"
+    guest_bookings ||--o{ guest_booking_history : "history"
     guest_bookings ||..o| bookings : "promoted_booking_id"
 ```
 
@@ -145,6 +162,7 @@ erDiagram
 | booking_mode       | varchar     |                     | NOT NULL     |
 | resource_type      | varchar     |                     | NULL         |
 | resource_id        | uuid        |                     | NULL         |
+| external_ref       | varchar     |                     | NULL (opaque non-UUID target ref; used instead of resource_id) |
 | user_id            | uuid        |                     | NOT NULL     |
 | total_amount       | real        | 0                   | NOT NULL     |
 | currency           | varchar     | 'USD'               | NOT NULL     |
@@ -262,14 +280,21 @@ Index: `idx_booking_dispatch_provider (provider_id, dispatch_state)`.
 
 ### Guest booking
 
-Unauthenticated event booking that is later promoted into a real `bookings` row.
+Unauthenticated guest booking that is later promoted into a real `bookings` row.
+Like core bookings, it is **not tied to events**: what is being booked is
+expressed polymorphically via `resource_type` + `resource_id`, classified by
+`booking_type`, and promoted using `booking_mode` (defaults to CAPACITY).
 See `dev/guest-booking-flow.md` for the full flow, security model, and windows.
 
 #### guest_bookings
 | Column              | Type         | Default           | Constraints  |
 |---------------------|--------------|-------------------|--------------|
 | id                  | uuid         | gen_random_uuid() | PK, NOT NULL |
-| event_id            | uuid         |                   | NOT NULL     |
+| booking_type        | varchar      | 'EVENT'           | NOT NULL (domain label: EVENT, HOTEL_ROOM, CAR_RENTAL, APPOINTMENT, ...) |
+| booking_mode        | varchar      | 'CAPACITY'        | NOT NULL (promotion strategy: WINDOW/CAPACITY/RECURRENCE/APPROVAL/QUEUE/DISPATCH) |
+| resource_type       | varchar      |                   | NULL (kind of target: event, room, car, ...) |
+| resource_id         | uuid         |                   | NULL (concrete target id in the owning service) |
+| external_ref        | varchar      |                   | NULL (opaque non-UUID target ref; used instead of resource_id) |
 | site_origin         | varchar      |                   | NOT NULL (allowlist-validated) |
 | confirm_path        | varchar(255) |                   | NOT NULL     |
 | guest_email         | varchar      |                   | NOT NULL     |
@@ -287,11 +312,12 @@ See `dev/guest-booking-flow.md` for the full flow, security model, and windows.
 | updated_at          | timestamp    | CURRENT_TIMESTAMP | NOT NULL     |
 | confirmed_at        | timestamp    |                   | NULL         |
 
-Indexes: `idx_guest_bookings_event (event_id)`, `idx_guest_bookings_status (status)`,
+Indexes: `idx_guest_bookings_resource (resource_type, resource_id)`,
+`idx_guest_bookings_status (status)`,
 `idx_guest_bookings_reference (booking_reference)`,
 `idx_guest_bookings_status_expires (status, expires_at)`.
 
-#### guest_booking_items (one row per selected seat)
+#### guest_booking_items (one row per selected unit)
 | Column           | Type      | Default           | Constraints                        |
 |------------------|-----------|-------------------|------------------------------------|
 | id               | uuid      | gen_random_uuid() | PK, NOT NULL                       |
@@ -307,6 +333,25 @@ Indexes: `idx_guest_booking_items_guest_booking (guest_booking_id)`,
 `idx_guest_booking_items_unit (item_type, item_id)`. FK cascade: `ON DELETE CASCADE`.
 
 Migration: `m20260216_000001_create_guest_booking_tables`.
+
+#### guest_booking_history (append-only guest booking lifecycle log)
+| Column           | Type        | Default           | Constraints                       |
+|------------------|-------------|-------------------|-----------------------------------|
+| id               | uuid        | gen_random_uuid() | PK, NOT NULL                      |
+| guest_booking_id | uuid        |                   | NOT NULL, FK → guest_bookings(id) |
+| event_type       | varchar     |                   | NOT NULL (CREATED, CONFIRMED, PROMOTED, CANCELLED, EXPIRED, PAYMENT_EXPIRED, STATUS_CHANGED, UPDATED, DELETED) |
+| from_status      | varchar     |                   | NULL                              |
+| to_status        | varchar     |                   | NULL                              |
+| actor_id         | uuid        |                   | NULL (admin user for admin-driven changes) |
+| note             | varchar(500)|                   | NULL                              |
+| metadata         | jsonb       |                   | NULL                              |
+| created_at       | timestamp   | CURRENT_TIMESTAMP | NOT NULL                          |
+
+Index: `idx_guest_booking_history_guest_booking (guest_booking_id, created_at)`.
+FK cascade: `ON DELETE CASCADE`. Append-only; written in the same transaction as
+the guest booking change it records.
+
+Migration: `m20260218_000001_create_guest_booking_history`.
 
 #### seaql_migrations
 | Column     | Type    | Constraints |
