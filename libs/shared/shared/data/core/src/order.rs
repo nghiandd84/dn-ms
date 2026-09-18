@@ -13,11 +13,26 @@ impl<'de> Deserialize<'de> for OrderDirection {
     where
         D: serde::Deserializer<'de>,
     {
-        let value = i32::deserialize(deserializer)?;
-        match value {
-            1 => Ok(OrderDirection::Asc),
-            -1 => Ok(OrderDirection::Desc),
-            _ => Err(serde::de::Error::custom("Invalid order direction value")),
+        use serde::de::Error;
+
+        // Accept either an integer (1 / -1) or a string ("asc" / "desc").
+        // Query-string values arrive as strings, so also handle "1" / "-1".
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            Int(i32),
+            Str(String),
+        }
+
+        match Raw::deserialize(deserializer)? {
+            Raw::Int(1) => Ok(OrderDirection::Asc),
+            Raw::Int(-1) => Ok(OrderDirection::Desc),
+            Raw::Int(_) => Err(D::Error::custom("Invalid order direction value")),
+            Raw::Str(s) => match s.trim().to_ascii_lowercase().as_str() {
+                "asc" | "1" => Ok(OrderDirection::Asc),
+                "desc" | "-1" => Ok(OrderDirection::Desc),
+                _ => Err(D::Error::custom("Invalid order direction value")),
+            },
         }
     }
 }

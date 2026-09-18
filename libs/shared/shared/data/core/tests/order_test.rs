@@ -40,3 +40,27 @@ fn order_deserialize_empty_defaults() {
     assert!(o.order_name.is_none());
     assert!(o.order_direction.is_none());
 }
+
+#[test]
+fn order_direction_deserialize_string_asc() {
+    let dir: OrderDirection = serde_json::from_str("\"asc\"").unwrap();
+    assert!(matches!(dir, OrderDirection::Asc));
+}
+
+#[test]
+fn order_direction_deserialize_string_desc_case_insensitive() {
+    let dir: OrderDirection = serde_json::from_str("\"DESC\"").unwrap();
+    assert!(matches!(dir, OrderDirection::Desc));
+}
+
+#[test]
+fn order_direction_deserialize_numeric_string() {
+    let dir: OrderDirection = serde_json::from_str("\"-1\"").unwrap();
+    assert!(matches!(dir, OrderDirection::Desc));
+}
+
+#[test]
+fn order_direction_deserialize_string_invalid() {
+    let result = serde_json::from_str::<OrderDirection>("\"sideways\"");
+    assert!(result.is_err());
+}
