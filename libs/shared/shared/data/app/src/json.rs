@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
     RequestExt,
 };
-use tracing::debug;
+use tracing::error;
 use validator::Validate;
 
 use shared_shared_data_error::app::AppError;
@@ -100,15 +100,16 @@ impl<S, T> FromRequest<S> for ValidJson<T>
 where
     S: Send + Sync,
     Json<T>: FromRequest<()>,
+    <Json<T> as FromRequest<()>>::Rejection: std::fmt::Display,
     T: Validate + 'static,
 {
     type Rejection = AppError;
 
     async fn from_request(req: Request, _state: &S) -> Result<Self, Self::Rejection> {
-        let Json(payload) = req.extract::<Json<T>, _>().await.map_err(|_err| {
-            debug!(
-                "Failed to extract Json. Response {:?}",
-                _err.into_response()
+        let Json(payload) = req.extract::<Json<T>, _>().await.map_err(|err| {
+            error!(
+                error = %err,
+                "Failed to extract JSON body (json_rejection)"
             );
             AppError::JsonRejection
         })?;
