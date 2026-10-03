@@ -637,7 +637,7 @@ impl GuestBookingService {
             total_amount: guest.total_amount,
             currency: guest.currency.clone(),
             status: "CONFIRMED".to_string(),
-            payment_status: "SUCCESS".to_string(),
+            payment_status: "PENDING".to_string(),
             booking_reference,
             metadata: guest.metadata.clone(),
         };
