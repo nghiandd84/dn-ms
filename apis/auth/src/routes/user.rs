@@ -13,7 +13,7 @@ use features_auth_model::{
 };
 
 use shared_shared_app::{doc::ErrorResponse, state::AppState};
-use shared_shared_auth::permission::Auth;
+use shared_shared_auth::permission::{Auth, Authenticated};
 use shared_shared_data_app::{
     json::{ResponseJson, ValidJson},
     result::{OkUuid, OkUuidResponse, Result},
@@ -48,6 +48,27 @@ async fn delete_user(
 ) -> Result<ResponseJson<OkUuid>> {
     UserMutation::delete_user(user_id).await?;
     Ok(ResponseJson(OkUuid { ok: true, id: None }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    tag = TAG,
+    summary = "Get the current authenticated user",
+    responses(
+        (status = 200, description = "Current user data", body = UserDataResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "User not found", body = ErrorResponse),
+    ),
+    security(("jwt" = []))
+)]
+#[instrument(level = Level::INFO, skip_all)]
+async fn get_current_user(
+    auth: Authenticated,
+    Query(query_params): Query<QueryParams>,
+) -> Result<ResponseJson<UserData>> {
+    let user_dto = UserQuery::get(auth.user_id(), &query_params).await?;
+    Ok(ResponseJson(user_dto))
 }
 
 #[utoipa::path(
@@ -150,6 +171,7 @@ async fn unassign_roles(
 
 pub fn routes(app_state: &AppState<AuthAppState, AuthCacheState>) -> Router {
     Router::new()
+        .route("/users/me", get(get_current_user))
         .route("/users/{user_id}", delete(delete_user))
         .route("/users/{user_id}", get(get_user))
         .route("/users", get(filter_users))
