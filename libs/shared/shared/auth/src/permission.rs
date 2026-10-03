@@ -2,7 +2,7 @@ use axum::{extract::FromRequestParts, http::request::Parts};
 use shared_shared_data_error::{app::AppError, auth::AuthError};
 use std::collections::{HashMap, HashSet};
 use std::marker::PhantomData;
-use tracing::debug;
+use tracing::{debug, error};
 use uuid::Uuid;
 
 use crate::{claim::AccessTokenStruct, ResourcePermission};
@@ -113,7 +113,14 @@ where
                         None
                     }
                 })
-                .ok_or(AppError::Auth(AuthError::InsufficientPermission))?
+                .ok_or_else(|| {
+                    error!(
+                        "Insufficient permission: resource={} required_bit={}",
+                        R::RESOURCE,
+                        R::BIT
+                    );
+                    AppError::Auth(AuthError::InsufficientPermission)
+                })?
         } else {
             // Multi-permission check: all requirements must be satisfied
             access_token
@@ -133,7 +140,14 @@ where
                         None
                     }
                 })
-                .ok_or(AppError::Auth(AuthError::InsufficientPermission))?
+                .ok_or_else(|| {
+                    error!(
+                        "Insufficient permission: resource={} requirements={:?}",
+                        R::RESOURCE,
+                        requirements
+                    );
+                    AppError::Auth(AuthError::InsufficientPermission)
+                })?
         };
 
         parts.extensions.insert(AccessChecked);
@@ -196,6 +210,60 @@ where
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         parts.extensions.insert(AccessChecked);
         Ok(PublicAccess)
+    }
+}
+
+/// Extractor for endpoints that require an authenticated user but no specific
+/// permission — e.g. "read/update my own record" (`/users/me`). It parses the
+/// gateway-injected `baggage` header to expose the caller's `user_id` and
+/// optional `access_key`, but performs **no** resource-permission check.
+///
+/// Use this instead of `Auth<R>` when the authorization is "is a valid logged-in
+/// user acting on their own data", where requiring a resource permission like
+/// `AUTH:USER` READ would be incorrect.
+pub struct Authenticated {
+    pub user_id: Uuid,
+    pub access_key: Option<String>,
+}
+
+impl Authenticated {
+    pub fn user_id(&self) -> Uuid {
+        self.user_id
+    }
+
+    pub fn access_key(&self) -> Option<String> {
+        self.access_key.clone()
+    }
+}
+
+impl<S> FromRequestParts<S> for Authenticated
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let baggage = parts
+            .headers
+            .get("baggage")
+            .and_then(|v| v.to_str().ok())
+            .ok_or(AppError::Auth(AuthError::InsufficientPermission))?;
+
+        let access_token = AccessTokenStruct::from_string(baggage)
+            .ok_or(AppError::Auth(AuthError::InsufficientPermission))?;
+
+        // No resource-permission check: any authenticated caller is allowed.
+        parts.extensions.insert(AccessChecked);
+
+        let access_key = access_token
+            .accesses
+            .first()
+            .and_then(|a| a.key.clone());
+
+        Ok(Authenticated {
+            user_id: access_token.user_id,
+            access_key,
+        })
     }
 }
 
