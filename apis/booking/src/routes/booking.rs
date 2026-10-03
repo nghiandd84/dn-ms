@@ -26,6 +26,7 @@ use shared_shared_data_core::{
     paging::{Pagination, QueryResult, QueryResultResponse},
     query_params::QueryParams,
 };
+use shared_shared_data_error::{app::AppError, auth::AuthError};
 
 use crate::permission::{CanCreateBooking, CanDeleteBooking, CanReadBooking, CanUpdateBooking};
 use features_booking_service::BookingService;
@@ -94,6 +95,33 @@ async fn filter_bookings(
     let order = query_order.0;
     let filters = filter_params.0.all_filters();
     let result = BookingService::get_bookings(&filters, &pagination, &order, &query_params).await?;
+    Ok(ResponseJson(result))
+}
+
+#[utoipa::path(
+    get,
+    path = "/bookings/me",
+    tag = TAG,
+    params(
+        Order,
+        Pagination
+    ),
+    responses(
+        (status = 200, description = "Bookings for the current authenticated user", body = QueryResultResponse<BookingData>),
+    )
+)]
+#[instrument(level = Level::INFO, skip_all)]
+async fn get_my_bookings(
+    auth: Auth<CanReadBooking>,
+    query_pagination: Query<Pagination>,
+    query_order: Query<Order>,
+) -> Result<ResponseJson<QueryResult<BookingData>>> {
+    let user_id = auth
+        .user_id()
+        .ok_or(AppError::Auth(AuthError::InsufficientPermission))?;
+    let pagination = query_pagination.0;
+    let order = query_order.0;
+    let result = BookingService::get_bookings_by_user(user_id, &pagination, &order).await?;
     Ok(ResponseJson(result))
 }
 
@@ -168,6 +196,7 @@ pub fn routes(app_state: &AppState<BookingAppState, BookingCacheState>) -> Route
     Router::new()
         .route("/bookings", post(create_booking))
         .route("/bookings", get(filter_bookings))
+        .route("/bookings/me", get(get_my_bookings))
         .route("/bookings/{booking_id}", get(get_booking))
         .route("/bookings/{booking_id}", patch(update_booking))
         .route("/bookings/{booking_id}", delete(delete_booking))

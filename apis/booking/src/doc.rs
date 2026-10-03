@@ -14,6 +14,7 @@ use shared_shared_app::doc::JwtSecurityAddon;
         crate::routes::booking::create_booking,
         crate::routes::booking::get_booking,
         crate::routes::booking::filter_bookings,
+        crate::routes::booking::get_my_bookings,
         crate::routes::booking::update_booking,
         crate::routes::booking::delete_booking,
         crate::routes::booking::get_booking_history,

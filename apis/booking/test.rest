@@ -149,6 +149,11 @@ baggage: {{baggage}}
   }
 }
 
+### Get bookings of the current authenticated user
+GET {{baseUrl}}/bookings/me
+Origin: {{origin}}
+baggage: {{baggage}}
+
 ### Get booking by ID
 GET {{baseUrl}}/bookings/{{bookingId}}
 Origin: {{origin}}
