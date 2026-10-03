@@ -4,6 +4,7 @@ pub mod m20260212_000001_create_booking_tables;
 pub mod m20260214_000001_create_booking_history;
 pub mod m20260216_000001_create_guest_booking_tables;
 pub mod m20260218_000001_create_guest_booking_history;
+pub mod m20261003_000001_alter_booking_item_price_to_real;
 
 pub struct Migrator;
 
@@ -15,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260214_000001_create_booking_history::Migration),
             Box::new(m20260216_000001_create_guest_booking_tables::Migration),
             Box::new(m20260218_000001_create_guest_booking_history::Migration),
+            Box::new(m20261003_000001_alter_booking_item_price_to_real::Migration),
         ]
     }
 }
